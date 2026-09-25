@@ -11,6 +11,9 @@ Use esta lista antes de homologar qualquer alteração visual.
 - [ ] Voltar para Sistema volta a acompanhar o SO.
 - [ ] Troca do SO com a página aberta atualiza apenas quando a preferência é Sistema.
 - [ ] Falha de `localStorage` não quebra a aplicação.
+- [ ] Se houver seletor manual, ele mostra `Sistema` quando a preferência é `system` (não `Claro`/`Escuro` apenas porque esse é o tema resolvido).
+- [ ] Quando aplicável, mudança em outra aba da mesma origem sincroniza a preferência.
+- [ ] Carregamento inicial não exibe flash visual grosseiro do tema oposto.
 
 ## Marca
 - [ ] Logo azul em fundo claro.
@@ -30,7 +33,7 @@ Use esta lista antes de homologar qualquer alteração visual.
 - [ ] Textareas.
 - [ ] Tabelas.
 - [ ] Badges.
-- [ ] Alertas.
+- [ ] Alertas e caixas semânticas usam variantes próprias de fundo/borda para Light e Dark.
 - [ ] Loading.
 - [ ] Modais.
 - [ ] Central de Ajuda.
@@ -41,13 +44,17 @@ Use esta lista antes de homologar qualquer alteração visual.
 - [ ] Focus-visible.
 
 ## Acessibilidade
-- [ ] Contraste legível.
+- [ ] Texto normal atinge pelo menos 4,5:1 nas combinações principais.
+- [ ] Texto grande atinge pelo menos 3:1 quando aplicável.
+- [ ] Foco, bordas significativas e controles possuem contraste perceptível adequado (3:1 como referência quando o critério WCAG correspondente se aplicar).
 - [ ] Estado não depende só de cor.
 - [ ] Navegação por teclado funciona.
 - [ ] Foco é visível nos dois temas.
 - [ ] Alvos de toque importantes têm aproximadamente 44 px.
 - [ ] ARIA continua coerente.
 - [ ] `prefers-reduced-motion` respeitado se houver transições.
+- [ ] Controles nativos permanecem legíveis com `color-scheme` nos dois temas.
+- [ ] Se o sistema possui impressão relevante, a saída impressa foi verificada separadamente do Dark Mode.
 
 ## Responsividade
 - [ ] 360 px sem overflow horizontal.

@@ -1,5 +1,5 @@
 <!--
-  GRADIP UI — Tema compartilhado
+  GRADIP UI — Tema compartilhado v1.1
   Preferências: system | light | dark
   Storage: localStorage["gradip-theme"]
   Contrato: docs/THEME_IMPLEMENTATION.md
@@ -102,6 +102,14 @@
     }
   }
 
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("storage", function (event) {
+      if (event.key === STORAGE_KEY || event.key === null) {
+        applyPreference(safeReadPreference(), false);
+      }
+    });
+  }
+
   window.GradipTheme = Object.freeze({
     getPreference: getPreference,
     getResolvedTheme: getResolvedTheme,
@@ -132,10 +140,26 @@
   --gradip-header-bg: #ffffff;
   --gradip-header-accent: #00509d;
 
+  --gradip-primary: #00509d;
+  --gradip-primary-hover: #00457f;
+  --gradip-on-primary: #ffffff;
+
   --gradip-success: #15803d;
+  --gradip-success-bg: #ecfdf3;
+  --gradip-success-border: #86efac;
   --gradip-warning: #b45309;
+  --gradip-warning-bg: #fff7e6;
+  --gradip-warning-border: #f4c46b;
   --gradip-danger: #b91c1c;
+  --gradip-danger-bg: #fef2f2;
+  --gradip-danger-border: #fca5a5;
+  --gradip-on-danger: #ffffff;
   --gradip-info: #2f6f9e;
+  --gradip-info-bg: #eff6ff;
+  --gradip-info-border: #93c5fd;
+
+  --gradip-disabled-bg: #eef1f4;
+  --gradip-disabled-text: #5f6b76;
 
   --gradip-input-bg: #ffffff;
   --gradip-input-text: #1f2933;
@@ -164,10 +188,26 @@
   --gradip-header-bg: #0b1822;
   --gradip-header-accent: #2d8ad1;
 
+  --gradip-primary: #2d8ad1;
+  --gradip-primary-hover: #4da3e6;
+  --gradip-on-primary: #081219;
+
   --gradip-success: #4ade80;
+  --gradip-success-bg: #10251a;
+  --gradip-success-border: #2e6b46;
   --gradip-warning: #fbbf24;
+  --gradip-warning-bg: #2a220f;
+  --gradip-warning-border: #7a5d19;
   --gradip-danger: #f87171;
+  --gradip-danger-bg: #2b1719;
+  --gradip-danger-border: #7a343a;
+  --gradip-on-danger: #081219;
   --gradip-info: #7ba3bd;
+  --gradip-info-bg: #10232f;
+  --gradip-info-border: #355f78;
+
+  --gradip-disabled-bg: #172630;
+  --gradip-disabled-text: #8f9ba3;
 
   --gradip-input-bg: #172630;
   --gradip-input-text: #f7f3ef;

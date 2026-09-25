@@ -1,8 +1,10 @@
 # GRADIP UI — Diretriz Visual dos Sistemas IPUSP
 
-Versão inicial: 2026-09-25
+Versão: 1.1 — 2026-09-25
 
 Este documento define a base visual comum para os Web Apps do Serviço de Graduação do IPUSP. O objetivo não é tornar todos os sistemas idênticos, mas garantir coerência de identidade, legibilidade, acessibilidade e comportamento entre Light Mode e Dark Mode.
+
+Para implementação prática dos componentes, consulte também `UX_COMPONENT_RECIPES.md`. O contrato técnico de preferência e resolução de tema está em `THEME_IMPLEMENTATION.md`.
 
 ---
 
@@ -121,6 +123,28 @@ A base escura usa azul-petróleo, evitando preto absoluto.
 | Informação | `#2F6F9E` | `#7BA3BD` |
 
 O texto sobre fundos semânticos deve ser escolhido por contraste, não apenas por convenção.
+
+### 3.5 Ações, superfícies semânticas e estado disabled
+
+Esses tokens evitam que cada sistema invente uma segunda paleta para botões e caixas de estado.
+
+| Papel | Light | Dark |
+|---|---|---|
+| Primário — fundo | `#00509D` | `#2D8AD1` |
+| Primário — hover | `#00457F` | `#4DA3E6` |
+| Texto sobre primário | `#FFFFFF` | `#081219` |
+| Sucesso — fundo sutil | `#ECFDF3` | `#10251A` |
+| Sucesso — borda | `#86EFAC` | `#2E6B46` |
+| Aviso — fundo sutil | `#FFF7E6` | `#2A220F` |
+| Aviso — borda | `#F4C46B` | `#7A5D19` |
+| Erro — fundo sutil | `#FEF2F2` | `#2B1719` |
+| Erro — borda | `#FCA5A5` | `#7A343A` |
+| Informação — fundo sutil | `#EFF6FF` | `#10232F` |
+| Informação — borda | `#93C5FD` | `#355F78` |
+| Disabled — fundo | `#EEF1F4` | `#172630` |
+| Disabled — texto | `#5F6B76` | `#8F9BA3` |
+
+Os nomes CSS correspondentes estão em `shared/GradipTema.html`. Para botões destrutivos sólidos, use `--gradip-danger` com `--gradip-on-danger`.
 
 ---
 
@@ -337,6 +361,10 @@ Critérios:
 ## 15. Acessibilidade
 
 Obrigatório:
+- para texto normal, contraste alvo mínimo de 4,5:1;
+- para texto grande, contraste alvo mínimo de 3:1, conforme definição WCAG;
+- componentes de interface, bordas significativas e indicadores de foco devem atingir contraste perceptível adequado, usando 3:1 como referência quando o critério WCAG correspondente se aplicar;
+- validar a combinação efetivamente renderizada; não assumir que um token isolado garante contraste;
 - foco visível;
 - teclado;
 - labels associadas a campos;
@@ -364,7 +392,9 @@ Regras:
 3. Claro/Escuro são persistidos em `localStorage`;
 4. se o usuário voltar para Sistema, mudança do SO deve refletir com a página aberta;
 5. preferência de tema não exige login;
-6. nenhuma preferência é enviada ao servidor.
+6. nenhuma preferência é enviada ao servidor;
+7. quando houver controle manual, ele deve mostrar `Sistema` enquanto a preferência for `system`, mesmo que o tema resolvido naquele instante seja claro ou escuro;
+8. mudanças feitas em outra aba da mesma origem podem ser sincronizadas via evento `storage`.
 
 Contrato técnico em `THEME_IMPLEMENTATION.md`.
 
@@ -417,4 +447,6 @@ Uma atualização visual está pronta quando:
 - marca correta é exibida por tema;
 - não há overflow nas larguras-alvo;
 - foco/teclado continuam funcionando;
-- não houve regressão funcional.
+- não houve regressão funcional;
+- combinações principais de texto/fundo atendem aos critérios de contraste definidos neste documento;
+- controles nativos (`input`, `select`, `textarea`) permanecem coerentes com `color-scheme` nos dois temas.

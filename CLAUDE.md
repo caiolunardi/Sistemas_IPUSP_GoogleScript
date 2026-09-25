@@ -7,13 +7,28 @@ Este repositório é a referência comum dos sistemas do Serviço de Graduação
 Leia obrigatoriamente:
 
 1. `docs/UX_DESIGN_SYSTEM.md`
-2. `docs/THEME_IMPLEMENTATION.md`
-3. `docs/UX_CHECKLIST.md`
+2. `docs/UX_COMPONENT_RECIPES.md`
+3. `docs/THEME_IMPLEMENTATION.md`
+4. `docs/UX_CHECKLIST.md`
 
 Para projetos que usam o tema comum, leia também:
 
-4. `shared/GradipTema.html`
-5. `assets/ipusp/README.md`
+5. `shared/GradipTema.html`
+6. `shared/GradipTemaControle.html`, se houver seletor de aparência na interface
+7. `assets/ipusp/README.md`
+
+## Fonte de verdade e precedência
+
+Ao implementar ou revisar UX, use esta ordem:
+
+1. requisitos funcionais e de negócio do sistema;
+2. identidade institucional e ativos em `assets/ipusp/`;
+3. `docs/UX_DESIGN_SYSTEM.md`;
+4. `docs/THEME_IMPLEMENTATION.md`;
+5. `docs/UX_COMPONENT_RECIPES.md`;
+6. particularidades já homologadas do sistema.
+
+Não "corrija" silenciosamente uma particularidade funcional ou editorial para fazê-la caber no design system. Quando houver conflito real, preserve o comportamento e registre a divergência para decisão humana.
 
 ## Regras de implementação
 
@@ -28,6 +43,8 @@ Para projetos que usam o tema comum, leia também:
 - Não inverter imagens globalmente.
 - Use a marca azul em fundo claro e a marca branca/negativa em fundo escuro.
 - Não introduza novas cores hardcoded se existir token semântico equivalente.
+- Em alertas e estados, use também os tokens de fundo e borda semânticos; não invente pastéis claros para o Dark Mode.
+- O controle de tema, quando existir, deve exibir a **preferência** (`system`, `light`, `dark`), não apenas o tema resolvido naquele instante.
 - Não use cor como único indicador de estado.
 - Preserve `:focus-visible`, navegação por teclado e alvo de toque mínimo de aproximadamente 44 px para controles importantes.
 - Teste 360, 390, 480, 768 px e desktop.
@@ -54,7 +71,7 @@ O relatório deve informar:
 - teste de preferência do sistema;
 - teste de persistência manual;
 - teste de mudança do sistema com a página aberta;
-- teste de contraste/legibilidade;
+- teste de contraste/legibilidade com critérios mensuráveis de acessibilidade;
 - teste mobile;
 - confirmação de ausência de regressão funcional.
 

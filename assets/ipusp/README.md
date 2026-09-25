@@ -34,6 +34,10 @@ A pasta institucional contém `LogoIPUSPbranco.png`, que confirma a existência 
 
 Se futuramente for disponibilizado um SVG branco oficial, ele deve substituir esta versão técnica.
 
+### Verificação da variante negativa
+
+Em 2026-09-25 foi conferido que `logo-ipusp-azul.svg` e `logo-ipusp-branco.svg` possuem a mesma geometria: após normalizar `#FFFFFF` para `#00509D`, os arquivos ficam byte-equivalentes. A diferença entre as duas cópias é somente o preenchimento dos 10 paths da marca.
+
 ## Regras
 
 - fundo claro → logo azul;

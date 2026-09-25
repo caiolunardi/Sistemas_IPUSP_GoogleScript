@@ -9,6 +9,7 @@ O objetivo é reduzir divergências entre projetos, registrar decisões de arqui
 Antes de alterar a interface de qualquer sistema, leia:
 
 - `docs/UX_DESIGN_SYSTEM.md` — identidade visual, Light/Dark Mode, componentes, acessibilidade e responsividade.
+- `docs/UX_COMPONENT_RECIPES.md` — receitas CSS/HTML de referência para componentes recorrentes.
 - `docs/THEME_IMPLEMENTATION.md` — contrato técnico do tema e integração com Google Apps Script.
 - `docs/UX_CHECKLIST.md` — checklist mínimo de homologação visual.
 - `CLAUDE.md` — instruções para agentes de código.
@@ -16,6 +17,7 @@ Antes de alterar a interface de qualquer sistema, leia:
 Base reutilizável:
 
 - `shared/GradipTema.html` — tokens de tema + detecção da preferência do sistema + API de Claro/Escuro/Sistema.
+- `shared/GradipTemaControle.html` — controle opcional e reutilizável de preferência `Sistema / Claro / Escuro`.
 - `assets/ipusp/` — marca IPUSP para fundo claro e escuro, com registro de procedência.
 
 ## Princípios
@@ -27,6 +29,7 @@ Base reutilizável:
 5. **Acessibilidade é requisito.** Contraste, foco, teclado, alvo de toque e semântica devem ser preservados.
 6. **Mobile primeiro.** Validar ao menos 360, 390, 480, 768 px e desktop.
 7. **Sem dependências desnecessárias.** O tema deve funcionar em HTML/CSS/JS nativos do Apps Script.
+8. **Tokens antes de exceções.** Novos componentes devem consumir os tokens compartilhados; exceções específicas de um sistema precisam ser justificadas e documentadas.
 
 ## Organização prevista
 

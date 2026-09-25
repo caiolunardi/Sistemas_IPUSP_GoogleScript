@@ -6,6 +6,10 @@ A implementação de referência está em:
 
 `shared/GradipTema.html`
 
+Controle visual opcional reutilizável:
+
+`shared/GradipTemaControle.html`
+
 ---
 
 ## 1. Arquitetura
@@ -42,6 +46,8 @@ window.matchMedia("(prefers-color-scheme: dark)")
 ```
 
 Quando a preferência for `system`, uma mudança do sistema operacional/navegador deve atualizar a interface sem recarregar.
+
+A implementação de referência também escuta o evento `storage`: se a preferência for alterada em outra aba da mesma origem, a aba atual reaplica a preferência sem depender de backend.
 
 ---
 
@@ -117,6 +123,31 @@ GradipTheme.getPreference()
 
 Pode-se usar botão/ciclo de tema, mas a interface deve permitir distinguir claramente "Sistema" de uma escolha manual.
 
+### Controle compartilhado
+
+Quando um seletor explícito for adequado, pode-se copiar `shared/GradipTemaControle.html` para o projeto como `GradipTemaControle.html` e incluí-lo **no ponto do `<body>` onde o controle deve aparecer**, depois de `GradipTema.html`.
+
+Exemplo:
+
+```html
+<?!= include_('GradipTema') ?>
+...
+<header>
+  ...
+  <?!= include_('GradipTemaControle') ?>
+</header>
+```
+
+O componente compartilhado:
+- usa um `<select>` nativo;
+- possui alvo de toque de 44 px;
+- sincroniza todos os seletores marcados com `data-gradip-theme-select`;
+- mostra a preferência escolhida (`Sistema`, `Claro`, `Escuro`), e não o tema resolvido;
+- não chama `google.script.run`;
+- não cria armazenamento próprio: usa exclusivamente a API `GradipTheme`.
+
+O controle é opcional. Um sistema pode seguir apenas a preferência do SO se a especificação não exigir escolha manual.
+
 ---
 
 ## 6. Logo por tema
@@ -152,7 +183,9 @@ Se o projeto usa uma única `<img>` e trocar o `src` for menos invasivo, isso ta
 
 ## 7. Tokens
 
-O `GradipTema.html` fornece tokens semânticos.
+O `GradipTema.html` fornece tokens semânticos para superfícies, texto, bordas, links, foco, campos, ações primárias, estados semânticos e disabled.
+
+Receitas de uso para cards, botões, formulários, alertas, tabelas e modais estão em `UX_COMPONENT_RECIPES.md`.
 
 Exemplo:
 
@@ -232,6 +265,8 @@ O tema:
 
 Se `localStorage` estiver indisponível, o fallback deve continuar funcional em modo Sistema.
 
+`document.documentElement.style.colorScheme` acompanha o tema resolvido para que controles nativos do navegador possam adotar aparência coerente.
+
 ---
 
 ## 11. Compatibilidade
@@ -275,6 +310,8 @@ Evite transicionar propriedades de layout.
 
 ### Persistência
 Recarregar a página e conferir que Claro/Escuro permanecem.
+
+Quando for possível testar duas abas da mesma origem, alterar a preferência em uma e confirmar sincronização na outra.
 
 ### Falha de storage
 Simular indisponibilidade e verificar fallback para Sistema.
