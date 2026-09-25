@@ -1,0 +1,56 @@
+# Sistemas IPUSP — Google Apps Script
+
+Repositório central de referência e documentação dos Web Apps em Google Apps Script mantidos pelo Serviço de Graduação do Instituto de Psicologia da USP.
+
+O objetivo é reduzir divergências entre projetos, registrar decisões de arquitetura/UX e fornecer uma base comum para novas implementações e atualizações.
+
+## Diretrizes obrigatórias
+
+Antes de alterar a interface de qualquer sistema, leia:
+
+- `docs/UX_DESIGN_SYSTEM.md` — identidade visual, Light/Dark Mode, componentes, acessibilidade e responsividade.
+- `docs/THEME_IMPLEMENTATION.md` — contrato técnico do tema e integração com Google Apps Script.
+- `docs/UX_CHECKLIST.md` — checklist mínimo de homologação visual.
+- `CLAUDE.md` — instruções para agentes de código.
+
+Base reutilizável:
+
+- `shared/GradipTema.html` — tokens de tema + detecção da preferência do sistema + API de Claro/Escuro/Sistema.
+- `assets/ipusp/` — marca IPUSP para fundo claro e escuro, com registro de procedência.
+
+## Princípios
+
+1. **Regra de negócio e UX são camadas separadas.** Mudança visual não deve alterar backend, planilha, e-mails, validações ou fluxo de dados.
+2. **Tema padrão = Sistema.** O navegador segue `prefers-color-scheme`, salvo escolha explícita do usuário.
+3. **Claro e Escuro são equivalentes funcionalmente.** Nenhuma ação, informação ou estado pode existir em apenas um tema.
+4. **Identidade IPUSP preservada.** Não redesenhar, deformar ou aplicar filtros arbitrários à marca.
+5. **Acessibilidade é requisito.** Contraste, foco, teclado, alvo de toque e semântica devem ser preservados.
+6. **Mobile primeiro.** Validar ao menos 360, 390, 480, 768 px e desktop.
+7. **Sem dependências desnecessárias.** O tema deve funcionar em HTML/CSS/JS nativos do Apps Script.
+
+## Organização prevista
+
+Cada sistema poderá ter sua própria pasta conforme for incorporado ao repositório, por exemplo:
+
+```text
+sistemas/
+  busp/
+  diplomas/
+  trancamento-parcial/
+  painel-solicitacoes/
+  ...
+```
+
+A documentação comum fica fora das pastas dos sistemas para servir de referência única.
+
+## Fonte da identidade visual
+
+Os ativos de marca usados aqui foram obtidos da pasta institucional compartilhada:
+
+**Identidade Visual IPUSP | Aprovada pelo CTA de junho de 2024**
+
+A procedência e as regras para uso dos arquivos estão documentadas em `assets/ipusp/README.md`.
+
+---
+
+Este repositório deve ser tratado como a referência de implementação dos sistemas IPUSP em Google Apps Script.
