@@ -6,6 +6,16 @@ Esta pasta é reservada à documentação individual dos Web Apps e módulos do 
 
 Nenhum sistema deve ser documentado por memória aproximada ou inferência. Antes de criar uma pasta: obter baseline atual, identificar produção/homologação, separar implementação/regras/UX, registrar dependências e validar contra o código/fluxo real.
 
+## Preflight obrigatório de segurança
+
+Antes de copiar qualquer código para este repositório:
+1. remover/abstrair segredos e credenciais;
+2. substituir IDs operacionais reais por chaves de configuração quando não forem deliberadamente públicos;
+3. remover dados pessoais reais, logs, fixtures e screenshots de produção;
+4. identificar o modelo de acesso/execução do Web App;
+5. criar `DADOS_E_SEGURANCA.md` a partir de `docs/seguranca/SYSTEM_SECURITY_TEMPLATE.md`;
+6. executar `docs/seguranca/SECURITY_CHECKLIST.md`.
+
 ## Estrutura sugerida
 
 ```text
@@ -17,10 +27,11 @@ sistemas/
     REGRAS.md
     UX.md
     AJUDA.md
+    DADOS_E_SEGURANCA.md
     HOMOLOGACAO.md
 ```
 
-Sistemas pequenos podem concentrar tudo no `README.md`. Diretrizes universais de visual e ajuda permanecem em `docs/` e não devem ser duplicadas.
+Sistemas pequenos podem concentrar tudo no `README.md`, mas a seção de dados/segurança continua obrigatória quando houver tratamento de dados ou configuração de produção. Diretrizes universais de visual, ajuda e segurança permanecem em `docs/` e não devem ser duplicadas.
 
 ## Ordem prevista
 

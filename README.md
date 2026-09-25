@@ -13,6 +13,8 @@ Antes de alterar a interface de qualquer sistema, leia:
 - `docs/THEME_IMPLEMENTATION.md` — contrato técnico do tema e integração com Google Apps Script.
 - `docs/UX_CHECKLIST.md` — checklist mínimo de homologação visual.
 - `docs/ajuda/README.md` — arquitetura universal da Central de Ajuda, guias, busca, FAQ e suporte contextual.
+- `docs/seguranca/README.md` — segurança, privacidade, LGPD, classificação de dados e configuração segura.
+- `SECURITY.md` — política de reporte e resposta a exposição/vulnerabilidade.
 - `docs/README.md` — índice da documentação e roteiro de incorporação dos sistemas.
 - `CLAUDE.md` — instruções para agentes de código.
 
@@ -21,6 +23,7 @@ Base reutilizável:
 - `shared/GradipTema.html` — tokens de tema + detecção da preferência do sistema + API de Claro/Escuro/Sistema.
 - `shared/GradipTemaControle.html` — controle opcional e reutilizável de preferência `Sistema / Claro / Escuro`.
 - `shared/ajuda/` — shell, estilos e comportamento de referência da Central de Ajuda.
+- `shared/seguranca/` — exemplos de configuração segura sem valores de produção.
 - `assets/ipusp/` — marca IPUSP para fundo claro e escuro, com registro de procedência.
 
 ## Princípios
@@ -35,6 +38,8 @@ Base reutilizável:
 8. **Tokens antes de exceções.** Novos componentes devem consumir os tokens compartilhados; exceções específicas de um sistema precisam ser justificadas e documentadas.
 9. **Ajuda é parte do produto.** Central de Ajuda, FAQ, solução de problemas e ajuda contextual seguem um contrato comum, mas o conteúdo deve refletir apenas regras reais de cada sistema.
 10. **Documentação cresce por camadas.** Primeiro padrões comuns; depois dashboards e formulários, um sistema de cada vez, sempre a partir do código/fluxo efetivamente homologado.
+11. **Privacidade e segurança por padrão.** Dados pessoais, credenciais e identificadores operacionais de produção não entram no repositório sem necessidade e validação explícita.
+12. **Git não é cofre.** Repositório privado reduz exposição, mas não substitui controles de acesso, minimização, configuração segura e procedimentos institucionais.
 
 ## Organização da documentação
 

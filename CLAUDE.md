@@ -28,6 +28,15 @@ Se a tarefa tocar Central de Ajuda, FAQ, guia do usuário, solução de problema
 14. `docs/ajuda/HELP_CHECKLIST.md`
 15. `shared/ajuda/README.md`
 
+Antes de adicionar código, configuração, exemplos, screenshots, logs ou documentação de qualquer sistema específico, leia obrigatoriamente:
+
+16. `docs/seguranca/README.md`
+17. `docs/seguranca/CLASSIFICACAO_DE_DADOS.md`
+18. `docs/seguranca/SEGREDOS_E_CONFIGURACAO.md`
+19. `docs/seguranca/GOOGLE_WORKSPACE_E_APPS_SCRIPT.md`
+20. `docs/seguranca/MINIMIZACAO_E_DADOS_DE_TESTE.md`
+21. `docs/seguranca/SECURITY_CHECKLIST.md`
+
 ## Fonte de verdade e precedência
 
 Ao implementar ou revisar UX, use esta ordem:
@@ -76,6 +85,20 @@ Não "corrija" silenciosamente uma particularidade funcional ou editorial para f
 - Conteúdo explica o que fazer, o que esperar e como resolver problemas; não ensina o funcionamento interno do Apps Script.
 - Quantidade de FAQs/problemas não é meta. Cobertura das dúvidas reais é o critério.
 - Informações operacionais mutáveis não devem ser copiadas em vários lugares sem necessidade; duplicações inevitáveis devem ser conferidas na homologação.
+
+## Regras de segurança e privacidade
+
+- Nunca versionar senha, token, chave, client secret, private key, service account ou credencial.
+- Não copiar dados pessoais reais para fixtures, documentação, screenshots, exemplos ou prompts de agente de código.
+- Nº USP, CPF, nome, e-mail, histórico, notas e solicitações individualizadas são dados pessoais/restritos para fins desta política de engenharia.
+- IDs reais de Sheets, Drive, Forms, Scripts e deployments são informação operacional interna: documentar a chave lógica (`SPREADSHEET_ID`, etc.), não o valor, salvo se o recurso for deliberadamente público e isso estiver documentado.
+- Para Apps Script, preferir `Script Properties` para configuração server-side; lembrar que isso retira valores do Git, mas não é cofre contra editores do projeto.
+- Nunca enviar segredo ao navegador em HTML, JavaScript, `data-*`, campo hidden ou retorno de `google.script.run`.
+- Autorização é validada no backend; não confiar em URL obscura, botão escondido ou permissão presumida da planilha.
+- Não registrar payload completo com dados pessoais em `Logger.log`/`console.log`.
+- Se detectar segredo ou dado pessoal real no material a ser commitado, pare a publicação, preserve o mínimo necessário e aplique `docs/seguranca/INCIDENTES.md` quando houver exposição.
+- Não inventar base legal, prazo de retenção ou política LGPD. Quando não houver fonte institucional, marcar `A VALIDAR INSTITUCIONALMENTE`.
+- Ao documentar cada sistema, criar/preencher `DADOS_E_SEGURANCA.md` usando `docs/seguranca/SYSTEM_SECURITY_TEMPLATE.md`.
 
 ## Regra de escopo
 

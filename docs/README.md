@@ -15,9 +15,15 @@ Pasta `ajuda/`: Central de Ajuda, busca, navegação, atalhos, FAQ, problemas co
 
 O conteúdo concreto de cada sistema não fica na camada universal.
 
-## 3. Sistemas específicos — incorporação gradual
+## 3. Segurança, privacidade e LGPD — concluída
 
-Pasta `sistemas/`. Cada sistema será documentado a partir do código/fluxo homologado.
+Pasta `seguranca/`: classificação de dados, configuração segura, Sheets/Drive/Apps Script, minimização, dados de teste, incidentes e checklist.
+
+A diretriz é técnica e alinhada à LGPD/estrutura da USP; não substitui a Política de Proteção de Dados institucional nem análise do EPDI/Encarregado quando necessária.
+
+## 4. Sistemas específicos — incorporação gradual
+
+Pasta `sistemas/`. Cada sistema será documentado a partir do código/fluxo homologado e passará pelo preflight de segurança antes de qualquer código/dado entrar no repositório.
 
 Ordem planejada:
 1. painel/dashboard do aluno;
@@ -27,4 +33,4 @@ Ordem planejada:
 
 ## Regra de separação
 
-Uma regra vive no nível mais alto em que seja realmente universal. Ex.: cor do Dark Mode → visual comum; comportamento do FAQ → ajuda comum; significado de um status → sistema específico; regra de submissão → formulário específico.
+Uma regra vive no nível mais alto em que seja realmente universal. Ex.: cor do Dark Mode → visual comum; comportamento do FAQ → ajuda comum; segredo/classificação de dados → segurança comum; significado de um status → sistema específico; regra de submissão → formulário específico.

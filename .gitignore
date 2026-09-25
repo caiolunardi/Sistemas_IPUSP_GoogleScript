@@ -1,0 +1,25 @@
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+.clasp.json
+.clasprc.json
+credentials*.json
+service-account*.json
+secrets*.json
+secrets*.yaml
+secrets*.yml
+*.pem
+*.key
+*.p12
+*.jks
+
+# Diretórios locais que nunca devem virar fonte de documentação
+private/
+local-private/
+tmp-private/
+exports-private/
+
+# Sistema/editor
+.DS_Store
+Thumbs.db

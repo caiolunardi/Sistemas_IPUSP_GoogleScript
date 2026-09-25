@@ -1,5 +1,7 @@
 # Segurança, privacidade e limites de exposição
 
+Esta página trata apenas dos limites específicos da Central de Ajuda. A política técnica geral do repositório está em `../seguranca/README.md` e prevalece para código, dados, configuração, logs, testes e incidentes.
+
 ## 1. Regra geral
 
 Tudo na Central de Ajuda deve ser tratado como informação visível ao público daquela aplicação. HTML oculto/modal fechado não é conteúdo privado.
