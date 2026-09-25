@@ -12,12 +12,15 @@ Antes de alterar a interface de qualquer sistema, leia:
 - `docs/UX_COMPONENT_RECIPES.md` — receitas CSS/HTML de referência para componentes recorrentes.
 - `docs/THEME_IMPLEMENTATION.md` — contrato técnico do tema e integração com Google Apps Script.
 - `docs/UX_CHECKLIST.md` — checklist mínimo de homologação visual.
+- `docs/ajuda/README.md` — arquitetura universal da Central de Ajuda, guias, busca, FAQ e suporte contextual.
+- `docs/README.md` — índice da documentação e roteiro de incorporação dos sistemas.
 - `CLAUDE.md` — instruções para agentes de código.
 
 Base reutilizável:
 
 - `shared/GradipTema.html` — tokens de tema + detecção da preferência do sistema + API de Claro/Escuro/Sistema.
 - `shared/GradipTemaControle.html` — controle opcional e reutilizável de preferência `Sistema / Claro / Escuro`.
+- `shared/ajuda/` — shell, estilos e comportamento de referência da Central de Ajuda.
 - `assets/ipusp/` — marca IPUSP para fundo claro e escuro, com registro de procedência.
 
 ## Princípios
@@ -30,8 +33,14 @@ Base reutilizável:
 6. **Mobile primeiro.** Validar ao menos 360, 390, 480, 768 px e desktop.
 7. **Sem dependências desnecessárias.** O tema deve funcionar em HTML/CSS/JS nativos do Apps Script.
 8. **Tokens antes de exceções.** Novos componentes devem consumir os tokens compartilhados; exceções específicas de um sistema precisam ser justificadas e documentadas.
+9. **Ajuda é parte do produto.** Central de Ajuda, FAQ, solução de problemas e ajuda contextual seguem um contrato comum, mas o conteúdo deve refletir apenas regras reais de cada sistema.
+10. **Documentação cresce por camadas.** Primeiro padrões comuns; depois dashboards e formulários, um sistema de cada vez, sempre a partir do código/fluxo efetivamente homologado.
 
-## Organização prevista
+## Organização da documentação
+
+A documentação comum fica em `docs/` e os componentes reutilizáveis em `shared/`. Sistemas específicos serão incorporados gradualmente e terão documentação própria, sem misturar regras particulares com diretrizes universais.
+
+Consulte `docs/README.md` para o mapa completo.
 
 Cada sistema poderá ter sua própria pasta conforme for incorporado ao repositório, por exemplo:
 

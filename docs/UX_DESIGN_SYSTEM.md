@@ -309,6 +309,8 @@ O modal deve:
 
 A Central de Ajuda deve receber o mesmo tema da aplicação; não deve parecer uma aplicação separada.
 
+O contrato completo de conteúdo, navegação, busca, FAQ, ajuda contextual e acessibilidade está em `docs/ajuda/README.md`.
+
 ---
 
 ## 12. Tipografia

@@ -1,0 +1,29 @@
+<!-- GRADIP UI — Comportamento compartilhado da Central de Ajuda -->
+<script>
+(function(){
+"use strict";
+if(window.__gradipHelpInitialized)return;
+window.__gradipHelpInitialized=true;
+var overlay=document.querySelector('[data-gradip-help-overlay]');
+var dialog=document.querySelector('[data-gradip-help-dialog]');
+var searchInput=document.querySelector('[data-gradip-help-search]');
+var searchStatus=document.querySelector('[data-gradip-help-search-status]');
+var noResults=document.querySelector('[data-gradip-help-no-results]');
+var lastFocus=null;
+var previousBodyOverflow='';
+if(!overlay||!dialog)return;
+function normalizeText(value){var text=String(value||'').toLowerCase();if(typeof text.normalize==='function'){text=text.normalize('NFD').replace(/[\u0300-\u036f]/g,'');}return text;}
+function getFocusable(){var selector=['a[href]','button:not([disabled])','input:not([disabled])','select:not([disabled])','textarea:not([disabled])','[tabindex]:not([tabindex="-1"])'].join(',');return Array.prototype.filter.call(dialog.querySelectorAll(selector),function(el){return !el.hidden&&el.offsetParent!==null;});}
+function setSearchStatus(count,active){if(!searchStatus)return;searchStatus.textContent=active?count+(count===1?' resultado':' resultados'):'';}
+function clearSearch(){if(searchInput)searchInput.value='';var sections=document.querySelectorAll('[data-gradip-help-section]');var items=document.querySelectorAll('[data-gradip-help-search-item]');for(var i=0;i<sections.length;i+=1)sections[i].hidden=false;for(var j=0;j<items.length;j+=1)items[j].hidden=false;if(noResults)noResults.hidden=true;setSearchStatus(0,false);}
+function applySearch(){if(!searchInput)return;var query=normalizeText(searchInput.value.trim());if(!query){clearSearch();return;}var sections=document.querySelectorAll('[data-gradip-help-section]');var total=0;for(var i=0;i<sections.length;i+=1){var section=sections[i];var items=section.querySelectorAll('[data-gradip-help-search-item]');var matchesInSection=0;if(!items.length){var sectionCorpus=normalizeText((section.getAttribute('data-search')||'')+' '+section.textContent);matchesInSection=sectionCorpus.indexOf(query)!==-1?1:0;}else{for(var j=0;j<items.length;j+=1){var item=items[j];var corpus=normalizeText((item.getAttribute('data-search')||'')+' '+item.textContent);var matches=corpus.indexOf(query)!==-1;item.hidden=!matches;if(matches)matchesInSection+=1;}}section.hidden=matchesInSection===0;total+=matchesInSection;}if(noResults)noResults.hidden=total!==0;setSearchStatus(total,true);}
+function focusSection(id){if(!id){dialog.focus();return;}clearSearch();var section=document.getElementById(id);if(!section){dialog.focus();return;}var heading=section.querySelector('h2,h3,h4,[tabindex="-1"]');section.scrollIntoView({block:'start'});if(heading&&typeof heading.focus==='function')heading.focus({preventScroll:true});}
+function openHelp(sectionId){if(overlay.hidden){lastFocus=document.activeElement;previousBodyOverflow=document.body.style.overflow;document.body.style.overflow='hidden';overlay.hidden=false;}window.requestAnimationFrame(function(){focusSection(sectionId);});}
+function closeHelp(){if(overlay.hidden)return;overlay.hidden=true;document.body.style.overflow=previousBodyOverflow;if(lastFocus&&typeof lastFocus.focus==='function')lastFocus.focus();}
+function toggleFaq(button){var panelId=button.getAttribute('aria-controls');if(!panelId)return;var panel=document.getElementById(panelId);if(!panel)return;var expanded=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',expanded?'false':'true');panel.hidden=expanded;}
+document.addEventListener('click',function(event){var openTrigger=event.target.closest?event.target.closest('[data-gradip-help-open]'):null;if(openTrigger){event.preventDefault();openHelp(openTrigger.getAttribute('data-gradip-help-open')||'');return;}var closeTrigger=event.target.closest?event.target.closest('[data-gradip-help-close]'):null;if(closeTrigger){event.preventDefault();closeHelp();return;}var navTrigger=event.target.closest?event.target.closest('[data-gradip-help-target]'):null;if(navTrigger&&overlay.contains(navTrigger)){event.preventDefault();focusSection(navTrigger.getAttribute('data-gradip-help-target'));return;}var faqTrigger=event.target.closest?event.target.closest('[data-gradip-help-faq-toggle]'):null;if(faqTrigger&&overlay.contains(faqTrigger)){event.preventDefault();toggleFaq(faqTrigger);return;}if(event.target===overlay)closeHelp();});
+document.addEventListener('keydown',function(event){if(overlay.hidden)return;if(event.key==='Escape'){event.preventDefault();closeHelp();return;}if(event.key!=='Tab')return;var focusable=getFocusable();if(!focusable.length){event.preventDefault();dialog.focus();return;}var first=focusable[0];var last=focusable[focusable.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
+if(searchInput)searchInput.addEventListener('input',applySearch);
+window.GradipHelp=Object.freeze({open:openHelp,close:closeHelp,clearSearch:clearSearch});
+})();
+</script>

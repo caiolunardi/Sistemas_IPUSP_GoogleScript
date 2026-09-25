@@ -1,0 +1,45 @@
+<!-- GRADIP UI — Template da Central de Ajuda. SUBSTITUIR conteúdo EXEMPLO antes de publicar. -->
+<div class="gradip-help-overlay" data-gradip-help-overlay hidden>
+  <section class="gradip-help-dialog" data-gradip-help-dialog role="dialog" aria-modal="true" aria-labelledby="gradip-help-title" tabindex="-1">
+    <header class="gradip-help-header">
+      <div><p class="gradip-help-eyebrow">Serviço de Graduação — IPUSP</p><h2 id="gradip-help-title">Central de Ajuda</h2></div>
+      <button type="button" class="gradip-help-close" data-gradip-help-close aria-label="Fechar ajuda"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="gradip-help-search-wrap">
+      <label for="gradip-help-search">Buscar na ajuda</label>
+      <input id="gradip-help-search" type="search" placeholder="Ex.: prazo, acesso, documento" autocomplete="off" data-gradip-help-search>
+      <p class="gradip-help-search-status" data-gradip-help-search-status aria-live="polite"></p>
+    </div>
+    <div class="gradip-help-layout">
+      <nav class="gradip-help-nav" aria-label="Seções da ajuda">
+        <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
+        <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
+        <button type="button" data-gradip-help-target="ajuda-faq">FAQ</button>
+      </nav>
+      <main class="gradip-help-main" data-gradip-help-main>
+        <section id="ajuda-inicio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Comece aqui</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="orientacao inicio comecar">
+            <h4>EXEMPLO — substitua pelo objetivo real</h4><p>Explique em poucas linhas o que o usuário consegue resolver.</p>
+          </article>
+        </section>
+        <section id="ajuda-problemas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Problemas comuns</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="erro problema acesso">
+            <h4>EXEMPLO — descreva um sintoma real</h4><p>Indique causas comuns, o que tentar e quando procurar atendimento.</p>
+          </article>
+        </section>
+        <section id="ajuda-faq" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Perguntas frequentes</h3>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="exemplo duvida pergunta">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="gradip-help-faq-exemplo">
+              <span>EXEMPLO — pergunta real do usuário?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="gradip-help-faq-exemplo" class="gradip-help-faq-panel" hidden><p>Resposta direta na primeira frase.</p></div>
+          </article>
+        </section>
+        <div class="gradip-help-no-results" data-gradip-help-no-results hidden><strong>Nenhum resultado encontrado.</strong><p>Tente outra palavra ou limpe a busca.</p></div>
+      </main>
+    </div>
+  </section>
+</div>

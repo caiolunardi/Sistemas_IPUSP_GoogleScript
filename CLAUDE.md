@@ -17,6 +17,17 @@ Para projetos que usam o tema comum, leia também:
 6. `shared/GradipTemaControle.html`, se houver seletor de aparência na interface
 7. `assets/ipusp/README.md`
 
+Se a tarefa tocar Central de Ajuda, FAQ, guia do usuário, solução de problemas ou gatilhos `?`, leia também:
+
+8. `docs/ajuda/README.md`
+9. `docs/ajuda/HELP_ARCHITECTURE.md`
+10. `docs/ajuda/HELP_CONTENT_MODEL.md`
+11. `docs/ajuda/HELP_UX_ACCESSIBILITY.md`
+12. `docs/ajuda/HELP_IMPLEMENTATION.md`
+13. `docs/ajuda/HELP_SECURITY_PRIVACY.md`
+14. `docs/ajuda/HELP_CHECKLIST.md`
+15. `shared/ajuda/README.md`
+
 ## Fonte de verdade e precedência
 
 Ao implementar ou revisar UX, use esta ordem:
@@ -51,6 +62,20 @@ Não "corrija" silenciosamente uma particularidade funcional ou editorial para f
 - Em tema escuro, prefira diferença de superfície + borda a sombras fortes.
 - Evite preto puro como fundo principal; use os tokens GRADIP.
 - Evite branco puro como texto geral; `#F7F3EF` é o foreground principal do dark mode.
+
+## Regras específicas da Central de Ajuda
+
+- Ajuda do usuário não é documentação técnica.
+- O mecanismo deve ser client-side e estático sempre que o conteúdo não depender de dados em tempo real.
+- Não adicionar `google.script.run` apenas para abrir, pesquisar, navegar ou expandir FAQ.
+- Não expor IDs de planilha/Drive, URLs privadas, nomes internos de funções, chaves, IDs de implantação ou detalhes de arquitetura.
+- Ajuda contextual deve abrir diretamente a seção pertinente, sem duplicar grandes blocos na tela principal.
+- Busca deve ser tolerante a acentos e consultar **metadados de busca + texto visível**.
+- FAQ usa controles reais e semânticos; `aria-expanded`/`aria-controls` refletem o estado.
+- Modal de ajuda deve suportar ESC, focus trap, retorno de foco e bloqueio/restauração do scroll do `body`.
+- Conteúdo explica o que fazer, o que esperar e como resolver problemas; não ensina o funcionamento interno do Apps Script.
+- Quantidade de FAQs/problemas não é meta. Cobertura das dúvidas reais é o critério.
+- Informações operacionais mutáveis não devem ser copiadas em vários lugares sem necessidade; duplicações inevitáveis devem ser conferidas na homologação.
 
 ## Regra de escopo
 

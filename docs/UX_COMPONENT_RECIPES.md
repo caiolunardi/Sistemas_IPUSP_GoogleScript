@@ -200,6 +200,8 @@ Não comprima colunas até tornar o conteúdo ilegível apenas para evitar scrol
 
 Tema não substitui requisitos do modal: focus trap, ESC, retorno de foco, scroll lock e semântica continuam independentes.
 
+Para Central de Ajuda, não implemente um modal genérico do zero sem consultar `docs/ajuda/` e `shared/ajuda/`.
+
 ## 12. Controle de tema
 
 A implementação reutilizável está em `shared/GradipTemaControle.html`. Ela deve ser incluída somente depois de `GradipTema.html`.
