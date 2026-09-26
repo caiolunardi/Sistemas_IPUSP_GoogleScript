@@ -1,6 +1,6 @@
 # Painel de Solicitações dos alunos — fonte v1.2
 
-Esta pasta contém os **nove arquivos Apps Script da UI GRADIP v1.2** aceita em 25/09/2026, em `src/`. A fonte foi copiada do pacote final revisado. Oito arquivos são byte-idênticos ao ZIP aceito; em `Codigo.gs`, somente a configuração da planilha de períodos foi substituída por `Script Properties` e uma guarda para configuração ausente. A cópia do Git, portanto, **não é byte-idêntica ao backend em produção**. O código de renderização, as regras de períodos, os sete destinos dos formulários e os fluxos da interface não foram alterados.
+Esta pasta contém os **nove arquivos Apps Script da UI GRADIP v1.2** aceita em 25/09/2026, em `src/`. A fonte partiu do pacote final revisado. Oito arquivos são byte-idênticos ao ZIP aceito. Em `Codigo.gs`, a planilha de períodos é agora resolvida pela chave `PERIODOS` na planilha mestre `ID_INDEX`, cuja localização fica em `Script Properties`. A cópia do Git **não é byte-idêntica ao backend aceito nem foi implantada/testada no `/exec` real**. As regras de períodos, os sete destinos dos formulários e os fluxos da interface foram preservados.
 
 O GitHub é a referência de código, mas **não sincroniza automaticamente** com a implantação no Google Apps Script. Consulte a [documentação funcional](../../docs/sistemas/painel-solicitacoes/README.md), a [homologação e a diferença exata](../../docs/sistemas/painel-solicitacoes/HOMOLOGACAO.md) e o [inventário de segurança](../../docs/sistemas/painel-solicitacoes/DADOS_E_SEGURANCA.md).
 
@@ -14,13 +14,13 @@ O GitHub é a referência de código, mas **não sincroniza automaticamente** co
 | `GradipMarcaIPUSP.html`, `GradipMarcaUSP.html` | Marcas para os dois temas; USP branca incorporada, IPUSP vazado e nomes acessíveis. |
 | `PainelAjuda.html`, `PainelAjudaEstilos.html`, `PainelAjudaUI.html` | Conteúdo, estilos e interação da Central de Ajuda/FAQ. |
 
-## Configuração necessária antes de usar esta cópia
+## Configuração antes de usar esta cópia
 
-No **mesmo projeto Apps Script** em que for instalar esta fonte, abra **Configurações do projeto → Propriedades do script** e cadastre a propriedade `PERIODOS_SPREADSHEET_ID` com o ID da planilha de períodos autorizado para aquele ambiente. Use o valor no ambiente Apps Script; não o inclua em commit, arquivo de exemplo preenchido, issue, screenshot ou log. O valor não é fornecido neste repositório.
+No projeto Apps Script alvo, em **Configurações do projeto → Propriedades do script**, cadastre `ID_INDEX_SPREADSHEET_ID` com o ID da planilha mestre chamada `ID_INDEX`. O valor fica apenas na configuração do Apps Script; não o envie para esta documentação, código, issues ou logs. A identidade de execução do Web App precisa ter permissão para ler essa planilha e a planilha indicada por `PERIODOS`. Esta implementação usa `SpreadsheetApp` e não introduz `DriveApp`.
 
-`Codigo.gs` lê essa propriedade na inicialização. **Se ela estiver ausente, o script falha antes de exibir o painel.** Esta guarda evita que o mecanismo de tolerância a falhas do pacote original indique todos os formulários como abertos por uma simples falta de configuração. Com a propriedade válida, a lógica de disponibilidade é a mesma do pacote aceito. A planilha deve conservar a estrutura esperada na primeira aba e as permissões necessárias para a identidade de execução do Web App.
+O backend lê a **primeira aba** de `ID_INDEX`: A = `Chave`, B = `Tipo`, C = `ID de Produção`. Exige exatamente uma linha com A = `PERIODOS` e B = `spreadsheet`; usa C para abrir a planilha de períodos. A coluna D (`Homologação`) nunca é usada. Se faltar a configuração, a chave, o tipo ou o ID de produção, a consulta falha antes da lógica original de tolerância a falhas, sem apresentar todos os cards como abertos por um erro no índice.
 
-Para atualizar uma implantação existente, crie os nove arquivos com os nomes acima no **nível raiz** do projeto Apps Script (o `include_` usa os nomes sem o prefixo `src/`), configure a propriedade, teste no ambiente de desenvolvimento e crie uma **nova versão na implantação existente**. Confirme no `/exec` a leitura dos períodos, os sete destinos, busca, Ajuda, AccountChooser, loading, as duas marcas e os três modos de tema antes de trocar a versão em uso. Copiar o Git não publica o Web App.
+Para instalar os nove arquivos, coloque-os no **nível raiz** do projeto Apps Script (o `include_` usa nomes sem o prefixo `src/`), configure a propriedade, confirme o modelo `executeAs` e teste no ambiente de desenvolvimento. Depois crie uma **nova versão da implantação existente**, mantendo a URL `/exec`. Confira a leitura dos períodos, os sete destinos, busca, Ajuda, AccountChooser, loading, marcas e três modos de tema. Um commit no Git não atualiza o Apps Script. O código do repositório é uma proposta de integração ao índice, não uma nova implantação homologada.
 
 ## Decisão sobre URLs
 
