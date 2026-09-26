@@ -15,7 +15,7 @@
      HTML — a lista inteira é renderizada a partir daqui.
   2) Se o formulário tiver período de abertura (não for
      contínuo o ano todo), adicione também uma linha na
-     planilha de Períodos (ver PERIODOS_SPREADSHEET_ID)
+     planilha de Períodos (chave PERIODOS na planilha ID_INDEX)
      com o MESMO texto em "identificacaoPeriodos" na
      coluna A dessa linha.
   3) Se o formulário tiver MAIS DE UM período independente
@@ -227,8 +227,34 @@ function obterCategoriasParaFrontend_() {
     K: Horário de fechamento no 2º semestre
 =====================================================*/
 
-const PERIODOS_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty("PERIODOS_SPREADSHEET_ID");
-if (!PERIODOS_SPREADSHEET_ID) throw new Error("Configuração obrigatória ausente: PERIODOS_SPREADSHEET_ID");
+// O ID da planilha mestre ID_INDEX fica em Script Properties, fora do Git.
+// A coluna A contém a chave estável, B o tipo e C o ID de produção.
+// A coluna D é reservada à homologação e nunca é usada por este painel.
+function obterIdPeriodos_() {
+  const indexId = PropertiesService.getScriptProperties().getProperty("ID_INDEX_SPREADSHEET_ID");
+  if (!indexId) throw new Error("Configuração obrigatória ausente: ID_INDEX_SPREADSHEET_ID.");
+  const index = SpreadsheetApp.openById(indexId);
+  const aba = index.getSheets()[0];
+  if (!aba || aba.getLastRow() < 2) throw new Error("A planilha ID_INDEX está vazia ou sem aba de dados.");
+
+  const cabecalho = aba.getRange(1, 1, 1, 3).getDisplayValues()[0].map(valor => String(valor).trim());
+  if (cabecalho[0] !== "Chave" || cabecalho[1] !== "Tipo" || cabecalho[2] !== "ID de Produção") {
+    throw new Error("As colunas A–C da planilha ID_INDEX não correspondem ao formato esperado.");
+  }
+
+  const linhas = aba.getRange(2, 1, aba.getLastRow() - 1, 3).getDisplayValues();
+  let idPeriodos = null;
+  linhas.forEach(linha => {
+    if (String(linha[0]).trim() !== "PERIODOS") return;
+    if (idPeriodos !== null) throw new Error("A chave PERIODOS está duplicada na planilha ID_INDEX.");
+    if (String(linha[1]).trim() !== "spreadsheet") throw new Error("A chave PERIODOS deve ter o tipo spreadsheet.");
+    idPeriodos = String(linha[2]).trim();
+    if (!idPeriodos) throw new Error("A chave PERIODOS está sem ID de Produção na planilha ID_INDEX.");
+  });
+
+  if (idPeriodos === null) throw new Error("A chave PERIODOS não foi encontrada na planilha ID_INDEX.");
+  return idPeriodos;
+}
 // Em vez de depender do nome exato de uma aba (que já causou
 // problema — a aba se chama diferente do que o código esperava),
 // usamos sempre a PRIMEIRA aba da planilha, igual ao script do
@@ -412,10 +438,12 @@ function normalizarNome_(texto) {
 function obterStatusPorNome_() {
 
   const mapa = {};
+  // Erros no índice são de configuração: não cair no fail-open abaixo.
+  const periodosId = obterIdPeriodos_();
 
   try {
 
-    const planilha = SpreadsheetApp.openById(PERIODOS_SPREADSHEET_ID);
+    const planilha = SpreadsheetApp.openById(periodosId);
     const aba = obterAbaPeriodos_(planilha);
 
     if (!aba) {
@@ -577,7 +605,7 @@ function formatarOrdenavelParaExibicao_(carimboOrdenavel) {
 =====================================================*/
 function diagnosticarPeriodos() {
 
-  const planilha = SpreadsheetApp.openById(PERIODOS_SPREADSHEET_ID);
+  const planilha = SpreadsheetApp.openById(obterIdPeriodos_());
   const aba = obterAbaPeriodos_(planilha);
 
   Logger.log("=== Linhas cruas da planilha de Períodos (coluna A) ===");

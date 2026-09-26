@@ -39,6 +39,6 @@ Sistemas pequenos podem concentrar tudo no `README.md`, mas a seção de dados/s
 
 ## Ordem prevista
 
-1. painel/dashboard do aluno — documentação e código da v1.2 incorporados, com ID da planilha em Script Properties;
+1. painel/dashboard do aluno — documentação e código da v1.2 incorporados, com o ID do índice mestre em Script Properties e a chave `PERIODOS` para a planilha de períodos;
 2. painéis internos da equipe;
 3. formulários vinculados, um de cada vez.

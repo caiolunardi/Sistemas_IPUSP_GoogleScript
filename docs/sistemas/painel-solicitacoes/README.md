@@ -1,6 +1,6 @@
 # Painel de Solicitações — alunos
 
-**Versão da interface:** GRADIP UI v1.2, aceita pelo responsável funcional em 25/09/2026 após conferência visual no Web App `/exec`. O [código Apps Script](../../../sistemas/painel-solicitacoes/README.md) agora está versionado, com a única adaptação de configuração descrita abaixo. O GitHub não informa qual versão está implantada no Apps Script.
+**Versão da interface:** GRADIP UI v1.2, aceita pelo responsável funcional em 25/09/2026 após conferência visual no Web App `/exec`. O [código Apps Script](../../../sistemas/painel-solicitacoes/README.md) está versionado. A fonte Git agora resolve a planilha de períodos pela chave `PERIODOS` no índice mestre `ID_INDEX`; essa integração ainda não foi homologada no `/exec`. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 
@@ -24,6 +24,6 @@ Os nove arquivos em [`src/`](../../../sistemas/painel-solicitacoes/src) são `Co
 |---|---|
 | v1.1 | Tema GRADIP, ajuda e fluxos do painel; smoke funcional no `/exec`. Restaram miolos dos “p” preenchidos e USP azul sobre tarja branca no Escuro. |
 | v1.2 | `fill-rule:evenodd` nas duas variantes IPUSP; USP branca vetorial no Escuro e tarja removida; nome acessível da IPUSP escura corrigido. Aceita visualmente pelo responsável funcional. |
-| Fonte no Git | Mesmo pacote v1.2, exceto leitura de `PERIODOS_SPREADSHEET_ID` de Script Properties e guarda de ausência. Não representa nova implantação homologada. |
+| Fonte no Git | Oito HTMLs idênticos à v1.2; `Codigo.gs` consulta `ID_INDEX` pela chave `PERIODOS`. Exige `ID_INDEX_SPREADSHEET_ID` nas Propriedades do script. Não representa nova implantação homologada. |
 
 No pacote original v1.2, `Codigo.gs`, os três arquivos da Ajuda e os dois do tema eram byte-idênticos à v1.1; o bloco JavaScript funcional de `Painel.html` também era idêntico. Consulte [HOMOLOGACAO.md](HOMOLOGACAO.md) para os hashes e [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md) para limites da revisão de segurança.

@@ -23,7 +23,7 @@ A diretriz é técnica e alinhada à LGPD/estrutura da USP; não substitui a Pol
 
 ## 4. Sistemas específicos — incorporação gradual
 
-Pasta `sistemas/`. O [Painel de Solicitações dos alunos](sistemas/painel-solicitacoes/README.md) possui documentação da UI v1.2 aceita em 25/09/2026 e [fonte Apps Script](../sistemas/painel-solicitacoes/README.md) sem o ID literal da planilha. A configuração da implantação e dos formulários vinculados ainda requer validação específica. Os próximos sistemas serão incorporados gradualmente.
+Pasta `sistemas/`. O [Painel de Solicitações dos alunos](sistemas/painel-solicitacoes/README.md) possui documentação da UI v1.2 aceita em 25/09/2026 e [fonte Apps Script](../sistemas/painel-solicitacoes/README.md) que lê a chave `PERIODOS` no índice mestre `ID_INDEX`, sem IDs literais de planilhas. A configuração da implantação e dos formulários vinculados ainda requer validação específica. Os próximos sistemas serão incorporados gradualmente.
 
 Ordem planejada:
 1. painel/dashboard do aluno;

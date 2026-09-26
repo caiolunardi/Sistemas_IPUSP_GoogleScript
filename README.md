@@ -46,7 +46,7 @@ Base reutilizável:
 
 A documentação comum fica em `docs/` e os componentes reutilizáveis em `shared/`. Sistemas específicos serão incorporados gradualmente e terão documentação própria, sem misturar regras particulares com diretrizes universais.
 
-Consulte `docs/README.md` para o mapa completo. O [Painel de Solicitações dos alunos v1.2](sistemas/painel-solicitacoes/README.md) já possui fonte Apps Script versionada com o ID da planilha fora do código e documentação de homologação.
+Consulte `docs/README.md` para o mapa completo. O [Painel de Solicitações dos alunos v1.2](sistemas/painel-solicitacoes/README.md) já possui fonte Apps Script versionada, com a planilha de períodos resolvida pela chave `PERIODOS` no índice mestre `ID_INDEX`, e documentação de homologação.
 
 Cada sistema poderá ter sua própria pasta conforme for incorporado ao repositório, por exemplo:
 
