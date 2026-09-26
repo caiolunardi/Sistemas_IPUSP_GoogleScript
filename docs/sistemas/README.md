@@ -33,8 +33,12 @@ sistemas/
 
 Sistemas pequenos podem concentrar tudo no `README.md`, mas a seção de dados/segurança continua obrigatória quando houver tratamento de dados ou configuração de produção. Diretrizes universais de visual, ajuda e segurança permanecem em `docs/` e não devem ser duplicadas.
 
+## Sistemas documentados
+
+- [Painel de Solicitações dos alunos v1.2](painel-solicitacoes/README.md) — interface aceita em 25/09/2026; [evidências e limites](painel-solicitacoes/HOMOLOGACAO.md); [preflight do código pendente](painel-solicitacoes/DADOS_E_SEGURANCA.md).
+
 ## Ordem prevista
 
-1. painel/dashboard do aluno;
+1. painel/dashboard do aluno — documentação da v1.2 incorporada; código aguardando preflight;
 2. painéis internos da equipe;
 3. formulários vinculados, um de cada vez.
