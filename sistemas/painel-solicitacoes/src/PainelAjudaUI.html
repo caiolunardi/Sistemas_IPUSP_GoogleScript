@@ -1,0 +1,325 @@
+<script>
+/*=====================================================
+  CENTRAL DE AJUDA — comportamento.
+
+  Namespace exclusivo (painelAjuda... / PAINEL_AJUDA_...) pra nunca
+  colidir com nada do Painel principal. Este arquivo NÃO declara
+  window.onload — o carregamento dos formulários continua sendo
+  responsabilidade exclusiva do script principal em Painel.html; a
+  Central só é ligada por uma chamada direta (painelAjudaIniciar) no
+  fim deste arquivo, porque quando ele é incluído o HTML da Central
+  (PainelAjuda.html) e o cabeçalho (com o botão Ajuda) já existem no
+  documento.
+
+  Conteúdo em si (textos, perguntas, cards) mora inteiramente em
+  PainelAjuda.html, já como HTML estático — este arquivo só alterna
+  atributos (hidden, aria-expanded) em cima do que já existe. Nenhuma
+  chamada a google.script.run, nenhuma leitura de planilha.
+=====================================================*/
+
+const PAINEL_AJUDA_SECOES = [
+  "comece-aqui", "qual-formulario", "categorias", "prazos",
+  "conta-usp", "intercambistas", "trancamento-exclusao",
+  "problemas", "faq", "sobre"
+];
+
+let painelAjudaElementoAnterior = null; // foco de antes de abrir, restaurado ao fechar
+let painelAjudaOverflowAnterior = ""; // document.body.style.overflow de antes de abrir, restaurado ao fechar
+
+// Normalização só pra BUSCA DA AJUDA (minúsculas + sem acento) —
+// mecanismo independente do normalizarTextoBusca do Painel principal
+// e do normalizarNome_ do backend. Os três resolvem o mesmo tipo de
+// problema (acento/maiúscula atrapalhando comparação de texto) cada
+// um na sua própria camada, sem compartilhar código entre si.
+function painelAjudaNormalizar(texto) {
+  return String(texto || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+//-----------------------------------
+// Abrir / fechar
+//-----------------------------------
+
+function painelAjudaAbrir() {
+
+  painelAjudaElementoAnterior = document.activeElement;
+
+  document.getElementById("painelAjudaBusca").value = "";
+  painelAjudaMostrarHome();
+
+  const overlay = document.getElementById("painelAjudaOverlay");
+  overlay.hidden = false;
+  overlay.classList.add("painelAjudaAberta");
+
+  // Trava o scroll da página por trás da Central enquanto ela está
+  // aberta — guarda o valor anterior pra restaurar exatamente ao
+  // fechar (nunca zera direto, senão perderíamos um overflow que já
+  // estivesse setado por outro motivo).
+  painelAjudaOverflowAnterior = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+
+  document.addEventListener("keydown", painelAjudaAoTeclar);
+
+  const fechar = document.getElementById("painelAjudaFechar");
+  if (fechar) fechar.focus();
+
+}
+
+function painelAjudaFechar() {
+
+  const overlay = document.getElementById("painelAjudaOverlay");
+  overlay.classList.remove("painelAjudaAberta");
+  overlay.hidden = true;
+
+  document.body.style.overflow = painelAjudaOverflowAnterior;
+
+  document.removeEventListener("keydown", painelAjudaAoTeclar);
+
+  if (painelAjudaElementoAnterior && typeof painelAjudaElementoAnterior.focus === "function") {
+    painelAjudaElementoAnterior.focus();
+  }
+  painelAjudaElementoAnterior = null;
+
+}
+
+// Usado pelos atalhos contextuais que ficam FORA da Central (o aviso
+// de login e o texto acima da lista de formulários, no Painel.html) —
+// eles precisam abrir a Central e já navegar direto pra seção certa.
+function painelAjudaAbrirEIrPara(secaoId) {
+  painelAjudaAbrir();
+  painelAjudaIrPara(secaoId);
+}
+
+//-----------------------------------
+// Navegação entre Home e seções (fora do modo de busca)
+//-----------------------------------
+
+function painelAjudaMostrarHome() {
+
+  document.getElementById("painelAjudaHome").hidden = false;
+  document.getElementById("painelAjudaVoltar").hidden = true;
+  document.getElementById("painelAjudaSemResultado").hidden = true;
+
+  PAINEL_AJUDA_SECOES.forEach(id => {
+    document.getElementById("painelAjudaSecao-" + id).hidden = true;
+  });
+
+  document.getElementById("painelAjudaTituloModal").textContent = "Central de Ajuda";
+  document.getElementById("painelAjudaCorpo").scrollTop = 0;
+
+}
+
+function painelAjudaIrPara(secaoId) {
+
+  const secao = document.getElementById("painelAjudaSecao-" + secaoId);
+  if (!secao) return;
+
+  document.getElementById("painelAjudaBusca").value = "";
+
+  document.getElementById("painelAjudaHome").hidden = true;
+  document.getElementById("painelAjudaSemResultado").hidden = true;
+
+  PAINEL_AJUDA_SECOES.forEach(id => {
+    document.getElementById("painelAjudaSecao-" + id).hidden = (id !== secaoId);
+  });
+
+  // Ao entrar numa seção fora do modo de busca, qualquer filtro de
+  // busca anterior sobre os itens (FAQ/problemas) dessa seção é
+  // desfeito — todos voltam a aparecer.
+  secao.querySelectorAll("[data-busca-item]").forEach(item => { item.hidden = false; });
+
+  document.getElementById("painelAjudaVoltar").hidden = false;
+
+  const tituloSecao = secao.querySelector("h3");
+  document.getElementById("painelAjudaTituloModal").textContent = tituloSecao ? tituloSecao.textContent : "Central de Ajuda";
+
+  document.getElementById("painelAjudaCorpo").scrollTop = 0;
+
+}
+
+//-----------------------------------
+// Busca dentro da Ajuda — varre o conteúdo ESTÁTICO já existente no
+// DOM (nunca cria HTML novo) e alterna "hidden" conforme o atributo
+// data-busca de cada item/seção contém o termo digitado. Seções sem
+// itens (data-busca-item) são filtradas inteiras; seções com itens
+// (FAQ, Problemas comuns, Qual formulário usar) são filtradas por
+// item — a seção some inteira só se nenhum item dela bater.
+//-----------------------------------
+
+function painelAjudaAplicarBusca() {
+
+  const termoBruto = document.getElementById("painelAjudaBusca").value.trim();
+
+  if (!termoBruto) {
+    painelAjudaMostrarHome();
+    return;
+  }
+
+  const termo = painelAjudaNormalizar(termoBruto);
+
+  document.getElementById("painelAjudaHome").hidden = true;
+  document.getElementById("painelAjudaVoltar").hidden = false;
+  document.getElementById("painelAjudaTituloModal").textContent = "Resultados da busca";
+
+  let algumResultado = false;
+
+  PAINEL_AJUDA_SECOES.forEach(id => {
+
+    const secao = document.getElementById("painelAjudaSecao-" + id);
+    const itens = secao.querySelectorAll("[data-busca-item]");
+
+    if (itens.length > 0) {
+
+      let algumItemVisivel = false;
+      itens.forEach(item => {
+        // Soma data-busca (palavras-chave extras) + textContent (tudo
+        // que o aluno já vê na tela), em vez de usar só um OU o outro —
+        // assim um termo visível no texto real é encontrado mesmo
+        // quando o item também tem data-busca preenchido com outras
+        // palavras.
+        const alvo = painelAjudaNormalizar(
+          (item.getAttribute("data-busca") || "") + " " + (item.textContent || "")
+        );
+        const bate = alvo.includes(termo);
+        item.hidden = !bate;
+        if (bate) algumItemVisivel = true;
+      });
+
+      secao.hidden = !algumItemVisivel;
+      if (algumItemVisivel) algumResultado = true;
+
+    } else {
+
+      const alvo = painelAjudaNormalizar(
+        (secao.getAttribute("data-busca") || "") + " " + (secao.textContent || "")
+      );
+      const bate = alvo.includes(termo);
+      secao.hidden = !bate;
+      if (bate) algumResultado = true;
+
+    }
+
+  });
+
+  document.getElementById("painelAjudaSemResultado").hidden = algumResultado;
+  document.getElementById("painelAjudaCorpo").scrollTop = 0;
+
+}
+
+//-----------------------------------
+// Cliques dentro do corpo da Central — um único listener delegado
+// (em vez de um handler por botão) cobre tanto os atalhos/menu da
+// Home (data-ir-para) quanto as perguntas da FAQ.
+//-----------------------------------
+
+function painelAjudaAoClicarNoCorpo(evento) {
+
+  const botaoFaq = evento.target.closest(".painelAjudaFaqPergunta");
+  if (botaoFaq) {
+    painelAjudaAlternarFaq(botaoFaq);
+    return;
+  }
+
+  const botaoIr = evento.target.closest("[data-ir-para]");
+  if (botaoIr) {
+    painelAjudaIrPara(botaoIr.getAttribute("data-ir-para"));
+  }
+
+}
+
+function painelAjudaAlternarFaq(botao) {
+  const aberto = botao.getAttribute("aria-expanded") === "true";
+  const resposta = document.getElementById(botao.getAttribute("aria-controls"));
+  botao.setAttribute("aria-expanded", aberto ? "false" : "true");
+  if (resposta) resposta.hidden = aberto;
+}
+
+//-----------------------------------
+// Teclado: ESC fecha a Central; Tab fica preso dentro do modal
+// (focus trap) enquanto ela estiver aberta.
+//-----------------------------------
+
+function painelAjudaElementosFocaveis() {
+  const modal = document.getElementById("painelAjudaModal");
+  const candidatos = modal.querySelectorAll("button, input, [tabindex]");
+  return Array.from(candidatos).filter(el =>
+    !el.disabled && el.tabIndex !== -1 && el.offsetParent !== null
+  );
+}
+
+function painelAjudaAoTeclar(evento) {
+
+  if (evento.key === "Escape") {
+    painelAjudaFechar();
+    return;
+  }
+
+  if (evento.key !== "Tab") return;
+
+  const focaveis = painelAjudaElementosFocaveis();
+  if (focaveis.length === 0) return;
+
+  const primeiro = focaveis[0];
+  const ultimo = focaveis[focaveis.length - 1];
+
+  if (evento.shiftKey && document.activeElement === primeiro) {
+    evento.preventDefault();
+    ultimo.focus();
+  } else if (!evento.shiftKey && document.activeElement === ultimo) {
+    evento.preventDefault();
+    primeiro.focus();
+  }
+
+}
+
+//-----------------------------------
+// Ligações iniciais
+//-----------------------------------
+
+function painelAjudaIniciar() {
+
+  const botaoHeader = document.getElementById("botaoAjuda");
+  if (botaoHeader) botaoHeader.addEventListener("click", painelAjudaAbrir);
+
+  // Atalhos contextuais que ficam FORA da Central, no corpo do Painel
+  // (aviso de login e texto acima da lista de formulários).
+  document.querySelectorAll("[data-abrir-ajuda-secao]").forEach(botao => {
+    botao.addEventListener("click", () => {
+      painelAjudaAbrirEIrPara(botao.getAttribute("data-abrir-ajuda-secao"));
+    });
+  });
+
+  const fechar = document.getElementById("painelAjudaFechar");
+  if (fechar) fechar.addEventListener("click", painelAjudaFechar);
+
+  const voltar = document.getElementById("painelAjudaVoltar");
+  if (voltar) {
+    voltar.addEventListener("click", () => {
+      document.getElementById("painelAjudaBusca").value = "";
+      painelAjudaMostrarHome();
+    });
+  }
+
+  const overlay = document.getElementById("painelAjudaOverlay");
+  if (overlay) {
+    overlay.addEventListener("click", evento => {
+      if (evento.target === overlay) painelAjudaFechar();
+    });
+  }
+
+  const busca = document.getElementById("painelAjudaBusca");
+  if (busca) busca.addEventListener("input", painelAjudaAplicarBusca);
+
+  const corpo = document.getElementById("painelAjudaCorpo");
+  if (corpo) corpo.addEventListener("click", painelAjudaAoClicarNoCorpo);
+
+}
+
+// Chamada direta (não depende de window.onload nem de
+// DOMContentLoaded): no momento em que este <script> é executado, o
+// HTML da Central e o cabeçalho do Painel já existem no documento,
+// porque PainelAjudaUI é incluído depois de ambos.
+painelAjudaIniciar();
+
+</script>

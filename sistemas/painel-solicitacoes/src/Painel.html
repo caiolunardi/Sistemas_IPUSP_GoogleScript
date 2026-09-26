@@ -1,0 +1,1149 @@
+<base target="_top">
+
+<!-- GRADIP UI — tema (Light/Dark/Sistema). Incluído o mais cedo
+     possível, antes de qualquer <style> que consuma var(--gradip-...),
+     e antes de window.onload/google.script.run: o tema é 100%
+     client-side e não depende dos dados carregados pelo Painel. Isso
+     minimiza o "flash" de tema errado ao carregar a página. -->
+<?!= include_('GradipTema') ?>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
+}
+
+#headerSistema{
+    background:var(--gradip-header-bg);
+    height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid var(--gradip-border);
+    gap:12px;
+}
+
+.logoEsquerda{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    min-width:0;
+}
+
+.logoEsquerda img,
+.logoEsquerda .marcaIpuspSvg{
+    height:52px;
+    flex:0 0 auto;
+}
+
+.textoHeaderEsquerda{
+    min-width:0;
+}
+
+.logoUSP{
+    height:44px;
+    width:auto;
+    flex:0 0 auto;
+}
+
+/* HISTÓRICO (v1.1): a marca USP só existia como PNG azul institucional,
+   reaproveitado nos dois temas. Em Dark Mode isso exigia uma pequena
+   superfície clara atrás dela (.logoUSPWrap com background:#ffffff só
+   em Dark) só para não perder contraste/legibilidade contra o fundo
+   escuro do header — a imagem em si nunca foi alterada, só o que
+   existia atrás dela.
+   CORREÇÃO v1.2: a marca USP branca institucional (vetor oficial,
+   incorporado localmente ao projeto — ver GradipMarcaUSP.html) agora
+   substitui essa solução em Dark Mode. Ela já nasce branca sobre fundo
+   transparente, então a "tarja"/superfície clara deixou de ser
+   necessária e foi removida: nos dois temas .logoUSPWrap agora fica
+   sempre transparente (Light continua com o PNG azul, idêntico a
+   antes; Dark mostra o SVG branco direto sobre o header escuro). Só o
+   background muda de comportamento — display/align-items/flex/padding/
+   border-radius abaixo são os MESMOS de antes, propositalmente, pra
+   não deslocar nada no layout nem mudar a área ocupada pelo bloco. */
+.logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+    padding:4px 6px;
+    border-radius:6px;
+    background:transparent;
+}
+
+.headerDireita{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+}
+
+.botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+    box-sizing:border-box;
+}
+
+.botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+}
+
+.botaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.tituloSistema{
+    font-size:17px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.subtituloSistema{
+    font-size:13px;
+    color:var(--gradip-text-muted);
+    margin-top:2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.barraAzul{
+    height:6px;
+    background:var(--gradip-header-accent);
+}
+
+.avisoLogin{
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    border-radius:8px;
+    padding:13px 18px;
+    margin-bottom:22px;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:13.5px;
+    color:var(--gradip-text);
+}
+
+.avisoLogin .iconeAviso{
+    font-size:16px;
+    line-height:1.4;
+    flex:0 0 auto;
+}
+
+.avisoLogin strong{
+    color:var(--gradip-warning);
+}
+
+.ajudaContextualLinha{
+    margin-top:8px;
+}
+
+.linkAjudaContextual{
+    display:inline-block;
+    background:none;
+    border:none;
+    /* Padding + margem negativa iguais: aumenta a área realmente
+       clicável (alvo de toque) pra perto de 44px de altura sem mudar
+       a posição visual do texto no layout — o texto fica exatamente
+       onde estava, só a área ao redor dele passa a responder ao toque. */
+    padding:15px 4px;
+    margin:-15px -4px;
+    font:inherit;
+    font-size:12.5px;
+    font-weight:bold;
+    text-decoration:underline;
+    cursor:pointer;
+    color:var(--gradip-link);
+}
+
+.linkAjudaContextual:hover{
+    color:var(--gradip-link-hover);
+}
+
+#conteudo{
+    max-width:900px;
+    margin:36px auto;
+    padding:0 20px;
+}
+
+.cardResumo{
+    margin-bottom:22px;
+}
+
+.cardResumo h1{
+    font-size:20px;
+    margin:0;
+    color:var(--gradip-text);
+}
+
+.cardResumo p{
+    margin:6px 0 0 0;
+    font-size:14px;
+    color:var(--gradip-text-muted);
+}
+
+.cardResumo .linkAjudaContextual{
+    margin-top:10px;
+}
+
+.caixaBusca{
+    width:100%;
+    padding:11px 14px;
+    /* CORREÇÃO v1.1 (bordas de controles interativos): --gradip-border
+       (usada nos separadores/cards decorativos) tem só ~1.4:1 contra o
+       fundo do input — insuficiente pra marcar o limite de um campo de
+       busca. --gradip-border-strong é o token já dedicado a controles
+       (já usado no <select> de tema), então a caixa de busca passa a
+       consumi-lo também, em vez de introduzir um token novo. Ver
+       GradipTema.html para o ajuste de valor desse token (necessário
+       pra ele próprio alcançar 3:1) e o relatório desta rodada para a
+       medição completa. */
+    border:1px solid var(--gradip-border-strong);
+    border-radius:6px;
+    font-size:14px;
+    box-sizing:border-box;
+    margin-bottom:18px;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+    font-family:inherit;
+}
+
+.caixaBusca::placeholder{
+    /* CORREÇÃO v1.1 (placeholder): --gradip-input-placeholder mede
+       ~3.87:1 no Light contra o fundo do input, abaixo de 4.5:1 pra
+       texto. Correção LOCAL: usar var(--gradip-text-muted), token já
+       existente que atinge >=4.5:1 contra --gradip-input-bg nos dois
+       temas (medido nesta rodada) — sem alterar nenhum token
+       compartilhado do GradipTema.html. */
+    color:var(--gradip-text-muted);
+}
+
+.caixaBusca:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:1px;
+}
+
+.avisoEscolhaCategoria{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:13px;
+    padding:2px 4px 18px;
+}
+
+.categoriaSistemas{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    margin-bottom:12px;
+    overflow:hidden;
+}
+
+.cabecalhoCategoria{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px 18px;
+    background:var(--gradip-surface);
+    border:none;
+    cursor:pointer;
+    text-align:left;
+    font:inherit;
+    color:inherit;
+    box-sizing:border-box;
+}
+
+.cabecalhoCategoria:hover{
+    background:var(--gradip-surface-2);
+}
+
+.cabecalhoCategoria:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:-2px;
+}
+
+.iconeCategoria{
+    font-size:24px;
+    flex:0 0 auto;
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--gradip-info-bg);
+    border-radius:10px;
+}
+
+.textoCategoria{
+    flex:1;
+    min-width:0;
+    text-align:left;
+}
+
+.textoCategoria strong{
+    display:block;
+    font-size:15.5px;
+    color:var(--gradip-text);
+}
+
+.textoCategoria div{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    margin-top:3px;
+}
+
+.textoCategoriaEn{
+    font-size:11.5px;
+    color:var(--gradip-text-muted);
+    font-style:italic;
+    margin-top:2px !important;
+}
+
+.metaCategoria{
+    flex:0 0 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:3px;
+}
+
+.contadorCategoria{
+    font-size:11px;
+    color:var(--gradip-text-muted);
+    white-space:nowrap;
+}
+
+.verFormularios{
+    font-size:12.5px;
+    font-weight:bold;
+    color:var(--gradip-link);
+    display:flex;
+    align-items:center;
+    gap:4px;
+    white-space:nowrap;
+}
+
+.chevronCategoria{
+    display:inline-block;
+    transition:transform .15s;
+}
+
+.cabecalhoCategoria[aria-expanded="true"] .chevronCategoria{
+    transform:rotate(180deg);
+}
+
+.painelCategoria{
+    padding:0 18px 18px;
+    border-top:1px solid var(--gradip-border);
+    box-sizing:border-box;
+}
+
+.painelCategoria .listaSistemas{
+    margin-top:14px;
+}
+
+.listaSistemas{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.cardSistema{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    cursor:pointer;
+    transition:.15s;
+    box-shadow:var(--gradip-shadow);
+    text-decoration:none;
+    color:inherit;
+    width:100%;
+    box-sizing:border-box;
+}
+
+.cardSistema:hover{
+    border-color:var(--gradip-link);
+}
+
+/* CORREÇÃO v1.1 (card fechado — Correção 1): a v1 usava opacity:.5 em
+   Light (e .85 em Dark) sobre o CARD INTEIRO. Isso esmaecia texto e
+   badge junto com tudo o mais, e no Light o resultado media
+   ~2.07:1-3.06:1 — bem abaixo de 4.5:1 (auditoria independente pós-v1;
+   a própria RELATORIO_TEMA_GRADIP_PAINEL_SOLICITACOES.txt da v1 já
+   media e documentava esse número, mas o deixava sem correção). A
+   partir da v1.1 o card fechado NÃO aplica mais opacity a si mesmo:
+   título, descrição e badge permanecem exatamente nos mesmos tokens
+   de cor do card aberto, então herdam o mesmo contraste (>=4.5:1,
+   ver relatório desta rodada) nos dois temas — o estado nunca dependeu
+   só de cor, mas agora além do texto "Fechado" no badge, o card
+   fechado também fica visualmente diferenciado por: fundo
+   ligeiramente distinto (--gradip-surface-2, em vez de
+   --gradip-surface), ausência da seta "→" (a seta só existe pra
+   cards abertos, por comportamento já existente do script), sem
+   destaque de borda no hover (abaixo) e o selo do ícone esmaecido
+   (ver .iconeSistema logo adiante — só o glifo decorativo, nunca
+   texto, então sem exigência de contraste). Isso também unifica Light
+   e Dark num único mecanismo (a v1 tinha valores de opacity
+   DIFERENTES por tema, .5 e .85, que este comentário antigo já
+   descrevia como uma correção pontual só pro Dark). */
+.cardSistema.fechado{
+    cursor:default;
+    background:var(--gradip-surface-2);
+}
+
+.cardSistema.fechado .iconeSistema{
+    /* Só o selo do ícone (glifo decorativo, sem texto) recebe leve
+       esmaecimento — reforça "estado inativo" sem tocar em nenhum
+       texto/badge, que precisam permanecer em contraste normal. Troca
+       também o tom do selo de --gradip-info-bg (mesmo azul usado nos
+       cards abertos) para --gradip-disabled-bg, token do design
+       system já reservado pra estado desabilitado e que, até esta
+       rodada, não estava em uso em nenhum lugar da aplicação. */
+    background:var(--gradip-disabled-bg);
+    opacity:.6;
+}
+
+.cardSistema.fechado:hover{
+    border-color:var(--gradip-border);
+}
+
+.avisoReabertura{
+    font-size:11.5px;
+    color:var(--gradip-danger);
+    margin-top:4px;
+    font-weight:bold;
+}
+
+.iconeSistema{
+    font-size:26px;
+    flex:0 0 auto;
+    width:46px;
+    height:46px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--gradip-info-bg);
+    border-radius:10px;
+}
+
+.infoSistema{
+    flex:1;
+    min-width:0;
+    text-align:left;
+}
+
+.infoSistema strong{
+    display:block;
+    font-size:15px;
+    color:var(--gradip-text);
+}
+
+.infoSistema div{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    margin-top:3px;
+    white-space:pre-line;
+}
+
+.setaSistema{
+    font-size:18px;
+    color:var(--gradip-link);
+    flex:0 0 auto;
+}
+
+.badgeStatusForm{
+    font-size:10.5px;
+    font-weight:bold;
+    padding:4px 10px;
+    border-radius:12px;
+    white-space:nowrap;
+    flex:0 0 auto;
+}
+
+.badgeStatusForm.aberto{
+    background:var(--gradip-success-bg);
+    color:var(--gradip-success);
+}
+
+.badgeStatusForm.fechado{
+    background:var(--gradip-danger-bg);
+    color:var(--gradip-danger);
+}
+
+.vazio{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    padding:60px 20px;
+    font-size:14px;
+}
+
+.vazioDica{
+    /* CORREÇÃO v1.1 (Correção 3): opacity:.8 removida — misturada com
+       --gradip-text-muted ela reduzia o contraste efetivo pra ~3.38:1
+       no Light (abaixo de 4.5:1; gap da própria auditoria de contraste
+       da v1, que mediu o token puro sem aplicar essa opacity real).
+       Sem a opacity, o token muted sozinho já mede >=4.5:1 nos dois
+       temas contra o fundo onde este texto aparece — não é preciso
+       nenhum token novo. */
+    color:var(--gradip-text-muted);
+    font-size:12.5px;
+    margin-top:6px;
+}
+
+.painelCategoria .vazio{
+    padding:18px 4px;
+    font-size:13px;
+}
+
+/*=================================
+        LOADING
+==================================*/
+
+#loadingOverlay{
+    display:none;
+    position:fixed;
+    z-index:10000;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:var(--gradip-overlay);
+    align-items:center;
+    justify-content:center;
+}
+
+#loadingBox{
+    background:var(--gradip-surface-elevated);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:30px 40px;
+    text-align:center;
+}
+
+#loadingLogoWrap{
+    display:block;
+}
+
+#loadingLogoWrap .marcaIpuspSvg{
+    height:46px;
+    margin-bottom:12px;
+}
+
+#loadingTitulo{
+    font-weight:bold;
+    color:var(--gradip-text);
+    font-size:15px;
+}
+
+#loadingTexto{
+    color:var(--gradip-text-muted);
+    font-size:12px;
+    margin-top:4px;
+}
+
+/*=================================
+        RESPONSIVO — TELAS ESTREITAS
+==================================*/
+
+@media (max-width:480px){
+    /* CORREÇÃO v1.1 (Correção 5 — header mobile): a v1 mantinha o
+       header numa única faixa de altura fixa (72px, herdada do
+       desktop) mesmo em telas estreitas. Sem overflow horizontal, mas
+       o título "Painel de Solicitações" e o subtítulo ficavam
+       truncados cedo demais (title-overflow:ellipsis + espaço
+       insuficiente), a ponto de o título virar praticamente "P...".
+       A partir de <=480px o header passa a ocupar DUAS faixas
+       (flex-wrap): a marca IPUSP + título/subtítulo na primeira linha
+       inteira, e o controle de tema + Ajuda + logo USP na segunda —
+       cada bloco (.logoEsquerda/.headerDireita) força a própria
+       quebra de linha ao assumir 100% da largura. A altura fixa dá
+       lugar a "auto" só nesta faixa (o desktop continua com
+       height:72px, essa regra de altura não é tocada fora deste
+       media query). Título e subtítulo deixam de truncar em uma
+       linha (white-space:normal) e passam a quebrar texto
+       normalmente, então o texto completo continua legível, só que
+       eventualmente em mais de uma linha. */
+    #headerSistema{
+        height:auto;
+        flex-wrap:wrap;
+        padding:10px 12px;
+        gap:8px;
+        row-gap:8px;
+    }
+    .logoEsquerda{
+        gap:8px;
+        flex:1 1 100%;
+        width:100%;
+    }
+    .logoEsquerda img,
+    .logoEsquerda .marcaIpuspSvg{
+        height:38px;
+    }
+    .logoUSP{
+        height:32px;
+    }
+    .logoUSPWrap{
+        padding:2px 3px;
+    }
+    .tituloSistema{
+        font-size:14px;
+        white-space:normal;
+        overflow:visible;
+        text-overflow:clip;
+    }
+    .subtituloSistema{
+        font-size:11px;
+        white-space:normal;
+        overflow:visible;
+        text-overflow:clip;
+    }
+    .headerDireita{
+        gap:6px;
+        flex:1 1 100%;
+        width:100%;
+    }
+    .botaoAjuda .textoAjuda{
+        display:none;
+    }
+    .botaoAjuda{
+        padding:8px;
+        border-radius:50%;
+    }
+    /* O controle de tema compartilhado (GradipTemaControle.html) já
+       esconde o próprio rótulo "Aparência" em <=480px (visualmente,
+       mantendo-o acessível a leitor de tela) — aqui só reduzimos o gap
+       externo pra caber ao lado do botão Ajuda e da logo USP sem
+       expulsar nada da viewport nem criar rolagem horizontal. */
+    .gradip-theme-control{
+        gap:0;
+    }
+    .gradip-theme-control__select{
+        padding:0 26px 0 8px;
+        font-size:12px;
+    }
+
+    /* Cards: em telas estreitas o layout de linha única (ícone + nome/
+       descrição + badge + seta, tudo lado a lado) pode estourar a
+       largura — principalmente o badge do Intercambistas, que chega a
+       ter frases como "Fechado para inclusão e exclusão de
+       disciplinas". Em vez de abreviar texto ou diminuir fonte, o
+       badge passa a ocupar uma linha própria (flex-basis:100% força o
+       quebra de linha no flex-wrap), enquanto ícone + nome/descrição +
+       seta continuam juntos na primeira linha, exatamente como no
+       desktop. */
+    .cardSistema{
+        flex-wrap:wrap;
+        row-gap:8px;
+    }
+    .iconeSistema{
+        order:1;
+    }
+    .infoSistema{
+        order:2;
+        flex:1 1 140px;
+    }
+    .setaSistema{
+        order:3;
+    }
+    .badgeStatusForm{
+        order:4;
+        flex:1 1 100%;
+        white-space:normal;
+        text-align:center;
+        line-height:1.4;
+    }
+}
+
+@media (max-width:420px){
+    .cabecalhoCategoria{
+        flex-wrap:wrap;
+        row-gap:8px;
+    }
+    .metaCategoria{
+        flex-basis:100%;
+        flex-direction:row;
+        align-items:center;
+        justify-content:space-between;
+        text-align:left;
+    }
+}
+
+</style>
+
+<?!= include_('PainelAjudaEstilos') ?>
+
+<header id="headerSistema">
+    <div class="logoEsquerda">
+        <?!= include_('GradipMarcaIPUSP') ?>
+        <div class="textoHeaderEsquerda">
+            <div class="tituloSistema">Painel de Solicitações</div>
+            <div class="subtituloSistema">Serviço de Graduação — Instituto de Psicologia</div>
+        </div>
+    </div>
+    <div class="headerDireita">
+        <?!= include_('GradipTemaControle') ?>
+        <button type="button" id="botaoAjuda" class="botaoAjuda" aria-haspopup="dialog" aria-label="Ajuda">
+            <span aria-hidden="true">❓</span>
+            <span class="textoAjuda">Ajuda</span>
+        </button>
+        <!-- .logoUSPWrap é só contêiner de layout (padding/border-radius/
+             background) — não leva role/aria-label próprio de propósito.
+             A acessibilidade da marca é resolvida DENTRO de
+             GradipMarcaUSP.html: cada variante (img clara / svg escura)
+             já carrega seu próprio nome acessível "Universidade de São
+             Paulo" (ver comentário nesse arquivo). Adicionar role="img"
+             + aria-label aqui duplicaria o nome acessível (wrapper +
+             variante visível anunciados como duas imagens em vez de
+             uma). -->
+        <span class="logoUSPWrap">
+            <?!= include_('GradipMarcaUSP') ?>
+        </span>
+    </div>
+</header>
+
+<div class="barraAzul"></div>
+
+<div id="conteudo">
+
+    <div class="avisoLogin">
+        <span class="iconeAviso">⚠️</span>
+        <div>
+            <strong>Atenção:</strong> antes de abrir qualquer formulário, confirme que você está logado no navegador com o seu e-mail <strong>@usp.br</strong>. Sem esse login, o formulário não vai identificar você corretamente e pode bloquear o envio da solicitação.
+            <div class="ajudaContextualLinha">
+                <button type="button" class="linkAjudaContextual" data-abrir-ajuda-secao="conta-usp">Problemas para acessar um formulário?</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="cardResumo">
+        <h1>Formulários disponíveis</h1>
+        <p>Selecione o formulário que você precisa preencher</p>
+        <button type="button" class="linkAjudaContextual" data-abrir-ajuda-secao="qual-formulario">Não sabe qual formulário escolher?</button>
+    </div>
+
+    <input type="text" class="caixaBusca" id="caixaBusca" placeholder="Buscar formulário..." oninput="filtrarSistemas()">
+
+    <div id="listaSistemasContainer"></div>
+
+</div>
+
+<!-- LOADING -->
+
+<div id="loadingOverlay">
+    <div id="loadingBox">
+        <div id="loadingLogoWrap"><?!= include_('GradipMarcaIPUSP') ?></div>
+        <div id="loadingTitulo">Painel de Solicitações</div>
+        <div id="loadingTexto">Carregando<span id="loadingPontos"></span></div>
+    </div>
+</div>
+
+<?!= include_('PainelAjuda') ?>
+
+<script>
+
+// Metadados das categorias (título, ícone, descrição, ordem) — única
+// fonte de verdade é CATEGORIAS_SISTEMAS em Codigo.gs. Isso NÃO é uma
+// chamada google.script.run: é lido direto do servidor no momento em
+// que a página é montada, via scriptlet do template (mesma técnica já
+// usada por include_ neste projeto), então não adiciona nenhuma
+// chamada assíncrona nova nem muda o contrato de obterSistemas().
+const CATEGORIAS_SISTEMAS = <?!= JSON.stringify(obterCategoriasParaFrontend_()) ?>;
+
+let sistemasCarregados = [];
+let categoriaAberta = null; // id da categoria aberta no modo normal (fora de busca)
+let loadingTimer;
+
+// Estado TEMPORÁRIO — só existe enquanto o aluno está buscando: quais
+// categorias (com resultado) ele recolheu manualmente. Nunca escreve
+// em categoriaAberta, e é zerado toda vez que a busca é limpa — assim
+// o Painel continua restaurando sozinho o estado normal (categoria
+// aberta/fechada de antes de buscar) exatamente como antes.
+let categoriasRecolhidasNaBusca = new Set();
+
+window.onload = function () {
+    mostrarLoading("Carregando sistemas");
+    google.script.run
+        .withSuccessHandler(receberSistemas)
+        .withFailureHandler(mostrarErro)
+        .obterSistemas();
+};
+
+function receberSistemas(sistemas) {
+    esconderLoading();
+    sistemasCarregados = sistemas || [];
+    renderizarPainel();
+}
+
+function filtrarSistemas() {
+    renderizarPainel();
+}
+
+// Normalização de texto só para a BUSCA do Painel (minúsculas + sem
+// acento) — mecanismo independente e completamente separado do
+// normalizarNome_ do backend (que casa formulário com linha da
+// planilha de Períodos). Aqui é só pra "colação" encontrar "colacao".
+function normalizarTextoBusca(texto) {
+    return String(texto || "")
+        .toLowerCase()
+        .normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+function sistemaCasaBusca(sistema, categoria, termoNormalizado) {
+    const alvo = normalizarTextoBusca(sistema.nome) + " " +
+                 normalizarTextoBusca(sistema.descricao || "") + " " +
+                 normalizarTextoBusca(categoria.titulo);
+    return alvo.includes(termoNormalizado);
+}
+
+// Clique no cabeçalho de uma categoria: alterna aberta/fechada no modo
+// normal (uma categoria aberta por vez — abrir uma fecha a anterior).
+// Durante busca os cabeçalhos não alternam: toda categoria com
+// resultado já aparece aberta, e como nunca escrevemos em
+// categoriaAberta nesse momento, ao limpar a busca o Painel volta
+// sozinho pro estado (aberto/fechado) de antes de buscar.
+function alternarCategoria(id) {
+    const termo = document.getElementById("caixaBusca").value.trim();
+    if (termo) return;
+    categoriaAberta = (categoriaAberta === id) ? null : id;
+    renderizarPainel();
+}
+
+// Equivalente a alternarCategoria, mas pro modo de busca: em vez de
+// mexer em categoriaAberta (que é o estado "normal", de fora da
+// busca), guarda só localmente quais categorias o aluno recolheu
+// enquanto o termo atual está ativo. Categoria com resultado começa
+// sempre aberta; clicar recolhe, clicar de novo reabre.
+function alternarCategoriaNaBusca(id) {
+    if (categoriasRecolhidasNaBusca.has(id)) {
+        categoriasRecolhidasNaBusca.delete(id);
+    } else {
+        categoriasRecolhidasNaBusca.add(id);
+    }
+    renderizarPainel();
+}
+
+// Ponto único de renderização: agrupa sistemasCarregados por categoria,
+// na ordem de CATEGORIAS_SISTEMAS, e desenha os accordions.
+function renderizarPainel() {
+
+    const termoBruto = document.getElementById("caixaBusca").value.trim();
+    const emBusca = termoBruto.length > 0;
+    const termoNormalizado = normalizarTextoBusca(termoBruto);
+
+    // Fora de busca, o recolhimento manual feito DURANTE uma busca não
+    // tem mais sentido — zera pra não vazar pra próxima busca nem pro
+    // estado normal (que é sempre regido só por categoriaAberta).
+    if (!emBusca) categoriasRecolhidasNaBusca.clear();
+
+    const container = document.getElementById("listaSistemasContainer");
+    container.innerHTML = "";
+
+    const grupos = CATEGORIAS_SISTEMAS.map(categoria => {
+        let sistemas = sistemasCarregados.filter(s => s.categoria === categoria.id);
+        if (emBusca) {
+            sistemas = sistemas.filter(s => sistemaCasaBusca(s, categoria, termoNormalizado));
+        }
+        return { categoria: categoria, sistemas: sistemas };
+    });
+
+    if (emBusca) {
+
+        const totalEncontrado = grupos.reduce((soma, g) => soma + g.sistemas.length, 0);
+
+        if (totalEncontrado === 0) {
+            const vazio = document.createElement("div");
+            vazio.className = "vazio";
+            vazio.textContent = "Nenhum formulário encontrado para essa busca.";
+            const dica = document.createElement("div");
+            dica.className = "vazioDica";
+            dica.textContent = "Tente outro termo ou consulte as categorias abaixo.";
+            vazio.appendChild(dica);
+            container.appendChild(vazio);
+            return;
+        }
+
+    } else {
+
+        const aviso = document.createElement("div");
+        aviso.className = "avisoEscolhaCategoria";
+        aviso.textContent = "Escolha uma categoria para ver os formulários.";
+        container.appendChild(aviso);
+
+    }
+
+    grupos.forEach(grupo => {
+        if (emBusca && grupo.sistemas.length === 0) return; // categoria sem resultado some durante a busca
+        // Durante busca, toda categoria com resultado começa aberta,
+        // exceto a que o aluno já recolheu manualmente nesta mesma
+        // busca. Fora de busca, segue exatamente como antes.
+        const expandida = emBusca
+            ? !categoriasRecolhidasNaBusca.has(grupo.categoria.id)
+            : (grupo.categoria.id === categoriaAberta);
+        container.appendChild(criarSecaoCategoria(grupo.categoria, grupo.sistemas, expandida, emBusca));
+    });
+
+}
+
+// Monta o accordion de UMA categoria: cabeçalho clicável (sempre um
+// <button type="button">, nunca uma div com onclick — necessário pra
+// abrir/recolher funcionar naturalmente com teclado) + painel
+// recolhível com os cards dessa categoria.
+function criarSecaoCategoria(categoria, sistemas, expandida, emBusca) {
+
+    const secao = document.createElement("div");
+    secao.className = "categoriaSistemas";
+
+    const idPainel = "categoria-painel-" + categoria.id;
+    const idCabecalho = "categoria-cabecalho-" + categoria.id;
+
+    const cabecalho = document.createElement("button");
+    cabecalho.type = "button";
+    cabecalho.id = idCabecalho;
+    cabecalho.className = "cabecalhoCategoria";
+    cabecalho.setAttribute("aria-expanded", expandida ? "true" : "false");
+    cabecalho.setAttribute("aria-controls", idPainel);
+    // O cabeçalho é sempre clicável — fora de busca alterna
+    // categoriaAberta (estado normal); durante busca alterna só o
+    // recolhimento local desta busca, sem tocar em categoriaAberta.
+    cabecalho.onclick = emBusca
+        ? () => alternarCategoriaNaBusca(categoria.id)
+        : () => alternarCategoria(categoria.id);
+
+    const icone = document.createElement("div");
+    icone.className = "iconeCategoria";
+    icone.setAttribute("aria-hidden", "true");
+    icone.textContent = categoria.icone || "📁";
+
+    const textos = document.createElement("div");
+    textos.className = "textoCategoria";
+
+    const tituloEl = document.createElement("strong");
+    tituloEl.textContent = categoria.titulo;
+    textos.appendChild(tituloEl);
+
+    if (categoria.descricao) {
+        const descEl = document.createElement("div");
+        descEl.textContent = categoria.descricao;
+        textos.appendChild(descEl);
+    }
+
+    // Segunda linha, em inglês, só quando a categoria a define
+    // (hoje só Intercambistas) — comportamento genérico, nada de
+    // "intercambistas" hardcoded aqui: qualquer categoria futura que
+    // ganhar descricaoEn no backend passa a exibir automaticamente.
+    if (categoria.descricaoEn) {
+        const descEnEl = document.createElement("div");
+        descEnEl.className = "textoCategoriaEn";
+        descEnEl.textContent = categoria.descricaoEn;
+        textos.appendChild(descEnEl);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "metaCategoria";
+
+    const contador = document.createElement("div");
+    contador.className = "contadorCategoria";
+    // Durante busca, o contador reflete a quantidade FILTRADA (o que
+    // realmente está sendo mostrado nesta categoria), não o total
+    // cadastrado nela — por isso usa sistemas.length (já filtrado por
+    // renderizarPainel), nunca uma recontagem sobre sistemasCarregados.
+    if (emBusca) {
+        contador.textContent = sistemas.length === 1 ? "1 resultado" : `${sistemas.length} resultados`;
+    } else {
+        contador.textContent = sistemas.length === 1 ? "1 formulário" : `${sistemas.length} formulários`;
+    }
+    meta.appendChild(contador);
+
+    const verFormularios = document.createElement("div");
+    verFormularios.className = "verFormularios";
+    const textoVer = document.createElement("span");
+    if (expandida) {
+        textoVer.textContent = "Recolher";
+    } else {
+        textoVer.textContent = emBusca ? "Ver resultados" : "Ver formulários";
+    }
+    const chevron = document.createElement("span");
+    chevron.className = "chevronCategoria";
+    chevron.textContent = "⌄";
+    chevron.setAttribute("aria-hidden", "true");
+    verFormularios.appendChild(textoVer);
+    verFormularios.appendChild(chevron);
+    meta.appendChild(verFormularios);
+
+    cabecalho.appendChild(icone);
+    cabecalho.appendChild(textos);
+    cabecalho.appendChild(meta);
+
+    const painel = document.createElement("div");
+    painel.className = "painelCategoria";
+    painel.id = idPainel;
+    painel.setAttribute("role", "region");
+    painel.setAttribute("aria-labelledby", idCabecalho);
+    if (!expandida) painel.hidden = true;
+
+    if (sistemas.length === 0) {
+        const vazioCategoria = document.createElement("div");
+        vazioCategoria.className = "vazio";
+        vazioCategoria.textContent = "Nenhum formulário nesta categoria no momento.";
+        painel.appendChild(vazioCategoria);
+    } else {
+        const lista = document.createElement("div");
+        lista.className = "listaSistemas";
+        sistemas.forEach(sistema => lista.appendChild(criarCardSistema(sistema)));
+        painel.appendChild(lista);
+    }
+
+    secao.appendChild(cabecalho);
+    secao.appendChild(painel);
+
+    return secao;
+
+}
+
+// Cada card é montado só com createElement/textContent — nome,
+// descrição e ícone vêm da configuração do backend (SISTEMAS), mas
+// seguimos o mesmo padrão de nunca inserir esses dados como HTML
+// bruto na página.
+function criarCardSistema(sistema) {
+
+    const aberto = sistema.aberto !== false; // undefined também conta como aberto (fail-open)
+
+    // Quando aberto, o card é um <a> de verdade que navega na
+    // MESMA aba (sem target="_blank" — evita o problema já
+    // conhecido de perder contexto ao abrir aba nova).
+    //
+    // Além disso, o link passa pelo AccountChooser do Google
+    // (accounts.google.com/AccountChooser?continue=...) em vez de
+    // apontar direto pro Web App. A causa real do erro genérico
+    // do Drive era outra: quando o navegador já tem UMA conta
+    // Google logada (mesmo que não seja @usp.br), o Google não
+    // pergunta "qual conta usar" — ele simplesmente nega acesso
+    // como se o arquivo não existisse, porque o deploy é
+    // restrito ao domínio usp.br e não mostra esse erro pra não
+    // vazar a existência do recurso. Forçando a passagem pelo
+    // AccountChooser, o aluno vê a tela de escolha/adição de
+    // conta ANTES de chegar no formulário, mesmo já tendo outra
+    // conta ativa no aparelho.
+    const card = document.createElement(aberto ? "a" : "div");
+    card.className = "cardSistema" + (aberto ? "" : " fechado");
+
+    if (aberto) {
+        card.href = "https://accounts.google.com/AccountChooser?continue=" + encodeURIComponent(sistema.link);
+    }
+
+    const icone = document.createElement("div");
+    icone.className = "iconeSistema";
+    icone.textContent = sistema.icone || "🔗";
+
+    const info = document.createElement("div");
+    info.className = "infoSistema";
+
+    const nomeEl = document.createElement("strong");
+    nomeEl.textContent = sistema.nome;
+    info.appendChild(nomeEl);
+
+    if (sistema.descricao) {
+        const descEl = document.createElement("div");
+        descEl.textContent = sistema.descricao;
+        info.appendChild(descEl);
+    }
+
+    if (!aberto && sistema.proximaAbertura) {
+        const avisoEl = document.createElement("div");
+        avisoEl.className = "avisoReabertura";
+        avisoEl.textContent = `Reabre em ${sistema.proximaAbertura}`;
+        info.appendChild(avisoEl);
+    }
+
+    // Formulários "simples" mostram o texto padrão "Aberto/Fechado
+    // para respostas". Formulários COMPOSTOS (com subPeriodos no
+    // backend, ex: Matrícula dos Intercambistas) chegam com um
+    // "statusTexto" já pronto (ex: "Aberto somente para inclusão
+    // de disciplinas") — quando presente, usamos ele no lugar do
+    // texto padrão.
+    const badge = document.createElement("div");
+    badge.className = "badgeStatusForm " + (aberto ? "aberto" : "fechado");
+    badge.textContent = sistema.statusTexto || (aberto ? "Aberto para respostas" : "Fechado para respostas");
+
+    card.appendChild(icone);
+    card.appendChild(info);
+    card.appendChild(badge);
+
+    if (aberto) {
+        const seta = document.createElement("div");
+        seta.className = "setaSistema";
+        seta.textContent = "→";
+        card.appendChild(seta);
+    } else {
+        // Fechado: o card fica visível (mais opaco) mas não navega
+        // pra lugar nenhum — só avisa por que está indisponível.
+        card.onclick = () => {
+            let msg = `⏳ Esse formulário está fechado para respostas no momento.`;
+            if (sistema.proximaAbertura) msg += `\nReabre em ${sistema.proximaAbertura}.`;
+            alert(msg);
+        };
+    }
+
+    return card;
+
+}
+
+//-----------------------------------
+// Loading
+//-----------------------------------
+
+function mostrarLoading(texto) {
+
+    if (loadingTimer) clearInterval(loadingTimer);
+
+    document.getElementById("loadingTitulo").textContent = texto || "Carregando";
+    document.getElementById("loadingOverlay").style.display = "flex";
+
+    let pontos = 0;
+    loadingTimer = setInterval(() => {
+        pontos = (pontos + 1) % 4;
+        document.getElementById("loadingPontos").textContent = ".".repeat(pontos);
+    }, 350);
+
+}
+
+function esconderLoading() {
+    if (loadingTimer) clearInterval(loadingTimer);
+    document.getElementById("loadingOverlay").style.display = "none";
+}
+
+function mostrarErro(erro) {
+    esconderLoading();
+    alert("❌ Erro: " + ((erro && erro.message) || erro));
+}
+
+</script>
+
+<?!= include_('PainelAjudaUI') ?>

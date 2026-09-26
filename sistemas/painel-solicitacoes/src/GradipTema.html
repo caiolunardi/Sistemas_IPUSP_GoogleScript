@@ -1,0 +1,276 @@
+<!--
+  GRADIP UI — Tema compartilhado v1.1
+  Preferências: system | light | dark
+  Storage: localStorage["gradip-theme"]
+  Contrato: docs/THEME_IMPLEMENTATION.md
+-->
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "gradip-theme";
+  var VALID_PREFERENCES = { system: true, light: true, dark: true };
+  var media = window.matchMedia
+    ? window.matchMedia("(prefers-color-scheme: dark)")
+    : null;
+
+  function safeReadPreference() {
+    try {
+      var stored = window.localStorage.getItem(STORAGE_KEY);
+      return VALID_PREFERENCES[stored] ? stored : "system";
+    } catch (error) {
+      return "system";
+    }
+  }
+
+  function safeWritePreference(preference) {
+    try {
+      if (preference === "system") {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } else {
+        window.localStorage.setItem(STORAGE_KEY, preference);
+      }
+    } catch (error) {
+      // Tema continua funcional mesmo sem storage.
+    }
+  }
+
+  function resolveTheme(preference) {
+    if (preference === "light" || preference === "dark") {
+      return preference;
+    }
+    return media && media.matches ? "dark" : "light";
+  }
+
+  function applyPreference(preference, persist) {
+    var safePreference = VALID_PREFERENCES[preference] ? preference : "system";
+    var theme = resolveTheme(safePreference);
+    var root = document.documentElement;
+
+    root.setAttribute("data-theme", theme);
+    root.setAttribute("data-theme-preference", safePreference);
+    root.style.colorScheme = theme;
+
+    if (persist) {
+      safeWritePreference(safePreference);
+    }
+
+    var detail = {
+      preference: safePreference,
+      theme: theme
+    };
+
+    try {
+      document.dispatchEvent(new CustomEvent("gradipthemechange", { detail: detail }));
+    } catch (error) {
+      // Navegadores antigos continuam com o tema aplicado.
+    }
+
+    return detail;
+  }
+
+  function getPreference() {
+    var current = document.documentElement.getAttribute("data-theme-preference");
+    return VALID_PREFERENCES[current] ? current : safeReadPreference();
+  }
+
+  function getResolvedTheme() {
+    var current = document.documentElement.getAttribute("data-theme");
+    return current === "dark" ? "dark" : "light";
+  }
+
+  function setPreference(preference) {
+    if (!VALID_PREFERENCES[preference]) {
+      throw new Error("Preferência de tema inválida: " + preference);
+    }
+    return applyPreference(preference, true);
+  }
+
+  function handleSystemChange() {
+    if (getPreference() === "system") {
+      applyPreference("system", false);
+    }
+  }
+
+  applyPreference(safeReadPreference(), false);
+
+  if (media) {
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", handleSystemChange);
+    } else if (typeof media.addListener === "function") {
+      media.addListener(handleSystemChange);
+    }
+  }
+
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("storage", function (event) {
+      if (event.key === STORAGE_KEY || event.key === null) {
+        applyPreference(safeReadPreference(), false);
+      }
+    });
+  }
+
+  window.GradipTheme = Object.freeze({
+    getPreference: getPreference,
+    getResolvedTheme: getResolvedTheme,
+    setPreference: setPreference
+  });
+})();
+</script>
+
+<style>
+:root {
+  --gradip-brand-blue: #00509d;
+
+  --gradip-bg: #f5f6f7;
+  --gradip-surface: #ffffff;
+  --gradip-surface-2: #f8fafc;
+  --gradip-surface-elevated: #ffffff;
+
+  --gradip-text: #1f2933;
+  --gradip-text-muted: #5f6b76;
+
+  --gradip-border: #d8dee4;
+  /* CORREÇÃO v1.1 (Correção 4 — bordas de controles interativos):
+     valor anterior (#b8c2cc) media só 1.81:1 contra --gradip-input-bg
+     (#ffffff) — insuficiente pro limite visual de um input/select
+     (alvo >=3:1, WCAG 1.4.11). Novo valor mede 3.41:1. Só este token
+     mudou; --gradip-border (separadores/cards decorativos) não foi
+     tocado. Ver PAINEL_SOLICITACOES: seção "ALTERAÇÕES QUE DEVEM SER
+     PROPAGADAS AO DESIGN SYSTEM CENTRAL" no relatório desta rodada —
+     este ajuste é local a esta cópia do app e precisa ser replicado
+     manualmente no repositório central Sistemas_IPUSP_GoogleScript
+     após homologação. */
+  --gradip-border-strong: #848c93;
+
+  --gradip-link: #005aa9;
+  --gradip-link-hover: #00457f;
+  --gradip-focus: #00509d;
+
+  --gradip-header-bg: #ffffff;
+  --gradip-header-accent: #00509d;
+
+  --gradip-primary: #00509d;
+  --gradip-primary-hover: #00457f;
+  --gradip-on-primary: #ffffff;
+
+  --gradip-success: #15803d;
+  --gradip-success-bg: #ecfdf3;
+  --gradip-success-border: #86efac;
+  --gradip-warning: #b45309;
+  --gradip-warning-bg: #fff7e6;
+  --gradip-warning-border: #f4c46b;
+  --gradip-danger: #b91c1c;
+  --gradip-danger-bg: #fef2f2;
+  --gradip-danger-border: #fca5a5;
+  --gradip-on-danger: #ffffff;
+  --gradip-info: #2f6f9e;
+  --gradip-info-bg: #eff6ff;
+  --gradip-info-border: #93c5fd;
+
+  --gradip-disabled-bg: #eef1f4;
+  --gradip-disabled-text: #5f6b76;
+
+  --gradip-input-bg: #ffffff;
+  --gradip-input-text: #1f2933;
+  --gradip-input-placeholder: #78838d;
+
+  --gradip-overlay: rgba(17, 24, 39, 0.55);
+  --gradip-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
+}
+
+:root[data-theme="dark"] {
+  --gradip-bg: #081219;
+  --gradip-surface: #101e28;
+  --gradip-surface-2: #172630;
+  --gradip-surface-elevated: #1a2a35;
+
+  --gradip-text: #f7f3ef;
+  --gradip-text-muted: #b9afa7;
+
+  --gradip-border: #2d3d48;
+  /* CORREÇÃO v1.1 (Correção 4): valor anterior (#405461) media só
+     1.96:1 contra --gradip-input-bg (#172630). Novo valor mede
+     3.49:1. Ver comentário equivalente no bloco :root acima. */
+  --gradip-border-strong: #6a7a84;
+
+  --gradip-link: #66b5f2;
+  --gradip-link-hover: #8cc8f5;
+  --gradip-focus: #7cc4ff;
+
+  --gradip-header-bg: #0b1822;
+  --gradip-header-accent: #2d8ad1;
+
+  --gradip-primary: #2d8ad1;
+  --gradip-primary-hover: #4da3e6;
+  --gradip-on-primary: #081219;
+
+  --gradip-success: #4ade80;
+  --gradip-success-bg: #10251a;
+  --gradip-success-border: #2e6b46;
+  --gradip-warning: #fbbf24;
+  --gradip-warning-bg: #2a220f;
+  --gradip-warning-border: #7a5d19;
+  --gradip-danger: #f87171;
+  --gradip-danger-bg: #2b1719;
+  --gradip-danger-border: #7a343a;
+  --gradip-on-danger: #081219;
+  --gradip-info: #7ba3bd;
+  --gradip-info-bg: #10232f;
+  --gradip-info-border: #355f78;
+
+  --gradip-disabled-bg: #172630;
+  --gradip-disabled-text: #8f9ba3;
+
+  --gradip-input-bg: #172630;
+  --gradip-input-text: #f7f3ef;
+  --gradip-input-placeholder: #9aa6ad;
+
+  --gradip-overlay: rgba(0, 0, 0, 0.68);
+  --gradip-shadow: 0 0 0 1px rgba(255, 255, 255, 0.015);
+}
+
+html {
+  background: var(--gradip-bg);
+}
+
+body {
+  background: var(--gradip-bg);
+  color: var(--gradip-text);
+}
+
+a {
+  color: var(--gradip-link);
+}
+
+a:hover {
+  color: var(--gradip-link-hover);
+}
+
+:focus-visible {
+  outline-color: var(--gradip-focus);
+}
+
+.gradip-logo-dark {
+  display: none !important;
+}
+
+:root[data-theme="dark"] .gradip-logo-light {
+  display: none !important;
+}
+
+:root[data-theme="dark"] .gradip-logo-dark {
+  display: block !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root *,
+  :root *::before,
+  :root *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+</style>

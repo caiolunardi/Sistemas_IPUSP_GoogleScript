@@ -1,0 +1,644 @@
+<!--
+  CENTRAL DE AJUDA — conteúdo estático.
+  Conteúdo 100% pré-escrito (nada é montado a partir de string em
+  tempo de execução). O comportamento (abrir/fechar, navegar entre
+  seções, busca, FAQ) fica inteiramente em PainelAjudaUI.html — este
+  arquivo só tem markup e texto.
+  Linguagem: sempre em termos de efeito pro aluno, nunca de
+  implementação (sem citar Apps Script, planilha, backend, etc.).
+-->
+
+<div id="painelAjudaOverlay" class="painelAjudaOverlay" hidden>
+  <div id="painelAjudaModal" class="painelAjudaModal" role="dialog" aria-modal="true" aria-labelledby="painelAjudaTituloModal">
+
+    <div class="painelAjudaCabecalho">
+      <div class="painelAjudaTituloLinha">
+        <button type="button" id="painelAjudaVoltar" class="painelAjudaVoltar" hidden>← Voltar</button>
+        <h2 id="painelAjudaTituloModal">Central de Ajuda</h2>
+      </div>
+      <button type="button" id="painelAjudaFechar" class="painelAjudaFechar" aria-label="Fechar ajuda">✕</button>
+    </div>
+
+    <div class="painelAjudaBuscaLinha">
+      <input type="text" id="painelAjudaBusca" class="painelAjudaBusca" placeholder="Buscar na ajuda..." aria-label="Buscar na ajuda">
+    </div>
+
+    <div id="painelAjudaCorpo" class="painelAjudaCorpo">
+
+      <!-- ================= HOME ================= -->
+      <div id="painelAjudaHome" class="painelAjudaView">
+
+        <p class="painelAjudaPergunta">Como podemos ajudar?</p>
+
+        <div class="painelAjudaAtalhos">
+          <button type="button" class="painelAjudaAtalho" data-ir-para="qual-formulario">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">🧭</span>
+            <span>Não sei qual formulário usar</span>
+          </button>
+          <button type="button" class="painelAjudaAtalho" data-ir-para="categorias">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">📚</span>
+            <span>Quero entender as categorias</span>
+          </button>
+          <button type="button" class="painelAjudaAtalho" data-ir-para="prazos">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">📅</span>
+            <span>Meu formulário está fechado</span>
+          </button>
+          <button type="button" class="painelAjudaAtalho" data-ir-para="conta-usp">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">🔐</span>
+            <span>Estou com problema de acesso</span>
+          </button>
+          <button type="button" class="painelAjudaAtalho" data-ir-para="problemas">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">📄</span>
+            <span>Apareceu "Não foi possível abrir o arquivo"</span>
+          </button>
+          <button type="button" class="painelAjudaAtalho" data-ir-para="intercambistas">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">🌎</span>
+            <span>Sou intercambista / I'm an exchange student</span>
+          </button>
+          <button type="button" class="painelAjudaAtalho" data-ir-para="trancamento-exclusao">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">🔒</span>
+            <span>Tenho dúvida entre trancamento e exclusão</span>
+          </button>
+        </div>
+
+        <div class="painelAjudaMenu" role="list">
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="comece-aqui">Comece aqui</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="qual-formulario">Qual formulário usar?</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="categorias">Categorias do Painel</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="prazos">Prazos e disponibilidade</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="conta-usp">Conta USP e acesso</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="intercambistas">Intercambistas / Exchange Students</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="trancamento-exclusao">Trancamento x Exclusão</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="problemas">Problemas comuns</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="faq">Perguntas frequentes</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="sobre">Sobre o Painel</button>
+        </div>
+
+      </div>
+
+      <!-- ================= COMECE AQUI ================= -->
+      <section id="painelAjudaSecao-comece-aqui" class="painelAjudaSecao" data-secao-id="comece-aqui" hidden
+                data-busca="comece aqui como funciona passo a passo primeiros passos">
+        <h3>Comece aqui</h3>
+        <p>O Painel de Solicitações reúne os formulários disponibilizados pelo Serviço de Graduação do Instituto de Psicologia. Agora eles aparecem organizados por assunto, em categorias que você pode abrir e fechar.</p>
+        <p>O caminho é sempre o mesmo:</p>
+        <ol>
+          <li>Escolha a categoria.</li>
+          <li>Localize o formulário.</li>
+          <li>Confira se ele está aberto.</li>
+          <li>Clique nele.</li>
+          <li>Escolha sua conta @usp.br.</li>
+          <li>Siga as instruções do formulário.</li>
+        </ol>
+        <div class="painelAjudaNota">O Painel não envia a sua solicitação. Ele só leva você até o formulário certo — o envio acontece dentro do formulário.</div>
+      </section>
+
+      <!-- ================= QUAL FORMULÁRIO USAR ================= -->
+      <section id="painelAjudaSecao-qual-formulario" class="painelAjudaSecao" data-secao-id="qual-formulario" hidden
+                data-busca="qual formulario usar escolher preciso quero necessidade">
+        <h3>Qual formulário devo usar?</h3>
+        <p>Encontre a frase que mais se parece com o que você precisa:</p>
+
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="quero abrir bacharelado licenciatura habilitacao">
+          <p class="painelAjudaMapaPergunta">"Quero abrir Bacharelado e/ou Licenciatura"</p>
+          <p class="painelAjudaMapaResposta">→ Pedido de Abertura de Habilitação</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Formação e conclusão</p>
+        </div>
+
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="quero trancar minha matricula como um todo trancamento total">
+          <p class="painelAjudaMapaPergunta">"Quero trancar minha matrícula como um todo"</p>
+          <p class="painelAjudaMapaResposta">→ Pedido de Trancamento Total de Matrícula</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Matrícula e disciplinas</p>
+        </div>
+
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="quero trancar disciplinas especificas trancamento parcial">
+          <p class="painelAjudaMapaPergunta">"Quero trancar disciplinas específicas"</p>
+          <p class="painelAjudaMapaResposta">→ Pedido de Trancamento Parcial de Matrícula</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Matrícula e disciplinas</p>
+        </div>
+
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="quero retirar disciplinas da matricula exclusao">
+          <p class="painelAjudaMapaPergunta">"Quero retirar disciplinas da minha matrícula"</p>
+          <p class="painelAjudaMapaResposta">→ Pedido de Exclusão de Disciplinas</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Matrícula e disciplinas</p>
+        </div>
+
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="quero segunda via do busp bilhete unico">
+          <p class="painelAjudaMapaPergunta">"Quero solicitar a segunda via do BUSP"</p>
+          <p class="painelAjudaMapaResposta">→ 2ª via do BUSP</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Benefícios e serviços</p>
+        </div>
+
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="sou intercambista preciso incluir excluir disciplinas exchange">
+          <p class="painelAjudaMapaPergunta">"Sou intercambista e preciso incluir/excluir disciplinas"</p>
+          <p class="painelAjudaMapaResposta">→ Inclusão e exclusão de disciplinas / Course Add &amp; Drop</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Intercambistas / Exchange Students</p>
+        </div>
+
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="quero solicitar colacao ao concluir o curso formatura">
+          <p class="painelAjudaMapaPergunta">"Quero solicitar colação ao concluir o curso"</p>
+          <p class="painelAjudaMapaResposta">→ Pedido de Colação de Grau</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Formação e conclusão</p>
+        </div>
+
+      </section>
+
+      <!-- ================= CATEGORIAS ================= -->
+      <section id="painelAjudaSecao-categorias" class="painelAjudaSecao" data-secao-id="categorias" hidden
+                data-busca="categorias do painel grupos organizacao">
+        <h3>Categorias do Painel</h3>
+        <p>Os formulários estão organizados em quatro categorias, para ficar fácil encontrar o que você precisa:</p>
+
+        <div class="painelAjudaCard">
+          <strong>📚 Matrícula e disciplinas</strong>
+          <p>Trancamentos e exclusão de disciplinas.</p>
+        </div>
+        <div class="painelAjudaCard">
+          <strong>🎓 Formação e conclusão</strong>
+          <p>Abertura de habilitação e colação de grau.</p>
+        </div>
+        <div class="painelAjudaCard">
+          <strong>🎫 Benefícios e serviços</strong>
+          <p>Atualmente reúne a 2ª via do BUSP.</p>
+        </div>
+        <div class="painelAjudaCard">
+          <strong>🌎 Intercambistas / Exchange Students</strong>
+          <p>Inclusão e exclusão de disciplinas para estudantes intercambistas.</p>
+        </div>
+
+        <p>A categoria é só uma forma de organizar a navegação — ela não representa nenhuma regra acadêmica.</p>
+      </section>
+
+      <!-- ================= PRAZOS ================= -->
+      <section id="painelAjudaSecao-prazos" class="painelAjudaSecao" data-secao-id="prazos" hidden
+                data-busca="prazos disponibilidade aberto fechado reabre reabertura aprovacao">
+        <h3>Prazos e disponibilidade</h3>
+
+        <p><strong style="color:#2e7d32;">Verde — Aberto para respostas:</strong> o formulário está disponível para preenchimento agora.</p>
+        <p><strong style="color:#b71c1c;">Vermelho — Fechado para respostas:</strong> o formulário está fora do período de disponibilidade no momento.</p>
+        <p>Quando a próxima data já está definida, o card mostra "Reabre em ...". Um formulário fechado continua aparecendo na lista — assim você sempre sabe que aquele tipo de solicitação existe, mesmo quando ainda não é possível preenchê-la.</p>
+
+        <h4>"Aberto" não significa aprovação</h4>
+        <p>Aberto quer dizer apenas que o formulário está disponível para preenchimento. Isso não significa:</p>
+        <ul>
+          <li>que o seu pedido já foi aprovado;</li>
+          <li>que você já atende aos requisitos daquela solicitação;</li>
+          <li>que a solicitação já foi enviada;</li>
+          <li>que a solicitação já foi analisada.</li>
+        </ul>
+
+        <h4>O prazo também é verificado pelo formulário</h4>
+        <p>O Painel mostra a disponibilidade para te orientar, mas o próprio formulário confirma o prazo de novo no momento em que você tenta enviar. Se o prazo terminar enquanto a página ficou aberta, o envio pode ser recusado.</p>
+        <div class="painelAjudaNota">Dica: se você deixou o Painel aberto por bastante tempo antes de clicar em um formulário, atualize a página para conferir o status mais recente.</div>
+      </section>
+
+      <!-- ================= CONTA USP ================= -->
+      <section id="painelAjudaSecao-conta-usp" class="painelAjudaSecao" data-secao-id="conta-usp" hidden
+                data-busca="conta usp login acesso email gmail pessoal varias contas nao foi possivel abrir o arquivo drive">
+        <h3>Conta USP e acesso</h3>
+        <p>O Painel pode ser visualizado sem identificar você. Mas os formulários precisam saber quem você é para registrar a solicitação corretamente — por isso eles exigem sua conta institucional <strong>@usp.br</strong>.</p>
+        <p>Ao clicar em um card aberto, o Google pode te mostrar uma tela pedindo para escolher uma conta. Selecione a sua conta <strong>@usp.br</strong>. Se ela não estiver na lista, use a opção de adicionar outra conta.</p>
+
+        <h4>Uso várias contas Google no mesmo navegador</h4>
+        <p>Se você tem uma conta pessoal e uma conta @usp.br logadas no mesmo navegador ou celular, é importante prestar atenção e escolher especificamente a conta @usp.br na hora de abrir o formulário, mesmo que outra conta apareça primeiro.</p>
+
+        <h4>Apareceu "Não foi possível abrir o arquivo"</h4>
+        <p>Isso costuma acontecer quando o navegador tenta abrir o formulário usando uma conta Google diferente da @usp.br. Uma causa comum é o navegador já estar usando outra conta por padrão.</p>
+        <p>O que fazer:</p>
+        <ol>
+          <li>Volte para o Painel.</li>
+          <li>Clique novamente no card do formulário.</li>
+          <li>Na tela do Google, escolha a conta @usp.br.</li>
+          <li>Se ela não aparecer, adicione essa conta.</li>
+          <li>Tente novamente.</li>
+        </ol>
+        <div class="painelAjudaNota">Essa costuma ser a causa mais comum, mas não é a única possível — se o problema continuar mesmo depois de escolher a conta certa, procure o Serviço de Graduação.</div>
+      </section>
+
+      <!-- ================= INTERCAMBISTAS ================= -->
+      <section id="painelAjudaSecao-intercambistas" class="painelAjudaSecao" data-secao-id="intercambistas" hidden
+                data-busca="intercambistas exchange students course add drop inclusao exclusao disciplinas bilingue">
+        <h3>Intercambistas / Exchange Students</h3>
+
+        <div class="painelAjudaBilingue">
+          <p class="painelAjudaLinhaPt">Este formulário é destinado a estudantes intercambistas que precisam solicitar inclusão ou exclusão de disciplinas.</p>
+          <p class="painelAjudaLinhaEn">This form is for exchange students who need to request course additions or withdrawals.</p>
+        </div>
+
+        <p>Como inclusão e exclusão têm prazos independentes, o selo do card pode mostrar quatro situações diferentes:</p>
+
+        <table class="painelAjudaTabela">
+          <tr><th>Português</th><th>English</th></tr>
+          <tr><td>Aberto para inclusão e exclusão</td><td>Open for course add and drop</td></tr>
+          <tr><td>Aberto somente para inclusão</td><td>Open for course add only</td></tr>
+          <tr><td>Aberto somente para exclusão</td><td>Open for course drop only</td></tr>
+          <tr><td>Fechado para inclusão e exclusão</td><td>Closed for course add and drop</td></tr>
+        </table>
+
+        <h4>Termos / Terminology</h4>
+        <table class="painelAjudaTabela">
+          <tr><th>Português</th><th>English</th></tr>
+          <tr><td>Intercambistas</td><td>Exchange Students</td></tr>
+          <tr><td>Inclusão e exclusão de disciplinas</td><td>Course Add &amp; Drop</td></tr>
+          <tr><td>Inclusão</td><td>Course Add</td></tr>
+          <tr><td>Exclusão</td><td>Course Drop</td></tr>
+        </table>
+      </section>
+
+      <!-- ================= TRANCAMENTO X EXCLUSÃO ================= -->
+      <section id="painelAjudaSecao-trancamento-exclusao" class="painelAjudaSecao" data-secao-id="trancamento-exclusao" hidden
+                data-busca="trancamento total parcial exclusao disciplinas diferenca comparacao">
+        <h3>Trancamento x Exclusão</h3>
+        <p>Os três formulários da categoria Matrícula e disciplinas resolvem situações diferentes:</p>
+
+        <div class="painelAjudaCard">
+          <strong>Trancamento Total</strong>
+          <p>Afeta a matrícula/o curso como um todo.</p>
+        </div>
+        <div class="painelAjudaCard">
+          <strong>Trancamento Parcial</strong>
+          <p>Disciplinas específicas ficam trancadas.</p>
+        </div>
+        <div class="painelAjudaCard">
+          <strong>Exclusão de Disciplinas</strong>
+          <p>Disciplinas específicas são retiradas da matrícula.</p>
+        </div>
+
+        <div class="painelAjudaNota">Esta Central não entra em detalhes sobre as consequências acadêmicas de cada opção. Em caso de dúvida sobre qual escolher para a sua situação, procure o Serviço de Graduação.</div>
+      </section>
+
+      <!-- ================= PROBLEMAS COMUNS ================= -->
+      <section id="painelAjudaSecao-problemas" class="painelAjudaSecao" data-secao-id="problemas" hidden
+                data-busca="problemas comuns erro duvida ajuda arquivo login prazo busca">
+        <h3>Problemas comuns</h3>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="nao sei em qual categoria procurar">
+          <strong>Não sei em qual categoria procurar.</strong>
+          <p>Use a busca no topo da tela, ou abra a seção "Qual formulário usar?" aqui na Ajuda — ela indica a categoria certa para cada necessidade.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="nao sei qual formulario escolher">
+          <strong>Não sei qual formulário escolher.</strong>
+          <p>Veja a seção "Qual formulário usar?": ela lista situações comuns e aponta o formulário correspondente a cada uma.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="o formulario esta fechado">
+          <strong>O formulário está fechado.</strong>
+          <p>Formulários ficam fechados fora do período definido pelo Serviço de Graduação. Aguarde a data de reabertura, quando ela estiver indicada no card.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="esta fechado e mostra data de reabertura reabre em">
+          <strong>Está fechado e mostra data de reabertura.</strong>
+          <p>O texto "Reabre em ..." no card indica a próxima data em que esse formulário deve voltar a ficar disponível.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="esta fechado e nao mostra data de reabertura">
+          <strong>Está fechado e não mostra data.</strong>
+          <p>Nem sempre a data da próxima abertura já está definida. Volte a consultar o Painel periodicamente.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="estava aberto e agora fechou mudou">
+          <strong>Estava aberto e agora fechou.</strong>
+          <p>O período de disponibilidade pode ter terminado entre uma visita e outra. Atualize a página para conferir o status mais recente.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="painel ficou aberto muito tempo desatualizado">
+          <strong>O Painel ficou aberto muito tempo na minha tela.</strong>
+          <p>Se você deixou a página aberta por bastante tempo antes de clicar, atualize-a para garantir que o status mostrado ainda é o atual.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="estou usando gmail pessoal conta errada">
+          <strong>Estou usando Gmail pessoal.</strong>
+          <p>Os formulários exigem uma conta @usp.br. Ao clicar no card, escolha ou adicione essa conta na tela do Google.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="tenho varias contas google logadas ao mesmo tempo">
+          <strong>Tenho várias contas Google logadas.</strong>
+          <p>Preste atenção na tela de escolha de conta que aparece ao clicar no card: selecione especificamente a conta @usp.br, mesmo que outra conta apareça primeiro na lista.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="nao foi possivel abrir o arquivo erro google drive">
+          <strong>"Não foi possível abrir o arquivo".</strong>
+          <p>Costuma acontecer quando o navegador tenta usar uma conta Google diferente da @usp.br. Volte, clique novamente no card e escolha a conta certa.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="painel diz aberto formulario recusou por prazo">
+          <strong>O Painel dizia aberto, mas o formulário recusou por prazo.</strong>
+          <p>O Painel mostra a disponibilidade pra te orientar, mas o formulário confirma o prazo de novo no momento do envio. Se o prazo terminou entre uma coisa e outra, o envio pode ser recusado.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="busca nao encontra o que procuro">
+          <strong>A busca não encontra o que eu procuro.</strong>
+          <p>Tente um termo mais simples ou mais genérico — por exemplo, "trancamento" em vez do nome completo do formulário.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="trancamento parcial x exclusao de disciplinas diferenca">
+          <strong>Trancamento Parcial x Exclusão de Disciplinas.</strong>
+          <p>São coisas diferentes. Veja a comparação completa na seção "Trancamento x Exclusão" desta Ajuda.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="intercambista aparece somente inclusao course add only">
+          <strong>Intercambista: só aparece "somente inclusão".</strong>
+          <p>Nesse momento, apenas pedidos de inclusão de disciplinas estão dentro do prazo — a exclusão tem uma janela própria, em outro período.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="intercambista aparece somente exclusao course drop only">
+          <strong>Intercambista: só aparece "somente exclusão".</strong>
+          <p>Nesse momento, apenas pedidos de exclusão de disciplinas estão dentro do prazo — a inclusão tem uma janela própria, em outro período.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="aberto significa aprovacao aprovado">
+          <strong>"Aberto" significa aprovação?</strong>
+          <p>Não. Significa só que o formulário está disponível para preenchimento — não que o pedido já foi aprovado.</p>
+        </div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="cliquei no formulario meu pedido ja foi enviado">
+          <strong>Cliquei no formulário: meu pedido já foi enviado?</strong>
+          <p>Não. Clicar no card só abre o formulário. A solicitação só é enviada quando você preenche e envia o formulário propriamente dito.</p>
+        </div>
+
+      </section>
+
+      <!-- ================= FAQ ================= -->
+      <section id="painelAjudaSecao-faq" class="painelAjudaSecao" data-secao-id="faq" hidden
+                data-busca="perguntas frequentes faq duvidas">
+        <h3>Perguntas frequentes</h3>
+        <div id="painelAjudaListaFaq">
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="o que e o painel">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-1">
+              <span>O que é o Painel?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-1" class="painelAjudaFaqResposta" hidden>É a página que reúne, num só lugar, os formulários de solicitação do Serviço de Graduação do IPUSP para você preencher.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="por que os formularios estao separados por categorias">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-2">
+              <span>Por que os formulários estão separados por categorias?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-2" class="painelAjudaFaqResposta" hidden>Para facilitar encontrar o que você precisa conforme a lista de formulários cresce, em vez de virar uma lista longa e confusa.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="como abrir uma categoria">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-3">
+              <span>Como abrir uma categoria?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-3" class="painelAjudaFaqResposta" hidden>Toque ou clique no cabeçalho da categoria — ela expande mostrando os formulários dela.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="posso deixar mais de uma categoria aberta ao mesmo tempo">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-4">
+              <span>Posso deixar mais de uma categoria aberta?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-4" class="painelAjudaFaqResposta" hidden>No uso normal, só uma categoria fica aberta por vez, para manter a tela organizada. Durante uma busca, todas as categorias com resultado aparecem abertas ao mesmo tempo.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="como encontro rapidamente um formulario busca">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-5">
+              <span>Como encontro rapidamente um formulário?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-5" class="painelAjudaFaqResposta" hidden>Use a caixa "Buscar formulário..." no topo da lista — ela busca por nome do formulário e por categoria.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="o painel envia minha solicitacao">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-6">
+              <span>O Painel envia minha solicitação?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-6" class="painelAjudaFaqResposta" hidden>Não. O Painel só leva você até o formulário certo; o envio acontece dentro do formulário.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="preciso estar logado para ver o painel">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-7">
+              <span>Preciso estar logado para ver o Painel?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-7" class="painelAjudaFaqResposta" hidden>Não — o Painel em si pode ser visto sem login.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="preciso de usp.br para os formularios conta institucional">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-8">
+              <span>Preciso de @usp.br para os formulários?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-8" class="painelAjudaFaqResposta" hidden>Sim — os formulários usam a sua conta @usp.br para te identificar corretamente.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="por que o google pede uma conta">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-9">
+              <span>Por que o Google pede uma conta?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-9" class="painelAjudaFaqResposta" hidden>Porque os formulários são restritos a contas @usp.br, e o Google confirma qual conta você quer usar antes de abrir o formulário.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="posso usar gmail pessoal">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-10">
+              <span>Posso usar Gmail pessoal?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-10" class="painelAjudaFaqResposta" hidden>Não — o formulário não vai identificar você corretamente com uma conta pessoal.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="o que significa aberto">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-11">
+              <span>O que significa Aberto?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-11" class="painelAjudaFaqResposta" hidden>Que o formulário está disponível para preenchimento nesse momento.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="o que significa fechado">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-12">
+              <span>O que significa Fechado?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-12" class="painelAjudaFaqResposta" hidden>Que o formulário está fora do período de disponibilidade definido pelo Serviço de Graduação no momento.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="por que o formulario fechado continua aparecendo visivel">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-13">
+              <span>Por que o formulário fechado continua aparecendo?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-13" class="painelAjudaFaqResposta" hidden>Para você saber que aquele tipo de solicitação existe e quando ela volta a abrir, em vez de simplesmente não encontrar o formulário em lugar nenhum.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="onde vejo a reabertura data">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-14">
+              <span>Onde vejo a reabertura?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-14" class="painelAjudaFaqResposta" hidden>No próprio card do formulário, quando essa informação já está disponível.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="por que as vezes nao aparece reabertura">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-15">
+              <span>Por que às vezes não aparece reabertura?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-15" class="painelAjudaFaqResposta" hidden>Porque essa data nem sempre está definida com antecedência para todos os formulários.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="link direto funciona fora do prazo">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-16">
+              <span>Link direto funciona fora do prazo?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-16" class="painelAjudaFaqResposta" hidden>Ter o link direto não garante que você consiga enviar uma solicitação fora do prazo. O próprio formulário verifica o período de disponibilidade antes de aceitar o envio.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="e se o prazo terminar enquanto eu preencho">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-17">
+              <span>E se o prazo terminar enquanto eu preencho?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-17" class="painelAjudaFaqResposta" hidden>O envio pode ser recusado. Se isso acontecer, volte ao Painel para conferir o status atual.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="nao foi possivel abrir o arquivo o que eu faco">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-18">
+              <span>"Não foi possível abrir o arquivo": o que eu faço?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-18" class="painelAjudaFaqResposta" hidden>Uma causa comum é o navegador estar usando outra conta Google. Volte ao Painel, clique novamente e escolha sua conta @usp.br. Se o problema continuar, consulte os canais oficiais do Serviço de Graduação.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="trancamento total x parcial diferenca">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-19">
+              <span>Total x Parcial?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-19" class="painelAjudaFaqResposta" hidden>Trancamento Total afeta a matrícula/o curso como um todo; Trancamento Parcial afeta só disciplinas específicas. Veja a comparação completa na seção "Trancamento x Exclusão".</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="trancamento parcial x exclusao diferenca">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-20">
+              <span>Parcial x Exclusão?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-20" class="painelAjudaFaqResposta" hidden>No Trancamento Parcial as disciplinas ficam trancadas; na Exclusão, elas são retiradas da matrícula. Veja a comparação completa na seção "Trancamento x Exclusão".</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="para que serve abertura de habilitacao bacharelado licenciatura">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-21">
+              <span>Para que serve Abertura de Habilitação?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-21" class="painelAjudaFaqResposta" hidden>Para solicitar a abertura de Bacharelado e/ou Licenciatura no seu curso.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="para que serve o busp bilhete unico">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-22">
+              <span>Para que serve o BUSP?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-22" class="painelAjudaFaqResposta" hidden>Para solicitar a 2ª via do Bilhete Único USP em caso de defeito, roubo/furto ou perda/extravio.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="para que serve a colacao de grau formatura">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-23">
+              <span>Para que serve a Colação?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-23" class="painelAjudaFaqResposta" hidden>Para solicitar a sua colação de grau ao concluir o curso.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="quem deve usar a secao intercambistas exchange">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-24">
+              <span>Quem deve usar a seção Intercambistas?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-24" class="painelAjudaFaqResposta" hidden>Estudantes intercambistas que precisam incluir ou excluir disciplinas da matrícula.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="what does course add and drop mean">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-25">
+              <span>What does "Course Add &amp; Drop" mean?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-25" class="painelAjudaFaqResposta" hidden>It's the English name for the form used to request the inclusion ("add") or removal ("drop") of courses, for exchange students.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="por que intercambistas pode abrir so para inclusao">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-26">
+              <span>Por que Intercambistas pode abrir só para inclusão?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-26" class="painelAjudaFaqResposta" hidden>Porque inclusão e exclusão de disciplinas têm períodos próprios e independentes — às vezes só um dos dois está dentro do prazo.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="por que pode abrir so para exclusao">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-27">
+              <span>Por que pode abrir só para exclusão?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-27" class="painelAjudaFaqResposta" hidden>Pelo mesmo motivo: inclusão e exclusão são períodos independentes um do outro.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="aberto significa aprovacao">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-28">
+              <span>Aberto significa aprovação?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-28" class="painelAjudaFaqResposta" hidden>Não — só significa que dá para preencher o formulário agora.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="a busca altera o prazo">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-29">
+              <span>A busca altera o prazo?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-29" class="painelAjudaFaqResposta" hidden>Não. A busca só filtra o que aparece na tela — ela não muda o status nem o prazo de nenhum formulário.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="o painel guarda minha solicitacao">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-30">
+              <span>O Painel guarda minha solicitação?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-30" class="painelAjudaFaqResposta" hidden>Não. Quem registra a sua solicitação é o formulário, depois que você preenche e envia.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="o painel e o formulario">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-31">
+              <span>O Painel é o formulário?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-31" class="painelAjudaFaqResposta" hidden>Não. O Painel é só a lista/índice; cada card leva a um formulário separado.</div>
+          </div>
+
+          <div class="painelAjudaFaqItem" data-busca-item data-busca="posso voltar depois">
+            <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-32">
+              <span>Posso voltar depois?</span>
+              <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
+            </button>
+            <div id="painelAjudaFaqResposta-32" class="painelAjudaFaqResposta" hidden>Sim. Você pode fechar e voltar ao Painel quando quiser — o status de cada formulário é sempre calculado na hora, na sua visita mais recente.</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= SOBRE ================= -->
+      <section id="painelAjudaSecao-sobre" class="painelAjudaSecao" data-secao-id="sobre" hidden
+                data-busca="sobre o painel quem mantem contato">
+        <h3>Sobre o Painel</h3>
+        <p>O Painel de Solicitações é mantido pelo Serviço de Graduação do Instituto de Psicologia da USP (IPUSP) e reúne, num só lugar, os formulários oficiais usados pelos alunos para fazer solicitações administrativas ao curso.</p>
+        <p>Ele é atualizado sempre que novos formulários são disponibilizados ou que os prazos de cada solicitação mudam.</p>
+        <p>Se esta Central não respondeu à sua dúvida, procure o Serviço de Graduação do IPUSP pelos canais oficiais do Instituto.</p>
+      </section>
+
+      <!-- ================= SEM RESULTADO (busca) ================= -->
+      <div id="painelAjudaSemResultado" class="painelAjudaSemResultado" hidden>
+        <p>Nada encontrado para essa busca.</p>
+        <p class="painelAjudaSemResultadoDica">Tente outro termo, como "trancamento", "busp", "colação" ou "intercambista".</p>
+      </div>
+
+    </div>
+  </div>
+</div>

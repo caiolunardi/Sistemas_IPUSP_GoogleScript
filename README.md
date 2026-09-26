@@ -25,6 +25,7 @@ Base reutilizável:
 - `shared/ajuda/` — shell, estilos e comportamento de referência da Central de Ajuda.
 - `shared/seguranca/` — exemplos de configuração segura sem valores de produção.
 - `assets/ipusp/` — marca IPUSP para fundo claro e escuro, com registro de procedência.
+- `assets/usp/` — variantes vetoriais da marca USP, com registro de procedência.
 
 ## Princípios
 
@@ -45,7 +46,7 @@ Base reutilizável:
 
 A documentação comum fica em `docs/` e os componentes reutilizáveis em `shared/`. Sistemas específicos serão incorporados gradualmente e terão documentação própria, sem misturar regras particulares com diretrizes universais.
 
-Consulte `docs/README.md` para o mapa completo.
+Consulte `docs/README.md` para o mapa completo. O [Painel de Solicitações dos alunos v1.2](sistemas/painel-solicitacoes/README.md) já possui fonte Apps Script versionada com o ID da planilha fora do código e documentação de homologação.
 
 Cada sistema poderá ter sua própria pasta conforme for incorporado ao repositório, por exemplo:
 
