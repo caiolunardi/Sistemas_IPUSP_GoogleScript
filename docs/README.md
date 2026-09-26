@@ -23,7 +23,7 @@ A diretriz é técnica e alinhada à LGPD/estrutura da USP; não substitui a Pol
 
 ## 4. Sistemas específicos — incorporação gradual
 
-Pasta `sistemas/`. Cada sistema será documentado a partir do código/fluxo homologado e passará pelo preflight de segurança antes de qualquer código/dado entrar no repositório.
+Pasta `sistemas/`. O [Painel de Solicitações dos alunos](sistemas/painel-solicitacoes/README.md) possui documentação da v1.2 aceita em 25/09/2026. Seu pacote executável permanece fora do Git enquanto o preflight de segurança estiver pendente. Os próximos sistemas serão incorporados gradualmente.
 
 Ordem planejada:
 1. painel/dashboard do aluno;
