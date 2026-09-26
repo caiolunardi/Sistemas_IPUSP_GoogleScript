@@ -1,34 +1,29 @@
 # Painel de Solicitações — alunos
 
-**Versão de referência:** GRADIP UI v1.2, aceita pelo responsável funcional em 25/09/2026 após conferência visual no Web App `/exec`. O pacote Apps Script correspondente contém nove arquivos. Esta pasta registra a versão aceita e suas decisões, mas não substitui a implantação do Google Apps Script.
+**Versão da interface:** GRADIP UI v1.2, aceita pelo responsável funcional em 25/09/2026 após conferência visual no Web App `/exec`. O [código Apps Script](../../../sistemas/painel-solicitacoes/README.md) agora está versionado, com a única adaptação de configuração descrita abaixo. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 
-Página de entrada para estudantes do Serviço de Graduação do IPUSP. Reúne sete formulários de solicitação em quatro categorias: Matrícula e disciplinas; Formação e conclusão; Benefícios e serviços; Intercambistas / Exchange Students. O painel não contém sistemas internos da equipe nem processa diretamente as solicitações dos formulários vinculados.
+Página de entrada para estudantes do Serviço de Graduação do IPUSP. Reúne sete formulários em quatro categorias: Matrícula e disciplinas; Formação e conclusão; Benefícios e serviços; Intercambistas / Exchange Students. Não contém os sistemas internos da equipe nem processa diretamente as solicitações dos formulários vinculados.
 
-Os sete cards da versão aceita são: abertura de habilitação, trancamento total, trancamento parcial, segunda via do BUSP, inclusão/exclusão de disciplinas para intercambistas, exclusão de disciplinas e colação de grau. O backend `Codigo.gs` declara os itens e as categorias; `Painel.html` renderiza as seções, busca e estados. O formulário para intercambistas usa dois períodos independentes, de inclusão e exclusão.
+Os sete cards são: abertura de habilitação, trancamento total, trancamento parcial, segunda via do BUSP, inclusão/exclusão de disciplinas para intercambistas, exclusão de disciplinas e colação de grau. `Codigo.gs` declara os itens e categorias; `Painel.html` renderiza seções, busca e estados. O card para intercambistas combina dois períodos independentes, de inclusão e exclusão.
 
 ## Funcionamento
 
-- A primeira aba da planilha de períodos define disponibilidade contínua ou sazonal. A correspondência com cada item usa `identificacaoPeriodos`, e não a URL de implantação; o painel consulta esses dados pelo backend.
-- O carregamento inicial usa `google.script.run.obterSistemas()`. O frontend apresenta estado de carregamento, cards, selos de disponibilidade, busca e categorias expansíveis.
-- Central de Ajuda e FAQ são incluídos nos arquivos `PainelAjuda*.html`; a seleção de conta (AccountChooser) e os links dos formulários pertencem aos fluxos da versão aceita.
-- O tema GRADIP oferece Sistema, Claro e Escuro. A preferência é local ao navegador (`gradip-theme`); a escolha Sistema reage à mudança de `prefers-color-scheme` com a página aberta.
-- `GradipMarcaIPUSP.html` é incluído no cabeçalho e no loading. `GradipMarcaUSP.html` contém a imagem azul para Claro e o SVG branco incorporado ao projeto para Escuro. A variante oculta por `display:none` sai da árvore de acessibilidade.
+- A primeira aba da planilha de períodos define disponibilidade contínua ou sazonal. A correspondência usa `identificacaoPeriodos`, não a URL de implantação.
+- O carregamento inicial usa `google.script.run.obterSistemas()`; o frontend apresenta loading, cards, selos, busca e categorias expansíveis.
+- Central de Ajuda e FAQ estão nos arquivos `PainelAjuda*.html`. AccountChooser e links dos formulários fazem parte do fluxo aceito.
+- O tema oferece Sistema, Claro e Escuro; a preferência é local ao navegador (`gradip-theme`). Sistema acompanha `prefers-color-scheme`, inclusive com a página aberta.
+- A marca IPUSP aparece no cabeçalho e no loading. A USP usa PNG azul no Claro e SVG branco incorporado no Escuro. `display:none` retira da árvore de acessibilidade a variante oculta.
 
-## Arquivos do pacote v1.2
+## Arquivos e dependências
 
-`Codigo.gs`, `Painel.html`, `GradipMarcaIPUSP.html`, `GradipMarcaUSP.html`, `GradipTema.html`, `GradipTemaControle.html`, `PainelAjuda.html`, `PainelAjudaEstilos.html` e `PainelAjudaUI.html`.
+Os nove arquivos em [`src/`](../../../sistemas/painel-solicitacoes/src) são `Codigo.gs`, `Painel.html`, `GradipMarcaIPUSP.html`, `GradipMarcaUSP.html`, `GradipTema.html`, `GradipTemaControle.html`, `PainelAjuda.html`, `PainelAjudaEstilos.html` e `PainelAjudaUI.html`. Ativos centrais: [IPUSP](../../../assets/ipusp/README.md) e [USP](../../../assets/usp/README.md). Padrões: [tema](../../THEME_IMPLEMENTATION.md), [design system](../../UX_DESIGN_SYSTEM.md) e [ajuda](../../ajuda/README.md).
 
-Ativos centrais: [IPUSP](../../../assets/ipusp/README.md) e [USP](../../../assets/usp/README.md). Padrões comuns: [tema](../../THEME_IMPLEMENTATION.md), [design system](../../UX_DESIGN_SYSTEM.md) e [ajuda](../../ajuda/README.md).
-
-## Histórico da interface
-
-| Versão | Estado documentado |
+| Versão | Alterações |
 |---|---|
-| v1.1 | Tema GRADIP e componentes do painel; smoke funcional no `/exec`. Restaram dois defeitos visuais nas marcas: miolos dos “p” preenchidos e USP azul sobre tarja branca no Escuro. |
-| v1.2 | Regra `fill-rule:evenodd` restaurada nos dois SVGs inline do IPUSP; USP branca vetorial incorporada no Escuro; tarja removida; nome acessível da marca IPUSP escura corrigido. Aceita visualmente pelo responsável funcional. |
+| v1.1 | Tema GRADIP, ajuda e fluxos do painel; smoke funcional no `/exec`. Restaram miolos dos “p” preenchidos e USP azul sobre tarja branca no Escuro. |
+| v1.2 | `fill-rule:evenodd` nas duas variantes IPUSP; USP branca vetorial no Escuro e tarja removida; nome acessível da IPUSP escura corrigido. Aceita visualmente pelo responsável funcional. |
+| Fonte no Git | Mesmo pacote v1.2, exceto leitura de `PERIODOS_SPREADSHEET_ID` de Script Properties e guarda de ausência. Não representa nova implantação homologada. |
 
-A v1.2 preservou `Codigo.gs`, os três arquivos da Ajuda e os dois arquivos do tema byte a byte em relação à v1.1. O bloco JavaScript funcional de `Painel.html` também permaneceu idêntico; somente a apresentação e inclusão das marcas mudaram.
-
-Leia [HOMOLOGACAO.md](HOMOLOGACAO.md) para evidências, limites e hashes e [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md) para o estado da incorporação do código ao Git.
+No pacote original v1.2, `Codigo.gs`, os três arquivos da Ajuda e os dois do tema eram byte-idênticos à v1.1; o bloco JavaScript funcional de `Painel.html` também era idêntico. Consulte [HOMOLOGACAO.md](HOMOLOGACAO.md) para os hashes e [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md) para limites da revisão de segurança.

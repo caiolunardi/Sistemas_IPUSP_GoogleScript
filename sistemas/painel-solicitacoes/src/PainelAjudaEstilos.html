@@ -1,0 +1,465 @@
+<style>
+/*=====================================================
+  CENTRAL DE AJUDA — estilos
+  Todas as classes usam o prefixo "painelAjuda" para nunca
+  colidir com as classes do Painel principal (.cardSistema,
+  .categoriaSistemas, etc.). z-index acima do #loadingOverlay
+  (10000), que não é alterado por este arquivo.
+
+  RODADA GRADIP (tema): valores de cor migrados para os tokens
+  var(--gradip-...) definidos em GradipTema.html — nenhuma classe,
+  nenhum seletor, nenhuma regra de layout/estrutura/comportamento foi
+  alterada nesta rodada, só os valores literais de apresentação
+  (cores, sombra). A Central acompanha o tema da aplicação ao vivo,
+  inclusive enquanto está aberta, porque os tokens são variáveis CSS
+  globais em :root — não há necessidade de fechar/reabrir o modal nem
+  de nenhum JavaScript adicional em PainelAjudaUI.html.
+=====================================================*/
+
+.painelAjudaOverlay{
+    display:none;
+    position:fixed;
+    z-index:11000;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:var(--gradip-overlay);
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 16px;
+    box-sizing:border-box;
+}
+
+.painelAjudaOverlay.painelAjudaAberta{
+    display:flex;
+}
+
+.painelAjudaModal{
+    background:var(--gradip-surface-elevated);
+    border:1px solid var(--gradip-border);
+    border-radius:12px;
+    width:100%;
+    max-width:640px;
+    max-height:calc(100vh - 56px);
+    display:flex;
+    flex-direction:column;
+    box-shadow:var(--gradip-shadow);
+    overflow:hidden;
+}
+
+.painelAjudaCabecalho{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:16px 18px;
+    border-bottom:1px solid var(--gradip-border);
+    flex:0 0 auto;
+}
+
+.painelAjudaTituloLinha{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+
+.painelAjudaTituloLinha h2{
+    font-size:16px;
+    margin:0;
+    color:var(--gradip-text);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.painelAjudaVoltar{
+    background:none;
+    border:none;
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+    padding:6px 8px 6px 0;
+    white-space:nowrap;
+    flex:0 0 auto;
+}
+
+.painelAjudaVoltar:hover{
+    color:var(--gradip-link-hover);
+    text-decoration:underline;
+}
+
+.painelAjudaFechar{
+    background:var(--gradip-surface-2);
+    border:none;
+    color:var(--gradip-text);
+    width:44px;
+    height:44px;
+    min-width:44px;
+    min-height:44px;
+    border-radius:50%;
+    font-size:15px;
+    line-height:1;
+    cursor:pointer;
+    flex:0 0 auto;
+    box-sizing:border-box;
+}
+
+.painelAjudaFechar:hover{
+    background:var(--gradip-border);
+}
+
+.painelAjudaFechar:focus-visible,
+.painelAjudaVoltar:focus-visible,
+.painelAjudaBotaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.painelAjudaBuscaLinha{
+    padding:12px 18px;
+    border-bottom:1px solid var(--gradip-border);
+    flex:0 0 auto;
+}
+
+.painelAjudaBusca{
+    width:100%;
+    padding:10px 13px;
+    /* CORREÇÃO v1.1 (bordas de controles interativos — mesma correção
+       de .caixaBusca em Painel.html): --gradip-border não alcança 3:1
+       contra o fundo do input; --gradip-border-strong (já usado no
+       <select> de tema) alcança, após o ajuste de valor feito em
+       GradipTema.html nesta rodada. */
+    border:1px solid var(--gradip-border-strong);
+    border-radius:6px;
+    font-size:14px;
+    box-sizing:border-box;
+    font:inherit;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+}
+
+.painelAjudaBusca::placeholder{
+    /* CORREÇÃO v1.1 (placeholder — mesma correção de .caixaBusca em
+       Painel.html): var(--gradip-text-muted) no lugar de
+       var(--gradip-input-placeholder), que media ~3.87:1 no Light. */
+    color:var(--gradip-text-muted);
+}
+
+.painelAjudaBusca:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:1px;
+}
+
+.painelAjudaCorpo{
+    padding:16px 18px 24px;
+    overflow-y:auto;
+    flex:1 1 auto;
+}
+
+.painelAjudaPergunta{
+    font-size:15px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    margin:2px 0 14px;
+}
+
+.painelAjudaAtalhos{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:22px;
+}
+
+.painelAjudaAtalho{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-align:left;
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:12px;
+    font:inherit;
+    font-size:12.5px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    cursor:pointer;
+}
+
+.painelAjudaAtalho:hover{
+    background:var(--gradip-info-bg);
+    border-color:var(--gradip-info-border);
+}
+
+.painelAjudaAtalhoIcone{
+    font-size:20px;
+    flex:0 0 auto;
+}
+
+.painelAjudaMenu{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.painelAjudaMenuItem{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    text-align:left;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:13px 14px;
+    font:inherit;
+    font-size:13.5px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    cursor:pointer;
+}
+
+.painelAjudaMenuItem:hover{
+    border-color:var(--gradip-link);
+    background:var(--gradip-surface-2);
+}
+
+.painelAjudaMenuItem::after{
+    content:"›";
+    color:var(--gradip-link);
+    font-weight:bold;
+    margin-left:10px;
+}
+
+.painelAjudaSecao h3{
+    font-size:16px;
+    color:var(--gradip-text);
+    margin:0 0 12px;
+}
+
+.painelAjudaSecao h4{
+    font-size:13.5px;
+    color:var(--gradip-text);
+    margin:18px 0 6px;
+}
+
+.painelAjudaSecao p{
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--gradip-text);
+    margin:0 0 12px;
+}
+
+.painelAjudaSecao ol,
+.painelAjudaSecao ul{
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--gradip-text);
+    margin:0 0 14px;
+    padding-left:22px;
+}
+
+.painelAjudaSecao li{
+    margin-bottom:4px;
+}
+
+.painelAjudaNota{
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    border-radius:8px;
+    padding:11px 14px;
+    font-size:12.5px;
+    color:var(--gradip-text);
+    margin:14px 0;
+}
+
+.painelAjudaBilingue{
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:12px 14px;
+    margin:0 0 12px;
+}
+
+.painelAjudaBilingue .painelAjudaLinhaPt{
+    font-size:13.5px;
+    color:var(--gradip-text);
+    margin:0 0 3px;
+}
+
+.painelAjudaBilingue .painelAjudaLinhaEn{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    font-style:italic;
+    margin:0;
+}
+
+.painelAjudaTabela{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+    margin:0 0 14px;
+}
+
+.painelAjudaTabela th,
+.painelAjudaTabela td{
+    text-align:left;
+    padding:8px 10px;
+    border-bottom:1px solid var(--gradip-border);
+    vertical-align:top;
+}
+
+.painelAjudaTabela th{
+    color:var(--gradip-text-muted);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+}
+
+.painelAjudaMapaItem{
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:10px;
+}
+
+.painelAjudaMapaPergunta{
+    font-size:13.5px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    margin:0 0 4px;
+}
+
+.painelAjudaMapaResposta{
+    font-size:13px;
+    color:var(--gradip-text);
+    margin:0;
+}
+
+.painelAjudaMapaCategoria{
+    font-size:11.5px;
+    color:var(--gradip-link);
+    font-weight:bold;
+    margin:4px 0 0;
+}
+
+.painelAjudaCard{
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:10px;
+}
+
+.painelAjudaCard strong{
+    display:block;
+    font-size:13.5px;
+    color:var(--gradip-text);
+    margin-bottom:4px;
+}
+
+.painelAjudaCard p{
+    margin:0;
+    font-size:13px;
+}
+
+.painelAjudaFaqItem{
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    margin-bottom:8px;
+    overflow:hidden;
+}
+
+.painelAjudaFaqPergunta{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    text-align:left;
+    background:var(--gradip-surface);
+    border:none;
+    padding:13px 14px;
+    font:inherit;
+    font-size:13.5px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    cursor:pointer;
+    box-sizing:border-box;
+}
+
+.painelAjudaFaqPergunta:hover{
+    background:var(--gradip-surface-2);
+}
+
+/* O glifo estático em PainelAjuda.html ("⌃") não pode ser alterado
+   nesta rodada (arquivo deve permanecer byte-idêntico), então a
+   correção de direção (introduzida na Rodada B.1) é feita só
+   invertendo QUAL estado recebe a rotação: fechado (padrão) gira 180°
+   e passa a apontar pra baixo; aberto volta a 0° e mostra o glifo
+   original apontando pra cima. Esta é uma particularidade já
+   homologada do sistema (documentada em RELATORIO_FINAL_PAINEL_B1.txt)
+   e foi preservada nesta rodada visual sem nenhuma alteração de lógica
+   — só as cores abaixo foram migradas para tokens. */
+.painelAjudaFaqChevron{
+    flex:0 0 auto;
+    transition:transform .15s;
+    color:var(--gradip-link);
+    transform:rotate(180deg);
+}
+
+.painelAjudaFaqPergunta[aria-expanded="true"] .painelAjudaFaqChevron{
+    transform:rotate(0deg);
+}
+
+.painelAjudaFaqResposta{
+    padding:0 14px 14px;
+    font-size:13px;
+    color:var(--gradip-text);
+    line-height:1.5;
+}
+
+.painelAjudaSemResultado{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    padding:40px 10px;
+    font-size:13.5px;
+}
+
+.painelAjudaSemResultadoDica{
+    /* CORREÇÃO v1.1 (Correção 3 — mesma correção de .vazioDica em
+       Painel.html): opacity:.8 removida. Misturada com
+       --gradip-text-muted ela reduzia o contraste efetivo pra ~3.57:1
+       no Light contra --gradip-surface-elevated (abaixo de 4.5:1). Sem
+       a opacity, o token muted sozinho já mede >=4.5:1 nos dois
+       temas. */
+    color:var(--gradip-text-muted);
+    font-size:12.5px;
+    margin-top:6px;
+}
+
+/*=================================
+    RESPONSIVO — TELAS ESTREITAS
+==================================*/
+
+@media (max-width:480px){
+
+    .painelAjudaOverlay{
+        padding:0;
+    }
+
+    .painelAjudaModal{
+        max-width:100%;
+        max-height:100%;
+        height:100%;
+        border-radius:0;
+    }
+
+    .painelAjudaAtalhos{
+        grid-template-columns:1fr;
+    }
+
+}
+</style>

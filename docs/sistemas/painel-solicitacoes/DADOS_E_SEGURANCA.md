@@ -1,53 +1,30 @@
 # Dados e segurança — Painel de Solicitações
 
-**Revisão:** 25/09/2026. **Escopo:** inventário preliminar do pacote v1.2 recebido; revisão institucional e de implantação pendente.
+**Revisão da fonte para Git:** 25/09/2026. O preflight de conteúdo do pacote foi realizado para publicação do código; o [checklist de segurança do ambiente e dos formulários](../../seguranca/SECURITY_CHECKLIST.md) não está integralmente concluído.
 
-## 1. Escopo
+## Escopo e dados
 
-- Sistema: painel de entrada para estudantes.
-- Ambiente: pacote associado à implantação `/exec` aceita visualmente; configuração exata da implantação não disponível neste registro.
-- Responsável funcional: Serviço de Graduação do IPUSP; nomeação formal a validar.
+O painel é uma página de entrada para estudantes. Contém catálogo de formulários, categorias, janelas de abertura obtidas de uma planilha e uma preferência local de tema (`localStorage["gradip-theme"]`). O texto de busca filtra a interface localmente. Não foram adicionados dados de alunos, fixtures reais nem capturas de produção ao Git. Os formulários vinculados tratam suas próprias solicitações e exigem análise separada.
 
-## 2. Dados tratados
+| Recurso | Tipo / finalidade | Estado da fonte no Git |
+|---|---|---|
+| PLANILHA_PERIODOS | Google Sheets; janelas de abertura | O ID literal foi retirado. `Codigo.gs` exige `Script Properties["PERIODOS_SPREADSHEET_ID"]` e bloqueia inicialização se faltar. |
+| FORMULARIOS_ALUNOS | Sete Web Apps de destino | URLs `/exec` preservadas porque o próprio painel as fornece aos alunos. São links de navegação, não autorização. |
+| MARCA_USP_CLARA | PNG institucional hospedado externamente | URL já entregue ao navegador na v1.2; disponibilidade deve ser conferida no ambiente real. |
+| MARCA_USP_ESCURA | SVG institucional incorporado | Ativo de `assets/usp/`, sem busca ao GitHub em tempo de execução. |
 
-| Categoria | Finalidade | Origem e destino | Persistência | Classe |
-|---|---|---|---|---|
-| Catálogo de formulários e categorias | Exibir opções aos alunos | `Codigo.gs` → navegador | Código/configuração | Informação de serviço |
-| Janelas de abertura | Informar disponibilidade | Planilha de períodos → backend → navegador | Planilha; retenção a validar | Operacional |
-| Preferência de tema | Restaurar aparência | Navegador | `localStorage["gradip-theme"]` | Preferência local |
-| Texto de busca | Filtrar cards | Navegador | Sem persistência identificada no painel | Entrada local |
+A revisão do pacote encontrou **um ID de planilha literal**, removido da fonte versionada; não encontrou e-mails pessoais no código. Links públicos destinados aos alunos, URL institucional da imagem e URL do AccountChooser foram mantidos. Nenhum valor de `Script Properties` foi commitado. O pacote original com o ID literal não foi publicado no Git.
 
-O tratamento de dados pessoais ocorre nos formulários de destino e requer documentação própria. Não inferir que esses formulários compartilham o modelo de acesso do painel.
+## Configuração e execução
 
-## 3. Recursos externos e configuração
+O administrador da implantação precisa cadastrar `PERIODOS_SPREADSHEET_ID` nas Propriedades do script do **projeto Apps Script alvo**, com o valor pertinente ao ambiente. Não registrar o valor em issues, documentação ou logs. Script Properties evita o valor no Git, mas não é cofre contra editores autorizados do projeto.
 
-| Nome lógico | Tipo | Configuração atual no pacote | Situação |
-|---|---|---|---|
-| PLANILHA_PERIODOS | Google Sheets | `PERIODOS_SPREADSHEET_ID` com valor literal | Migrar para configuração fora do Git antes de versionar backend |
-| FORMULARIOS_ALUNOS | Web Apps vinculados | URLs `/exec` no catálogo | Decidir e documentar quais URLs são deliberadamente públicas aos alunos |
-| MARCA_USP_CLARA | Imagem institucional externa | URL da imagem no frontend | Verificar disponibilidade e política de uso |
-| MARCA_USP_ESCURA | SVG incorporado | Ativo do repositório central | Sem busca ao GitHub em runtime |
+**A validar na implantação:** quem pode abrir o Web App, identidade `executeAs`, permissões de leitura da planilha e compartilhamento. Os estados do card não garantem a autorização dos formulários de destino; cada backend deve validar acesso e período conforme suas regras. O código original tolera falhas de leitura da planilha assumindo formulários abertos; a cópia no Git bloqueia a inicialização se a propriedade estiver ausente, mas ainda exige monitoramento dos demais erros de acesso.
 
-IDs e URLs operacionais não estão reproduzidos nesta documentação.
+## Logs, testes e governança
 
-## 4. Web App e autorização
-
-- Quem pode abrir e identidade de execução (`executeAs`): **A VALIDAR NA IMPLANTAÇÃO**.
-- O painel consulta a planilha para obter períodos e entrega estados de disponibilidade ao cliente. Confirmar em revisão específica as permissões do recurso e a validação server-side dos parâmetros dos formulários de destino.
-- O fato de um botão estar oculto ou de um card indicar indisponibilidade não deve ser tratado como autorização para os formulários vinculados.
-
-## 5–8. Configuração, logs, acesso e testes
-
-- Chave lógica proposta para a planilha: `PERIODOS_SPREADSHEET_ID`; usar Script Properties ou mecanismo institucional aprovado, sem valor no Git. A migração ainda não foi feita no pacote homologado.
-- Revisar logs, mensagens de erro, permissões da planilha, herança de acesso e identidade de execução antes da incorporação do backend.
-- Fixtures e capturas versionadas devem ser sintéticas ou revisadas para não conter dados pessoais nem IDs internos.
-
-## 9–11. Governança e exceções
+`diagnosticarPeriodos()` registra os nomes e estados dos formulários para diagnóstico. Verificar sua execução e retenção de logs conforme regras institucionais. A verificação local da fonte Git cobriu sintaxe, diferença byte a byte, varredura de identificadores longos e leitura da propriedade com valor fictício/ausente. Não houve acesso à planilha real nesta rodada.
 
 - Base legal e retenção: **A VALIDAR INSTITUCIONALMENTE**.
-- Canal de incidente: seguir a orientação institucional vigente e [procedimento comum](../../seguranca/INCIDENTES.md).
-- Exceção temporária de versionamento: o pacote operacional permanece fora deste Git até substituir o identificador literal, classificar as URLs e concluir revisão do modelo de acesso. Isso não desfaz a aceitação visual da v1.2.
-
-## 12. Estado do checklist
-
-O [checklist de segurança](../../seguranca/SECURITY_CHECKLIST.md) está **pendente** para incorporação do código: identificador operacional literal, `executeAs` e permissões do recurso não foram validados. Não registrar como concluída a homologação de segurança.
+- Canal de incidentes: seguir o [procedimento comum](../../seguranca/INCIDENTES.md) e o fluxo institucional vigente.
+- Antes de implantar a versão do Git: validar propriedade, `executeAs`, acesso à planilha e disponibilidade real; repetir o smoke funcional/visual. A homologação de interface da v1.2 original não é uma homologação automática desta configuração sanitizada.
