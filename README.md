@@ -44,22 +44,16 @@ Base reutilizável:
 
 ## Organização da documentação
 
-A documentação comum fica em `docs/` e os componentes reutilizáveis em `shared/`. Sistemas específicos serão incorporados gradualmente e terão documentação própria, sem misturar regras particulares com diretrizes universais.
+A documentação comum fica em `docs/` e os componentes reutilizáveis em `shared/`. Sistemas específicos são incorporados gradualmente e têm documentação própria, sem misturar regras particulares com diretrizes universais.
 
-Consulte `docs/README.md` para o mapa completo. O [Painel de Solicitações dos alunos v1.2](sistemas/painel-solicitacoes/README.md) já possui fonte Apps Script versionada, com a planilha de períodos resolvida pela chave `PERIODOS` no índice mestre `ID_INDEX`, e documentação de homologação.
+Consulte `docs/README.md` para o mapa completo e `docs/SISTEMAS.md` para o catálogo.
 
-Cada sistema poderá ter sua própria pasta conforme for incorporado ao repositório, por exemplo:
+Sistemas já incorporados:
 
-```text
-sistemas/
-  busp/
-  diplomas/
-  trancamento-parcial/
-  painel-solicitacoes/
-  ...
-```
+- [Painel de Solicitações dos alunos v1.2](sistemas/painel-solicitacoes/README.md) — fonte Apps Script versionada e documentação de homologação;
+- [Estrutura Curricular e Grade Horária 1.8.0](docs/sistemas/estrutura-curricular/README.md) — documentação técnica completa do fluxo Júpiter → preparação → secretarias → auditoria; código recebido e aguardando auditoria independente antes de promoção como baseline.
 
-A documentação comum fica fora das pastas dos sistemas para servir de referência única.
+Cada sistema pode ter sua própria pasta conforme for incorporado ao repositório.
 
 ## Fonte da identidade visual
 

@@ -36,9 +36,10 @@ Sistemas pequenos podem concentrar tudo no `README.md`, mas a seção de dados/s
 ## Sistemas documentados
 
 - [Painel de Solicitações dos alunos v1.2](painel-solicitacoes/README.md) — interface aceita em 25/09/2026; [código sanitizado](../../sistemas/painel-solicitacoes/README.md); [evidências e limites](painel-solicitacoes/HOMOLOGACAO.md); [segurança e configuração](painel-solicitacoes/DADOS_E_SEGURANCA.md).
+- [Estrutura Curricular e Grade Horária 1.8.0](estrutura-curricular/README.md) — importação CSV/PDF do Júpiter, base curricular, preparação/envio da grade e painel de auditoria; [descrição completa](estrutura-curricular/DESCRICAO_COMPLETA.md); [arquitetura](estrutura-curricular/ARQUITETURA.md); [segurança](estrutura-curricular/DADOS_E_SEGURANCA.md); [homologação](estrutura-curricular/HOMOLOGACAO.md). O código recebido aguarda auditoria independente antes de ser promovido como baseline.
 
 ## Ordem prevista
 
-1. painel/dashboard do aluno — documentação e código da v1.2 incorporados, com o ID do índice mestre em Script Properties e a chave `PERIODOS` para a planilha de períodos;
-2. painéis internos da equipe;
+1. painéis e dashboards;
+2. sistemas internos da equipe;
 3. formulários vinculados, um de cada vez.
