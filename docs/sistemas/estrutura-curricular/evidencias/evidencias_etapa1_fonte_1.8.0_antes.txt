@@ -1,0 +1,73 @@
+=== Etapa 1 — identidade de disciplinas para outros cursos ===
+Fonte testada: DIR_SRC (fonte indicada na linha de comando)
+Versão declarada na fonte: 1.8.0
+
+--- R. Retrato da reprodução
+R1. Cadastrada PST0391 e editada para PST0392 (Identificador | Código | Nome | Observações | Semestre | Origem | Excluída | Na grade):
+  PST0391 | PST0392 | Disciplina corrigida | Observação administrativa que deve sobreviver | 1º semestre | Cadastro manual |  | 
+R2. Prévia do CSV — novas: ["PST0391"]; conhecidas: 0
+R3. Depois de confirmar a inclusão (Identificador | Código | Nome | Observações | Semestre | Origem | Excluída | Na grade):
+  PST0391 | PST0391 | Disciplina trazida pelo CSV |  |  | Lista de disciplinas por unidade (Júpiter) |  | 
+  PST0391 | PST0391 | Disciplina trazida pelo CSV |  |  | Lista de disciplinas por unidade (Júpiter) |  | 
+R3. Painel recebe: [{"id":"O:PST0391","codigo":"PST0391","nome":"Disciplina trazida pelo CSV","observacoes":""},{"id":"O:PST0391","codigo":"PST0391","nome":"Disciplina trazida pelo CSV","observacoes":""}]
+R4. Reaberto — contexto do servidor (chave → código/nome): ["PST0391 → PST0391 / Disciplina trazida pelo CSV"]
+R5. Depois de reabrir e salvar a ficha PST0391 sem mudanças (regrava a aba) (Identificador | Código | Nome | Observações | Semestre | Origem | Excluída | Na grade):
+  PST0391 | PST0391 | Disciplina trazida pelo CSV |  |  | Lista de disciplinas por unidade (Júpiter) |  | 
+
+--- A. PST0391 aparece como nova; a inclusão cria registro independente e preserva o corrigido (gravado e após reabrir)
+Antes da importação (Identificador | Código | Nome | Observações | Semestre | Origem | Excluída | Na grade):
+  PST0391 | PST0392 | Disciplina corrigida | Observação administrativa que deve sobreviver | 1º semestre | Cadastro manual |  | 
+Depois da inclusão (Identificador | Código | Nome | Observações | Semestre | Origem | Excluída | Na grade):
+  PST0391 | PST0391 | Disciplina trazida pelo CSV |  |  | Lista de disciplinas por unidade (Júpiter) |  | 
+  PST0391 | PST0391 | Disciplina trazida pelo CSV |  |  | Lista de disciplinas por unidade (Júpiter) |  | 
+RESULTADO: FALHOU — após inclusão: identificadores repetidos na aba: ["PST0391"] ≠ []
+
+--- A2. Mesmo cenário com o registro original vindo do próprio CSV da unidade
+RESULTADO: FALHOU — identificadores repetidos: ["PST0391"] ≠ []
+
+--- B. nome, créditos/CH, observações, unidade/curso, semestre e marca "na grade" não mudam com a importação
+RESULTADO: FALHOU — linhas com Identificador PST0391: 2 ≠ 1
+
+--- C1. editar o novo registro não altera o antigo (e vice-versa)
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'Identificador')
+
+--- C2. excluir o novo não exclui o antigo; restaurar o novo não mexe no antigo
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'Identificador')
+
+--- C3. operação inversa: excluir o antigo não exclui o novo
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'Identificador')
+
+--- C4. marcação para a grade usa a identidade correta (cada registro com o seu código na grade)
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'Identificador')
+
+--- D. reimportar o mesmo CSV com PST0391 e PST0392 já presentes não cria outro registro
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'Identificador')
+
+--- E. a primeira chave alternativa também ocupada: o alocador acha outra livre sem sobrescrever
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'Identificador')
+
+--- E2. chave alternativa ocupada por registro EXCLUÍDO também não é reaproveitada
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'Identificador')
+
+--- F1. importação normal: chave = código, dados do CSV, sem repetição
+RESULTADO: ok
+
+--- F2. seleção de só parte das novas continua funcionando
+RESULTADO: ok
+
+--- F3. edição posterior do código mantém a identidade interna
+RESULTADO: ok
+
+--- F4. chave de registro excluído (sem código editado) não é reutilizada nem o código volta como novo
+RESULTADO: ok
+
+--- F5. lote com várias disciplinas, algumas com a chave ocupada por registros de código editado
+RESULTADO: FALHOU — identificadores repetidos: ["PST0501","PSA0502"] ≠ []
+
+--- F6. código numérico (interdepartamental) com a chave ocupada: chave alternativa gravada como texto e lida igual após reabrir
+RESULTADO: FALHOU — diferente: [["4709991","4709991"],["4709991","4709991"]] ≠ [["4709991","4709992"],["4709991-2","4709991"]]
+
+--- G. cadastro manual do código antigo com a chave ocupada é recusado e nada é gravado
+RESULTADO: ok
+
+=== TOTAL: 5 ok, 12 falha(s) ===

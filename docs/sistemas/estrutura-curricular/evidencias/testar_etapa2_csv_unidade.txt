@@ -1,0 +1,79 @@
+# suíte: testar_etapa2_csv_unidade
+# comando: node testar_etapa2_csv_unidade.js
+# data: 2026-10-07T21:25:04Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+
+== R. Retrato das três falhas confirmadas (só registra; asserções em 1–13)
+  (retrato gravado nas evidências)
+
+== 1. Créditos negativos
+  ✓ 1a. créditos-aula negativo (-2; 0): linha recusada com motivo, nada gravado (nem com chamada direta)
+  ✓ 1b. créditos-trabalho negativo (2; -1): linha recusada com motivo, nada gravado
+  ✓ 1c. os dois negativos: um motivo para cada campo
+
+== 2. Texto, conversão parcial, fração, NaN e Infinity
+  ✓ 2. "abc", "2abc", "2 créditos", "1/2", "1,5", "1.5", "NaN", "Infinity", "+2", "1e1": todas recusadas com o valor no motivo
+
+== 3. Zero e inteiros válidos
+  ✓ 3. 0/0, 2/1, 4/0, 0/2, "02" e "3,0": aceitos, CH = 15 × aula + 30 × trabalho, gravados e lidos iguais
+
+== 4. Ausências legítimas (comportamento anterior preservado)
+  ✓ 4. aula vazia, trabalho vazio, ambos vazios, só espaços e colunas finais ausentes: aceitos como antes
+
+== 5. Aspas não encerradas
+  ✓ 5a. aspas não encerradas no nome: recusada (não engole os campos seguintes), nada gravado
+  ✓ 5b. aspas não encerradas em campo numérico: recusada, nada gravado
+  ✓ 5c. campo entre aspas que continua na linha seguinte (quebra de linha dentro de aspas): as duas linhas recusadas, nenhum fragmento vira disciplina
+  ✓ 5d. aspas no meio de um campo sem aspas e texto depois das aspas de fechamento: recusadas (interpretação ambígua)
+  ✓ 5e. mais colunas preenchidas que o cabeçalho (ex.: "1,5" num arquivo separado por vírgula): recusada
+  ✓ 5f. cabeçalho com aspas não encerradas: erro amigável (PACOTE_INVALIDO), sem prévia
+
+== 6. Aspas válidas
+  ✓ 6. nome entre aspas com separador e com aspas escapadas (""): aceitos e gravados certos
+
+== 7. Separadores, BOM, LF/CRLF e linhas vazias
+  ✓ 7. ";", "," e tabulação; BOM; LF e CRLF; linhas vazias: mesma prévia
+
+== 8. Arquivo misto
+  ✓ 8. misto: motivos de todas as inválidas, só as válidas selecionáveis, inclusão só das válidas, registros anteriores intactos
+  ✓ 8b. (1.8.3) misto só com créditos inválidos (sem problema de aspas): todas as válidas continuam oferecidas e gravadas
+
+== 9. Arquivo totalmente inválido
+  ✓ 9. só linhas inválidas: nenhuma nova, inclusão recusada, aba inalterada (inclusive após reabrir)
+
+== 10. Chamada direta à inclusão
+  ✓ 10. incluir direto o código de uma linha inválida (com a assinatura da prévia): não grava esse código
+
+== 11. Conhecidas e repetidas com conteúdo inválido
+  ✓ 11. código já na lista e código repetido no arquivo, com crédito inválido: aparecem como inválidos, não como "conhecida"/"repetida"
+
+== 12. Fluxos válidos
+  ✓ 12a. importação válida normal
+  ✓ 12b. seleção parcial e reimportação: as não escolhidas continuam novas; as incluídas viram conhecidas
+
+== 13. Regressão da etapa 1 (amostra; a suíte completa da etapa 1 roda à parte)
+  ✓ 13. código corrigido + CSV com o código antigo: registro novo PST0391-2, o corrigido intacto; com crédito inválido, nada
+
+== 14. (1.8.3) Campo entre aspas com várias linhas: nenhum fragmento vira disciplina
+  (retrato R2 gravado nas evidências)
+  ✓ 14a. reprodução exata: PST0999 (dentro do nome de PST0803) nunca é oferecida nem gravada, nem por chamada direta; PST0804 continua
+  ✓ 14b. continuação com VÁRIAS linhas parecidas com registros válidos: nenhuma é oferecida; o registro real seguinte é
+  ✓ 14c. campo aberto até o FIM do arquivo, com linhas posteriores parecidas com registros: nada a partir da abertura é lido; as anteriores continuam
+  ✓ 14d. aspas escapadas ("") dentro do campo de várias linhas não fecham o campo (nenhum fechamento falso)
+  ✓ 14e. campo de várias linhas que fecha de forma inválida (texto depois das aspas): fim do registro ambíguo, nada a partir dele é lido; o anterior continua
+  ✓ 14f. cabeçalho com campo entre aspas que quebra a linha: arquivo recusado (PACOTE_INVALIDO), nada gravado
+
+== 15. (1.8.3) Inteiro com zeros decimais
+  ✓ 15a. 3.000, 3,000, 0002.0000, 0.0000 e 9999.000 (aula e trabalho): aceitos como inteiros, CH certa, gravados e relidos
+  ✓ 15b. CSV separado por vírgula: "3,000" corretamente entre aspas = 3
+  ✓ 15c. frações reais continuam recusadas (3.001, 2,0001, muitos zeros e depois um dígito) e acima de 9999 também
+
+31 ok, 0 falha(s)
+
+# código de saída: 0  (duração: 1 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa2_csv_unidade.txt
+# interpretação: aprovada

@@ -1,0 +1,61 @@
+# suíte: testar_envio_grade
+# comando: node testar_envio_grade.js /caminho/grade_curricular.csv /caminho/disciplinas_unidade.csv
+# data: 2026-10-07T21:24:46Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Envio da grade 2027/1
+  ✓ 2027/1: cópia de segurança na pasta + linha no índice (2026/1 pelo nome atual), B4:S999 apagado nas 6 abas, C/D/E/I/J gravados, arquivo renomeado
+  ✓ cada aba: uma linha por disciplina, na ordem tipo → semestre ideal → código; código, nome (+ " – " observações), tipo, semestre ideal (número) e créditos-aula
+  ✓ habilitações divergentes: tipo e semestre ideal pelo Psicólogo (4701784: Obrigatória 7º no Bacharelado, Eletiva 9º no Psicólogo → Eletiva, 9); FSL0118 → Obrigatória, 1
+  ✓ disciplina para outros cursos (PST0391): Tipo (E) e Semestre Ideal (I) em branco, no fim da aba PST
+  ✓ o que NÃO pode mudar: colunas das práticas (U–W), cabeçalho (linhas 1–3), linha 1000, abas Informações, Disciplinas (oculta) e DataBase; e o resto de B:S fica vazio
+  ✓ segundo envio (2027/2): nova cópia com o semestre do NOME ATUAL (2027/1), índice com mais uma linha; grade do 2º semestre
+
+== Ajustes do painel valem no envio
+  ✓ código, nome e créditos ajustados, oferta ajustada (tipo), exclusão e semestre de oferecimento ajustado
+
+== Recusas: nada muda
+  ✓ contagens diferentes das da prévia (grade mudou)
+  ✓ sem "esperado" e sem a identificação da prévia
+  ✓ (1.8.12) chamada antiga só com as contagens certas, sem a identificação da prévia
+  ✓ semestre ou ano inválidos
+  ✓ nome atual sem semestre ("Grade Horária - Preenchimento")
+  ✓ aba "PST" não existe na planilha das secretarias
+  ✓ cabeçalho diferente (PSC, coluna I3)
+  ✓ chave GRADE_HORARIA_PREENCHIMENTO ausente no ID_INDEX
+  ✓ chave INDEX_GRADE_HORARIA_VERSOES_ANTERIORES ausente no ID_INDEX
+  ✓ chave BACKUP_GRADES_ANTERIORES ausente no ID_INDEX
+  ✓ (1.5.1) projeto sem a autorização do Google Drive: AUTORIZACAO_DRIVE explica o que fazer (diagnosticarEnvioGrade no editor)
+  ✓ (1.5.1) pasta que a conta do sistema não enxerga: CONFIGURACAO pede para compartilhar com a conta que implantou
+  ✓ grade vazia no semestre
+  ✓ leitor (não administrador)
+  ✓ trava ocupada
+  ✓ falha ao copiar o arquivo: nada apagado nem gravado
+  ✓ falha ao registrar no índice: a cópia fica na pasta, a grade não muda
+
+== Horário de Fim (1.6.2)
+  ✓ fórmula do fim: início como texto "08:00" (lista da Tabela) ou como hora; resultado em texto HH:mm; "-- : --" e "Não será oferecida" repetidos; sem início ou sem créditos, vazio
+  ✓ planilha em Tabela com colunas tipadas: envio completo, sem setNumberFormat na coluna M; sem Tabela também funciona
+  ✓ fórmula do fim calculando com erro (#ERROR!): o envio conclui e avisa quantas linhas e quais
+
+== Separador das fórmulas (1.6.3)
+  ✓ planilha pt_BR (a real): fórmula com ";" — com "," o Sheets dá "Erro de análise de fórmula" (o simulador reproduz o #ERROR! da fonte 1.6.2)
+  ✓ outras localidades: en_US → ","; localidade ilegível → ";"; localidade que engana → o envio tenta o outro separador e fica com o que funciona
+
+== Falha no meio da gravação
+  ✓ falha ao gravar a aba PSE: ENVIO_INCOMPLETO com o nome da cópia; enviar de novo completa (e faz outra cópia)
+
+== Diagnóstico
+  ✓ diagnosticarEnvioGrade: só lê; nomes (sem IDs), semestre do nome, abas conferidas; recusa leitor
+
+== Registros
+  ✓ logs sem e-mail, sem IDs e sem nomes de disciplinas
+
+Executados: 32 (32 ok, 0 falha(s)); pulados: 0  — evidências em saida/evidencias_envio_grade.txt
+
+# código de saída: 0  (duração: 7 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_envio_grade.txt
+# interpretação: aprovada

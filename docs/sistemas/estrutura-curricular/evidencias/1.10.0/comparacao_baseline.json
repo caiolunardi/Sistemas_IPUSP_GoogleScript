@@ -1,0 +1,211 @@
+{
+  "baseline_zip_sha256": "72f0ce6e4e34d5adbfb9c1823b055fb998b95574bb1b6514f3fb6221bc32ee04",
+  "codigo_gs_apenas_versao": true,
+  "validacoes_gs_identico": true,
+  "arquivos": [
+    {
+      "arquivo": "src/Acesso.gs",
+      "sha256": "264bce3e57f4af53b8cdfb826c96552b4fde3cc08ec8655e023bed36cc03501e",
+      "sha256_1_9_3": "264bce3e57f4af53b8cdfb826c96552b4fde3cc08ec8655e023bed36cc03501e",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/AuditoriaGrade.gs",
+      "sha256": "1c32b8cf07b270bbd74469142b00b122df45b49ed88f3caeb9dea4f7ec558426",
+      "sha256_1_9_3": "1c32b8cf07b270bbd74469142b00b122df45b49ed88f3caeb9dea4f7ec558426",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/AuditoriaPainel.gs",
+      "sha256": "fb273852f0d9419427f36c4f294f2bd55274fe1e6549f37913ef8930a8974057",
+      "sha256_1_9_3": "fb273852f0d9419427f36c4f294f2bd55274fe1e6549f37913ef8930a8974057",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Codigo.gs",
+      "sha256": "3998a736ad150a1ff6ad8f53c7040d939b14a85ee2185d6d0dc3c87e7af813ca",
+      "sha256_1_9_3": "506e1960dc7eff2e0ae0dbaac1491e54f29284c3e99ee4fe2ec14e269d7390d7",
+      "estado": "alterado"
+    },
+    {
+      "arquivo": "src/Configuracao.gs",
+      "sha256": "23b1bfd33444dcb2039945dbb70cc441473f2c7aa79f91402483b5dcd7c0c5c8",
+      "sha256_1_9_3": "23b1bfd33444dcb2039945dbb70cc441473f2c7aa79f91402483b5dcd7c0c5c8",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Consulta.gs",
+      "sha256": "a22510c6e4c0d484afaccbe46749355a650a3438687eac7ff3626ad6e454c3ed",
+      "sha256_1_9_3": "a22510c6e4c0d484afaccbe46749355a650a3438687eac7ff3626ad6e454c3ed",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/EnvioGrade.gs",
+      "sha256": "b334d55623a490efce5d1d84904618eae345101a4942a3fcb6c8ff42a7f4c1d9",
+      "sha256_1_9_3": "b334d55623a490efce5d1d84904618eae345101a4942a3fcb6c8ff42a7f4c1d9",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Esquema.gs",
+      "sha256": "adf71c73a888de791e0ab9c811d8964de2b010bb765b0c0b4f6d66dc323dde68",
+      "sha256_1_9_3": "adf71c73a888de791e0ab9c811d8964de2b010bb765b0c0b4f6d66dc323dde68",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/EstruturaAjuda.html",
+      "sha256": "1b106a9236ce2e6a0200220102e8ab1e5b3e8ce9cc745da8611af7e5e036a5c8",
+      "sha256_1_9_3": "1b106a9236ce2e6a0200220102e8ab1e5b3e8ce9cc745da8611af7e5e036a5c8",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/EstruturaAjudaEstilos.html",
+      "sha256": "c70da501914aad72f32ed0d3fa22fbe9d072580d6f3c1909746ddecf92dfd74e",
+      "sha256_1_9_3": "c70da501914aad72f32ed0d3fa22fbe9d072580d6f3c1909746ddecf92dfd74e",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/EstruturaAjudaUI.html",
+      "sha256": "3e250625793344f9270e33f83f445fa46a5190c995ce7cc03714102ea2a55452",
+      "sha256_1_9_3": "3e250625793344f9270e33f83f445fa46a5190c995ce7cc03714102ea2a55452",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/EstruturaIcones.html",
+      "sha256": "faeed9b1c7eff2cc3939855b269ed3d9aebb1c985f8d43fd530f6f4957c4334d",
+      "sha256_1_9_3": null,
+      "estado": "novo"
+    },
+    {
+      "arquivo": "src/EstruturaNavegacao.html",
+      "sha256": "5c6c818e7840e24f16d15c6bbdb9b81849aad2acf83f9f25121cb2d15042a6f6",
+      "sha256_1_9_3": null,
+      "estado": "novo"
+    },
+    {
+      "arquivo": "src/EstruturaNavegacaoEstilos.html",
+      "sha256": "40c99b6b1a313b80c4e3c2f632990e9b5ec3fe39b204396e2d6f45aed7bd9bd0",
+      "sha256_1_9_3": null,
+      "estado": "novo"
+    },
+    {
+      "arquivo": "src/EstruturaNavegacaoUI.html",
+      "sha256": "572369f782b3392bdee2f6df37be26a1c74537017cb11d17f62bcc9b8ece03a4",
+      "sha256_1_9_3": null,
+      "estado": "novo"
+    },
+    {
+      "arquivo": "src/GradipMarcaIPUSP.html",
+      "sha256": "7e43e3a175363c92c16a0ad21b090daf67e1a310b5c9156d70f635623629300b",
+      "sha256_1_9_3": "7e43e3a175363c92c16a0ad21b090daf67e1a310b5c9156d70f635623629300b",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/GradipMarcaUSP.html",
+      "sha256": "7714a3fc7c5e5a384151ccb5d30c6342ad86481d15762d7b31a74defcc352734",
+      "sha256_1_9_3": "7714a3fc7c5e5a384151ccb5d30c6342ad86481d15762d7b31a74defcc352734",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/GradipTema.html",
+      "sha256": "35ab5bdf248b7a4cfd2778d4cfdf26d338b8c05905dd1d65e406f9b3a832abae",
+      "sha256_1_9_3": "35ab5bdf248b7a4cfd2778d4cfdf26d338b8c05905dd1d65e406f9b3a832abae",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/GradipTemaControle.html",
+      "sha256": "fb779bf073d81f1e4c4f584b3c05b94574bb577bab13325acc827e27e66ba7c7",
+      "sha256_1_9_3": "fb779bf073d81f1e4c4f584b3c05b94574bb577bab13325acc827e27e66ba7c7",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Gravacao.gs",
+      "sha256": "697b82cc163217d5e1e994a18a314667e9c43b545063fd0e9aa405b6e30b9af8",
+      "sha256_1_9_3": "697b82cc163217d5e1e994a18a314667e9c43b545063fd0e9aa405b6e30b9af8",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Importacao.gs",
+      "sha256": "50652eff445a1c8faedf69e963a80515994e45f1f8f855af2e611634d9c559e0",
+      "sha256_1_9_3": "50652eff445a1c8faedf69e963a80515994e45f1f8f855af2e611634d9c559e0",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/LeitorComum.html",
+      "sha256": "4d332fc9e4038eadd2d834b38c659a1eb09e339adc88cec3099cf5bddf50a97d",
+      "sha256_1_9_3": "4d332fc9e4038eadd2d834b38c659a1eb09e339adc88cec3099cf5bddf50a97d",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/LeitorCsv.html",
+      "sha256": "09e63b2052e23df1157a80545bcb8053cf371b82f761b3292cf9f9ca0ef4dcea",
+      "sha256_1_9_3": "09e63b2052e23df1157a80545bcb8053cf371b82f761b3292cf9f9ca0ef4dcea",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/LeitorPdf.html",
+      "sha256": "91f3c874e1de369de350c274c69d18db75dc94268ec09d3aa4ab353e9f0c0c6f",
+      "sha256_1_9_3": "91f3c874e1de369de350c274c69d18db75dc94268ec09d3aa4ab353e9f0c0c6f",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/LeitorPdfFontes.html",
+      "sha256": "b342e6b03ec78267969aca23f54855b4f84c3c97c150c120bc79cc4410185f36",
+      "sha256_1_9_3": "b342e6b03ec78267969aca23f54855b4f84c3c97c150c120bc79cc4410185f36",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Painel.html",
+      "sha256": "7b28c50dc406a2cf2cc4784da6b59ec79cc036619a1c6acf0fefa3a73b1a7c0e",
+      "sha256_1_9_3": "f7091b1f3130080973abc75a04b009ab6fcec076a7fbad2c89e3ed9961497ee4",
+      "estado": "alterado"
+    },
+    {
+      "arquivo": "src/PainelApp.html",
+      "sha256": "114138328c1effe9cf3e6fe9dd3f4566872ff9b308fd0a225d3b17ccb58bc176",
+      "sha256_1_9_3": "114138328c1effe9cf3e6fe9dd3f4566872ff9b308fd0a225d3b17ccb58bc176",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/PainelAuditoria.html",
+      "sha256": "4c4e29dfabf384cdc2987b9688a7aa3c890335761361a89efa0ead36f2aeb593",
+      "sha256_1_9_3": "4c4e29dfabf384cdc2987b9688a7aa3c890335761361a89efa0ead36f2aeb593",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/PainelEstilos.html",
+      "sha256": "50e247554f69328e36a8467094e38acc2579499163436c1aed01379393437fb8",
+      "sha256_1_9_3": "50e247554f69328e36a8467094e38acc2579499163436c1aed01379393437fb8",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/PainelImportacao.html",
+      "sha256": "d2d2430cd4e50eca04b12fc1c3cf8d1f202277a00c8bad0478f19e5efae17c6f",
+      "sha256_1_9_3": "d2d2430cd4e50eca04b12fc1c3cf8d1f202277a00c8bad0478f19e5efae17c6f",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/PainelPreparacao.html",
+      "sha256": "f356eec6e6ac1f5f918ed514c5509b8fa6eedca51b1d4b93603df31aa3516e4f",
+      "sha256_1_9_3": "f356eec6e6ac1f5f918ed514c5509b8fa6eedca51b1d4b93603df31aa3516e4f",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Planilha.gs",
+      "sha256": "728de8621de9eb777251e3e66aa7fcdba4d01f4b53de582761940280554f9f29",
+      "sha256_1_9_3": "728de8621de9eb777251e3e66aa7fcdba4d01f4b53de582761940280554f9f29",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Preparacao.gs",
+      "sha256": "354a3a3a26fb9dd93b29a7eb7cf1a3062914976d956227310130f5c78dd7ce7b",
+      "sha256_1_9_3": "354a3a3a26fb9dd93b29a7eb7cf1a3062914976d956227310130f5c78dd7ce7b",
+      "estado": "idêntico"
+    },
+    {
+      "arquivo": "src/Utilidades.gs",
+      "sha256": "fba6f8d317b727bab84f002527ebb84255233f6309e04fa336468653bbb77ff3",
+      "sha256_1_9_3": "fba6f8d317b727bab84f002527ebb84255233f6309e04fa336468653bbb77ff3",
+      "estado": "idêntico"
+    }
+  ]
+}

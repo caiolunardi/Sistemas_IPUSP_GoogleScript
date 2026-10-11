@@ -1,0 +1,12 @@
+# suíte: gerar_paginas_ocr
+# comando: node gerar_paginas_ocr.js /caminho/grade_curricular.pdf
+# data: 2026-10-07T21:21:48Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+38 páginas (ocr), 13097 palavras, 156 s → /caminho/fonte-1.9.2/testes/saida/paginas_ocr_navegador.json
+
+# código de saída: 0  (duração: 156 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

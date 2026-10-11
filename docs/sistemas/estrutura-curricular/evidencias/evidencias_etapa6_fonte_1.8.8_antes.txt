@@ -1,0 +1,182 @@
+=== Etapa 6 — oferta ajustada depois de troca de currículo ===
+Fonte testada: DIR_SRC (fonte indicada na linha de comando)
+Versão declarada na fonte: 1.8.8
+
+--- A1. painel e servidor concordam (semestre "2", principal 271 obrigatória 4) — admin e leitor, contexto novo
+  [admin] PST1001 servidor {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+  escritas em "Ajustes manuais" durante a importação: 0
+  [admin] PST1001 servidor {"oferecimento":"2","principal":null,"vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU — dono@unidade.example: semestre de oferecimento painel × servidor: "" ≠ "2"
+
+--- A2. adicionarAGrade aceita e a linha da grade sai com tipo e período ajustados (sem oferta principal vazia)
+  adicionarAGrade: {"adicionadas":1,"semOferecimento":[]}
+  linhasDaGrade_ 2º: [["PST1001","",null]] · 1º: []
+RESULTADO: FALHOU — linha da grade do 2º semestre: [["",null]] ≠ [["Obrigatória",4]]
+
+--- B1. três habilitações trocadas: ímpar/par/sem período → "ambos"; principal Psicólogo; filtros iguais
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":null,"vinculos":["470120000262:OBRIGATORIA:3","470120100262:OPTATIVA_ELETIVA:4","470120200262:OPTATIVA_LIVRE:-"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":3},{"curriculo":"470120100262","tipo":"OPTATIVA_ELETIVA","periodo":4},{"curriculo":"470120200262","tipo":"OPTATIVA_LIVRE","periodo":null}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU — PST1001: semestre de oferecimento painel × servidor: "" ≠ "ambos"
+
+--- B2. só uma habilitação trocada: vínculo direto (Bacharelado 262 em uso) e associado (Psicólogo 262 → 271) juntos
+  [admin] PST1001 servidor {"oferecimento":"2","principal":"470120100262:OPTATIVA_ELETIVA:6","vinculos":["470120000262:OBRIGATORIA:4","470120100262:OPTATIVA_ELETIVA:6"]} · painel {"oferecimento":"2","principal":"470120100262:OPTATIVA_ELETIVA:6","vinculos":["470120100262:OPTATIVA_ELETIVA:6"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4},{"curriculo":"470120100262","tipo":"OPTATIVA_ELETIVA","periodo":6}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  oferta efetiva painel × servidor (filtros): ["470120100262:OPTATIVA_ELETIVA:6"] ≠ ["470120000262:OBRIGATORIA:4","470120100262:OPTATIVA_ELETIVA:6"]
+
+--- B3. prioridade da grade: sem Psicólogo na oferta ajustada, a principal é a do Bacharelado (antes da Licenciatura)
+  [admin] PSE1005 servidor {"oferecimento":"ambos","principal":null,"vinculos":["470120100262:OPTATIVA_ELETIVA:8","470120200262:OBRIGATORIA:1"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120100262","tipo":"OPTATIVA_ELETIVA","periodo":8},{"curriculo":"470120200262","tipo":"OBRIGATORIA","periodo":1}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "" ≠ "ambos"
+
+--- C1. reimportar o MESMO currículo (CSV, Júpiter com outro período): oferta ajustada continua valendo, nada associado
+  [admin] PST1001 servidor {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: ok
+
+--- C2. complemento por PDF do mesmo currículo: oferta ajustada intacta e coerente
+  importação PDF: "2 disciplinas no arquivo; 0 novas; 0 alteradas; 0 saíram; 0 voltaram; 0 mudanças de oferta; 0 mudanças de requisitos; complemento: 2 versões, 2 EXT, 0 disciplinas com relação \"e\"/\"ou\" dos requisitos, 0 currículos; concordância com a base (CSV): 12 de 12 números compartilhados iguais."
+  [admin] PST1001 servidor {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: ok
+
+--- C3. disciplina SEM ajuste depois da troca: oferta do Júpiter (sucessor) nos dois lados; contrato sem oferta efetiva
+  [admin] PST1002 servidor {"oferecimento":"1","principal":"470120000271:OBRIGATORIA:3","vinculos":["470120000271:OBRIGATORIA:3"]} · painel {"oferecimento":"1","principal":"470120000271:OBRIGATORIA:3","vinculos":["470120000271:OBRIGATORIA:3"],"pendencias":0,"associada":0}
+    contrato: oferta=null ofertaEfetiva=null ofertaPendencias=null ofertaAssociada=null
+RESULTADO: ok
+
+--- D1. [] continua sendo "retirada de todas as habilitações" depois da troca: sem oferta, sem pendência, sem Júpiter
+  [admin] PST1002 servidor {"oferecimento":"","principal":null,"vinculos":[]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU — contrato: [] e efetiva []: [[],null] ≠ [[],[]]
+
+--- E1. currículo desconhecido na lista guardada: a revisar, com motivo; não conta no semestre nem na grade
+  [admin] PST1001 servidor {"oferecimento":"2","principal":null,"vinculos":["470120900262:OBRIGATORIA:4"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120900262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "" ≠ "2"
+
+--- E2. currículo fora de uso SEM sucessor registrado (texto "Não" sem número): a revisar
+  [admin] PST1001 servidor {"oferecimento":"2","principal":null,"vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "" ≠ "2"
+
+--- E3. sucessor registrado de OUTRA habilitação: a revisar (nunca associa entre habilitações)
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":null,"vinculos":["470120000262:OBRIGATORIA:4","470120100262:OPTATIVA_ELETIVA:5"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4},{"curriculo":"470120100262","tipo":"OPTATIVA_ELETIVA","periodo":5}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "" ≠ "ambos"
+
+--- E4. conflito: vínculo antigo (262 → 271) e vínculo direto 271 com períodos diferentes — o direto vale, o antigo fica a revisar
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":"470120000271:OBRIGATORIA:7","vinculos":["470120000262:OBRIGATORIA:4","470120000271:OBRIGATORIA:7"]} · painel {"oferecimento":"1","principal":"470120000271:OBRIGATORIA:7","vinculos":["470120000271:OBRIGATORIA:7"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4},{"curriculo":"470120000271","tipo":"OBRIGATORIA","periodo":7}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "1" ≠ "ambos"
+
+--- E5. resolvedor (função do servidor): conflito sem direto, equivalentes, ilegível, circular, cadeia, fora do padrão
+RESULTADO: FALHOU — resolverOferta_ existe
+
+--- F1. um vínculo associado, um direto e um a revisar: só os dois primeiros valem; o terceiro fica visível
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":"470120100262:OPTATIVA_ELETIVA:6","vinculos":["470120000262:OBRIGATORIA:4","470120100262:OPTATIVA_ELETIVA:6","470120300262:OPTATIVA_LIVRE:1"]} · painel {"oferecimento":"2","principal":"470120100262:OPTATIVA_ELETIVA:6","vinculos":["470120100262:OPTATIVA_ELETIVA:6"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4},{"curriculo":"470120100262","tipo":"OPTATIVA_ELETIVA","periodo":6},{"curriculo":"470120300262","tipo":"OPTATIVA_LIVRE","periodo":1}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "2" ≠ "ambos"
+
+--- G1. legado: admin e leitor veem a oferta associada, coerente nos dois lados, sem nenhuma escrita em Ajustes ao abrir
+  [dono@unidade.example] servidor {"oferecimento":"2","principal":null,"vinculos":["470120000262:OBRIGATORIA:4","470120100262:OPTATIVA_ELETIVA:6"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"associada":0}
+RESULTADO: FALHOU — dono@unidade.example: semestre de oferecimento painel × servidor: "" ≠ "2"
+
+--- H1. 262 → 271 → 272 sem abrir a ficha: associada ao 272 com o período ajustado
+  [admin] PST1001 servidor {"oferecimento":"2","principal":null,"vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "" ≠ "2"
+
+--- H2. ajuste refeito no 271 e nova troca para 272: associada ao 272
+  [admin] PST1001 servidor {"oferecimento":"1","principal":null,"vinculos":["470120000271:OPTATIVA_ELETIVA:5"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000271","tipo":"OPTATIVA_ELETIVA","periodo":5}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "" ≠ "1"
+
+--- I1. semestre manual 1º com oferta ajustada (período 4) associada ao sucessor: 1º nos dois lados
+  [admin] PST1001 servidor {"oferecimento":"1","principal":null,"vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"1","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  oferta efetiva painel × servidor (filtros): [] ≠ ["470120000262:OBRIGATORIA:4"]
+
+--- I2. semestre manual com a oferta toda a revisar: o manual vale, a grade aceita com tipo/período vazios
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":null,"vinculos":["470120900262:OBRIGATORIA:4"]} · painel {"oferecimento":"ambos","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120900262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  oferta efetiva painel × servidor (filtros): [] ≠ ["470120900262:OBRIGATORIA:4"]
+
+--- J1. salvar SÓ o nome pela ficha (que reenvia a oferta mostrada): nome gravado, lista guardada e pendências intactas
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":null,"vinculos":["470120000262:OBRIGATORIA:4","470120900262:OPTATIVA_ELETIVA:3"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4},{"curriculo":"470120900262","tipo":"OPTATIVA_ELETIVA","periodo":3}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+  oferta reenviada pela ficha: []
+  resposta: {"ok":true,"codigo":null}
+RESULTADO: FALHOU — lista guardada intacta (vínculo a revisar não foi apagado): "[]" ≠ "[{\"curriculo\":\"470120000262\",\"tipo\":\"OBRIGATORIA\",\"periodo\":4},{\"curriculo\":\"470120900262\",\"tipo\":\"OPTATIVA_ELETIVA\",\"periodo\":3}]"
+
+--- J2. mudar a oferta sem "Descartar os vínculos a revisar": recusado (OFERTA_A_REVISAR), nada gravado
+  resposta: {"ok":true,"codigo":null,"erro":null}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"OFERTA_A_REVISAR"]
+
+--- J3. mudar a oferta COM descarte: grava a nova lista (só currículos em uso) e as pendências somem
+  [admin] PST1001 servidor {"oferecimento":"2","principal":"470120000271:OBRIGATORIA:6","vinculos":["470120000271:OBRIGATORIA:6"]} · painel {"oferecimento":"2","principal":"470120000271:OBRIGATORIA:6","vinculos":["470120000271:OBRIGATORIA:6"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000271","tipo":"OBRIGATORIA","periodo":6}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: ok
+
+--- J4. voltar à oferta do Júpiter: sem descarte é recusado; com descarte a coluna fica vazia (oferta do Júpiter)
+RESULTADO: FALHOU — diferente: undefined ≠ "OFERTA_A_REVISAR"
+
+--- J5. descarte confirmado sem mudar a tabela: grava a oferta efetiva (associada, sem o vínculo a revisar)
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":null,"vinculos":["470120000262:OBRIGATORIA:4","470120900262:OPTATIVA_ELETIVA:3"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4},{"curriculo":"470120900262","tipo":"OPTATIVA_ELETIVA","periodo":3}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU — diferente: [] ≠ [{"curriculo":"470120000271","tipo":"OBRIGATORIA","periodo":4}]
+
+--- J6. sem pendências, mudar a oferta continua como antes (sem descarte); "oferta: null" não mexe na lista
+RESULTADO: ok
+
+--- K1. "Salvar e adicionar à grade" pela ficha depois da troca: adicionada; prévia do painel = linhas da grade
+  [admin] PST1001 servidor {"oferecimento":"ambos","principal":null,"vinculos":["470120000262:OBRIGATORIA:4","470120100262:OPTATIVA_ELETIVA:5"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4},{"curriculo":"470120100262","tipo":"OPTATIVA_ELETIVA","periodo":5}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+  salvar e adicionar: {"ok":true,"codigo":null,"grade":{"adicionada":false,"jaEstava":false,"excluida":false,"semOferecimento":true}}
+  1º semestre — grade ["PSE1005:Obrigatória:5"] · prévia ["PSE1005:Obrigatória:5"]
+  2º semestre — grade ["PST1002::null"] · prévia []
+RESULTADO: FALHOU — 2º semestre: prévia × grade: [] ≠ ["PST1002::null"]
+
+--- L1. execução encerrada antes do manifesto: a base anterior continua valendo, coerente; Ajustes nunca escrito; depois a importação completa
+  [admin] PST1001 servidor {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"2","principal":"470120000262:OBRIGATORIA:4","vinculos":["470120000262:OBRIGATORIA:4"],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+  reaberto da fotografia: ["470120000262*"]
+  [admin] PST1001 servidor {"oferecimento":"2","principal":null,"vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU —  semestre de oferecimento painel × servidor: "" ≠ "2"
+
+--- M1. coluna extra em Ajustes, observações, marca de grade e outro curso: intactos depois da troca e de salvar o nome
+  [admin] PST1001 servidor {"oferecimento":"2","principal":null,"vinculos":["470120000262:OBRIGATORIA:4"]} · painel {"oferecimento":"","principal":null,"vinculos":[],"pendencias":0,"associada":0}
+    contrato: oferta=[{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}] ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: FALHOU — lista guardada: [] ≠ [{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}]
+
+--- N1. restaurarOferta com a oferta do Júpiter (igual à associada): ajuste removido; contexto novo sem associação; reimportação 4 → 3 vale nos dois lados
+  resposta: resultado concluido · ajuste lido null · coluna "(sem linha)"
+  [admin] PST1001 servidor {"oferecimento":"2","principal":"470120000271:OBRIGATORIA:4","vinculos":["470120000271:OBRIGATORIA:4"]} · painel {"oferecimento":"2","principal":"470120000271:OBRIGATORIA:4","vinculos":["470120000271:OBRIGATORIA:4"],"pendencias":0,"associada":0}
+    contrato: oferta=null ofertaEfetiva=null ofertaPendencias=null ofertaAssociada=null
+  [admin] PST1001 servidor {"oferecimento":"1","principal":"470120000271:OBRIGATORIA:3","vinculos":["470120000271:OBRIGATORIA:3"]} · painel {"oferecimento":"1","principal":"470120000271:OBRIGATORIA:3","vinculos":["470120000271:OBRIGATORIA:3"],"pendencias":0,"associada":0}
+    contrato: oferta=null ofertaEfetiva=null ofertaPendencias=null ofertaAssociada=null
+RESULTADO: ok
+
+--- N2. controle: o MESMO pedido sem a intenção (salvamento comum) conserva a lista; reimportação 4 → 3 mantém o período ajustado 4
+RESULTADO: FALHOU — lista intacta: "(sem linha)" ≠ "[{\"curriculo\":\"470120000262\",\"tipo\":\"OBRIGATORIA\",\"periodo\":4}]"
+
+--- N3. restaurarOferta com oferta que não é a do Júpiter da base ativa: recusado (DADOS_INVALIDOS), nada gravado
+  resposta: {"ok":true}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"DADOS_INVALIDOS"]
+
+--- N4. com vínculo a revisar e parte efetiva igual ao Júpiter: restaurar sem descarte → OFERTA_A_REVISAR (nada gravado); com descarte → ajuste removido
+  sem descarte: {"ok":true}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"OFERTA_A_REVISAR"]
+
+--- N5. execução encerrada no meio da restauração (fotografia depois da escrita de Ajustes, antes da observação): reabertura conclui pelo salvamento retomável; Júpiter vale depois da reimportação
+  na fotografia: {"coluna":"","registro":true} · abertura: salvamentoPendente "concluido" · observação "Obs N5"
+  [admin] PST1001 servidor {"oferecimento":"1","principal":"470120000271:OBRIGATORIA:3","vinculos":["470120000271:OBRIGATORIA:3"]} · painel {"oferecimento":"1","principal":"470120000271:OBRIGATORIA:3","vinculos":["470120000271:OBRIGATORIA:3"],"pendencias":0,"associada":0}
+    contrato: oferta=null ofertaEfetiva=undefined ofertaPendencias=undefined ofertaAssociada=undefined
+RESULTADO: ok
+
+--- N6. leitor: não grava a restauração (permissão), lista intacta
+RESULTADO: ok
+
+=== Resumo: 8 ok, 27 falhas, 0 pulados

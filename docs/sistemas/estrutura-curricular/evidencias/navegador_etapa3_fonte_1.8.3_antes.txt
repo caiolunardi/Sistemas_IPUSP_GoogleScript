@@ -1,0 +1,112 @@
+# suíte: navegador_etapa3_fonte_1.8.3_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.3/src node testar_navegador_etapa3.js /caminho/grade_curricular.csv --evidencias saida/evidencias_etapa3_fonte_1.8.3_antes.txt
+# data: 2026-10-07T21:31:14Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 3/21 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== R. Reprodução A → B (só registra)
+
+== Testes
+  ✓ 1. salvar A normalmente: pedido certo, ficha redesenhada com o gravado, mensagem, botões e foco
+  ✗ 2. salvar A, passar para B e responder com SUCESSO: B e seu rascunho intactos; A atualizada nos dados confirmados 
+      Error: ficha B: [true,"O:PST1002","Disciplina B","PST1002","Disciplina B","obs B",false,true,"Salvar"] ≠ [true,"O:PST1002","Disciplina B","PST1002","B rascunho","obs B",true,false,"Salvar"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:211:5
+  ✗ 3. mesmo cenário com resposta de ERRO: B intacta e utilizável, nenhum erro de JavaScript 
+      Error: erro identifica A: Falha simulada no servidor.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:43:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:233:5
+  ✗ 4. salvar A e FECHAR antes da resposta (sucesso): a janela não reaparece, sem foco indevido nem erro 
+      Error: janela fechada e estado limpo: [false,"O:PST1001",[],false] ≠ [false,null,[],false]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:256:7
+  ✗ 4. salvar A e FECHAR antes da resposta (erro): a janela não reaparece, sem foco indevido nem erro 
+      Error: mensagem identifica A: Falha simulada.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:43:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:257:7
+  ✗ 4. salvar A e FECHAR antes da resposta (falha de rede): a janela não reaparece, sem foco indevido nem erro 
+      Error: mensagem identifica A: Não foi possível falar com o servidor. Verifique a conexão e tente de novo.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:43:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:257:7
+  ✗ 5. salvar A, fechar e REABRIR A com nova edição: a resposta antiga não substitui a nova instância (mesmo id) 
+      Error: nova instância intacta: [true,"O:PST1001","A primeira","obs A",false] ≠ [true,"O:PST1001","Disciplina A","rascunho da nova instância",true]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:279:5
+  ✗ 6. editar DURANTE a espera (sucesso): a edição posterior não se perde (política: campos travados durante a gravação e liberados no fim) 
+      Error: edição posterior preservada e marcada como não salva: ["obs A",false] ≠ ["escrito durante a espera",true]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:299:9
+  ✓ 6. editar DURANTE a espera (erro): a edição posterior não se perde (política: campos travados durante a gravação e liberados no fim)
+  ✗ 7. dois pedidos rápidos da mesma ficha: uma gravação só; controles liberados no fim 
+      Error: uma chamada só: 3 ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:322:5
+  ✗ 8. cadastro manual pendente, com fechamento e troca para B: disciplina criada, B e o rascunho preservados, mensagem do cadastro 
+      Error: ficha B: [true,"O:PST1002","Disciplina B","Disciplina B",false,"Salvar"] ≠ [true,"O:PST1002","Disciplina B","B rascunho",true,"Salvar"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:346:5
+  ✗ 8b. cadastro pendente com a janela ainda aberta: a resposta mostra a disciplina criada (chave do servidor) 
+      Error: diferente: [true,"O:PST1003","Nova C","PST1003","Salvar",false,"Alterações salvas."] ≠ [true,"O:PST1003","Nova C","PST1003","Salvar",false,"Disciplina cadastrada."]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:364:5
+  ✗ 9. salvar com adicionarAGrade: pedido e retorno certos; trocar para B antes da resposta não apaga B 
+      Error: ficha B: ["O:PST1002","Disciplina B","Disciplina B",false,"Adicionar à Grade Horária"] ≠ ["O:PST1002","Disciplina B","B rascunho",true,"Adicionar à Grade Horária"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:382:5
+  ✓ 9b. salvar com adicionarAGrade, com a ficha aberta: retorno aplicado à própria ficha
+  ✗ 10. navegação por requisito e "Voltar" durante a gravação: a resposta não muda a ficha atual nem a pilha 
+      Error: ficha de destino intacta: ["SIN0001",["SIN0002"],"SIN0001","",false] ≠ ["SIN0001",["SIN0002"],"SIN0001","rascunho em SIN0001",true]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:414:5
+  ✗ 11. operações sobrepostas: com A pendente, "Salvar" de B não envia nada (aviso); depois da resposta de A, B salva normalmente 
+      Error: B não enviou enquanto A está pendente: 2 ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:438:5
+  ✗ 12a. "Adicionar à Grade" da ficha pendente e troca para B (sucesso): B intacta; A marcada só no sucesso 
+      Error: ficha B: ["O:PST1002","Disciplina B","Disciplina B",false,"Adicionar à Grade Horária","Salvar",false] ≠ ["O:PST1002","Disciplina B","B rascunho",true,"Adicionar à Grade Horária","Salvar",false]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:467:7
+  ✗ 12a. "Adicionar à Grade" da ficha pendente e troca para B (erro): B intacta; A marcada só no sucesso 
+      Error: Falha simulada.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:43:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:468:7
+  ✗ 12b. "Adicionar à Grade" com a ficha aberta: campos travados durante a espera e ficha atualizada no fim 
+      Error: durante: ["Adicionando…",true,false] ≠ ["Adicionando…",true,true]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:481:5
+  ✗ 12c. excluir pela ficha (sucesso): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto 
+      Error: uma chamada só: 2 ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:500:7
+  ✗ 12c. excluir pela ficha (erro): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto 
+      Error: uma chamada só: 2 ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:42:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa3.js:500:7
+
+3 ok, 18 falha(s)
+Falharam:
+  - 2. salvar A, passar para B e responder com SUCESSO: B e seu rascunho intactos; A atualizada nos dados confirmados
+  - 3. mesmo cenário com resposta de ERRO: B intacta e utilizável, nenhum erro de JavaScript
+  - 4. salvar A e FECHAR antes da resposta (sucesso): a janela não reaparece, sem foco indevido nem erro
+  - 4. salvar A e FECHAR antes da resposta (erro): a janela não reaparece, sem foco indevido nem erro
+  - 4. salvar A e FECHAR antes da resposta (falha de rede): a janela não reaparece, sem foco indevido nem erro
+  - 5. salvar A, fechar e REABRIR A com nova edição: a resposta antiga não substitui a nova instância (mesmo id)
+  - 6. editar DURANTE a espera (sucesso): a edição posterior não se perde (política: campos travados durante a gravação e liberados no fim)
+  - 7. dois pedidos rápidos da mesma ficha: uma gravação só; controles liberados no fim
+  - 8. cadastro manual pendente, com fechamento e troca para B: disciplina criada, B e o rascunho preservados, mensagem do cadastro
+  - 8b. cadastro pendente com a janela ainda aberta: a resposta mostra a disciplina criada (chave do servidor)
+  - 9. salvar com adicionarAGrade: pedido e retorno certos; trocar para B antes da resposta não apaga B
+  - 10. navegação por requisito e "Voltar" durante a gravação: a resposta não muda a ficha atual nem a pilha
+  - 11. operações sobrepostas: com A pendente, "Salvar" de B não envia nada (aviso); depois da resposta de A, B salva normalmente
+  - 12a. "Adicionar à Grade" da ficha pendente e troca para B (sucesso): B intacta; A marcada só no sucesso
+  - 12a. "Adicionar à Grade" da ficha pendente e troca para B (erro): B intacta; A marcada só no sucesso
+  - 12b. "Adicionar à Grade" com a ficha aberta: campos travados durante a espera e ficha atualizada no fim
+  - 12c. excluir pela ficha (sucesso): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto
+  - 12c. excluir pela ficha (erro): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto
+
+# código de saída: 1  (duração: 9 s)
+# resultado do processo: defeito demonstrado como previsto (3/21)
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa3_fonte_1.8.3_antes.txt
+# interpretação: defeito demonstrado como previsto (3/21)

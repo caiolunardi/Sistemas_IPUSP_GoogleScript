@@ -1,0 +1,105 @@
+# suíte: executor_fonte_1.8.14_antes
+# comando: env RODAR_SUITES_TESTADO=/caminho/fonte-1.8.14/src/../testes/rodar_suites.sh node testar_executor.js
+# data: 2026-10-07T21:36:52Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 13/20 aprovados
+
+Executor testado: RODAR_SUITES_TESTADO (outra versão)
+Executor validado: arquivo comum e legível, sha256 730dacefa9e6e3ec.
+Ambiente: cópia temporária do executor real + "node" falso (processos filhos controlados); nenhuma suíte real roda aqui.
+     [R1] código final: 0 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R1] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (20) | Casos pulados dentro de suítes (0) | Resultado geral: APROVADO — código 0 (alcance: só as verificações executadas acima)
+  ✓ R1. todas as suítes atuais terminam com 0: código final 0, resumo "APROVADO", todas executadas, fontes opcionais ausentes listadas como não executadas
+     [R2] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R2] resumo: Suítes atuais aprovadas (29) | FALHAS inesperadas de suítes atuais (1) | - testar_backend: FALHA — código 1 | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (20) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 1 falha(s), 0 divergência(s), 0 erro(s))
+  ✓ R2. testar_backend (uma das primeiras) termina com 1 e as seguintes com 0: código final ≠ 0, as seguintes executaram e têm log, a falha está no resumo
+     [R3] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R3] resumo: Suítes atuais aprovadas (29) | FALHAS inesperadas de suítes atuais (1) | - reproduzir_auditoria_depois: FALHA — código 1 | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (20) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 1 falha(s), 0 divergência(s), 0 erro(s))
+  ✓ R3. a ÚLTIMA suíte (reproduzir_auditoria_depois) falha: código final ≠ 0
+     [R4] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R4] resumo: Suítes atuais aprovadas (28) | FALHAS inesperadas de suítes atuais (2) | - testar_gravacao: FALHA — código 1 | - testar_visual: FALHA — código 2 | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (20) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (2 problema(s): 2 falha(s), 0 divergência(s), 0 erro(s))
+  ✓ R4. duas suítes atuais falham (testar_gravacao com 1 e testar_visual com 2): as duas identificadas, código final ≠ 0
+     [R5] código final: 0 · filhos executados: 31 · último: reproduzir_auditoria.js@atual
+     [R5] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (1) | - navegador_etapa8_fonte_1.8.12_antes: defeito demonstrado como previsto (16/27) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: APROVADO — código 0 (alcance: só as verificações executadas acima)
+  ✓ R5. reprodução histórica declarada (navegador_etapa8 na 1.8.12, esperado 16/27) mostra a falha prevista e as suítes atuais passam: expectativa atendida, código final 0
+     [R6 código 0] código final: 1 · filhos executados: 31 · último: reproduzir_auditoria.js@atual
+     [R6 código 0] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (1) | - navegador_etapa8_fonte_1.8.12_antes: DIVERGENTE — terminou com 0; devia demonstrar o defeito (16/27) | ERROS (0) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 1 divergência(s), 0 erro(s))
+     [R6 outra contagem] código final: 1 · filhos executados: 31 · último: reproduzir_auditoria.js@atual
+     [R6 outra contagem] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (1) | - navegador_etapa8_fonte_1.8.12_antes: DIVERGENTE — resumo 20/27, esperado 16/27 | ERROS (0) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 1 divergência(s), 0 erro(s))
+  ✓ R6. a mesma reprodução com resultado inesperado — termina com 0, ou falha com outra contagem (20/27): DIVERGENTE e código final ≠ 0
+     [R7 código 1, módulo ausente] código final: 1 · filhos executados: 31 · último: reproduzir_auditoria.js@atual
+     [R7 código 1, módulo ausente] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - navegador_etapa8_fonte_1.8.12_antes: ERRO de infraestrutura — código 1, sem o resumo da suíte: não chegou às verificações; NÃO conta como defeito demonstrado | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+     [R7 código 1, entrada ausente] código final: 1 · filhos executados: 31 · último: reproduzir_auditoria.js@atual
+     [R7 código 1, entrada ausente] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - navegador_etapa8_fonte_1.8.12_antes: ERRO de infraestrutura — código 1, sem o resumo da suíte: não chegou às verificações; NÃO conta como defeito demonstrado | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+     [R7 comando inexistente (127)] código final: 1 · filhos executados: 31 · último: reproduzir_auditoria.js@atual
+     [R7 comando inexistente (127)] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - navegador_etapa8_fonte_1.8.12_antes: ERRO de infraestrutura — código 127, sem o resumo da suíte: não chegou às verificações; NÃO conta como defeito demonstrado | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+  ✓ R7. reprodução que falha por infraestrutura antes de demonstrar o defeito — código 1 SEM resumo (módulo ausente, entrada ausente), comando inexistente (127): ERRO, nunca "confirmada"; código final ≠ 0
+     [R8 pasta sem Codigo.gs] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R8 pasta sem Codigo.gs] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - DIR_SRC_V1812: fonte fornecida inválida: /caminho/executor-temporario/fontes/1.8.12/src (esperada a pasta src da versão 1.8.12) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+     [R8 outra versão (1.8.11 no lugar da 1.8.12)] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R8 outra versão (1.8.11 no lugar da 1.8.12)] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - DIR_SRC_V1812: fonte fornecida inválida: /caminho/executor-temporario/fontes/1.8.11/src (esperada a pasta src da versão 1.8.12) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+     [R8 pasta inexistente] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R8 pasta inexistente] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - DIR_SRC_V1812: fonte fornecida inválida: /caminho/executor-temporario/nao-existe (esperada a pasta src da versão 1.8.12) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+     [R8 interna inválida] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R8 interna inválida] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - DIR_SRC_V100: fonte fornecida inválida: /caminho/executor-temporario/nao-existe (esperada a pasta src da versão 1.0.0) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+  ✓ R8. fonte opcional ausente → não executada (sem contar como aprovada); fornecida e inválida (pasta sem Codigo.gs; outra versão) → ERRO identificado e código final ≠ 0
+     [R9 CSV não definido] código final: 2 · mensagem: rodar_suites: ERRO de entrada — CSV não definido (veja o uso no início deste arquivo)
+     [R9 PDF inexistente] código final: 2 · mensagem: rodar_suites: ERRO de entrada — PDF=/caminho/que/nao/existe.pdf não é um arquivo legível
+  ✓ R9. entrada obrigatória ausente ou ilegível (CSV não definido; PDF inexistente): código final 2 e mensagem identificável, nada executado
+     [R10 evidência ausente] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R10 evidência ausente] resumo: Suítes atuais aprovadas (29) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - testar_gravacao: aprovada; evidência saida/evidencias_gravacao.txt não foi gravada nesta rodada | Não executadas (20) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+     [R10 páginas não geradas] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R10 páginas não geradas] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - gerar_paginas_ocr: não gerou saida/paginas_ocr_navegador.json nesta rodada | Não executadas (20) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+     [R10 saída impossível] código final: 3 · mensagem: rodar_suites: ERRO de preparação — não foi possível criar saida/logs
+     [R10 manifesto impossível] código final: 3 · mensagem: rodar_suites: ERRO de preparação — não foi possível gerar saida/logs/fontes.sha256
+  ✓ R10. preparação e evidências: evidência ausente com arquivo ANTIGO presente → ERRO (a sobra não vira evidência atual); log de suíte não executada nesta rodada não sobra; saída impossível ou manifesto impossível → código 3
+     [R11] código final: 1 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R11] resumo: Suítes atuais aprovadas (29) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (1) | - testar_preparacao: ERRO — código 0, mas o resumo da suíte diz 1 falha(s) | Não executadas (20) | Casos pulados dentro de suítes (0) | Resultado geral: REPROVADO — código 1 (1 problema(s): 0 falha(s), 0 divergência(s), 1 erro(s))
+  ✓ R11. código 0 com o resumo da própria suíte dizendo que houve falhas (inconsistente): ERRO, código final ≠ 0
+     [R12] código final: 0 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [R12] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (0) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (20) | Casos pulados dentro de suítes (1) | - testar_gravacao: 1 caso(s) PULADO(s) dentro da suíte (ver o log) | Resultado geral: APROVADO — código 0 (alcance: só as verificações executadas acima)
+  ✓ R12. casos pulados dentro de uma suíte atual aparecem no resumo como não aprovados, sem reprovar a rodada
+     [C1] código final: 0 · filhos executados: 33 · último: reproduzir_auditoria.js@atual
+     [C1] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (3) | - executor_fonte_1.8.13_antes: defeito demonstrado como previsto (0/12) | - etapa9_fonte_1.8.13_antes: defeito demonstrado como previsto (3/8) | - navegador_etapa9_fonte_1.8.13_antes: defeito demonstrado como previsto (2/5) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (19) | Casos pulados dentro de suítes (0) | Resultado geral: APROVADO — código 0 (alcance: só as verificações executadas acima)
+     [C1] log executor_fonte_1.8.13_antes: ["      ENOENT: no such file or directory, copyfile '/caminho/executor-temporario/fontes/1.8.13/testes/rodar_suites.sh' -> '/caminho/executor-temporario/testes/rodar_suites.sh'","      ENOENT: no such file or directory, copyfile '/caminho/executor-temporario/fontes/1.8.13/testes/rodar_suites.sh' -> '/caminho/executor-temporario/testes/rodar_suites.sh'","      ENOENT: no such file or directory, copyfile '/caminho/executor-temporario/fontes/1.8.13/testes/rodar_suites.sh' -> '/caminho/executor-temporario/testes/rodar_suites.sh'","      ENOENT: no such file or directory, copyfile '/caminho/executor-temporario/fontes/1.8.13/testes/rodar_suites.sh' -> '/caminho/executor-temporario/testes/rodar_suites.sh'","      ENOENT: no such file or directory, copyfile '/caminho/executor-temporario/fontes/1.8.13/testes/rodar_suites.sh' -> '/caminho/executor-temporario/testes/rodar_suites.sh'","      ENOENT: no such file or directory, copyfile '/caminho/executor-temporario/fontes/1.8.13/testes/rodar_suites.sh' -> '/caminho/executor-temporario/testes/rodar_suites.sh'"]
+  ✗ C1. fonte 1.8.13 com versão válida, mas SEM o executor irmão ../testes/rodar_suites.sh; o testar_executor.js REAL da mesma versão do executor é chamado: a reprodução executor_fonte_1.8.13_antes NÃO é confirmada, vira ERRO de infraestrutura, a rodada termina ≠ 0 e as demais suítes (inclusive as outras reproduções da 1.8.13) continuam produzindo diagnóstico 
+      NÃO confirmada como defeito demonstrado
+     [C2 executor inexistente] código: 1 · ["Executados: 12 · 0 ok · 12 falhas"]
+  ✗ C2. testar_executor.js REAL com o executor selecionado inexistente; com uma pasta no lugar do arquivo; e com falha de E/S INJETADA na cópia DEPOIS da validação inicial; e com falha INJETADA no início do processo (spawnSync): código 3 e nenhum caso contado como asserção reprovada 
+      executor inexistente: código 3 (erro de infraestrutura): 1 ≠ 3
+  – PULADO: C3 (EXECUTOR_1813 não definido (o executor real da 1.8.13 não foi fornecido))
+     [C4] código final 1 · log: ["# código de saída: 0  (duração: 0 s)","# interpretação: aprovada"] · console: testar_gravacao: código 0 — Executados: 57 (57 ok, 0 falha(s)); pulados: 0 — aprovada; evidência saida/evidencias_gravacao.txt não foi gravada nesta rodada
+  ✗ C4. suíte atual com o filho terminando com 0 e a evidência obrigatória ausente: código final ≠ 0; no log, código de saída 0 (real), resultado do processo "aprovada", evidência AUSENTE e UMA interpretação final "ERRO de evidência"; console e resumo com o mesmo ERRO 
+      interpretação final: # interpretação: aprovada
+     [C5] código final 1 · sobra existe depois? false · copiada? false · interpretação: # interpretação: aprovada
+  ✗ C5. o mesmo caso com uma evidência ANTIGA presente: a sobra é apagada antes da chamada e não é copiada; log, console e resumo dizem ERRO de evidência 
+      log
+     [C6] código final 1 · log: ["# código de saída: 0  (duração: 0 s)","# interpretação: aprovada"]
+  ✗ C6. evidência gravada, mas a CÓPIA falha (falha localizada: o processo controlado transforma o destino em link para pasta inexistente): interpretação final ERRO com a operação identificada, código real do filho (0) preservado, rodada reprovada 
+      operação identificada: # interpretação: aprovada
+     [C7 evidência ausente] código final 1 · log: ["# código de saída: 1  (duração: 0 s)","# interpretação: defeito demonstrado como previsto (8/26)"]
+  ✗ C7. reprodução histórica com a falha prevista LEGÍTIMA (etapa8 na 1.8.11: código 1, 8/26), mas a evidência ausente — ou a cópia dela falhando: ERRO, não "confirmada", rodada reprovada 
+      evidência ausente: resultado do processo registrado
+     [C8] código final: 0 · filhos executados: 33 · último: reproduzir_auditoria.js@atual
+     [C8] resumo: Suítes atuais aprovadas (30) | FALHAS inesperadas de suítes atuais (0) | Reproduções de defeitos antigos confirmadas (3) | - etapa8_fonte_1.8.11_antes: defeito demonstrado como previsto (8/26) | - navegador_etapa8_fonte_1.8.11_antes: defeito demonstrado como previsto (1/27) | - navegador_etapa8_fonte_1.8.12_antes: defeito demonstrado como previsto (16/27) | Reproduções DIVERGENTES (0) | ERROS (0) | Não executadas (18) | Casos pulados dentro de suítes (0) | Resultado geral: APROVADO — código 0 (alcance: só as verificações executadas acima)
+     [C8] 33 logs conferidos · incoerentes: [] · evidência da reprodução: null
+  ✓ C8. controle completo sem problemas (suítes atuais aprovadas; reproduções 1.8.11 e 1.8.12 confirmadas, uma delas com evidência): código final 0; em cada log uma interpretação, igual à do console; fontes ausentes listadas à parte
+     [C9] código final 0 · stderr: grep: saida/logs/testar_backend.txt: Is a directory
+  ✗ C9. o log de uma suíte não pode ser completado (o processo controlado troca o arquivo do log por uma pasta): ERRO de log no console (stderr) e no resumo, sem afirmar que o log foi concluído; rodada reprovada e as seguintes continuam 
+      código final não zero
+
+Condições de execução: executor sha256 730dacefa9e6e3ec; 29 execução(ões) do executor iniciadas e terminadas com código de saída válido; 0 erro(s) de infraestrutura.
+Executados: 20 · 13 ok · 7 falhas · 1 pulados
+Falharam:
+  - C1. fonte 1.8.13 com versão válida, mas SEM o executor irmão ../testes/rodar_suites.sh; o testar_executor.js REAL da mesma versão do executor é chamado: a reprodução executor_fonte_1.8.13_antes NÃO é confirmada, vira ERRO de infraestrutura, a rodada termina ≠ 0 e as demais suítes (inclusive as outras reproduções da 1.8.13) continuam produzindo diagnóstico
+  - C2. testar_executor.js REAL com o executor selecionado inexistente; com uma pasta no lugar do arquivo; e com falha de E/S INJETADA na cópia DEPOIS da validação inicial; e com falha INJETADA no início do processo (spawnSync): código 3 e nenhum caso contado como asserção reprovada
+  - C4. suíte atual com o filho terminando com 0 e a evidência obrigatória ausente: código final ≠ 0; no log, código de saída 0 (real), resultado do processo "aprovada", evidência AUSENTE e UMA interpretação final "ERRO de evidência"; console e resumo com o mesmo ERRO
+  - C5. o mesmo caso com uma evidência ANTIGA presente: a sobra é apagada antes da chamada e não é copiada; log, console e resumo dizem ERRO de evidência
+  - C6. evidência gravada, mas a CÓPIA falha (falha localizada: o processo controlado transforma o destino em link para pasta inexistente): interpretação final ERRO com a operação identificada, código real do filho (0) preservado, rodada reprovada
+  - C7. reprodução histórica com a falha prevista LEGÍTIMA (etapa8 na 1.8.11: código 1, 8/26), mas a evidência ausente — ou a cópia dela falhando: ERRO, não "confirmada", rodada reprovada
+  - C9. o log de uma suíte não pode ser completado (o processo controlado troca o arquivo do log por uma pasta): ERRO de log no console (stderr) e no resumo, sem afirmar que o log foi concluído; rodada reprovada e as seguintes continuam
+
+# código de saída: 1  (duração: 25 s)
+# resultado do processo: defeito demonstrado como previsto (13/20)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (13/20)

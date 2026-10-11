@@ -23,3 +23,8 @@ exports-private/
 # Sistema/editor
 .DS_Store
 Thumbs.db
+
+# Dependências e resultados reproduzíveis de testes
+node_modules/
+sistemas/estrutura-curricular/testes/saida/
+sistemas/estrutura-curricular/testes/modelos/

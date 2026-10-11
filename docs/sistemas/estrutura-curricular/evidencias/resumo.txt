@@ -1,0 +1,68 @@
+# resumo de rodar_suites.sh — conjunto de fontes e testes 6606f1153ca645e8 — 2026-10-07T21:41:17Z
+Suítes atuais aprovadas (código 0) (31):
+  - testar_executor
+  - gerar_paginas_ocr
+  - testar_backend
+  - testar_gravacao
+  - testar_preparacao
+  - testar_envio_grade
+  - testar_auditoria_grade
+  - testar_painel_auditoria
+  - testar_etapa1_identidade_outros
+  - testar_navegador_etapa1
+  - testar_etapa2_csv_unidade
+  - testar_navegador_etapa2
+  - testar_navegador_etapa3
+  - testar_etapa4_salvamento
+  - testar_navegador_etapa4
+  - testar_etapa5_lotes
+  - testar_navegador_etapa5
+  - testar_etapa6_oferta
+  - testar_navegador_etapa6
+  - testar_etapa7_trava_auditoria
+  - testar_etapa8_previa_envio
+  - testar_navegador_etapa8
+  - testar_etapa9_auditoria_envio
+  - testar_navegador_etapa9
+  - testar_navegador
+  - testar_navegador_preparacao
+  - testar_visual
+  - testar_pdf_texto
+  - testar_dois_arquivos
+  - reproduzir_auditoria_antes
+  - reproduzir_auditoria_depois
+FALHAS inesperadas de suítes atuais (0):
+Reproduções de defeitos antigos confirmadas (falha prevista demonstrada) (26):
+  - etapa1_fonte_1.8.0_antes: defeito demonstrado como previsto (5/17)
+  - navegador_etapa1_fonte_1.8.0_antes: defeito demonstrado como previsto (2/6)
+  - etapa2_fonte_1.8.1_antes: defeito demonstrado como previsto (8/31)
+  - navegador_etapa2_fonte_1.8.1_antes: defeito demonstrado como previsto (1/6)
+  - etapa2_fonte_1.8.2_antes: defeito demonstrado como previsto (23/31)
+  - navegador_etapa2_fonte_1.8.2_antes: defeito demonstrado como previsto (1/6)
+  - navegador_etapa3_fonte_1.8.3_antes: defeito demonstrado como previsto (3/21)
+  - etapa4_fonte_1.8.4_antes: defeito demonstrado como previsto (3/39)
+  - navegador_etapa4_fonte_1.8.4_antes: defeito demonstrado como previsto (2/10)
+  - etapa4_fonte_1.8.5_antes: defeito demonstrado como previsto (28/39)
+  - navegador_etapa4_fonte_1.8.5_antes: defeito demonstrado como previsto (5/10)
+  - etapa5_fonte_1.8.6_antes: defeito demonstrado como previsto (4/45)
+  - navegador_etapa5_fonte_1.8.6_antes: defeito demonstrado como previsto (1/11)
+  - navegador_etapa5_fonte_1.8.7_antes: defeito demonstrado como previsto (9/11)
+  - etapa6_fonte_1.8.8_antes: defeito demonstrado como previsto (8/35)
+  - navegador_etapa6_fonte_1.8.8_antes: defeito demonstrado como previsto (1/13)
+  - etapa6_fonte_1.8.9_antes: defeito demonstrado como previsto (31/35)
+  - navegador_etapa6_fonte_1.8.9_antes: defeito demonstrado como previsto (7/13)
+  - etapa7_fonte_1.8.10_antes: defeito demonstrado como previsto (5/19)
+  - etapa8_fonte_1.8.11_antes: defeito demonstrado como previsto (8/26)
+  - navegador_etapa8_fonte_1.8.11_antes: defeito demonstrado como previsto (1/27)
+  - navegador_etapa8_fonte_1.8.12_antes: defeito demonstrado como previsto (16/27)
+  - executor_fonte_1.8.13_antes: defeito demonstrado como previsto (0/20)
+  - etapa9_fonte_1.8.13_antes: defeito demonstrado como previsto (3/8)
+  - navegador_etapa9_fonte_1.8.13_antes: defeito demonstrado como previsto (2/5)
+  - executor_fonte_1.8.14_antes: defeito demonstrado como previsto (13/20)
+Reproduções DIVERGENTES (resultado diferente do previsto) (0):
+ERROS (infraestrutura, fonte inválida, log ou evidência) (0):
+Não executadas (fonte opcional ausente; não contam como aprovadas) (0):
+Casos pulados dentro de suítes (não contam como aprovados) (2):
+  - executor_fonte_1.8.13_antes: 1 caso(s) PULADO(s) dentro da suíte (ver o log)
+  - executor_fonte_1.8.14_antes: 1 caso(s) PULADO(s) dentro da suíte (ver o log)
+Resultado geral: APROVADO — código 0 (alcance: só as verificações executadas acima)

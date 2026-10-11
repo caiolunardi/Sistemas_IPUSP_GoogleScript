@@ -19,4 +19,4 @@ O histórico fornecido registra falhas reais que mudaram o desenho do sistema.
 4. localidade e tipos de coluna de Tabelas são parte do contrato real;
 5. instalação de acionadores/autorização não deve ser presumida apenas porque o código existe.
 
-Esses incidentes serão usados como pontos de atenção na auditoria independente.
+Os incidentes são registros históricos recebidos, não novas ocorrências de produção nesta rodada. As revisões 1.8.x acrescentaram testes sintéticos de recuperação/concorrência/assinaturas; 1.9.1–1.9.3 corrigiram orientações da ajuda que presumiam conclusão integral. Na revisão 1.9.3 foi reproduzida falha de renomeação depois dos dados e fórmulas; a orientação atual reconhece que outras etapas do envio podem faltar. A 1.10.0 mantém essa correção. Ver [Verificação atual](VERIFICACAO_1_10_0.md) e [Continuidade](MANUTENCAO_E_CONTINUIDADE.md).

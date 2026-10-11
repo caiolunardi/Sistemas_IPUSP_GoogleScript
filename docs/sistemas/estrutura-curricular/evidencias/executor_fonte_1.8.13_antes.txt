@@ -1,0 +1,111 @@
+# suíte: executor_fonte_1.8.13_antes
+# comando: env RODAR_SUITES_TESTADO=/caminho/fonte-1.8.13/src/../testes/rodar_suites.sh node testar_executor.js
+# data: 2026-10-07T21:36:36Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 0/20 aprovados
+
+Executor testado: RODAR_SUITES_TESTADO (outra versão)
+Executor validado: arquivo comum e legível, sha256 c588b5c830a3f6f3.
+Ambiente: cópia temporária do executor real + "node" falso (processos filhos controlados); nenhuma suíte real roda aqui.
+     [R1] código final: 0 · filhos executados: 27 · último: reproduzir_auditoria.js@atual
+     [R1] resumo: 
+  ✗ R1. todas as suítes atuais terminam com 0: código final 0, resumo "APROVADO", todas executadas, fontes opcionais ausentes listadas como não executadas 
+      resumo aprovado
+     [R2] código final: 0 · filhos executados: 27 · último: reproduzir_auditoria.js@atual
+     [R2] resumo: 
+  ✗ R2. testar_backend (uma das primeiras) termina com 1 e as seguintes com 0: código final ≠ 0, as seguintes executaram e têm log, a falha está no resumo 
+      código final não zero (foi 0)
+     [R3] código final: 0 · filhos executados: 27 · último: reproduzir_auditoria.js@atual
+     [R3] resumo: 
+  ✗ R3. a ÚLTIMA suíte (reproduzir_auditoria_depois) falha: código final ≠ 0 
+      código final não zero (foi 0)
+     [R4] código final: 0 · filhos executados: 27 · último: reproduzir_auditoria.js@atual
+     [R4] resumo: 
+  ✗ R4. duas suítes atuais falham (testar_gravacao com 1 e testar_visual com 2): as duas identificadas, código final ≠ 0 
+      código final não zero (foi 0)
+     [R5] código final: 0 · filhos executados: 28 · último: reproduzir_auditoria.js@atual
+     [R5] resumo: 
+  ✗ R5. reprodução histórica declarada (navegador_etapa8 na 1.8.12, esperado 16/27) mostra a falha prevista e as suítes atuais passam: expectativa atendida, código final 0 
+      confirmada no resumo
+     [R6 código 0] código final: 0 · filhos executados: 28 · último: reproduzir_auditoria.js@atual
+     [R6 código 0] resumo: 
+  ✗ R6. a mesma reprodução com resultado inesperado — termina com 0, ou falha com outra contagem (20/27): DIVERGENTE e código final ≠ 0 
+      código 0: código final não zero (foi 0)
+     [R7 código 1, módulo ausente] código final: 0 · filhos executados: 28 · último: reproduzir_auditoria.js@atual
+     [R7 código 1, módulo ausente] resumo: 
+  ✗ R7. reprodução que falha por infraestrutura antes de demonstrar o defeito — código 1 SEM resumo (módulo ausente, entrada ausente), comando inexistente (127): ERRO, nunca "confirmada"; código final ≠ 0 
+      código 1, módulo ausente: código final não zero (foi 0)
+     [R8 pasta sem Codigo.gs] código final: 0 · filhos executados: 28 · último: reproduzir_auditoria.js@atual
+     [R8 pasta sem Codigo.gs] resumo: 
+  ✗ R8. fonte opcional ausente → não executada (sem contar como aprovada); fornecida e inválida (pasta sem Codigo.gs; outra versão) → ERRO identificado e código final ≠ 0 
+      pasta sem Codigo.gs: código final não zero (foi 0)
+     [R9 CSV não definido] código final: 1 · mensagem: /caminho/executor-temporario/testes/rodar_suites.sh: line 31: CSV: defina CSV
+  ✗ R9. entrada obrigatória ausente ou ilegível (CSV não definido; PDF inexistente): código final 2 e mensagem identificável, nada executado 
+      CSV não definido: 1 ≠ 2
+     [R10 evidência ausente] código final: 0 · filhos executados: 27 · último: reproduzir_auditoria.js@atual
+     [R10 evidência ausente] resumo: 
+  ✗ R10. preparação e evidências: evidência ausente com arquivo ANTIGO presente → ERRO (a sobra não vira evidência atual); log de suíte não executada nesta rodada não sobra; saída impossível ou manifesto impossível → código 3 
+      código final não zero (foi 0)
+     [R11] código final: 0 · filhos executados: 27 · último: reproduzir_auditoria.js@atual
+     [R11] resumo: 
+  ✗ R11. código 0 com o resumo da própria suíte dizendo que houve falhas (inconsistente): ERRO, código final ≠ 0 
+      inconsistência detectada
+     [R12] código final: 0 · filhos executados: 27 · último: reproduzir_auditoria.js@atual
+     [R12] resumo: 
+  ✗ R12. casos pulados dentro de uma suíte atual aparecem no resumo como não aprovados, sem reprovar a rodada 
+      pulados no resumo
+  ✗ C1. fonte 1.8.13 com versão válida, mas SEM o executor irmão ../testes/rodar_suites.sh; o testar_executor.js REAL da mesma versão do executor é chamado: a reprodução executor_fonte_1.8.13_antes NÃO é confirmada, vira ERRO de infraestrutura, a rodada termina ≠ 0 e as demais suítes (inclusive as outras reproduções da 1.8.13) continuam produzindo diagnóstico 
+      o executor testado não tem testar_executor.js irmão: /caminho/fonte-1.8.13/testes/testar_executor.js
+     [C2 executor inexistente] código: 1 · []
+  ✗ C2. testar_executor.js REAL com o executor selecionado inexistente; com uma pasta no lugar do arquivo; e com falha de E/S INJETADA na cópia DEPOIS da validação inicial; e com falha INJETADA no início do processo (spawnSync): código 3 e nenhum caso contado como asserção reprovada 
+      executor inexistente: código 3 (erro de infraestrutura): 1 ≠ 3
+  – PULADO: C3 (EXECUTOR_1813 não definido (o executor real da 1.8.13 não foi fornecido))
+     [C4] código final 0 · log: ["# código de saída: 0  (duração: 0 s)"] · console: testar_gravacao: código 0 — Executados: 57 (57 ok, 0 falha(s)); pulados: 0
+  ✗ C4. suíte atual com o filho terminando com 0 e a evidência obrigatória ausente: código final ≠ 0; no log, código de saída 0 (real), resultado do processo "aprovada", evidência AUSENTE e UMA interpretação final "ERRO de evidência"; console e resumo com o mesmo ERRO 
+      código final não zero
+     [C5] código final 0 · sobra existe depois? true · copiada? true · interpretação: 
+  ✗ C5. o mesmo caso com uma evidência ANTIGA presente: a sobra é apagada antes da chamada e não é copiada; log, console e resumo dizem ERRO de evidência 
+      código final não zero
+     [C6] código final 0 · log: ["# código de saída: 0  (duração: 0 s)"]
+  ✗ C6. evidência gravada, mas a CÓPIA falha (falha localizada: o processo controlado transforma o destino em link para pasta inexistente): interpretação final ERRO com a operação identificada, código real do filho (0) preservado, rodada reprovada 
+      código final não zero
+     [C7 evidência ausente] código final 0 · log: ["# código de saída: 1  (duração: 0 s)"]
+  ✗ C7. reprodução histórica com a falha prevista LEGÍTIMA (etapa8 na 1.8.11: código 1, 8/26), mas a evidência ausente — ou a cópia dela falhando: ERRO, não "confirmada", rodada reprovada 
+      evidência ausente: código final não zero
+     [C8] código final: 0 · filhos executados: 30 · último: reproduzir_auditoria.js@atual
+     [C8] resumo: 
+     [C8] 30 logs conferidos · incoerentes: ["etapa8_fonte_1.8.11_antes","gerar_paginas_ocr","navegador_etapa8_fonte_1.8.11_antes","navegador_etapa8_fonte_1.8.12_antes","reproduzir_auditoria_depois","testar_auditoria_grade","testar_backend","testar_dois_arquivos","testar_envio_grade","testar_etapa1_identidade_outros","testar_etapa2_csv_unidade","testar_etapa4_salvamento","testar_etapa5_lotes","testar_etapa6_oferta","testar_etapa7_trava_auditoria","testar_etapa8_previa_envio","testar_gravacao","testar_navegador","testar_navegador_etapa1","testar_navegador_etapa2","testar_navegador_etapa3","testar_navegador_etapa4","testar_navegador_etapa5","testar_navegador_etapa6","testar_navegador_etapa8","testar_navegador_preparacao","testar_painel_auditoria","testar_pdf_texto","testar_preparacao","testar_visual"] · evidência da reprodução: null
+  ✗ C8. controle completo sem problemas (suítes atuais aprovadas; reproduções 1.8.11 e 1.8.12 confirmadas, uma delas com evidência): código final 0; em cada log uma interpretação, igual à do console; fontes ausentes listadas à parte 
+      log e console coerentes, uma interpretação por log: ["etapa8_fonte_1.8.11_antes","gerar_paginas_ocr","navegador_etapa8_fonte_1.8.11_antes","navegador_etapa8_fonte_1.8.12_antes","reproduzir_auditoria_depois","testar_auditoria_grade","testar_backend","testar_dois_arquivos","testar_envio_grade","testar_etapa1_identidade_outros","testar_etapa2_csv_unidade","testar_etapa4_salvamento","testar_etapa5_lotes","testar_etapa6_oferta","testar_etapa7_trava_auditoria","testar_etapa8_previa_envio","testar_gravacao","testar_navegador","testar_navegador_etapa1","testar_navegador_etapa2","testar_navegador_etapa3","testar_navegador_etapa4","testar_navegador_etapa5","testar_navegador_etapa6","testar_navegador_etapa8","testar_navegador_preparacao","testar_painel_auditoria","testar_pdf_texto","testar_preparacao","testar_visual"] ≠ []
+     [C9] código final 0 · stderr: /caminho/executor-temporario/testes/rodar_suites.sh: line 36: saida/logs/testar_backend.txt: Is a directory
+  ✗ C9. o log de uma suíte não pode ser completado (o processo controlado troca o arquivo do log por uma pasta): ERRO de log no console (stderr) e no resumo, sem afirmar que o log foi concluído; rodada reprovada e as seguintes continuam 
+      código final não zero
+
+Condições de execução: executor sha256 c588b5c830a3f6f3; 18 execução(ões) do executor iniciadas e terminadas com código de saída válido; 0 erro(s) de infraestrutura.
+Executados: 20 · 0 ok · 20 falhas · 1 pulados
+Falharam:
+  - R1. todas as suítes atuais terminam com 0: código final 0, resumo "APROVADO", todas executadas, fontes opcionais ausentes listadas como não executadas
+  - R2. testar_backend (uma das primeiras) termina com 1 e as seguintes com 0: código final ≠ 0, as seguintes executaram e têm log, a falha está no resumo
+  - R3. a ÚLTIMA suíte (reproduzir_auditoria_depois) falha: código final ≠ 0
+  - R4. duas suítes atuais falham (testar_gravacao com 1 e testar_visual com 2): as duas identificadas, código final ≠ 0
+  - R5. reprodução histórica declarada (navegador_etapa8 na 1.8.12, esperado 16/27) mostra a falha prevista e as suítes atuais passam: expectativa atendida, código final 0
+  - R6. a mesma reprodução com resultado inesperado — termina com 0, ou falha com outra contagem (20/27): DIVERGENTE e código final ≠ 0
+  - R7. reprodução que falha por infraestrutura antes de demonstrar o defeito — código 1 SEM resumo (módulo ausente, entrada ausente), comando inexistente (127): ERRO, nunca "confirmada"; código final ≠ 0
+  - R8. fonte opcional ausente → não executada (sem contar como aprovada); fornecida e inválida (pasta sem Codigo.gs; outra versão) → ERRO identificado e código final ≠ 0
+  - R9. entrada obrigatória ausente ou ilegível (CSV não definido; PDF inexistente): código final 2 e mensagem identificável, nada executado
+  - R10. preparação e evidências: evidência ausente com arquivo ANTIGO presente → ERRO (a sobra não vira evidência atual); log de suíte não executada nesta rodada não sobra; saída impossível ou manifesto impossível → código 3
+  - R11. código 0 com o resumo da própria suíte dizendo que houve falhas (inconsistente): ERRO, código final ≠ 0
+  - R12. casos pulados dentro de uma suíte atual aparecem no resumo como não aprovados, sem reprovar a rodada
+  - C1. fonte 1.8.13 com versão válida, mas SEM o executor irmão ../testes/rodar_suites.sh; o testar_executor.js REAL da mesma versão do executor é chamado: a reprodução executor_fonte_1.8.13_antes NÃO é confirmada, vira ERRO de infraestrutura, a rodada termina ≠ 0 e as demais suítes (inclusive as outras reproduções da 1.8.13) continuam produzindo diagnóstico
+  - C2. testar_executor.js REAL com o executor selecionado inexistente; com uma pasta no lugar do arquivo; e com falha de E/S INJETADA na cópia DEPOIS da validação inicial; e com falha INJETADA no início do processo (spawnSync): código 3 e nenhum caso contado como asserção reprovada
+  - C4. suíte atual com o filho terminando com 0 e a evidência obrigatória ausente: código final ≠ 0; no log, código de saída 0 (real), resultado do processo "aprovada", evidência AUSENTE e UMA interpretação final "ERRO de evidência"; console e resumo com o mesmo ERRO
+  - C5. o mesmo caso com uma evidência ANTIGA presente: a sobra é apagada antes da chamada e não é copiada; log, console e resumo dizem ERRO de evidência
+  - C6. evidência gravada, mas a CÓPIA falha (falha localizada: o processo controlado transforma o destino em link para pasta inexistente): interpretação final ERRO com a operação identificada, código real do filho (0) preservado, rodada reprovada
+  - C7. reprodução histórica com a falha prevista LEGÍTIMA (etapa8 na 1.8.11: código 1, 8/26), mas a evidência ausente — ou a cópia dela falhando: ERRO, não "confirmada", rodada reprovada
+  - C8. controle completo sem problemas (suítes atuais aprovadas; reproduções 1.8.11 e 1.8.12 confirmadas, uma delas com evidência): código final 0; em cada log uma interpretação, igual à do console; fontes ausentes listadas à parte
+  - C9. o log de uma suíte não pode ser completado (o processo controlado troca o arquivo do log por uma pasta): ERRO de log no console (stderr) e no resumo, sem afirmar que o log foi concluído; rodada reprovada e as seguintes continuam
+
+# código de saída: 1  (duração: 13 s)
+# resultado do processo: defeito demonstrado como previsto (0/20)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (0/20)

@@ -1,5 +1,7 @@
 # Fluxos — Estrutura Curricular e Grade Horária
 
+Fluxos de negócio preservados da baseline 1.9.3 na versão **1.10.0**. Para o uso completo, veja [Manual](MANUAL_OPERACAO.md); para chamadas/estados, [Contratos](CONTRATOS_E_FLUXOS.md). Sidebar/abas alteram somente apresentação e preservam a operação em andamento.
+
 ## Ponta a ponta
 
 ```text
@@ -35,7 +37,7 @@ Escolha de semestre/ano e conferência das seis abas de destino.
 
 ## Envio
 
-A ordem documentada é: reconstruir linhas e conferir contagens → validar recursos → criar backup → registrar backup → criar/reusar auditoria → limpar e gravar seis abas → renomear → conferir fórmula/eventos/acionadores.
+O servidor reconstrói as linhas e confere a **assinatura do conteúdo** confirmado, além de contagens quando fornecidas. Depois valida recursos, cria/registra backup, integra a auditoria e executa escrita, fórmulas, renomeação e registros conforme `EnvioGrade.gs`. Essas etapas podem ter resultados parciais distintos; dados iguais nas seis abas não comprovam conclusão de todo o envio.
 
 Nada operacional é apagado antes da criação e registro do backup.
 

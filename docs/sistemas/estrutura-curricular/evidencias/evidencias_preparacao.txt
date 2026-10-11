@@ -1,0 +1,37 @@
+=== 1. ESQUEMA 3 ===
+[planilha nova] abas: Sobre, Disciplinas, Disciplinas por habilitação, Requisitos, Currículos, Importações, Alterações, Ajustes manuais, Disciplinas para outros cursos
+[migração esquema 2 → 3] 183 disciplinas e 1 importação intactas; abas novas criadas; leitor: BASE_NAO_PREPARADA antes e ok depois da abertura pelo administrador
+[1.3.0 → 1.3.2] coluna "Semestre de oferecimento" acrescentada no fim da aba de outros cursos; linha existente intacta (selecionada, CH 30); leitor: BASE_NAO_PREPARADA antes, ok depois
+[1.3.1 → 1.3.2] "Semestre ideal" → "Semestre de oferecimento" só no cabeçalho de 3 abas (sem coluna a mais; valores 1º/2º mantidos); Ajustes ganha "Semestre de oferecimento ajustado"; reimportação grava na coluna renomeada; leitor: BASE_NAO_PREPARADA antes, ok depois
+
+=== 2. AJUSTES MANUAIS ===
+[ajuste] PSC1322: nome, créditos-aula 3→4 e EXT vazia→15 em "Ajustes manuais" (1 linha); departamento e créditos-trabalho iguais ao Júpiter não são guardados; aba Disciplinas byte a byte igual
+[código] PSC1322 → PSC1399 aceito; PSA1302 → PSC1399/PSE2355 recusado (CODIGO_REPETIDO); "XY12" e créditos −1 recusados (DADOS_INVALIDOS)
+[reimportação] ajuste de PSC1322 e exclusão de PSA1302 continuam valendo; mudança do Júpiter em PSE2355 aplicada normalmente
+
+=== 3. EXCLUSÃO ===
+[exclusão] 0420130, 0420131, 4701381 marcadas "Sim" (183 continuam na aba Disciplinas); restauradas → aba de ajustes vazia
+
+=== 4. LISTA POR UNIDADE ===
+[prévia] disciplinas_unidade.csv: 198 linhas; 164 já na estrutura; 34 novas (ex.: PST0391 Liderança e Comportamento Humano, 2+0, 30 h, PST)
+[inclusão] 33 incluídas (PSA0183 deixada de fora de propósito); nova prévia do mesmo CSV: só PSA0183
+
+=== 5. CADASTRO MANUAL ===
+[cadastro manual] PST0391 (FEA — Administração), CH 30 h calculada; PST0391 de novo e PSA1302 (já na estrutura) recusados
+[semestre de oferecimento, outros cursos] 2 → "2º semestre"; ambos → "1º e 2º semestres"; vazio limpa; "3" recusado; "1º semestre" digitado na planilha → 1
+[oferecimento ajustado] PSC1322 (3º período → 1º semestre) ajustada para "1º e 2º semestres" e depois 2º; vazio volta ao automático e remove a linha; "impar" recusado; aba Disciplinas intacta
+
+=== 6. GRADE HORÁRIA ===
+[grade] enviar as 217: 183 da estrutura entram (semestre pelo período ideal), 34 de outros cursos sem semestre voltam listadas (ex.: PST0391) e não entram; 1 escrita; PST0391 com 2º semestre → entra
+[remover da grade] PSC1322 e PST0391 removidas (2 escritas, uma por aba), PSA1302 continua; lote com código inexistente recusado sem gravar
+[1.4.3 salvar + adicionar] PST0391: 2º semestre + observação + marca na grade numa chamada e 1 escrita; repetir = jaEstava; outra sem semestre: salva e não entra; PSC1322 ajustada para 1º e 2º + marca = 1 escrita; excluída não entra; código repetido não grava nada; sem a opção, só salva
+
+=== 6b. CADASTRAR NOVA GRADE ===
+[cadastrar nova grade] "apagar" → mesma planilha, 9 abas recriadas vazias, sem abas ocultas nem marca de recomeço; painel com 0 disciplinas/importações/ajustes/outros; nova importação do CSV → 183
+[recomeço interrompido] falha no 3º deleteSheet → marca fica; leitor: BASE_NAO_PREPARADA; gravação recusada; administrador abre o painel → recomeço concluído (9 abas, 0 disciplinas)
+
+=== 7. PERMISSÕES E FALHAS ===
+[falha na escrita] exclusão de 2 disciplinas com falha persistente no setValues: LOTE_PENDENTE, aba de ajustes idêntica à anterior
+
+=== RESULTADO ===
+Executados: 34 (34 ok, 0 falha(s)); pulados: 0

@@ -1,0 +1,42 @@
+# suíte: navegador_etapa1_fonte_1.8.0_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.0/src node testar_navegador_etapa1.js /caminho/grade_curricular.csv
+# data: 2026-10-07T21:26:09Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 2/6 aprovados
+
+
+== Etapa 1 no navegador
+  ✓ antes: uma linha O:PST0391 com o código PST0392
+  ✗ lista por unidade mostra PST0391 como nova; incluir cria a segunda linha (O:PST0391-2) sem mexer na primeira 
+      Error: diferente: [["O:PST0391","PST0391"],["O:PST0391","PST0391"]] ≠ [["O:PST0391","PST0392"],["O:PST0391-2","PST0391"]]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa1.js:30:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa1.js:90:5
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa1.js:27:9)
+  ✗ cada ficha abre o seu registro (código, nome e observações) 
+      Error: diferente: ["PST0391","Disciplina trazida pelo CSV",""] ≠ ["PST0392","Disciplina corrigida","Observação administrativa que deve sobreviver"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa1.js:30:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa1.js:97:5
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa1.js:27:9)
+  ✗ salvar a ficha do novo grava só a linha PST0391-2 
+      page.click: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('#oCorpoTabela tr[data-id="O:PST0391-2"] td:nth-child(2)')[22m
+      
+  ✗ excluir em lote só a linha nova (caixa da linha O:PST0391-2) não exclui a existente 
+      page.check: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('#oCorpoTabela tr[data-id="O:PST0391-2"] .caixaSelecao')[22m
+      
+  ✓ nenhum erro de JavaScript na página
+
+2 ok, 4 falha(s)
+Falharam:
+  - lista por unidade mostra PST0391 como nova; incluir cria a segunda linha (O:PST0391-2) sem mexer na primeira
+  - cada ficha abre o seu registro (código, nome e observações)
+  - salvar a ficha do novo grava só a linha PST0391-2
+  - excluir em lote só a linha nova (caixa da linha O:PST0391-2) não exclui a existente
+
+# código de saída: 1  (duração: 61 s)
+# resultado do processo: defeito demonstrado como previsto (2/6)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (2/6)

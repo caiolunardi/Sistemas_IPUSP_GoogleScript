@@ -1,0 +1,48 @@
+# suíte: testar_etapa1_identidade_outros
+# comando: node testar_etapa1_identidade_outros.js
+# data: 2026-10-07T21:25:02Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+
+== R. Retrato da reprodução (só registra; as asserções estão em A–G)
+  (retrato gravado nas evidências)
+
+== A. Regressão principal (código editado + CSV com o código antigo)
+  ✓ A. PST0391 aparece como nova; a inclusão cria registro independente e preserva o corrigido (gravado e após reabrir)
+  ✓ A2. Mesmo cenário com o registro original vindo do próprio CSV da unidade
+
+== B. Preservação dos campos do registro corrigido
+  ✓ B. nome, créditos/CH, observações, unidade/curso, semestre e marca "na grade" não mudam com a importação
+
+== C. Independência das operações
+  ✓ C1. editar o novo registro não altera o antigo (e vice-versa)
+  ✓ C2. excluir o novo não exclui o antigo; restaurar o novo não mexe no antigo
+  ✓ C3. operação inversa: excluir o antigo não exclui o novo
+  ✓ C4. marcação para a grade usa a identidade correta (cada registro com o seu código na grade)
+
+== D. Reimportação
+  ✓ D. reimportar o mesmo CSV com PST0391 e PST0392 já presentes não cria outro registro
+
+== E. Colisão com a chave alternativa
+  ✓ E. a primeira chave alternativa também ocupada: o alocador acha outra livre sem sobrescrever
+  ✓ E2. chave alternativa ocupada por registro EXCLUÍDO também não é reaproveitada
+
+== F. Fluxos sem colisão
+  ✓ F1. importação normal: chave = código, dados do CSV, sem repetição
+  ✓ F2. seleção de só parte das novas continua funcionando
+  ✓ F3. edição posterior do código mantém a identidade interna
+  ✓ F4. chave de registro excluído (sem código editado) não é reutilizada nem o código volta como novo
+  ✓ F5. lote com várias disciplinas, algumas com a chave ocupada por registros de código editado
+  ✓ F6. código numérico (interdepartamental) com a chave ocupada: chave alternativa gravada como texto e lida igual após reabrir
+
+== G. Cadastro manual (conferência, sem mudança de comportamento)
+  ✓ G. cadastro manual do código antigo com a chave ocupada é recusado e nada é gravado
+
+17 ok, 0 falha(s)
+
+# código de saída: 0  (duração: 1 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa1_identidade_outros.txt
+# interpretação: aprovada

@@ -1,0 +1,90 @@
+# suíte: testar_gravacao
+# comando: env DIR_SRC_V100=/caminho/fonte-1.0.0/src node testar_gravacao.js /caminho/grade_curricular.csv saida/paginas_ocr_navegador.json
+# data: 2026-10-07T21:24:26Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== 1. Falha injetada ANTES da ativação — primeira importação (base vazia)
+  ✓ 1ª importação, falha em diário da gravação: base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha em cópia da 2ª aba (copyTo): base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha em escrita da 2ª aba (cenário da auditoria): base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha em escrita da 4ª aba (Currículos): base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha em histórico: aba Importações: base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha em histórico: aba Alterações: base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha em flush antes da ativação: base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha em escrita do manifesto (ativação não aconteceu): base vazia intacta, resposta "não gravada", nova tentativa ok
+  ✓ 1ª importação, falha no histórico (Alterações) E no descarte: estado de recuperação explícito; reinício + recuperação; sem duplicar histórico
+
+== 2. Falha injetada ANTES da ativação — reimportação de base com dados
+  ✓ reimportação, falha em escrita da 2ª aba: versão anterior intacta (dados, Observações, extras, histórico); nova tentativa não duplica
+  ✓ reimportação, falha em histórico: aba Alterações: versão anterior intacta (dados, Observações, extras, histórico); nova tentativa não duplica
+  ✓ reimportação, falha em escrita do manifesto: versão anterior intacta (dados, Observações, extras, histórico); nova tentativa não duplica
+
+== 3. Falhas NA e DEPOIS da ativação
+  ✓ flush falha logo após o manifesto, mas a leitura confirma: concluída, com pendência (não "não gravada")
+  ✓ ativação incerta (flush e releitura falham): RESULTADO_INCERTO; após reinício, verificarImportacao diz "gravada" e o painel mostra essa versão
+  ✓ ativação incerta em que o manifesto NÃO foi gravado: verificarImportacao diz "não gravada"; recuperação limpa; nova tentativa ok
+  ✓ arrumação falha em "renomear a aba anterior (setName do ocupante — caso da auditoria)": gravada com pendências e alerta; reinício; leitor avisado; admin abre → abas visíveis = manifesto (IDs, valores, visibilidade)
+  ✓ arrumação falha em "renomear a aba nova para o nome normal (setName da ativa)": gravada com pendências e alerta; reinício; leitor avisado; admin abre → abas visíveis = manifesto (IDs, valores, visibilidade)
+  ✓ arrumação falha em "ocultar a aba anterior (hideSheet)": gravada com pendências e alerta; reinício; leitor avisado; admin abre → abas visíveis = manifesto (IDs, valores, visibilidade)
+  ✓ arrumação falha em "mostrar a aba nova (showSheet)": gravada com pendências e alerta; reinício; leitor avisado; admin abre → abas visíveis = manifesto (IDs, valores, visibilidade)
+  ✓ arrumação falha em "mover abas (moveActiveSheet)": gravada com pendências e alerta; reinício; leitor avisado; admin abre → abas visíveis = manifesto (IDs, valores, visibilidade)
+  ✓ arrumação falha em "proteger a aba nova (protect)": gravada com pendências e alerta; reinício; leitor avisado; admin abre → abas visíveis = manifesto (IDs, valores, visibilidade)
+  ✓ arrumação falha em "apagar a cópia anterior mais antiga (deleteSheet)": gravada com pendências e alerta; reinício; leitor avisado; admin abre → abas visíveis = manifesto (IDs, valores, visibilidade)
+  ✓ arrumação falha de novo DURANTE a recuperação: painel abre com alerta e pendência; diário fica; a abertura seguinte conclui
+  ✓ arrumação pendente é concluída também pela próxima prévia (sem abrir o painel)
+  ✓ aba Sobre falha depois da ativação: gravada com pendência; diário fica; admin abre → Sobre reescrita e diário removido
+  ✓ remoção do diário falha: gravada com pendência "diário da gravação"; abas já conferem; admin abre → diário removido
+  ✓ sem diário, mas abas divergentes (ex.: diário removido à mão): o painel do administrador detecta pelo ID e corrige
+
+== 4. Prévia × edições manuais
+  ✓ prévia com 0 alterações → edição manual de um nome → confirmação recusada; nova prévia mostra a mudança; nada surpresa
+  ✓ edição de célula do sistema em Currículos depois da prévia também invalida
+  ✓ Observação e coluna extra editadas depois da prévia: confirmação aceita e as edições são preservadas (regra: colunas manuais)
+  ✓ edição durante a preparação (entre a leitura e a ativação): cancelada, nada muda
+  ✓ edição no instante da ativação: gravação concluída + aviso apontando a cópia de segurança com a edição
+
+== 5. Informações Básicas do PDF conferidas no servidor
+  ✓ bloco correto (PDF real): 11 contas ok por currículo e valores gravados
+  ✓ números contraditórios (1000 + 300 ≠ 9999) no complemento: bloqueia só os campos envolvidos, preserva os anteriores e mostra na prévia
+  ✓ mesmos números contraditórios sobre base só com CSV: campos ficam vazios (não gravados)
+  ✓ valores ausentes: não gravados, anteriores preservados, contas "não verificáveis"
+  ✓ AAC do PDF diferente da AAC do CSV: não gravada; CSV preservado
+  ✓ primeira importação só pelo PDF: bloco correto gravado; com números contraditórios, só os campos coerentes
+  ✓ o "conferido: true" enviado pelo navegador é ignorado
+
+== 6. Identificador único das importações
+  ✓ duas importações com o relógio congelado no mesmo segundo: IDs diferentes, histórico agrupado certo
+  ✓ colisão improvável dos 8 primeiros caracteres no mesmo segundo: sufixo -2
+
+== 7. Conferência do PDF separada por tipo de evidência
+  ✓ prévia do PDF (complemento) separa leitura, coerência, concordância com o CSV, exclusivos do PDF e itens a revisar
+
+== 8. Outros: colunas extras, aba apagada, migração da 1.0.0
+  ✓ coluna extra em "Requisitos" e em "Disciplinas por habilitação" sobrevive à reimportação
+  ✓ aba em uso apagada à mão: BASE_INCONSISTENTE, nada é gravado
+  ✓ base criada pela 1.0.0 (esquema 1) é migrada: dados e histórico continuam; nova importação funciona
+
+== 9. Revisão humana do PDF: lista completa, paginada e conferida no servidor
+  ✓ pacote sintético de 551 disciplinas: 1.102 valores, TODOS acessíveis em 12 páginas; recusa sem todas as páginas; grava os 1.102 depois
+  ✓ a lista de revisão é da pessoa e da operação: outro administrador não abre as páginas nem confirma com elas
+  ✓ lista de revisão expirada (cache vazio após reinício): páginas → REVISAO_EXPIRADA; confirmação → REVISAO_INCOMPLETA; nada gravado
+  ✓ capacidade: acima de MAX_ITENS_REVISAO a importação é BLOQUEADA com mensagem clara (nunca cortada)
+  ✓ volume máximo de um pacote válido (3.000 disciplinas → 6.000 valores): 60 páginas, todas acessíveis; maior página < 100 KB (limite do CacheService)
+  ✓ PDF real (OCR): 386 valores em 4 páginas; resumo EXT = 0 (159) nas últimas páginas; recusa com 3 de 4 páginas; grava com as 4
+
+== 10. Leitura concorrente: manifesto que muda durante a leitura
+  ✓ duas importações concluídas ENTRE a leitura do manifesto e lerBase_ (painel): lê de novo e devolve só a versão 3, sem BASE_INCONSISTENTE
+  ✓ importações concluídas DEPOIS de lerBase_ e antes do histórico: não mistura dados da v1 com histórico da v3
+  ✓ duas importações intercaladas DENTRO da conferência de colunas (entre o manifesto e a 1ª aba lida por ID): leitor não recebe "base não preparada"
+  ✓ prévia (prepararImportacao) com duas importações intercaladas antes de lerBase_: prévia da versão 3, que grava
+  ✓ importações sem parar durante a leitura: no máximo 3 tentativas, depois BASE_EM_ATUALIZACAO (sem espera indefinida, sem mistura)
+  ✓ aba em uso apagada DE VERDADE (manifesto não muda): BASE_INCONSISTENTE na 1ª tentativa, sem repetir
+
+Executados: 57 (57 ok, 0 falha(s)); pulados: 0  — evidências em saida/evidencias_gravacao.txt
+
+# código de saída: 0  (duração: 15 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_gravacao.txt
+# interpretação: aprovada

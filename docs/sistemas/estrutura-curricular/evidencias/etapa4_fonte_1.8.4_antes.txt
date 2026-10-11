@@ -1,0 +1,233 @@
+# suíte: etapa4_fonte_1.8.4_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.4/src node testar_etapa4_salvamento.js /caminho/grade_curricular.csv --evidencias saida/evidencias_etapa4_fonte_1.8.4_antes.txt
+# data: 2026-10-07T21:31:23Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 3/39 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== R. Reprodução da revisão (só registra)
+  (retrato gravado nas evidências)
+
+== 1. Sucesso
+  ✗ 1a. campos e observação juntos: concluído, gravados, resposta com o que foi lido, releitura igual 
+      Error: contrato 1.8.5: resultado e campo salvamentoPendente: [null,null] ≠ ["concluido",null]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:153:3
+  ✗ 1b–1f. só campos; só observação; limpar observação; omitir observação; voltar ao Júpiter (linha removida) 
+      Error: contrato 1.8.5: salvamentoPendente: undefined ≠ null
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:167:3
+
+== 2. Ajustes anteriores
+  ✓ 2. sem ajuste anterior cria a linha; com ajustes anteriores, campos não enviados, marca de grade, exclusão e coluna extra sobrevivem
+
+== 3. Falha antes da primeira escrita e entre as escritas
+  ✓ 3a. validação recusada: nada muda (resposta, persistência, releitura)
+  ✗ 3b. falha na PRIMEIRA escrita (antes de aplicar): "não concluído", estado anterior confirmado, nada pendente 
+      Error: resposta: [false,"INESPERADO",null] ≠ [false,"NAO_SALVO","nao_concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:204:3
+  ✗ 3c. falha na escrita da OBSERVAÇÃO (uma vez): nova tentativa na mesma chamada conclui; nada parcial 
+      Error: diferente: [false,null] ≠ [true,"concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:216:3
+  ✗ 3d. REPRODUÇÃO: falha persistente na observação depois dos ajustes: nada de parcial silencioso — pendência explícita com o que já foi gravado; reabertura conclui 
+      Error: resposta não é erro genérico: [false,"INESPERADO"] ≠ [false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:224:3
+
+== 4. Escrita aplicada seguida de exceção
+  ✗ 4. observação (setValue aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído) 
+      Error: diferente: [false,null] ≠ [true,"concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:249:5
+  ✗ 4. ajustes (setValues aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído) 
+      Error: diferente: [false,null] ≠ [true,"concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:249:5
+  ✗ 4. primeira escrita do fluxo — registro do pedido (gravado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído) 
+      Error: falha disparada: undefined ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:247:5
+
+== 5. Falha durante a recuperação
+  ✗ 5a. recuperação falha de novo (reabertura com a escrita ainda falhando): pendência continua; depois, "Concluir" conclui 
+      TypeError: Cannot read properties of undefined (reading 'estado')
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:263:31
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+  ✗ 5b. falha ao remover o registro depois de tudo gravado: pendente com "já gravado"; a próxima ação confirma sem reescrever 
+      TypeError: Cannot read properties of undefined (reading 'ajusteGravado')
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:278:45
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+
+== 6–7. Execução encerrada (fotografia da persistência) e reabertura
+  ✗ 6a. encerrada logo depois do registro do pedido (antes de qualquer dado): a reabertura reconhece e conclui o pedido 
+      Error: fotografia tirada no ponto
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:45:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:297:5
+  ✗ 6b. encerrada ENTRE as escritas (ajustes gravados, observação não): a reabertura reconhece e conclui o pedido 
+      Error: concluído após reabrir: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"","pendente":false} ≠ {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:302:5
+  ✗ 7. encerrada depois das escritas principais, antes de concluir/responder: a reabertura reconhece e conclui o pedido 
+      Error: painel informa que concluiu: undefined ≠ "concluido"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:303:5
+  ✗ 6c. encerrada entre as escritas e reaberta por um LEITOR: dados como estão + aviso de salvamento em andamento; nada é escrito 
+      Error: leitor: só o aviso: undefined ≠ {"estado":"pendente"}
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:315:3
+
+== 8. Flush
+  ✗ 8. falha no flush depois das escritas (uma vez): conferência e nova tentativa concluem (o simulador não reproduz os buffers reais do Google) 
+      Error: diferente: [false,null] ≠ [true,"concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:329:3
+
+== 9. Repetição e pedidos posteriores
+  ✗ 9a. recuperação repetida (duas reaberturas) não duplica linha nem perde ajustes anteriores 
+      TypeError: a3.ctx.resolverSalvamentoPendente is not a function
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:343:16
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+  ✗ 9b. pendência que não conclui bloqueia novo salvamento da MESMA disciplina; liberada a escrita, o pedido antigo é concluído ANTES e o novo vale por último 
+      Error: novo bloqueado: [false,"INESPERADO"] ≠ [false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:351:3
+
+== 10. Salvar com adicionarAGrade
+  ✗ 10a. sucesso: marca de grade e observação gravadas juntas 
+      Error: grade e contrato: [true,null] ≠ [true,"concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:366:3
+  ✓ 10b. sem semestre de oferecimento: salva e informa; excluída: salva sem marcar
+  ✗ 10c. falha entre as escritas: a marca de grade segue o mesmo pedido (pendente, depois concluída), não fica esquecida 
+      TypeError: Cannot read properties of undefined (reading 'salvamento')
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:380:28
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+
+== 11. Identidade
+  ✗ 11. código efetivo alterado: observação e recuperação ficam na chave original; código numérico; observação parecida com fórmula continua texto 
+      Error: diferente: {"nome":"Código trocado","creditosAula":"","naGrade":"","obs":"","pendente":false} ≠ {"nome":"Código trocado","creditosAula":"","naGrade":"","obs":"obs da 1001","pendente":false}
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:393:3
+
+== 12. Outras disciplinas, aba ativa, reimportação
+  ✗ 12. outras disciplinas e colunas extras intactas; aba Disciplinas EM USO (depois de reimportar); reimportação preserva a observação 
+      Error: INESPERADO: Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.
+          at pedir (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:46:44)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:413:3
+
+== 13. Pendência persistente e pontos conflitantes
+  ✗ 13a. com a pendência sem concluir: outra disciplina, ação em lote, importação e recomeço são recusados com a mensagem da pendência; nada muda 
+      Error: diferente: ["outra disciplina",true,null] ≠ ["outra disciplina",false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:439:36
+  ✗ 13b. base mudou (registro de outra aba Disciplinas): não reaplica; "Descartar" só nesse caso 
+      TypeError: Cannot read properties of undefined (reading 'v')
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:449:26
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+
+== 15. Outros cursos (regressão)
+  ✗ 15. salvar disciplina para outros cursos com campos e observação (uma linha), cadastro e lista por unidade continuam 
+      Error: contrato 1.8.5: undefined ≠ "concluido"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:475:3
+
+== 16. (1.8.6) Recuperação automática: o que foi concluído chega ao painel
+  ✗ 16a. REPRODUÇÃO A→B→A: A pendente, B salva (conclui A), A reaberta depois e salva só o nome — a observação recuperada não se perde (planilha, dados do painel, ficha, contexto novo) 
+      Error: A pendente: [false,"INESPERADO"] ≠ [false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at aPendente (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:513:3)
+  ✗ 16b. recuperação antes de OUTRAS operações (grade em lote, exclusão, outros cursos, lista por unidade): a observação de A vem em "recuperado" e o painel a aplica 
+      Error: A pendente: [false,"INESPERADO"] ≠ [false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at aPendente (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:513:3)
+  ✗ 16c. recuperação concluída e o NOVO pedido recusado ou com falha (validação, escrita, erro inesperado, leitura, importação): "recuperado" vem na recusa e o painel aplica 
+      Error: A pendente: [false,"INESPERADO"] ≠ [false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at aPendente (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:513:3)
+  ✗ 16d. ordem dos valores: novo pedido de A que MUDA a observação vence o valor recuperado; recuperação SEM mudança de observação não apaga o texto existente 
+      Error: A pendente: [false,"INESPERADO"] ≠ [false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at aPendente (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:513:3)
+
+== 17. (1.8.6) Exceção depois de remover o registro
+  ✗ 17a. remoção aplicada e exceção (metadadoRemoverDepois): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica 
+      Error: falha disparada: undefined ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:686:5
+  ✗ 17b. falha no SEGUNDO flush (depois da remoção; o 8 cobre o primeiro): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica 
+      Error: falha disparada: undefined ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:686:5
+  ✗ 17c. falha ANTES da remoção (registro presente): pendente identificado, com "já gravado"; conclusão sem reescrever 
+      TypeError: Cannot read properties of undefined (reading 'estado')
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:707:28
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+  ✗ 17d. remoção feita + falha de LEITURA na conferência: não declara sucesso nem "nada gravado"; SALVAMENTO_INCERTO identificado, rascunho preservável; contexto novo e repetição corretos 
+      Error: falha de leitura disparada
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:45:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:726:3
+  ✗ 17e. "Concluir salvamento pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído (nada de pendente inexistente) 
+      TypeError: a.ctx.resolverSalvamentoPendente is not a function
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:747:17
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+
+== 18. (1.8.6) Colunas extras de "Ajustes manuais" na retomada
+  ✗ 18a. REPRODUÇÃO: data em coluna extra continua DATA (mesmo getTime) depois da retomada; texto parecido com ISO, número, booleano e vazio intactos; outra disciplina intacta 
+      Error: pendente: [false,"INESPERADO"] ≠ [false,"SALVAMENTO_PENDENTE"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:806:3
+  ✗ 18b. registro no formato da 1.8.5 (ajuste com _extras e datas viradas texto ISO pelo JSON) é concluído sem converter a data em texto 
+      TypeError: Cannot read properties of undefined (reading 'v')
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:825:26
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:37:9)
+  ✗ 18c. extra alterado na planilha DEPOIS do pedido pendente não é sobrescrito pelo registro (vale a linha atual) 
+      Error: diferente: "Antes" ≠ "Depois"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:852:3
+
+3 ok, 36 falha(s)
+Falharam:
+  - 1a. campos e observação juntos: concluído, gravados, resposta com o que foi lido, releitura igual
+  - 1b–1f. só campos; só observação; limpar observação; omitir observação; voltar ao Júpiter (linha removida)
+  - 3b. falha na PRIMEIRA escrita (antes de aplicar): "não concluído", estado anterior confirmado, nada pendente
+  - 3c. falha na escrita da OBSERVAÇÃO (uma vez): nova tentativa na mesma chamada conclui; nada parcial
+  - 3d. REPRODUÇÃO: falha persistente na observação depois dos ajustes: nada de parcial silencioso — pendência explícita com o que já foi gravado; reabertura conclui
+  - 4. observação (setValue aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+  - 4. ajustes (setValues aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+  - 4. primeira escrita do fluxo — registro do pedido (gravado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+  - 5a. recuperação falha de novo (reabertura com a escrita ainda falhando): pendência continua; depois, "Concluir" conclui
+  - 5b. falha ao remover o registro depois de tudo gravado: pendente com "já gravado"; a próxima ação confirma sem reescrever
+  - 6a. encerrada logo depois do registro do pedido (antes de qualquer dado): a reabertura reconhece e conclui o pedido
+  - 6b. encerrada ENTRE as escritas (ajustes gravados, observação não): a reabertura reconhece e conclui o pedido
+  - 7. encerrada depois das escritas principais, antes de concluir/responder: a reabertura reconhece e conclui o pedido
+  - 6c. encerrada entre as escritas e reaberta por um LEITOR: dados como estão + aviso de salvamento em andamento; nada é escrito
+  - 8. falha no flush depois das escritas (uma vez): conferência e nova tentativa concluem (o simulador não reproduz os buffers reais do Google)
+  - 9a. recuperação repetida (duas reaberturas) não duplica linha nem perde ajustes anteriores
+  - 9b. pendência que não conclui bloqueia novo salvamento da MESMA disciplina; liberada a escrita, o pedido antigo é concluído ANTES e o novo vale por último
+  - 10a. sucesso: marca de grade e observação gravadas juntas
+  - 10c. falha entre as escritas: a marca de grade segue o mesmo pedido (pendente, depois concluída), não fica esquecida
+  - 11. código efetivo alterado: observação e recuperação ficam na chave original; código numérico; observação parecida com fórmula continua texto
+  - 12. outras disciplinas e colunas extras intactas; aba Disciplinas EM USO (depois de reimportar); reimportação preserva a observação
+  - 13a. com a pendência sem concluir: outra disciplina, ação em lote, importação e recomeço são recusados com a mensagem da pendência; nada muda
+  - 13b. base mudou (registro de outra aba Disciplinas): não reaplica; "Descartar" só nesse caso
+  - 15. salvar disciplina para outros cursos com campos e observação (uma linha), cadastro e lista por unidade continuam
+  - 16a. REPRODUÇÃO A→B→A: A pendente, B salva (conclui A), A reaberta depois e salva só o nome — a observação recuperada não se perde (planilha, dados do painel, ficha, contexto novo)
+  - 16b. recuperação antes de OUTRAS operações (grade em lote, exclusão, outros cursos, lista por unidade): a observação de A vem em "recuperado" e o painel a aplica
+  - 16c. recuperação concluída e o NOVO pedido recusado ou com falha (validação, escrita, erro inesperado, leitura, importação): "recuperado" vem na recusa e o painel aplica
+  - 16d. ordem dos valores: novo pedido de A que MUDA a observação vence o valor recuperado; recuperação SEM mudança de observação não apaga o texto existente
+  - 17a. remoção aplicada e exceção (metadadoRemoverDepois): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica
+  - 17b. falha no SEGUNDO flush (depois da remoção; o 8 cobre o primeiro): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica
+  - 17c. falha ANTES da remoção (registro presente): pendente identificado, com "já gravado"; conclusão sem reescrever
+  - 17d. remoção feita + falha de LEITURA na conferência: não declara sucesso nem "nada gravado"; SALVAMENTO_INCERTO identificado, rascunho preservável; contexto novo e repetição corretos
+  - 17e. "Concluir salvamento pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído (nada de pendente inexistente)
+  - 18a. REPRODUÇÃO: data em coluna extra continua DATA (mesmo getTime) depois da retomada; texto parecido com ISO, número, booleano e vazio intactos; outra disciplina intacta
+  - 18b. registro no formato da 1.8.5 (ajuste com _extras e datas viradas texto ISO pelo JSON) é concluído sem converter a data em texto
+  - 18c. extra alterado na planilha DEPOIS do pedido pendente não é sobrescrito pelo registro (vale a linha atual)
+
+# código de saída: 1  (duração: 2 s)
+# resultado do processo: defeito demonstrado como previsto (3/39)
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa4_fonte_1.8.4_antes.txt
+# interpretação: defeito demonstrado como previsto (3/39)

@@ -1,0 +1,208 @@
+<script>
+/*
+ * =====================================================================
+ *  ESTRUTURA CURRICULAR — utilidades comuns dos leitores de arquivo
+ * =====================================================================
+ *
+ *  Este arquivo é incluído no navegador (Painel.html) ANTES de
+ *  LeitorCsv e LeitorPdf. Ele define:
+ *
+ *  1. O "pacote de importação": o formato único que os dois leitores
+ *     (CSV e PDF) produzem e que o servidor recebe. Assim o servidor
+ *     não precisa saber de onde os dados vieram para validá-los e
+ *     gravá-los.
+ *  2. Funções pequenas de texto (acentos, espaços) e de interpretação
+ *     de códigos do Júpiter (currículo de 12 dígitos, tipo de
+ *     disciplina).
+ *
+ *  ---------------------------------------------------------------
+ *  FORMATO DO PACOTE DE IMPORTAÇÃO (versaoPacote = 1)
+ *  ---------------------------------------------------------------
+ *  {
+ *    versaoPacote: 1,
+ *    origem: {
+ *      formato: "csv" | "pdf",
+ *      leitura: "csv" | "texto" | "ocr",   // como o arquivo foi lido
+ *      arquivo: "grade_curricular.csv",     // nome do arquivo escolhido
+ *      tamanhoBytes: 90412,
+ *      geradoEm: "2026-09-26T22:05:43" | null  // rodapé do PDF do Júpiter
+ *    },
+ *    curso: { codigo: "47012", nome: "Psicologia" },
+ *    curriculos: [{
+ *      codigo: "470120100262",  // 12 dígitos, SEMPRE texto
+ *      habilitacao: "100",      // código da habilitação sem zeros à esquerda
+ *      habilitacaoNome: "Psicologia - Bacharelado" | null,
+ *      ano: 2026, semestre: 2,  // quando a estrutura foi cadastrada
+ *      situacao: "Ativo" | null,
+ *      aacHoras: 60 | null, aacPercentual: 1.45 | null,   // coluna AAC do CSV
+ *      info: {                  // "Informações Básicas do Currículo" (só PDF)
+ *        dataAtivacao, dataDesativacao: "dd/mm/aaaa" | null,
+ *        duracaoIdeal, duracaoMinima, duracaoMaxima,        // semestres
+ *        chAulaObrigatoria, chTrabalhoObrigatoria, chObrigatoria,
+ *        chAulaEletiva, chTrabalhoEletiva, chEletiva,
+ *        chAulaLivre, chTrabalhoLivre, chLivre,             // horas
+ *        chDisciplinas, estagio, aac, aexApolo, extensaoOptativas,
+ *        chDisciplinasMaisAac, extensaoTotal, totalGeral,   // horas
+ *        extensaoPercentual: 10.5,                          // %
+ *        informacoesEspecificas: "texto da habilitação",
+ *        pagina: 35,               // página do PDF onde o bloco começa
+ *        conferido: true | false,  // as somas do quadro de CH batem?
+ *        avisosConferencia: [...]  // quais somas não batem (só para a tela;
+ *                                  // o servidor descarta estes dois campos
+ *                                  // e refaz as contas)
+ *      } | null
+ *    }],
+ *    disciplinas: [{              // uma por código (catálogo)
+ *      codigo: "PSA1302", nome: "...",
+ *      nomePodeEstarCortado: true | false,  // PDF: nome longo pode vir cortado
+ *      versao: 4 | null, versaoOrigem: "pdf" | "csv-requisito" | null,
+ *      creditosAula, creditosTrabalho, ch, ce, cp,         // números
+ *      ext: n | null,   // só o PDF traz (coluna EXT)
+ *      atpa: n | null,  // CSV: coluna AACC; PDF: coluna ATPA
+ *      naoConfirmados: ["ch", ...], // PDF por OCR: campos cujo número as
+ *                                   // contas do relatório não confirmaram
+ *      paginas: [1, 15]             // PDF: páginas em que a disciplina aparece
+ *    }],
+ *    vinculos: [{                 // disciplina dentro de um currículo
+ *      curriculo, disciplina, tipo: "OBRIGATORIA" | "OPTATIVA_ELETIVA"
+ *      | "OPTATIVA_LIVRE", periodoIdeal: 5,
+ *      periodoConfirmado: true | false   // PDF: período confirmado pela leitura
+ *    }],
+ *    requisitos: [{
+ *      curriculo, disciplina, requisito, versaoRequisito, nomeRequisito,
+ *      tipoRequisito: "Requisito" | "Requisito fraco" | ...,
+ *      grupo: 1 | null   // só o PDF informa: requisitos ligados por
+ *                        // "ou" têm o mesmo número de grupo; grupos
+ *                        // diferentes se somam ("e"). null = o arquivo
+ *                        // não diz se é "e" ou "ou" (caso do CSV).
+ *    }],
+ *    avisos: [{ nivel: "erro" | "aviso" | "info", codigo, mensagem, detalhe }],
+ *    resumoLeitura: { ...contagens para a tela de prévia... },
+ *    conferencia: { ...só PDF: resultado das contas de conferência... }
+ *  }
+ *
+ *  Um pacote com qualquer aviso de nível "erro" NÃO pode ser gravado.
+ * =====================================================================
+ */
+var EstruturaComum = (function () {
+  'use strict';
+
+  var VERSAO_PACOTE = 1;
+
+  // Tipos de disciplina (coluna "Tipo" do CSV e seções do PDF).
+  var TIPOS = {
+    OBRIGATORIA: { rotulo: 'Obrigatória', plural: 'Obrigatórias', curto: 'Obrigatória' },
+    OPTATIVA_ELETIVA: { rotulo: 'Optativa eletiva', plural: 'Optativas eletivas', curto: 'Eletiva' },
+    OPTATIVA_LIVRE: { rotulo: 'Optativa livre', plural: 'Optativas livres', curto: 'Livre' }
+  };
+
+  // Código de disciplina USP: 3 letras + 4 dígitos (PSA1302) ou
+  // 7 dígitos (4701381, 0420130). O zero à esquerda faz parte do código.
+  var RE_CODIGO_DISCIPLINA = /^(?:[A-Z]{3}\d{4}|\d{7})$/;
+
+  /** Tira acentos e cedilha ("Período" → "Periodo"); null/undefined → "". */
+  function semAcento(texto) {
+    return String(texto == null ? '' : texto).normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+
+  /** Troca sequências de espaços (inclusive o não separável) por um espaço e apara as pontas. */
+  function normalizarEspacos(texto) {
+    return String(texto == null ? '' : texto).replace(/[\s ]+/g, ' ').trim();
+  }
+
+  /** "Optativas Eletivas" → "OPTATIVA_ELETIVA"; texto desconhecido → null. */
+  function tipoDeTexto(texto) {
+    var t = semAcento(texto).toLowerCase();
+    if (/obrigat/.test(t)) return 'OBRIGATORIA';
+    if (/eletiv/.test(t)) return 'OPTATIVA_ELETIVA';
+    if (/livre/.test(t)) return 'OPTATIVA_LIVRE';
+    return null;
+  }
+
+  /**
+   * Decompõe o número do currículo, conforme a regra do Júpiter:
+   *   47012 0100 262  →  curso 47012 · habilitação 0100 · cadastrado em 26/2
+   * Devolve null se não tiver exatamente 12 dígitos.
+   */
+  function decomporCurriculo(codigo) {
+    var c = String(codigo == null ? '' : codigo).trim();
+    if (!/^\d{12}$/.test(c)) return null;
+    return {
+      codigo: c,
+      curso: c.slice(0, 5),
+      habilitacao4: c.slice(5, 9),
+      habilitacao: String(parseInt(c.slice(5, 9), 10)),
+      ano: 2000 + parseInt(c.slice(9, 11), 10),
+      semestre: parseInt(c.slice(11, 12), 10)
+    };
+  }
+
+  /** Esqueleto vazio de pacote. */
+  function novoPacote(origem) {
+    return {
+      versaoPacote: VERSAO_PACOTE,
+      origem: origem,
+      curso: null,
+      curriculos: [],
+      disciplinas: [],
+      vinculos: [],
+      requisitos: [],
+      avisos: [],
+      resumoLeitura: null,
+      conferencia: null
+    };
+  }
+
+  /** Acrescenta um aviso ao pacote. nivel: "erro" | "aviso" | "info". */
+  function avisar(pacote, nivel, codigo, mensagem, detalhe) {
+    pacote.avisos.push({ nivel: nivel, codigo: codigo, mensagem: mensagem, detalhe: detalhe || '' });
+  }
+
+  /** O pacote tem algum aviso de nível "erro" (e, portanto, não pode ser gravado)? */
+  function temErro(pacote) {
+    return pacote.avisos.some(function (a) { return a.nivel === 'erro'; });
+  }
+
+  /**
+   * Contagens por currículo usadas na tela de prévia
+   * (quantas disciplinas de cada tipo, quantos requisitos).
+   */
+  function resumir(pacote) {
+    var porCurriculo = {};
+    pacote.curriculos.forEach(function (c) {
+      porCurriculo[c.codigo] = { disciplinas: 0, OBRIGATORIA: 0, OPTATIVA_ELETIVA: 0, OPTATIVA_LIVRE: 0, requisitos: 0 };
+    });
+    pacote.vinculos.forEach(function (v) {
+      var r = porCurriculo[v.curriculo];
+      if (!r) return;
+      r.disciplinas++;
+      if (r[v.tipo] != null) r[v.tipo]++;
+    });
+    pacote.requisitos.forEach(function (q) {
+      var r = porCurriculo[q.curriculo];
+      if (r) r.requisitos++;
+    });
+    return {
+      curriculos: pacote.curriculos.length,
+      disciplinas: pacote.disciplinas.length,
+      vinculos: pacote.vinculos.length,
+      requisitos: pacote.requisitos.length,
+      porCurriculo: porCurriculo
+    };
+  }
+
+  return {
+    VERSAO_PACOTE: VERSAO_PACOTE,
+    TIPOS: TIPOS,
+    RE_CODIGO_DISCIPLINA: RE_CODIGO_DISCIPLINA,
+    semAcento: semAcento,
+    normalizarEspacos: normalizarEspacos,
+    tipoDeTexto: tipoDeTexto,
+    decomporCurriculo: decomporCurriculo,
+    novoPacote: novoPacote,
+    avisar: avisar,
+    temErro: temErro,
+    resumir: resumir
+  };
+})();
+</script>

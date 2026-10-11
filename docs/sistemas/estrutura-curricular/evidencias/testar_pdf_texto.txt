@@ -1,0 +1,31 @@
+# suíte: testar_pdf_texto
+# comando: node testar_pdf_texto.js /caminho/grade_curricular.csv saida/paginas_ocr_navegador.json
+# data: 2026-10-07T21:41:03Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+   conferência p1 BIO0121 tot lido=null aviso Tot./CH não batem com os créditos no próprio relatório
+   conferência p14 4702994 aula lido=null aviso Tot./CH não batem com os créditos no próprio relatório
+   conferência p26 4703691 aula lido=null aviso Tot./CH não batem com os créditos no próprio relatório
+   conferência p26 PSA3012 aula lido=null aviso Tot./CH não batem com os créditos no próprio relatório
+   conferência p1 BIO0121 tot lido=sscsecesacenaraamaeemao 4 conferir não foi possível confirmar o número
+   conferência p14 4702994 aula lido=ssi 2 enem conferir não foi possível confirmar o número
+   conferência p15 BIO0121 aula lido=sscsec 3 conferir não foi possível confirmar o número
+   conferência p15 BIO0121 trab lido=sacanear 1 conferir não foi possível confirmar o número
+   conferência p26 4703691 aula lido=sessao 3 conferir não foi possível confirmar o número
+   conferência p26 PSA3012 aula lido= conferir não foi possível confirmar o número
+   conferência p27 PSE3751 aula lido=osnisni 2 conferir não foi possível confirmar o número
+   conferência p27 PSE3751 trab lido=src 2 conferir não foi possível confirmar o número
+   conferência p27 PSE3751 ch lido=seceneeranenamaeemeno 90 conferir não foi possível confirmar o número
+PDF com texto lido em 1.3 s; modo texto
+conferência: {"linhas":398,"lidos":3573,"corrigidos":0,"aConferir":9,"subtotais":"68/63","totais":"9/5","naoReconhecidas":2}
+vínculos iguais 398 / 398 · EXT 183 · versões 183 · currículos com informações 3
+  info PDF_COMPLEMENTO_CABECALHO Nas páginas da grade, o campo "Complemento" do cabeçalho não corresponde ao currículo (defeito conhecido do relatório). A habilitação foi identificada pelo núme
+   não reconhecida p37: Aula Aula horária em
+   não reconhecida p37: Aula 2040 225 705 disciplinas da
+OK — caminho "PDF com texto" confere com o CSV.
+
+# código de saída: 0  (duração: 3 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

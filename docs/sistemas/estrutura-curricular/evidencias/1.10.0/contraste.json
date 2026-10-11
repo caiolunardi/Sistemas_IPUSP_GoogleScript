@@ -1,0 +1,402 @@
+[
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "estruturaModoSidebar",
+    "texto": "rgb(0, 90, 169)",
+    "fundo": "rgb(239, 246, 255)",
+    "contraste": 6.36
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "estruturaModoAbas",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 5.45
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "estruturaTituloVisoes",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 5.45
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "visao-estrutura",
+    "texto": "rgb(0, 90, 169)",
+    "fundo": "rgb(239, 246, 255)",
+    "contraste": 6.36
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "visao-auditoria",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "estruturaTituloEtapas",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 5.45
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "etapa-1",
+    "texto": "rgb(0, 90, 169)",
+    "fundo": "rgb(239, 246, 255)",
+    "contraste": 6.36
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "etapa-2",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "etapa-3",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "etapa-4",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "estruturaTituloAbas",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 5.45
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "aba-disciplinas",
+    "texto": "rgb(0, 90, 169)",
+    "fundo": "rgb(239, 246, 255)",
+    "contraste": 6.36
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "aba-curriculos",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "sidebar",
+    "id": "aba-historico",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "estruturaModoSidebar",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 5.45
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "estruturaModoAbas",
+    "texto": "rgb(0, 90, 169)",
+    "fundo": "rgb(239, 246, 255)",
+    "contraste": 6.36
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "visao-estrutura",
+    "texto": "rgb(0, 90, 169)",
+    "fundo": "rgb(245, 246, 247)",
+    "contraste": 6.39
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "visao-auditoria",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(245, 246, 247)",
+    "contraste": 5.04
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "etapa-1",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(239, 246, 255)",
+    "contraste": 13.56
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "etapa-2",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "etapa-3",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "etapa-4",
+    "texto": "rgb(31, 41, 51)",
+    "fundo": "rgb(255, 255, 255)",
+    "contraste": 14.76
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "aba-disciplinas",
+    "texto": "rgb(0, 90, 169)",
+    "fundo": "rgb(245, 246, 247)",
+    "contraste": 6.39
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "aba-curriculos",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(245, 246, 247)",
+    "contraste": 5.04
+  },
+  {
+    "tema": "light",
+    "modo": "abas",
+    "id": "aba-historico",
+    "texto": "rgb(95, 107, 118)",
+    "fundo": "rgb(245, 246, 247)",
+    "contraste": 5.04
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "estruturaModoSidebar",
+    "texto": "rgb(102, 181, 242)",
+    "fundo": "rgb(16, 35, 47)",
+    "contraste": 7.25
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "estruturaModoAbas",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 7.88
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "estruturaTituloVisoes",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 7.88
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "visao-estrutura",
+    "texto": "rgb(102, 181, 242)",
+    "fundo": "rgb(16, 35, 47)",
+    "contraste": 7.25
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "visao-auditoria",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "estruturaTituloEtapas",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 7.88
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "etapa-1",
+    "texto": "rgb(102, 181, 242)",
+    "fundo": "rgb(16, 35, 47)",
+    "contraste": 7.25
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "etapa-2",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "etapa-3",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "etapa-4",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "estruturaTituloAbas",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 7.88
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "aba-disciplinas",
+    "texto": "rgb(102, 181, 242)",
+    "fundo": "rgb(16, 35, 47)",
+    "contraste": 7.25
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "aba-curriculos",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "sidebar",
+    "id": "aba-historico",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "estruturaModoSidebar",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 7.88
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "estruturaModoAbas",
+    "texto": "rgb(102, 181, 242)",
+    "fundo": "rgb(16, 35, 47)",
+    "contraste": 7.25
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "visao-estrutura",
+    "texto": "rgb(102, 181, 242)",
+    "fundo": "rgb(8, 18, 25)",
+    "contraste": 8.51
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "visao-auditoria",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(8, 18, 25)",
+    "contraste": 8.78
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "etapa-1",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 35, 47)",
+    "contraste": 14.59
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "etapa-2",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "etapa-3",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "etapa-4",
+    "texto": "rgb(247, 243, 239)",
+    "fundo": "rgb(16, 30, 40)",
+    "contraste": 15.36
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "aba-disciplinas",
+    "texto": "rgb(102, 181, 242)",
+    "fundo": "rgb(8, 18, 25)",
+    "contraste": 8.51
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "aba-curriculos",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(8, 18, 25)",
+    "contraste": 8.78
+  },
+  {
+    "tema": "dark",
+    "modo": "abas",
+    "id": "aba-historico",
+    "texto": "rgb(185, 175, 167)",
+    "fundo": "rgb(8, 18, 25)",
+    "contraste": 8.78
+  }
+]

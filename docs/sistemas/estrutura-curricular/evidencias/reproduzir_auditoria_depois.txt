@@ -1,0 +1,37 @@
+# suíte: reproduzir_auditoria_depois
+# comando: node reproduzir_auditoria.js /caminho/grade_curricular.csv saida/paginas_ocr_navegador.json
+# data: 2026-10-07T21:41:17Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte: /caminho/fonte-1.9.2/src
+
+### ACHADO 1 — falha em setName depois da ativação
+confirmarImportacao: ok=true pendencias=["nomes e ordem das abas"] planilhaDesatualizada=true
+manifesto.versaoBase=2 diário presente=true
+  Disciplinas: visível id=1013 | manifesto id=1017 "_nova_disciplinas_67e6a214" (oculta) DIVERGE
+  Disciplinas por habilitação: visível id=1018 | manifesto id=1018 "Disciplinas por habilitação" OK
+  Requisitos: visível id=1019 | manifesto id=1019 "Requisitos" OK
+  Currículos: visível id=1020 | manifesto id=1020 "Currículos" OK
+nome de PSC1322 na aba visível "Disciplinas": Introdução à Psicopatologia
+reinício + obterDadosPainel (admin): ok=true versão no painel=2 nome no painel=Introdução à Psicopatologia (nova ementa) gravacao={"interrompida":false,"arrumacaoPendente":false,"planilhaDesatualizada":false,"abasDivergentes":[],"recuperada":false,"arrumadaAgora":true,"recuperacaoAdiada":false,"recuperacaoFalhou":false}
+  Disciplinas: visível id=1017 | manifesto id=1017 "Disciplinas" OK
+  Disciplinas por habilitação: visível id=1018 | manifesto id=1018 "Disciplinas por habilitação" OK
+  Requisitos: visível id=1019 | manifesto id=1019 "Requisitos" OK
+  Currículos: visível id=1020 | manifesto id=1020 "Currículos" OK
+nome de PSC1322 na aba visível "Disciplinas": Introdução à Psicopatologia (nova ementa)
+
+### ACHADO 2 — revisão humana com 1.102 valores (pacote sintético de 551 disciplinas)
+CSV sintético: ok=true
+prévia: podeGravar=true revisao.total=1102 itens enviados nesta resposta=100 páginas=12 (tamanho 100)
+confirmar com a caixa marcada, sem abrir as demais páginas: ok=false codigo=REVISAO_INCOMPLETA — A revisão não foi concluída: 11 de 12 páginas da lista de valores só do PDF não foram abertas (páginas 2–12). Todos os 1102 valores a gravar precisam passar pela revisão. Nada foi gravado.
+
+### ACHADO 3 — duas importações intercaladas entre o manifesto e lerBase_
+intercaladas: v2 ok=true v3 ok=true
+obterDadosPainel: ok=true versão=3 importação=IMP-20261007-184117-2086a18a nome PSC1322=Nome v3 última no histórico=IMP-20261007-184117-2086a18a
+manifesto depois: versaoBase=3 importacao=IMP-20261007-184117-2086a18a
+
+# código de saída: 0  (duração: 0 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

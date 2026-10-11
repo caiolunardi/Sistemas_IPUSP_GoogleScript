@@ -1,0 +1,164 @@
+=== Etapa 2 — validação do CSV da lista de disciplinas por unidade ===
+Fonte testada: ../src (fonte deste pacote)
+Versão declarada na fonte: 1.9.2
+
+--- R. Retrato das três falhas
+A) crédito negativo — CSV: "PST0391;Sintética PST0391;01/01/2026;;Semestral;-2;0"
+Prévia: total 1 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: PST0391 — Créditos-aula: valor negativo (-2)"]
+Inclusão (todas as novas + o código da linha): DADOS_INVALIDOS
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): []
+B) texto em campo numérico — CSV: "PST0392;Sintética PST0392;01/01/2026;;Semestral;2;abc"
+Prévia: total 1 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: PST0392 — Créditos-trabalho: valor inválido (abc)"]
+Inclusão (todas as novas + o código da linha): DADOS_INVALIDOS
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): []
+C) aspas não encerradas no nome — CSV: "PST0393;\"Nome sem fim;01/01/2026;;Semestral;2;0"
+Prévia: total 1 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: aspas não encerradas: o campo aberto nesta linha não fecha até o fim do arquivo"]
+Inclusão (todas as novas + o código da linha): DADOS_INVALIDOS
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): []
+
+--- 1a. créditos-aula negativo (-2; 0): linha recusada com motivo, nada gravado (nem com chamada direta)
+Prévia: total 1 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: PST0391 — Créditos-aula: valor negativo (-2)"]
+RESULTADO: ok
+
+--- 1b. créditos-trabalho negativo (2; -1): linha recusada com motivo, nada gravado
+RESULTADO: ok
+
+--- 1c. os dois negativos: um motivo para cada campo
+RESULTADO: ok
+
+--- 2. "abc", "2abc", "2 créditos", "1/2", "1,5", "1.5", "NaN", "Infinity", "+2", "1e1": todas recusadas com o valor no motivo
+Prévia: total 11 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: PST0510 — Créditos-trabalho: valor inválido (abc)","Linha 3: PST0511 — Créditos-trabalho: valor inválido (2abc)","Linha 4: PST0512 — Créditos-trabalho: valor inválido (2 créditos)","Linha 5: PST0513 — Créditos-trabalho: valor inválido (1/2)","Linha 6: PST0514 — Créditos-trabalho: valor fracionário (1,5)","Linha 7: PST0515 — Créditos-trabalho: valor fracionário (1.5)","Linha 8: PST0516 — Créditos-trabalho: valor inválido (NaN)","Linha 9: PST0517 — Créditos-trabalho: valor inválido (Infinity)","Linha 10: PST0518 — Créditos-trabalho: valor inválido (+2)","Linha 11: PST0519 — Créditos-trabalho: valor inválido (1e1)","Linha 12: PST0599 — Créditos-aula: valor inválido (abc)"]
+RESULTADO: ok
+
+--- 3. 0/0, 2/1, 4/0, 0/2, "02" e "3,0": aceitos, CH = 15 × aula + 30 × trabalho, gravados e lidos iguais
+Prévia: total 6 · novas [["PST0601","Sintética PST0601",0,0,0],["PST0602","Sintética PST0602",2,1,60],["PST0603","Sintética PST0603",4,0,60],["PST0604","Sintética PST0604",0,2,60],["PST0605","Sintética PST0605",2,1,60],["PST0606","Sintética PST0606",3,0,45]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 4. aula vazia, trabalho vazio, ambos vazios, só espaços e colunas finais ausentes: aceitos como antes
+Prévia: total 6 · novas [["PST0701","Sintética PST0701",null,1,30],["PST0702","Sintética PST0702",2,null,30],["PST0703","Sintética PST0703",null,null,null],["PST0704","Sintética PST0704",null,null,null],["PST0705","Sem colunas de créditos",null,null,null],["PST0706","Só código e nome",null,null,null]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 5a. aspas não encerradas no nome: recusada (não engole os campos seguintes), nada gravado
+Prévia: total 1 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: aspas não encerradas: o campo aberto nesta linha não fecha até o fim do arquivo"]
+RESULTADO: ok
+
+--- 5b. aspas não encerradas em campo numérico: recusada, nada gravado
+RESULTADO: ok
+
+--- 5c. campo entre aspas que continua na linha seguinte (quebra de linha dentro de aspas): as duas linhas recusadas, nenhum fragmento vira disciplina
+Prévia: total 2 · novas [["PST0804","Sintética PST0804",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linhas 2 a 3: aspas não encerradas na mesma linha: campo entre aspas com quebra de linha (linhas 2 a 3) não é aceito; o registro inteiro foi descartado"]
+RESULTADO: ok
+
+--- 5d. aspas no meio de um campo sem aspas e texto depois das aspas de fechamento: recusadas (interpretação ambígua)
+Prévia: total 2 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: aspas no meio de um campo (o campo inteiro precisa estar entre aspas)","Linha 3: texto depois das aspas de fechamento de um campo"]
+RESULTADO: ok
+
+--- 5e. mais colunas preenchidas que o cabeçalho (ex.: "1,5" num arquivo separado por vírgula): recusada
+Prévia: total 2 · novas [["PST0808","Nome com coluna final vazia",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: mais colunas preenchidas que o cabeçalho (8 em vez de 7); confira separadores e aspas"]
+RESULTADO: ok
+
+--- 5f. cabeçalho com aspas não encerradas: erro amigável (PACOTE_INVALIDO), sem prévia
+Resposta: {"ok":false,"codigo":"PACOTE_INVALIDO","erro":"O cabeçalho do arquivo (linha 1) está malformado: aspas não encerradas. Nada foi lido. Use o CSV exportado do Júpiter (Lista de disciplinas por unidade) sem edição."}
+RESULTADO: ok
+
+--- 6. nome entre aspas com separador e com aspas escapadas (""): aceitos e gravados certos
+Prévia: total 4 · novas [["PST0901","Nome; com ponto e vírgula",2,0,30],["PST0902","Nome com \"aspas\" internas",3,1,75],["PST0903","Tudo entre aspas",2,2,90],["PST0904","Aspas depois de espaço",1,0,15]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 7. ";", "," e tabulação; BOM; LF e CRLF; linhas vazias: mesma prévia
+RESULTADO: ok
+
+--- 8. misto: motivos de todas as inválidas, só as válidas selecionáveis, inclusão só das válidas, registros anteriores intactos
+Prévia: total 5 · novas [["PST1101","Sintética PST1101",2,1,60],["PST1103","Sintética PST1103",3,0,45]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 3: PST1102 — Créditos-aula: valor negativo (-2)","Linha 5: PST1104 — Créditos-trabalho: valor inválido (abc)","Linhas 6 a 7: aspas não encerradas: o campo aberto nesta linha não fecha até o fim do arquivo; as linhas 6 a 7 ficam dentro dele e nenhuma foi lida"]
+RESULTADO: ok
+
+--- 8b. (1.8.3) misto só com créditos inválidos (sem problema de aspas): todas as válidas continuam oferecidas e gravadas
+Prévia: total 6 · novas [["PST1111","Sintética PST1111",2,1,60],["PST1113","Sintética PST1113",3,0,45],["PST1116","Sintética PST1116",4,2,120]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 3: PST1112 — Créditos-aula: valor negativo (-2)","Linha 5: PST1114 — Créditos-trabalho: valor inválido (abc)","Linha 6: PST1115 — Créditos-aula: valor fracionário (1,5)"]
+RESULTADO: ok
+
+--- 9. só linhas inválidas: nenhuma nova, inclusão recusada, aba inalterada (inclusive após reabrir)
+Prévia: total 3 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: PST1201 — Créditos-aula: valor negativo (-1)","Linha 3: PST1202 — Créditos-aula: valor inválido (x)","Linhas 4 a 5: aspas não encerradas: o campo aberto nesta linha não fecha até o fim do arquivo; as linhas 4 a 5 ficam dentro dele e nenhuma foi lida"]
+RESULTADO: ok
+
+--- 10. incluir direto o código de uma linha inválida (com a assinatura da prévia): não grava esse código
+RESULTADO: ok
+
+--- 11. código já na lista e código repetido no arquivo, com crédito inválido: aparecem como inválidos, não como "conhecida"/"repetida"
+Prévia: total 4 · novas [["PST1302","Sintética PST1302",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: PST1301 — Créditos-aula: valor negativo (-2)","Linha 4: PST1302 — Créditos-aula: valor inválido (abc)","Linha 5: aspas não encerradas: o campo aberto nesta linha não fecha até o fim do arquivo"]
+RESULTADO: ok
+
+--- 12a. importação válida normal
+RESULTADO: ok
+
+--- 12b. seleção parcial e reimportação: as não escolhidas continuam novas; as incluídas viram conhecidas
+RESULTADO: ok
+
+--- 13. código corrigido + CSV com o código antigo: registro novo PST0391-2, o corrigido intacto; com crédito inválido, nada
+RESULTADO: ok
+
+--- R2. (1.8.3) Retrato da reprodução PST0999 e de "3.000" (só registra; asserções em 14a e 15a)
+Prévia: total 2 · novas [["PST0804","Disciplina real",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linhas 2 a 4: aspas não encerradas na mesma linha: campo entre aspas com quebra de linha (linhas 2 a 4) não é aceito; o registro inteiro foi descartado"]
+Inclusão direta de PST0803, PST0999 e PST0804: ok, 1 incluída(s)
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): [["PST0804","PST0804","Disciplina real",2,0,30]]
+Prévia: total 1 · novas [["PST0901","Disciplina teste",3,0,45]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+
+--- 14a. reprodução exata: PST0999 (dentro do nome de PST0803) nunca é oferecida nem gravada, nem por chamada direta; PST0804 continua
+Prévia: total 2 · novas [["PST0804","Disciplina real",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linhas 2 a 4: aspas não encerradas na mesma linha: campo entre aspas com quebra de linha (linhas 2 a 4) não é aceito; o registro inteiro foi descartado"]
+RESULTADO: ok
+
+--- 14b. continuação com VÁRIAS linhas parecidas com registros válidos: nenhuma é oferecida; o registro real seguinte é
+Prévia: total 2 · novas [["PST0814","Real depois",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linhas 2 a 5: aspas não encerradas na mesma linha: campo entre aspas com quebra de linha (linhas 2 a 5) não é aceito; o registro inteiro foi descartado"]
+RESULTADO: ok
+
+--- 14c. campo aberto até o FIM do arquivo, com linhas posteriores parecidas com registros: nada a partir da abertura é lido; as anteriores continuam
+Prévia: total 2 · novas [["PST0820","Válida antes",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linhas 3 a 5: aspas não encerradas: o campo aberto nesta linha não fecha até o fim do arquivo; as linhas 3 a 5 ficam dentro dele e nenhuma foi lida"]
+RESULTADO: ok
+
+--- 14d. aspas escapadas ("") dentro do campo de várias linhas não fecham o campo (nenhum fechamento falso)
+Prévia: total 2 · novas [["PST0832","Real depois",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linhas 2 a 4: aspas não encerradas na mesma linha: campo entre aspas com quebra de linha (linhas 2 a 4) não é aceito; o registro inteiro foi descartado"]
+RESULTADO: ok
+
+--- 14e. campo de várias linhas que fecha de forma inválida (texto depois das aspas): fim do registro ambíguo, nada a partir dele é lido; o anterior continua
+Prévia: total 2 · novas [["PST0839","Válida antes",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linhas 3 a 5: aspas não encerradas na mesma linha e aspas malformadas adiante (texto depois das aspas de fechamento de um campo): não dá para saber onde o registro termina; nada a partir da linha 3 foi lido"]
+RESULTADO: ok
+
+--- 14f. cabeçalho com campo entre aspas que quebra a linha: arquivo recusado (PACOTE_INVALIDO), nada gravado
+RESULTADO: ok
+
+--- 15a. 3.000, 3,000, 0002.0000, 0.0000 e 9999.000 (aula e trabalho): aceitos como inteiros, CH certa, gravados e relidos
+Prévia: total 10 · novas [["PST1501","Sintética PST1501",3,0,45],["PST1502","Sintética PST1502",3,0,45],["PST1503","Sintética PST1503",2,1,60],["PST1504","Sintética PST1504",0,0,0],["PST1505","Sintética PST1505",9999,0,149985],["PST1506","Sintética PST1506",0,3,90],["PST1507","Sintética PST1507",1,3,105],["PST1508","Sintética PST1508",0,2,60],["PST1509","Sintética PST1509",0,9999,299970],["PST1510","Sintética PST1510",9999,0,149985]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 15b. CSV separado por vírgula: "3,000" corretamente entre aspas = 3
+RESULTADO: ok
+
+--- 15c. frações reais continuam recusadas (3.001, 2,0001, muitos zeros e depois um dígito) e acima de 9999 também
+Prévia: total 6 · novas [] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 2: PST1531 — Créditos-aula: valor fracionário (3.001)","Linha 3: PST1532 — Créditos-trabalho: valor fracionário (2,0001)","Linha 4: PST1533 — Créditos-aula: valor fracionário (1.0000000000000000000001)","Linha 5: PST1534 — Créditos-trabalho: valor fracionário (0.00000000000000000000001)","Linha 6: PST1535 — Créditos-aula: acima do máximo aceito, 9999 (10000.000)","Linha 7: PST1536 — Créditos-aula: valor negativo (-3.000)"]
+RESULTADO: ok
+
+=== TOTAL: 31 ok, 0 falha(s) ===

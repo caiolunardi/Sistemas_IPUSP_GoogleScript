@@ -1,0 +1,159 @@
+# suíte: navegador_etapa8_fonte_1.8.11_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.11/src node testar_navegador_etapa8.js
+# data: 2026-10-07T21:33:20Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 1/27 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== 18. Confirmação do envio vinculada ao conteúdo da prévia
+  ✗ 18a. a confirmação mostra as linhas que serão gravadas (do servidor) e o pedido leva a identificação DESSA prévia, sem nova leitura no clique; envio grava o conferido 
+      Error: linhas na confirmação: [] ≠ [["PSA","PSA1005","Obrigatória PSA","Obrigatória","1","2"],["PST","PST1001","Disciplina teste","Obrigatória","1","2"],["PST","PST1003","Eletiva teste","Eletiva","1","2"]]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:28:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:204:5
+     fatos: {"tela":"Grade 2027/1 enviada para preenchimento3 disciplinas gravadas: PSA 1 · PSC 0 · PSE 0 · PST 2 · Interdepartamentais 0 · Outras Unidades 0.O arquivo agora se cham","pedido":[{"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":2,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma)"}],"gravadoPST":[["PST1001","Nome posterior","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,2]],"arquivo":"Grade Horária - 1º semestre de 2027","copias":1}
+  ✗ 18b. duas abas: A confere; B muda o nome (mesmas contagens); A confirma → "A grade não foi enviada" + "Conferir de novo", nada gravado; nova conferência mostra o nome novo e A envia o conteúdo novo 
+      page.waitForSelector: Timeout 3000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('#modalEnvioGrade:not([hidden]) [data-reconferir-envio]') to be visible[22m
+  ✗ 18c. respostas fora de ordem: abrir (prévia segura), fechar, mudar o ano, reabrir; a resposta antiga não habilita nada; a nova habilita com o ano novo 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:252:5
+  ✗ 18d. falha ao obter a prévia: mensagem, "Fazer a cópia e enviar" desabilitado, "Tentar de novo" funciona 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:282:5
+  ✗ 18e. dados da página com a confirmação aberta (durante a leitura e depois): a MESMA preparação reaplicada (outra referência de idx) mantém a confirmação; uma mudança REAL de nome, salva e aplicada pela página, tira a validade ("Conferir de novo") e o clique não envia 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:306:5
+  ✗ 18f. duplo clique em "Fazer a cópia e enviar": um único envio 
+      Error: diferente: 2 ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:28:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:346:5
+  ✗ 18g. salvamento pendente concluído no pedido de envio: recusa sem negar a recuperação ("…continua gravada…"), "Conferir de novo" 
+      page.waitForSelector: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('#modalEnvioGrade:not([hidden]) [data-reconferir-envio]') to be visible[22m
+
+== 19. Correção complementar (1.8.13): validade pelo conteúdo do envio e nota da recuperação
+  ✗ 19a. [4.1 A] a mesma preparação reaplicada com outra referência (durante a leitura e duas vezes depois): confirmação válida; o clique envia a identificação ORIGINAL, sem prévia nova, e o servidor grava o conferido 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:375:5
+  ✗ 19b. [4.1 B] salvamento REAL só de CH de PST1001 (da grade), pela página e com a resposta aplicada no painel, durante a leitura e depois: confirmação válida; envio com a identificação original; CH gravada 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:391:5
+  ✗ 19c. [4.1 C] mudanças em disciplinas FORA da grade de 2027/1 (PST1007 só do 2º semestre; PST2001 para outros cursos, fora da grade), pela página, durante a leitura e depois: confirmação válida; envio com a identificação original 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:410:5
+  ✗ 19d. [4.1 D] só metadados (alteradoEm/alteradoPor de todas as linhas, como depois da gravação por outra pessoa) reaplicados durante a leitura e depois, e controles da página (aba e caixa da prévia, filtro da lista): confirmação válida; envio com a identificação original 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:426:5
+  ✗ 19e. [4.2] nome, salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação 
+      TypeError: Cannot read properties of undefined (reading 'assinatura')
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:460:52
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:25:9)
+  ✗ 19e. [4.2] observações, salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação 
+      TypeError: Cannot read properties of undefined (reading 'assinatura')
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:460:52
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:25:9)
+  ✗ 19e. [4.2] créditos-aula, salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação 
+      TypeError: Cannot read properties of undefined (reading 'assinatura')
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:460:52
+          at runNextTicks (node:internal/process/task_queues:64:5)
+  ✗ 19e. [4.2] tipo da oferta principal (obrigatória → eletiva), salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação 
+      TypeError: Cannot read properties of undefined (reading 'assinatura')
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:460:52
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:25:9)
+  ✗ 19e. [4.2] composição (PST1003 removida da grade), salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação 
+      TypeError: Cannot read properties of undefined (reading 'assinatura')
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:460:52
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:25:9)
+     fatos [19f]: {"botao":"habilitado","invalido":false,"pedidosDeEnvio":1}
+  ✗ 19f. [4.2] alvo trocado com a janela aberta (ano 2027 → 2028 pelo seletor): confirmação invalidada, nada enviado; "Conferir de novo" confere 2028/1 e envia a identificação dele 
+      Error: diferente: ["habilitado",false] ≠ ["desabilitado",true]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:28:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:488:5
+  ✗ 19g. recuperação devolvida pela PRÓPRIA prévia (salvamento pendente do nome de PST1001 concluído no pedido de prévia): aplicada no painel, a confirmação fica válida, mostra o nome recuperado e envia 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:505:5
+  ✗ 19h. recuperação da própria prévia NÃO dispensa a conferência: uma mudança independente e relevante (nome de PST1003, salvo pela página durante a leitura) + a recuperação trazida pela prévia → confirmação invalidada 
+      Error: chamada não chegou
+          at c.esperarFila (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:149:120)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:523:5
+     fatos [19i]: {"resposta":{"ok":true,"codigo":null,"recuperado":{"codigo":"PST1001","nome":null,"total":null,"leituraFalhou":true,"comPreparacao":false},"recuperadoLote":null},"notaDoModal":[],"avisoCentral":"Salvamento concluído — PST1001O salvamento de PST1001 que tinha ficado pendente foi concluído, mas o painel não conseguiu ler todos os dados atualizados. Recarregue a página.","reconferir":false,"efeitosDoEnvio":"HOUVE","copias":1,"falhasDeLeitura":1,"nomeNaPagina":"Disciplina teste","nomePersistido":"Nome recuperado sem leitura"}
+  ✗ 19i. [4.3 A] salvamento individual concluído no pedido de envio e falha SÓ na leitura da preparação: modal diz que a gravação continua e que o painel NÃO conseguiu atualizar (recarregar), sem "já aparece no painel"; nome local antigo, nome novo persistido; nenhum efeito do envio 
+      Error: recusa com recuperado.leituraFalhou: [null,true] ≠ ["PREVIA_DESATUALIZADA",true]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:28:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:562:5
+     fatos [19j]: {"resposta":{"ok":false,"codigo":"PREVIA_DESATUALIZADA","recuperado":null,"recuperadoLote":{"codigo":null,"nome":"Excluir","total":2,"leituraFalhou":true,"comPreparacao":false}},"notaDoModal":[],"avisoCentral":"Gravação concluídaA gravação foi concluída, mas o painel não conseguiu ler todos os dados atualizados. Recarregue a página.","reconferir":false,"efeitosDoEnvio":"nenhum","copias":0,"falhasDeLeitura":1,"PST1003NaPagina":{"excluida":false},"PST1003Persistida":true}
+  ✗ 19j. [4.3 B] ação em lote (excluir PST1003 + PST2001) concluída no pedido de envio e falha SÓ na leitura: modal sem "já aparece no painel", com recarga; PST1003 ainda não excluída no painel, excluída na planilha; nenhum efeito do envio 
+      Error: nota do lote com recarga
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:29:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:587:5
+     fatos [19k individual lido + lote com leituraFalhou]: {"notaDoModal":[],"avisoCentral":"Gravação concluídaA gravação foi concluída, mas o painel não conseguiu ler todos os dados atualizados. Recarregue a página."}
+  ✗ 19k. [4.3 C, contrato do callback] os dois indicadores na recusa, individual lido + lote com leituraFalhou: cada um tem a sua nota; a falha de leitura de um não é escondida pelo outro 
+      Error: uma nota para cada indicador: []
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:29:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:616:7
+     fatos [19k individual com leituraFalhou + lote lido]: {"notaDoModal":[],"avisoCentral":"Salvamento concluído — PST1001O salvamento de PST1001 que tinha ficado pendente foi concluído, mas o painel não conseguiu ler todos os dados atualizados. Recarregue a página."}
+  ✗ 19k. [4.3 C, contrato do callback] os dois indicadores na recusa, individual com leituraFalhou + lote lido: cada um tem a sua nota; a falha de leitura de um não é escondida pelo outro 
+      Error: uma nota para cada indicador: []
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:29:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:616:7
+     fatos [19l]: {"resposta":{"ok":true,"codigo":null,"recuperado":{"codigo":"PST1001","nome":null,"total":null,"leituraFalhou":false,"comPreparacao":true},"recuperadoLote":null},"notaDoModal":[],"avisoCentral":"","reconferir":false,"efeitosDoEnvio":"HOUVE","copias":1,"nomeNaPagina":"Nome recuperado com leitura"}
+  ✗ 19l. [4.3 D, controle] salvamento individual concluído no pedido de envio com leitura válida: recusa com a nota da gravação concluída, dados aplicados no painel, sem pedido de recarga; nenhum efeito do envio 
+      Error: diferente: [null,false,true] ≠ ["PREVIA_DESATUALIZADA",false,true]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:28:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:633:5
+     fatos [19m]: {"resposta":{"ok":false,"codigo":"PREVIA_DESATUALIZADA","recuperado":null,"recuperadoLote":{"codigo":null,"nome":"Excluir","total":2,"leituraFalhou":false,"comPreparacao":true}},"notaDoModal":[],"avisoCentral":"","reconferir":false,"efeitosDoEnvio":"nenhum","copias":0,"PST1003NaPagina":true}
+  ✗ 19m. [4.3 D, controle] ação em lote concluída no pedido de envio com leitura válida: nota da ação concluída, PST1003 excluída no painel, sem pedido de recarga; nenhum efeito do envio 
+      Error: A grade não foi enviadaA grade mudou desde que a página foi carregada. Recarregue o painel, confira a prévia e envie de novo. Nada foi alterado.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:29:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:650:5
+     fatos [19n]: {"resposta":{"ok":true,"codigo":null,"recuperado":{"codigo":"PST1007","nome":null,"total":null,"leituraFalhou":false,"comPreparacao":true},"recuperadoLote":null},"tela":"Grade 2027/1 enviada para preenchimento3 disciplinas gravadas: PSA 1 · PSC 0 · P","observacaoPST1007NaPagina":"Só obs fora da grade","gravadoPST":[["PST1001","Disciplina teste","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,2]]}
+  ✓ 19n. [controle] recuperação que NÃO muda o conteúdo do envio (CH e observação de PST1007, fora da grade de 2027/1) concluída no pedido de envio: o envio prossegue e a recuperação é aplicada
+  ✗ 19o. [implementação 1.8.13] coerência: o conteúdo do envio calculado com os dados da página (projecaoDoEnvio) é igual às linhas do servidor, com observações, aspas, créditos zero e vazios, eletiva × obrigatória, oferta ajustada, disciplina de outros cursos na grade e fora do semestre 
+      TypeError: c.previaOriginal is not a function
+          at orig2 (/caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:66:15)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa8.js:687:19
+
+Executados: 27 · 1 ok · 26 falhas
+Falharam:
+  - 18a. a confirmação mostra as linhas que serão gravadas (do servidor) e o pedido leva a identificação DESSA prévia, sem nova leitura no clique; envio grava o conferido
+  - 18b. duas abas: A confere; B muda o nome (mesmas contagens); A confirma → "A grade não foi enviada" + "Conferir de novo", nada gravado; nova conferência mostra o nome novo e A envia o conteúdo novo
+  - 18c. respostas fora de ordem: abrir (prévia segura), fechar, mudar o ano, reabrir; a resposta antiga não habilita nada; a nova habilita com o ano novo
+  - 18d. falha ao obter a prévia: mensagem, "Fazer a cópia e enviar" desabilitado, "Tentar de novo" funciona
+  - 18e. dados da página com a confirmação aberta (durante a leitura e depois): a MESMA preparação reaplicada (outra referência de idx) mantém a confirmação; uma mudança REAL de nome, salva e aplicada pela página, tira a validade ("Conferir de novo") e o clique não envia
+  - 18f. duplo clique em "Fazer a cópia e enviar": um único envio
+  - 18g. salvamento pendente concluído no pedido de envio: recusa sem negar a recuperação ("…continua gravada…"), "Conferir de novo"
+  - 19a. [4.1 A] a mesma preparação reaplicada com outra referência (durante a leitura e duas vezes depois): confirmação válida; o clique envia a identificação ORIGINAL, sem prévia nova, e o servidor grava o conferido
+  - 19b. [4.1 B] salvamento REAL só de CH de PST1001 (da grade), pela página e com a resposta aplicada no painel, durante a leitura e depois: confirmação válida; envio com a identificação original; CH gravada
+  - 19c. [4.1 C] mudanças em disciplinas FORA da grade de 2027/1 (PST1007 só do 2º semestre; PST2001 para outros cursos, fora da grade), pela página, durante a leitura e depois: confirmação válida; envio com a identificação original
+  - 19d. [4.1 D] só metadados (alteradoEm/alteradoPor de todas as linhas, como depois da gravação por outra pessoa) reaplicados durante a leitura e depois, e controles da página (aba e caixa da prévia, filtro da lista): confirmação válida; envio com a identificação original
+  - 19e. [4.2] nome, salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação
+  - 19e. [4.2] observações, salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação
+  - 19e. [4.2] créditos-aula, salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação
+  - 19e. [4.2] tipo da oferta principal (obrigatória → eletiva), salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação
+  - 19e. [4.2] composição (PST1003 removida da grade), salvo e aplicado pela página depois da conferência: a confirmação perde a validade e o clique não envia; "Conferir de novo" mostra o novo conteúdo e envia a NOVA identificação
+  - 19f. [4.2] alvo trocado com a janela aberta (ano 2027 → 2028 pelo seletor): confirmação invalidada, nada enviado; "Conferir de novo" confere 2028/1 e envia a identificação dele
+  - 19g. recuperação devolvida pela PRÓPRIA prévia (salvamento pendente do nome de PST1001 concluído no pedido de prévia): aplicada no painel, a confirmação fica válida, mostra o nome recuperado e envia
+  - 19h. recuperação da própria prévia NÃO dispensa a conferência: uma mudança independente e relevante (nome de PST1003, salvo pela página durante a leitura) + a recuperação trazida pela prévia → confirmação invalidada
+  - 19i. [4.3 A] salvamento individual concluído no pedido de envio e falha SÓ na leitura da preparação: modal diz que a gravação continua e que o painel NÃO conseguiu atualizar (recarregar), sem "já aparece no painel"; nome local antigo, nome novo persistido; nenhum efeito do envio
+  - 19j. [4.3 B] ação em lote (excluir PST1003 + PST2001) concluída no pedido de envio e falha SÓ na leitura: modal sem "já aparece no painel", com recarga; PST1003 ainda não excluída no painel, excluída na planilha; nenhum efeito do envio
+  - 19k. [4.3 C, contrato do callback] os dois indicadores na recusa, individual lido + lote com leituraFalhou: cada um tem a sua nota; a falha de leitura de um não é escondida pelo outro
+  - 19k. [4.3 C, contrato do callback] os dois indicadores na recusa, individual com leituraFalhou + lote lido: cada um tem a sua nota; a falha de leitura de um não é escondida pelo outro
+  - 19l. [4.3 D, controle] salvamento individual concluído no pedido de envio com leitura válida: recusa com a nota da gravação concluída, dados aplicados no painel, sem pedido de recarga; nenhum efeito do envio
+  - 19m. [4.3 D, controle] ação em lote concluída no pedido de envio com leitura válida: nota da ação concluída, PST1003 excluída no painel, sem pedido de recarga; nenhum efeito do envio
+  - 19o. [implementação 1.8.13] coerência: o conteúdo do envio calculado com os dados da página (projecaoDoEnvio) é igual às linhas do servidor, com observações, aspas, créditos zero e vazios, eletiva × obrigatória, oferta ajustada, disciplina de outros cursos na grade e fora do semestre
+
+# código de saída: 1  (duração: 164 s)
+# resultado do processo: defeito demonstrado como previsto (1/27)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (1/27)

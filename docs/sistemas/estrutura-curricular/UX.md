@@ -1,4 +1,6 @@
-# UX e interface — Estrutura Curricular e Grade Horária
+# UX e interface — Estrutura Curricular e Grade Horária 1.10.0
+
+Referência atual: [pacote visual](NAVEGACAO_E_VISUAL_1_10_0.md), [manual de operação](MANUAL_OPERACAO.md) e [verificação local](VERIFICACAO_1_10_0.md). As regras de dados e controladores foram preservadas da baseline 1.9.3.
 
 ## Identidade
 
@@ -8,7 +10,7 @@ O material registra uma pendência: a cópia local de `GradipTema.html` usa uma 
 
 ## Áreas principais
 
-A partir da 1.7.0: `Estrutura curricular` e `Auditoria da grade` no topo.
+`Estrutura curricular` e `Auditoria da grade` são seções do sistema. A 1.10.0 abre com sidebar e permite alternar para abas; os mesmos botões mudam de posição. Etapas e consultas seguem suas condições de perfil e painel ativo. O modo não é persistido; recarga volta à sidebar. Ícones de catálogo, brilho e elevação usam o tema existente.
 
 ## Consulta
 
@@ -22,7 +24,7 @@ A interface diferencia dados oficiais, ajustes locais, seleção não persistida
 
 ## Modais
 
-Decisão particular do app: janelas não fecham por ESC nem clique fora; apenas controles explícitos. A justificativa registrada é evitar perda acidental de arquivo/dados em edição.
+Janelas operacionais não fecham por ESC nem clique fora; usam controles explícitos para evitar perda de arquivo/dados. A Central de Ajuda, acrescentada na 1.9.0, fecha por Fechar/ESC/fundo e conserva o estado da janela operacional por trás, com retorno de foco.
 
 ## Revisão do PDF
 
@@ -38,4 +40,4 @@ O material entregue declara testes em 360, 390, 480, 768 e 1280 px, nos dois tem
 
 Também declara texto ≥ 4,5:1, elementos gráficos/bordas ≥ 3:1, foco/retorno de foco, scroll lock, navegação por teclado, alvos ~44 px e redução de movimento.
 
-Essas são **evidências fornecidas pelo pacote** e serão rechecadas na auditoria independente.
+Essas declarações históricas não são todas uma nova medição desta rodada. A matriz atual de sidebar/abas, temas, larguras e contraste dos novos controles está em [VERIFICACAO_1_10_0.md](VERIFICACAO_1_10_0.md). Homologação no Google permanece pendente.

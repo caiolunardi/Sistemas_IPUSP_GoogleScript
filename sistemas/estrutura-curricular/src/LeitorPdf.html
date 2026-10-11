@@ -1,0 +1,1279 @@
+<script>
+/*
+ * =====================================================================
+ *  ESTRUTURA CURRICULAR — leitor do PDF "Grade Curricular" do Júpiter
+ * =====================================================================
+ *
+ *  O QUE ESTE ARQUIVO FAZ
+ *  Recebe as PALAVRAS de cada página do PDF, com a posição de cada uma,
+ *  e reconstrói a estrutura curricular no mesmo "pacote de importação"
+ *  do leitor de CSV (formato descrito em LeitorComum).
+ *
+ *  DE ONDE VÊM AS PALAVRAS (arquivo LeitorPdfFontes)
+ *  - PDF com texto (ex.: salvo com "Salvar como PDF" do Chrome/Edge):
+ *    a camada de texto do próprio PDF, lida com PDF.js. Leitura exata.
+ *  - PDF sem texto (ex.: impresso em "Microsoft Print to PDF", como o
+ *    arquivo de 26/09/2026, em que cada letra virou desenho): as
+ *    páginas são desenhadas numa imagem e lidas por OCR (Tesseract.js),
+ *    tudo dentro do navegador — o arquivo não é enviado a terceiros.
+ *
+ *  COMO O RELATÓRIO É ORGANIZADO (conferido nas 38 páginas do exemplo)
+ *  - Cabeçalho de cada página: Curso, Complemento e Currículo.
+ *    ATENÇÃO: nas páginas da grade o "Complemento" vem sempre o mesmo
+ *    (defeito do relatório). Quem identifica a habilitação é o número
+ *    do CURRÍCULO (dígitos 6–9: 0000 Psicólogo, 0100 Bacharelado,
+ *    0200 Licenciatura). Nas páginas finais ("Informações Básicas do
+ *    Currículo") o Complemento vem certo.
+ *  - Seções: "Disciplinas Obrigatórias", "Optativas Eletivas" e
+ *    "Optativas Livres". Dentro de cada seção, as disciplinas vêm em
+ *    grupos por período ideal, cada grupo fechado por um "Subtotal";
+ *    cada seção é fechada por um "Total".
+ *  - Linha de disciplina: CÓDIGO(VERSÃO) Nome......  Aula Trab. Tot. CH
+ *    CE CP EXT ATPA Per.Ideal. O nome é CORTADO quando é longo (o CSV
+ *    traz o nome completo).
+ *  - Abaixo de cada disciplina, seus requisitos: "Requisito - CÓDIGO(V)
+ *    Nome". Requisitos separados por uma linha "ou" são alternativos
+ *    (basta um); sem "ou", valem todos. "(f)" = requisito fraco.
+ *  - Legenda (rodapé): CE = carga horária de Estágio; CP = carga horária
+ *    de Práticas como Componentes Curriculares; EXT = carga horária de
+ *    Atividade Extensionista; ATPA = Atividades Teórico-Práticas de
+ *    Aprofundamento.
+ *  - Últimas páginas: "Informações Básicas do Currículo" de cada
+ *    habilitação (ativação, duração, cargas horárias, estágio, AAC,
+ *    extensão e um texto descritivo).
+ *
+ *  CONFERÊNCIA DOS NÚMEROS (o que torna o OCR confiável)
+ *  1. Em cada linha: Tot. = Aula + Trab. e CH = 15 × Aula + 30 × Trab.
+ *     (regra USP; vale para todas as 481 linhas do CSV de exemplo).
+ *     Quando um número foi mal lido, as duas contas mostram qual é e
+ *     permitem recuperá-lo.
+ *  2. Em cada grupo: a soma de cada coluna tem de bater com o Subtotal
+ *     impresso. Se só um valor da coluna estiver ilegível, ele é
+ *     recuperado pela diferença.
+ *  3. A mesma disciplina aparece em várias habilitações: as leituras
+ *     de uma confirmam (ou corrigem) as das outras.
+ *  4. O período ideal é o mesmo em todo o grupo.
+ *  5. Quando a soma de uma coluna em toda a seção bate com o Total
+ *     impresso, os números da coluna ficam confirmados.
+ *  No OCR, a região dos números é lida duas vezes: uma com o texto da
+ *  página e outra aceitando só dígitos (a 2ª não confunde o "3" com o
+ *  pontilhado que vem antes da coluna Aula).
+ *  Situação de cada número: "lido" (confirmado), "corrigido" (recuperado
+ *  por uma das contas) ou "conferir" (não foi possível confirmar).
+ *  Na leitura por OCR só números confirmados são gravados.
+ * =====================================================================
+ */
+var LeitorPdfJupiter = (function (C) {
+  'use strict';
+
+  // Colunas numéricas da tabela, da esquerda para a direita.
+  var COLUNAS = ['aula', 'trab', 'tot', 'ch', 'ce', 'cp', 'ext', 'atpa', 'periodo'];
+  // Colunas que os Subtotais e Totais somam (o período não é somado).
+  var COLUNAS_SOMA = ['aula', 'trab', 'tot', 'ch', 'ce', 'cp', 'ext', 'atpa'];
+  // Rótulos da linha de cabeçalho da tabela (já sem acento, minúsculos).
+  var ROTULOS = {
+    aula: ['aula'], trab: ['trab.', 'trab'], tot: ['tot.', 'tot'], ch: ['ch'],
+    ce: ['ce'], cp: ['cp'], ext: ['ext'], atpa: ['atpa'],
+    periodo: ['ideal', 'ldeal', '1deal', 'ideal.', 'deal']
+  };
+  // Nome amigável de cada coluna (mensagens da conferência).
+  var NOME_COLUNA = {
+    aula: 'créditos-aula', trab: 'créditos-trabalho', tot: 'créditos totais',
+    ch: 'carga horária', ce: 'estágio (CE)', cp: 'práticas (CP)',
+    ext: 'extensão (EXT)', atpa: 'ATPA', periodo: 'período ideal',
+    versao: 'versão', codigo: 'código'
+  };
+
+  // Troca de caracteres que o OCR costuma confundir.
+  var PARA_DIGITO = { O: '0', o: '0', D: '0', Q: '0', I: '1', l: '1', i: '1', '|': '1', '!': '1', Z: '2', z: '2', S: '5', s: '5' };
+  var PARA_LETRA = { '0': 'O', '1': 'I', '5': 'S', '8': 'B', '2': 'Z', '6': 'G' };
+
+  var RE = {
+    titulo: /J[úu]piter\s*-\s*Sistema/i,
+    gradeCurricular: /^Grade\s+Curricular$/i,
+    infoTitulo: /Informa[çc][õo]es\s+B[áa]sicas\s+do\s+Curr[íi]culo/i,
+    curso: /^Curso\s*:\s*([0-9OoIl|]{5})\s*[-–—]\s*(.+)$/i,
+    complemento: /^Complemento\s*:\s*([0-9OoIl|]{1,4})\s*[-–—]\s*(.+)$/i,
+    curriculo: /^Curr[íi]culo\s*:\s*([0-9OoIl| ]{12,16}?)\s*(?:\(\s*([^)]*?)\s*\))?\s*$/i,
+    rodape: /USP\/STI\s*-\s*(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)\s*-\s*P[áa]g\.?\s*(\d+)\s*\/\s*(\d+)/i,
+    legenda: /^(Legenda\s*:|Aprofundamento\s*;)/i,
+    secao: /^Disciplinas\s+(Obrigat[óo]rias|Optativas\s+Eletivas|Optativas\s+Livres)\s*$/i,
+    subtotal: /^Subtotal\s*:/i,
+    total: /^Total\s+(Obrigat[óo]rias|Optativas\s+Eletivas|Optativas\s+Livres)\s*:/i,
+    ou: /^ou$/i,
+    requisito: /^(Requisito(?:\s+fraco)?|Indica[çc][ãa]o\s+de\s+conjunto|Co-?\s?requisito)\s*(\(f\))?\s*[-–—]\s*(.+)$/i,
+    inicioCodigo: /^([A-Za-z0-9|!]{7})\s?\(\s?([0-9OoIl|!]{1,2})\s?\)\s?(\(f\))?\s*(.*)$/,
+    creditosCab: /^Cr[ée]ditos(\s+Per\.?)?$/i
+  };
+
+  var RE_INFO = {
+    ativacao: /Data\s+de\s+ativa[çc][ãa]o\s*:\s*(\d{2}\/\d{2}\/\d{4})/i,
+    desativacao: /Data\s+de\s+desativa[çc][ãa]o\s*:\s*(\d{2}\/\d{2}\/\d{4})/i,
+    duracao: /Ideal\s*:\s*(\d+)\s+M[íi]nima\s*:\s*(\d+)\s+M[áa]xima\s*:\s*(\d+)/i,
+    aula: /^Aula\s+(\d+)\s+Aula\s+(\d+)\s+Aula\s+(\d+)/i,
+    trabalho: /^Trabalho\s+(\d+)\s+Trabalho\s+(\d+)\s+Trabalho\s+(\d+)/i,
+    subtotais: /^Subtotal\s+(\d+)\s+Subtotal\s+(\d+)\s+Subtotal\s+(\d+)\s+(\d+)/i,
+    estagio: /\(\s*Est[áa]gio\s*:\s*(\d+)\s*\)/i,
+    aac: /\(\s*AAC\s*:\s*(\d+)\s*\)/i,
+    aexApolo: /\(\s*AEX\s+Apolo\s*:\s*(\d+)\s*\)/i,
+    extensaoOptativas: /\(\s*Extens[ãa]o\s+exigida\s+em\s+optativas\s*:\s*(\d+)\s*\)/i,
+    subtotalAac: /^Subtotal\s*\(.*AAC\s*\)\s*:\s*(\d+)/i,
+    extensaoTotal: /exigida\s+em\s+extens[ãa]o\s*:\s*(\d+)\s*\(\s*([\d.,]+)\s*%\s*\)/i,
+    totalGeral: /^Total\s+Geral\s*\(.*\)\s*:\s*(\d+)/i,
+    especificas: /^Informa[çc][õo]es\s+Espec[íi]ficas$/i,
+    ignorar: /^(Dura[çc][ãa]o\s*\(em semestres\)|Carga\s+Hor[áa]ria\s*\(em horas\)|Obrigat[óo]ria\s+Optativa\s+Eletiva.*|disciplinas\s*-?\s*da|grade|hor[áa]ria em|\*\s*A carga hor[áa]ria de est[áa]gio.*|de carga hor[áa]ria em disciplinas\.?)$/i,
+    referencia: /Curr[íi]culo\s+(\d{5})\s*-\s*([0-9Oo]{1,3})\b/i
+  };
+
+  // ------------------------------------------------------------------
+  //  Pequenas utilidades
+  // ------------------------------------------------------------------
+  /** Rótulo de cabeçalho comparável: sem acento, minúsculo, só letras, dígitos e ponto. */
+  function normRotulo(t) { return C.semAcento(t).toLowerCase().replace(/[^a-z0-9.]/g, ''); }
+  /** Mediana de uma lista de números (null se vazia). */
+  function mediana(lista) {
+    if (!lista.length) return null;
+    var o = lista.slice().sort(function (a, b) { return a - b; });
+    var m = Math.floor(o.length / 2);
+    return o.length % 2 ? o[m] : (o[m - 1] + o[m]) / 2;
+  }
+  /** Centro horizontal de uma palavra. */
+  function xc(t) { return (t.x0 + t.x1) / 2; }
+  /** Troca letras parecidas com dígitos (O→0, l→1, S→5…); o que não tiver troca vira "?". */
+  function paraDigitos(texto) {
+    return String(texto).split('').map(function (ch) { return /\d/.test(ch) ? ch : (PARA_DIGITO[ch] || '?'); }).join('');
+  }
+
+  /** Número inteiro de uma célula. Só dígitos (após limpar pontuação). */
+  function lerInteiro(texto) {
+    var t = String(texto == null ? '' : texto).replace(/^[\s.,:;'"`]+|[\s.,:;'"`º°ª]+$/g, '');
+    return /^\d{1,5}$/.test(t) ? parseInt(t, 10) : null;
+  }
+
+  /**
+   * Número de uma célula lida por OCR. Alguns modelos de OCR leem o
+   * zero da tabela como a letra "o" (às vezes com colchete ou parêntese
+   * grudado: "o)", "[o", "fo)"). Numa coluna numérica isso só pode ser
+   * zero; "1o"/"3o" viram 10/30. Qualquer troca errada é pega depois
+   * pelas contas de conferência.
+   */
+  function lerInteiroOcr(texto) {
+    var v = lerInteiro(texto);
+    if (v != null) return v;
+    var bruto = String(texto == null ? '' : texto).replace(/[\s'"`.,:;]/g, '');
+    // "o", "o)", "[o", "fo)": zero sozinho, lido como letra.
+    var semMoldura = bruto.replace(/[\[\]\(\)\{\}|]/g, '');
+    if (/^f?[oO°º]$/.test(semMoldura)) return 0;
+    // "1o", "3o", "1O5": dígitos com o zero lido como letra (sem colchetes:
+    // colchete junto de dígito indica número mutilado, ex.: "[)0)" = 60).
+    if (/^[0-9oO]{1,5}$/.test(bruto) && /\d/.test(bruto)) return parseInt(bruto.replace(/[oO]/g, '0'), 10);
+    return null;
+  }
+
+  /**
+   * Código de disciplina. No modo "texto" exige o formato exato; no modo
+   * "ocr" desfaz as trocas comuns (0/O, 1/I, 5/S…) de acordo com a
+   * posição (letras nas 3 primeiras de um código AAA9999; dígitos nas
+   * demais). A troca é imposta pelo próprio formato do código — no
+   * exemplo real o OCR leu "BIOO123", "FLAO106" e "EDAO463", e só existe
+   * uma leitura possível para cada um. Devolve { codigo, corrigido } ou null.
+   */
+  function lerCodigo(bruto, modo) {
+    var t = String(bruto == null ? '' : bruto).replace(/[^A-Za-z0-9|!]/g, '');
+    if (t.length !== 7) return null;
+    var original = t.toUpperCase();
+    if (modo !== 'ocr') return C.RE_CODIGO_DISCIPLINA.test(original) ? { codigo: original, corrigido: false } : null;
+    var ini = t.slice(0, 3), fim = paraDigitos(t.slice(3));
+    if (fim.indexOf('?') >= 0) return null;
+    var letras = ini.replace(/[^A-Za-z]/g, '').length;
+    var digitos = ini.replace(/[^0-9]/g, '').length;
+    var inicio;
+    if (letras >= 2) {
+      inicio = ini.split('').map(function (ch) { return /[A-Za-z]/.test(ch) ? ch.toUpperCase() : (PARA_LETRA[ch] || '?'); }).join('');
+    } else if (digitos >= 2) {
+      inicio = paraDigitos(ini);
+    } else {
+      return null;
+    }
+    var codigo = inicio + fim;
+    if (!C.RE_CODIGO_DISCIPLINA.test(codigo)) return null;
+    return { codigo: codigo, corrigido: codigo !== original };
+  }
+
+  /** Versão entre parênteses: "4", "l" (OCR) … */
+  function lerVersao(bruto, modo) {
+    var t = modo === 'ocr' ? paraDigitos(bruto) : String(bruto);
+    if (!/^\d{1,2}$/.test(t)) return null;
+    return { versao: parseInt(t, 10), corrigido: t !== String(bruto) };
+  }
+
+  /** Corta o "pontilhado" que liga o nome aos números e o lixo que o OCR lê nele. */
+  function limparNome(texto, modo) {
+    var t = String(texto || '');
+    var corte = t.search(/(\.\s*){2,}|…|·{2,}/);
+    if (corte >= 0) t = t.slice(0, corte);
+    t = t.replace(/[\s\-–—.:;,·]+$/, '');
+    if (modo === 'ocr') t = corrigirNomeOcr(t);
+    return C.normalizarEspacos(t);
+  }
+
+  /**
+   * Correções de nome só para o OCR (o nome do CSV continua sendo o
+   * preferido; estas correções servem quando só existe o PDF):
+   * - algarismos romanos lidos como "|", "Il", "lll" → I, II, III;
+   * - sobras do pontilhado no fim ("»", "+", "-") e barras soltas no início.
+   */
+  var ROMANOS_OCR = { '|': 'I', 'l': 'I', 'L': 'I', '!': 'I', 'Il': 'II', 'lI': 'II', 'll': 'II', '||': 'II', 'Ill': 'III', 'lll': 'III', 'IIl': 'III', 'IlI': 'III', 'lIl': 'III', '|||': 'III', '|V': 'IV', 'lV': 'IV', 'V|': 'VI', 'Vl': 'VI' };
+  /** Aplica as correções acima a um nome lido por OCR. */
+  function corrigirNomeOcr(texto) {
+    var t = C.normalizarEspacos(texto);
+    // pontilhado lido como letras: " .ccc…" ou palavra com 3 letras iguais seguidas
+    var corte = t.search(/\s\.(?=\S)|\s\S*([a-z])\1\1\S*/);
+    if (corte > 0) t = t.slice(0, corte);
+    var palavras = t.split(' ');
+    while (palavras.length > 1 && /^[|!l]$/.test(palavras[0])) palavras.shift();
+    palavras = palavras.map(function (p, i) {
+      var m = /^([|!IlLV]{1,3})([:,;]?)$/.exec(p);
+      if (!m || i === 0) return p;
+      var r = ROMANOS_OCR[m[1]];
+      // "L" isolado só vira "I" no fim do nome (posição de numeral).
+      if (m[1] === 'L' && i !== palavras.length - 1) return p;
+      return r ? r + m[2] : p;
+    });
+    return palavras.join(' ').replace(/[»«+*|\-–—.:;,]+$/, '');
+  }
+
+  // ------------------------------------------------------------------
+  //  1. Palavras → linhas
+  // ------------------------------------------------------------------
+
+  /**
+   * Divide itens com vários termos ("Aula Trab. Tot.") em palavras,
+   * estimando a posição de cada uma pela proporção de caracteres. A
+   * camada de texto de alguns PDFs junta palavras num único item.
+   */
+  function separarPalavras(tokens) {
+    var saida = [];
+    tokens.forEach(function (t) {
+      var texto = String(t.texto == null ? '' : t.texto);
+      if (!texto.trim()) return;
+      var partes = texto.split(/(\s+)/);
+      if (partes.filter(function (p) { return p.trim(); }).length <= 1) {
+        saida.push({ texto: texto.trim(), x0: t.x0, x1: t.x1, y0: t.y0, y1: t.y1, conf: t.conf });
+        return;
+      }
+      var total = texto.length, largura = t.x1 - t.x0, pos = 0;
+      partes.forEach(function (p) {
+        if (p.trim()) {
+          saida.push({
+            texto: p,
+            x0: t.x0 + largura * pos / total,
+            x1: t.x0 + largura * (pos + p.length) / total,
+            y0: t.y0, y1: t.y1, conf: t.conf
+          });
+        }
+        pos += p.length;
+      });
+    });
+    return saida;
+  }
+
+  /** Agrupa palavras na mesma altura (linha de texto). */
+  function agruparLinhas(tokens) {
+    var ts = tokens.map(function (t) {
+      return { texto: t.texto, x0: t.x0, x1: t.x1, y0: t.y0, y1: t.y1, conf: t.conf, yc: (t.y0 + t.y1) / 2, h: Math.max(0.5, t.y1 - t.y0) };
+    }).sort(function (a, b) { return a.yc - b.yc || a.x0 - b.x0; });
+    var hMed = mediana(ts.map(function (t) { return t.h; })) || 8;
+    var tol = Math.max(1.2, hMed * 0.5);
+    var linhas = [];
+    ts.forEach(function (t) {
+      var ult = linhas[linhas.length - 1];
+      if (ult && Math.abs(t.yc - ult.yc) <= tol) {
+        ult.tokens.push(t);
+        ult.yc = (ult.yc * (ult.tokens.length - 1) + t.yc) / ult.tokens.length;
+      } else {
+        linhas.push({ yc: t.yc, tokens: [t] });
+      }
+    });
+    linhas.forEach(function (l) {
+      l.tokens.sort(function (a, b) { return a.x0 - b.x0; });
+      l.texto = C.normalizarEspacos(l.tokens.map(function (t) { return t.texto; }).join(' '));
+      l.x0 = l.tokens[0].x0;
+      l.y0 = Math.min.apply(null, l.tokens.map(function (t) { return t.y0; }));
+      l.y1 = Math.max.apply(null, l.tokens.map(function (t) { return t.y1; }));
+    });
+    return linhas;
+  }
+
+  // ------------------------------------------------------------------
+  //  2. Colunas da tabela
+  // ------------------------------------------------------------------
+
+  /**
+   * Procura a linha "Disciplina Aula Trab. Tot. CH CE CP EXT ATPA Ideal"
+   * e devolve o centro horizontal de cada coluna. Colunas não
+   * reconhecidas são estimadas pelo espaçamento regular das demais.
+   */
+  function detectarColunas(linha) {
+    var achadas = {};
+    linha.tokens.forEach(function (t) {
+      var r = normRotulo(t.texto);
+      COLUNAS.forEach(function (c) {
+        if (achadas[c] == null && ROTULOS[c].indexOf(r) >= 0) achadas[c] = xc(t);
+      });
+    });
+    var conhecidas = COLUNAS.filter(function (c) { return achadas[c] != null; });
+    if (conhecidas.length < 6 || achadas.aula == null || achadas.ch == null) return null;
+    var idx = conhecidas.map(function (c) { return COLUNAS.indexOf(c); });
+    var passos = [];
+    for (var i = 1; i < idx.length; i++) passos.push((achadas[conhecidas[i]] - achadas[conhecidas[i - 1]]) / (idx[i] - idx[i - 1]));
+    var passo = mediana(passos);
+    if (!(passo > 0)) return null;
+    COLUNAS.forEach(function (c, i) {
+      if (achadas[c] != null) return;
+      // estimativa a partir da coluna conhecida mais próxima
+      var ref = conhecidas.reduce(function (m, k) { return Math.abs(COLUNAS.indexOf(k) - i) < Math.abs(COLUNAS.indexOf(m) - i) ? k : m; }, conhecidas[0]);
+      achadas[c] = achadas[ref] + (i - COLUNAS.indexOf(ref)) * passo;
+    });
+    achadas.passo = passo;
+    return achadas;
+  }
+
+  /**
+   * Distribui as palavras numéricas de uma linha pelas colunas.
+   * Devolve { valores, brutos, inicioTabela }.
+   */
+  function lerColunas(linha, col, numericos, modo) {
+    var inicio = col.aula - col.passo * 0.6;
+    // Coluna mais próxima do centro da palavra (null se estiver à esquerda
+    // da tabela ou longe demais de qualquer coluna).
+    function colunaDe(t) {
+      var x = xc(t);
+      if (x < inicio) return null;
+      var melhor = null, dist = Infinity;
+      COLUNAS.forEach(function (c) { var d = Math.abs(x - col[c]); if (d < dist) { dist = d; melhor = c; } });
+      return dist > col.passo * 0.55 ? null : melhor;
+    }
+    var brutos = {};
+    linha.tokens.forEach(function (t) {
+      var c = colunaDe(t);
+      if (c) (brutos[c] = brutos[c] || []).push(t.texto);
+    });
+    var valores = {};
+    var ler = modo === 'ocr' ? lerInteiroOcr : lerInteiro;
+    COLUNAS.forEach(function (c) { valores[c] = brutos[c] ? ler(brutos[c].join('')) : null; });
+    Object.keys(brutos).forEach(function (c) { brutos[c] = brutos[c].join(' '); });
+
+    // Segunda leitura (só OCR): a região dos números lida de novo
+    // aceitando apenas dígitos. Ela não sofre com o pontilhado que
+    // antecede a coluna "Aula". Descartamos palavras largas demais
+    // (vários números grudados) e de confiança baixa.
+    if (numericos && numericos.length) {
+      var y0 = linha.y0 - 1.5, y1 = linha.y1 + 1.5;
+      var porColuna = {};
+      numericos.forEach(function (t) {
+        var yc = (t.y0 + t.y1) / 2;
+        if (yc < y0 || yc > y1) return;
+        if (t.conf != null && t.conf < 60) return;
+        if (t.x1 - t.x0 > col.passo * 1.2) return;
+        var c = colunaDe(t);
+        if (!c) return;
+        var v = lerInteiro(t.texto);
+        if (v == null) return;
+        if (porColuna[c] == null) porColuna[c] = v; else porColuna[c] = NaN; // dois números na mesma célula: ignora
+      });
+      COLUNAS.forEach(function (c) {
+        var v = porColuna[c];
+        if (v == null || isNaN(v)) return;
+        if (valores[c] !== v) {
+          brutos[c] = (brutos[c] == null ? '' : brutos[c]) + ' → ' + v;
+          valores[c] = v;
+        }
+      });
+    }
+    return { valores: valores, brutos: brutos, inicioTabela: inicio };
+  }
+
+  // ------------------------------------------------------------------
+  //  3. Leitura página a página
+  // ------------------------------------------------------------------
+
+  /** "Disciplinas Optativas Eletivas" → "OPTATIVA_ELETIVA" (mesma regra do CSV). */
+  function secaoDeTexto(texto) { return C.tipoDeTexto(texto); }
+
+  /**
+   * Estado da leitura enquanto as linhas são percorridas, em ordem, de
+   * todas as páginas: onde estamos (curso, currículo, seção, grupo) e o
+   * que está aberto esperando continuação na linha seguinte.
+   */
+  function novoEstado() {
+    return {
+      curso: null,
+      curriculo: null,        // currículo do cabeçalho da página atual
+      secao: null,
+      colunas: null,          // último modelo de colunas encontrado
+      grupo: null,            // grupo aberto (entre subtotais)
+      secaoAtual: null,       // { curriculo, secao, grupos, total }
+      ultima: null,           // última linha de disciplina (para os requisitos)
+      pendenteOu: false,
+      numericos: null,        // 2ª leitura só de dígitos da página atual (OCR)
+      blocoInfo: null         // bloco "Informações Básicas" aberto
+    };
+  }
+
+  /**
+   * Analisa as páginas e devolve o pacote de importação.
+   *
+   * paginas: [{ numero, largura, altura, tokens: [{ texto, x0, y0, x1, y1, conf }] }]
+   *   coordenadas em pontos do PDF (1/72 pol.), origem no canto superior
+   *   esquerdo (a fonte converte).
+   *   tokensNumericos (opcional, só OCR): 2ª leitura da faixa dos números,
+   *   aceitando apenas dígitos, no mesmo sistema de coordenadas.
+   * opcoes: { modo: "texto" | "ocr", arquivo, tamanhoBytes,
+   *           depurar: true → inclui pacote._depuracao (usado nos testes) }
+   *
+   * Etapas: (1) cada página vira linhas; cada linha é classificada
+   * (rodapé, legenda, cabeçalho da página, seção, disciplina, requisito,
+   * "ou", subtotal, total, bloco de informações do currículo); (2) as
+   * contas de conferência confirmam ou corrigem os números; (3) as
+   * informações do currículo são associadas à habilitação certa;
+   * (4) o pacote é montado, com avisos e o resumo da conferência.
+   */
+  function analisar(paginas, opcoes) {
+    opcoes = opcoes || {};
+    var modo = opcoes.modo === 'ocr' ? 'ocr' : 'texto';
+    var pacote = C.novoPacote({
+      formato: 'pdf', leitura: modo, arquivo: opcoes.arquivo || '',
+      tamanhoBytes: opcoes.tamanhoBytes || null, geradoEm: null, paginas: paginas.length
+    });
+
+    var est = novoEstado();
+    var ocorrencias = [];   // linhas de disciplina
+    var grupos = [];
+    var secoes = [];
+    var blocos = [];        // blocos de "Informações Básicas do Currículo"
+    var cabecalhos = [];    // por página: { curriculo, complemento }
+    var naoReconhecidas = [];
+    var complementoIncoerente = 0;
+    var rodape = null, totalPaginasRodape = null;
+
+    // Fecha o grupo de período aberto (normalmente num "Subtotal"); se
+    // fechar sem subtotal, guarda o motivo (as contas do grupo ficam de fora).
+    function fecharGrupo(motivo) {
+      if (est.grupo && est.grupo.ocorrencias.length) {
+        if (!est.grupo.subtotal) est.grupo.semSubtotal = motivo || true;
+        grupos.push(est.grupo);
+        if (est.secaoAtual) est.secaoAtual.grupos.push(est.grupo);
+      }
+      est.grupo = null;
+    }
+    // Fecha a seção aberta (Obrigatórias/Eletivas/Livres) com seus grupos.
+    function fecharSecao() {
+      fecharGrupo('fim da seção');
+      if (est.secaoAtual && est.secaoAtual.grupos.length) secoes.push(est.secaoAtual);
+      est.secaoAtual = null;
+      est.secao = null;
+    }
+    // Começa uma nova seção no currículo atual.
+    function abrirSecao(secao) {
+      fecharSecao();
+      est.secao = secao;
+      est.secaoAtual = { curriculo: est.curriculo, secao: secao, grupos: [], total: null };
+    }
+
+    paginas.forEach(function (pagina, iPag) {
+      var numPag = pagina.numero || iPag + 1;
+      est.numericos = pagina.tokensNumericos || null;
+      var linhas = agruparLinhas(separarPalavras(pagina.tokens || []));
+      var ehInfo = linhas.some(function (l) { return RE.infoTitulo.test(l.texto); });
+      var cab = { curriculo: null, complemento: null, info: ehInfo };
+      cabecalhos[iPag] = cab;
+      var dentroTabela = false;
+      var dentroInfo = false;
+      var viuCabecalhoPagina = false;
+
+      linhas.forEach(function (linha) {
+        var texto = linha.texto;
+        var m;
+
+        // ----- Rodapé e legenda (todas as páginas) -----
+        if ((m = RE.rodape.exec(texto))) {
+          var d = m[1].split('/');
+          rodape = d[2] + '-' + d[1] + '-' + d[0] + 'T' + (m[2].length === 5 ? m[2] + ':00' : m[2]);
+          totalPaginasRodape = parseInt(m[4], 10);
+          return;
+        }
+        if (RE.legenda.test(texto)) { dentroTabela = false; return; }
+
+        // ----- Cabeçalho da página -----
+        if ((m = RE.curso.exec(texto))) {
+          var codCurso = paraDigitos(m[1]);
+          if (/^\d{5}$/.test(codCurso) && !est.curso) est.curso = { codigo: codCurso, nome: C.normalizarEspacos(m[2]) };
+          viuCabecalhoPagina = true;
+          return;
+        }
+        if ((m = RE.complemento.exec(texto))) {
+          cab.complemento = { codigo: String(parseInt(paraDigitos(m[1]), 10)), nome: C.normalizarEspacos(m[2]) };
+          return;
+        }
+        if ((m = RE.curriculo.exec(texto))) {
+          var num = paraDigitos(m[1].replace(/\s+/g, ''));
+          var dec = C.decomporCurriculo(num);
+          if (dec) {
+            cab.curriculo = dec.codigo;
+            cab.situacao = m[2] ? C.normalizarEspacos(m[2]) : null;
+            if (!ehInfo && dec.codigo !== est.curriculo) {
+              // Mudou a habilitação: fecha o que estava aberto.
+              fecharSecao();
+              est.ultima = null;
+            }
+            est.curriculo = dec.codigo;
+          }
+          return;
+        }
+        if (!viuCabecalhoPagina) return; // logotipo e título (e ruído do OCR no brasão)
+        if (RE.titulo.test(texto) || RE.gradeCurricular.test(texto) || RE.infoTitulo.test(texto) || RE.creditosCab.test(texto)) return;
+
+        // ----- Páginas de "Informações Básicas do Currículo" -----
+        if (ehInfo) {
+          lerLinhaInfo(linha, numPag, cab);
+          return;
+        }
+
+        // ----- Páginas da grade -----
+        if (!dentroTabela) {
+          var col = detectarColunas(linha);
+          if (col) { est.colunas = col; dentroTabela = true; return; }
+          if (/^Disciplina\b/i.test(texto) && est.colunas) { dentroTabela = true; return; }
+          naoReconhecidas.push({ pagina: numPag, texto: texto });
+          return;
+        }
+        lerLinhaGrade(linha, numPag);
+      });
+    });
+    fecharSecao();
+    if (est.blocoInfo) { blocos.push(est.blocoInfo); est.blocoInfo = null; }
+
+    // ---------------- linha da grade ----------------
+    function lerLinhaGrade(linha, numPag) {
+      var texto = linha.texto, m;
+      var col = est.colunas;
+
+      if ((m = RE.secao.exec(texto))) {
+        var s = secaoDeTexto(m[1]);
+        if (s !== est.secao) abrirSecao(s);
+        return;
+      }
+      if (RE.subtotal.test(texto)) {
+        var sub = lerColunas(linha, col, est.numericos, modo);
+        if (!est.grupo) {
+          // Subtotal que caiu no início da página seguinte sem linhas novas:
+          // pertence ao último grupo sem subtotal desta seção.
+          var ultimoGrupo = est.secaoAtual && est.secaoAtual.grupos[est.secaoAtual.grupos.length - 1];
+          if (ultimoGrupo && !ultimoGrupo.subtotal) { ultimoGrupo.subtotal = sub.valores; ultimoGrupo.subtotalBruto = sub.brutos; ultimoGrupo.paginaSubtotal = numPag; ultimoGrupo.subtotalY = [linha.y0, linha.y1]; delete ultimoGrupo.semSubtotal; return; }
+          naoReconhecidas.push({ pagina: numPag, texto: texto });
+          return;
+        }
+        est.grupo.subtotal = sub.valores;
+        est.grupo.subtotalBruto = sub.brutos;
+        est.grupo.paginaSubtotal = numPag;
+        est.grupo.subtotalY = [linha.y0, linha.y1];
+        fecharGrupo();
+        return;
+      }
+      if ((m = RE.total.exec(texto))) {
+        fecharGrupo('total sem subtotal');
+        if (est.secaoAtual) {
+          est.secaoAtual.total = lerColunas(linha, col, est.numericos, modo).valores;
+          est.secaoAtual.totalSecaoTexto = secaoDeTexto(m[1]);
+          est.secaoAtual.paginaTotal = numPag;
+          est.secaoAtual.totalY = [linha.y0, linha.y1];
+        }
+        return;
+      }
+      if (RE.ou.test(texto)) { est.pendenteOu = true; return; }
+      if ((m = RE.requisito.exec(texto))) {
+        lerRequisito(m, numPag, texto);
+        return;
+      }
+      if ((m = RE.inicioCodigo.exec(texto))) {
+        var cod = lerCodigo(m[1], modo);
+        var ver = lerVersao(m[2], modo);
+        if (cod) {
+          lerDisciplina(linha, numPag, cod, ver, m);
+          return;
+        }
+      }
+      // Linha só com números logo após uma disciplina sem números (o OCR
+      // às vezes separa a linha em duas).
+      var soNumeros = linha.tokens.every(function (t) { return /^[\d.,:;]+$/.test(t.texto); });
+      if (soNumeros && est.ultima && est.ultima.linhaSemNumeros) {
+        var lc = lerColunas(linha, col, est.numericos, modo);
+        aplicarValores(est.ultima, lc);
+        est.ultima.linhaSemNumeros = false;
+        return;
+      }
+      naoReconhecidas.push({ pagina: numPag, texto: texto });
+    }
+
+    // Copia os números lidos (lc = lerColunas) para a ocorrência. Situação
+    // inicial: "lido" na camada de texto; "pendente" no OCR (as contas
+    // da etapa 4 decidem); "conferir" quando a célula veio vazia.
+    function aplicarValores(oc, lc) {
+      COLUNAS.forEach(function (c) {
+        oc.lido[c] = lc.valores[c];
+        oc.bruto[c] = lc.brutos[c] == null ? '' : lc.brutos[c];
+        oc.v[c] = lc.valores[c];
+        oc.st[c] = lc.valores[c] == null ? 'conferir' : (modo === 'texto' ? 'lido' : 'pendente');
+      });
+    }
+
+    // Linha "CÓDIGO(VERSÃO) Nome...... números": cria uma "ocorrência"
+    // (a disciplina numa habilitação) no grupo de período aberto.
+    // m = resultado de RE.inicioCodigo; cod/ver já interpretados.
+    function lerDisciplina(linha, numPag, cod, ver, m) {
+      var col = est.colunas;
+      var lc = lerColunas(linha, col, est.numericos, modo);
+      // Nome: palavras entre o código e o início da tabela.
+      var nomeTokens = [];
+      var consumido = '';
+      var alvo = (m[1] + '(' + m[2] + ')' + (m[3] || '')).replace(/\s+/g, '');
+      linha.tokens.forEach(function (t) {
+        if (xc(t) >= lc.inicioTabela) return;
+        if (consumido.length < alvo.length) {
+          var resto = t.texto.replace(/\s+/g, '');
+          var falta = alvo.length - consumido.length;
+          if (resto.length <= falta) { consumido += resto; return; }
+          consumido += resto.slice(0, falta);
+          nomeTokens.push(resto.slice(falta));
+          return;
+        }
+        nomeTokens.push(t.texto);
+      });
+      var oc = {
+        pagina: numPag,
+        y0: linha.y0, y1: linha.y1,
+        curriculo: est.curriculo,
+        secao: est.secao,
+        codigo: cod.codigo,
+        codigoCorrigido: cod.corrigido,
+        versao: ver ? ver.versao : null,
+        versaoCorrigida: ver ? ver.corrigido : true,
+        fraco: !!m[3],
+        nome: limparNome(nomeTokens.join(' '), modo),
+        lido: {}, bruto: {}, v: {}, st: {},
+        requisitos: [],
+        grupoReq: 0,
+        linhaSemNumeros: false
+      };
+      aplicarValores(oc, lc);
+      var qtdNumeros = COLUNAS.filter(function (c) { return lc.valores[c] != null; }).length;
+      oc.linhaSemNumeros = qtdNumeros === 0;
+      if (!est.secao) {
+        naoReconhecidas.push({ pagina: numPag, texto: '(disciplina fora de seção) ' + linha.texto });
+      }
+      if (!est.grupo) est.grupo = { curriculo: est.curriculo, secao: est.secao, ocorrencias: [], subtotal: null, pagina: numPag };
+      est.grupo.ocorrencias.push(oc);
+      ocorrencias.push(oc);
+      est.ultima = oc;
+      est.pendenteOu = false;
+    }
+
+    // Linha "Requisito - CÓDIGO(V) Nome" logo abaixo de uma disciplina.
+    // Se a linha anterior foi "ou", entra no mesmo grupo do requisito
+    // anterior (alternativa); senão abre um grupo novo ("e").
+    function lerRequisito(m, numPag, texto) {
+      var oc = est.ultima;
+      if (!oc) { naoReconhecidas.push({ pagina: numPag, texto: texto }); return; }
+      var tipo = C.normalizarEspacos(m[1]);
+      tipo = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
+      var fraco = !!m[2] || /fraco/i.test(tipo);
+      var resto = m[3];
+      var mm = RE.inicioCodigo.exec(resto);
+      var cod = mm ? lerCodigo(mm[1], modo) : null;
+      if (!cod) { naoReconhecidas.push({ pagina: numPag, texto: texto }); est.pendenteOu = false; return; }
+      var ver = lerVersao(mm[2], modo);
+      if (mm[3]) fraco = true;
+      var nome = C.normalizarEspacos(String(mm[4] || '').replace(/\(f\)/ig, ''));
+      if (modo === 'ocr') nome = corrigirNomeOcr(nome);
+      var grupo;
+      if (est.pendenteOu && oc.requisitos.length) grupo = oc.requisitos[oc.requisitos.length - 1].grupo;
+      else grupo = ++oc.grupoReq;
+      oc.requisitos.push({
+        tipo: fraco && !/fraco/i.test(tipo) ? tipo + ' fraco' : tipo,
+        codigo: cod.codigo, codigoCorrigido: cod.corrigido,
+        versao: ver ? ver.versao : null, versaoCorrigida: ver ? ver.corrigido : true,
+        nome: nome, grupo: grupo, pagina: numPag
+      });
+      est.pendenteOu = false;
+    }
+
+    // ---------------- páginas de informações ----------------
+    // Cada bloco começa na linha "Data de ativação"; as linhas seguintes
+    // preenchem durações e cargas horárias até "Informações Específicas",
+    // a partir da qual tudo é texto descritivo do bloco.
+    function lerLinhaInfo(linha, numPag, cab) {
+      var t = linha.texto, m;
+      if ((m = RE_INFO.ativacao.exec(t))) {
+        if (est.blocoInfo) blocos.push(est.blocoInfo);
+        est.blocoInfo = {
+          paginaInicio: numPag, curriculoCabecalho: cab.curriculo,
+          complementoCabecalho: cab.complemento, situacao: cab.situacao || null,
+          primeiroDaPagina: !blocos.some(function (b) { return b.paginaInicio === numPag; }),
+          ativacao: m[1], desativacao: null, texto: [], lendoTexto: false, x0Texto: null
+        };
+        if ((m = RE_INFO.desativacao.exec(t))) est.blocoInfo.desativacao = m[1];
+        return;
+      }
+      var b = est.blocoInfo;
+      if (!b) { naoReconhecidas.push({ pagina: numPag, texto: t }); return; }
+      if (b.lendoTexto) {
+        if (RE_INFO.especificas.test(t)) return;
+        b.texto.push({ texto: t, x0: linha.x0 });
+        return;
+      }
+      if ((m = RE_INFO.duracao.exec(t))) { b.duracaoIdeal = +m[1]; b.duracaoMinima = +m[2]; b.duracaoMaxima = +m[3]; return; }
+      if ((m = RE_INFO.aula.exec(t))) { b.chAulaObrigatoria = +m[1]; b.chAulaEletiva = +m[2]; b.chAulaLivre = +m[3]; return; }
+      if ((m = RE_INFO.trabalho.exec(t))) { b.chTrabalhoObrigatoria = +m[1]; b.chTrabalhoEletiva = +m[2]; b.chTrabalhoLivre = +m[3]; return; }
+      if ((m = RE_INFO.subtotais.exec(t))) { b.chObrigatoria = +m[1]; b.chEletiva = +m[2]; b.chLivre = +m[3]; b.chDisciplinas = +m[4]; return; }
+      if (RE_INFO.estagio.test(t) || RE_INFO.aac.test(t)) {
+        if ((m = RE_INFO.estagio.exec(t))) b.estagio = +m[1];
+        if ((m = RE_INFO.aac.exec(t))) b.aac = +m[1];
+        if ((m = RE_INFO.aexApolo.exec(t))) b.aexApolo = +m[1];
+        if ((m = RE_INFO.extensaoOptativas.exec(t))) b.extensaoOptativas = +m[1];
+        return;
+      }
+      if ((m = RE_INFO.subtotalAac.exec(t))) { b.chDisciplinasMaisAac = +m[1]; return; }
+      if ((m = RE_INFO.extensaoTotal.exec(t))) { b.extensaoTotal = +m[1]; b.extensaoPercentual = parseFloat(m[2].replace(',', '.')); return; }
+      if ((m = RE_INFO.totalGeral.exec(t))) { b.totalGeral = +m[1]; return; }
+      if (RE_INFO.especificas.test(t)) { b.lendoTexto = true; return; }
+      if (RE_INFO.ignorar.test(t)) return;
+      naoReconhecidas.push({ pagina: numPag, texto: t });
+    }
+
+    // ------------------------------------------------------------------
+    //  4. Conferência dos números
+    // ------------------------------------------------------------------
+    var itensConferencia = [];
+    // Anota um número corrigido, não confirmado ou divergente (vai para a
+    // tela "Conferência" da importação; não vai para o servidor).
+    function registrar(oc, campo, lido, valor, situacao, motivo) {
+      itensConferencia.push({
+        pagina: oc.pagina, curriculo: oc.curriculo, codigo: oc.codigo, campo: campo,
+        lido: lido, valor: valor, situacao: situacao, motivo: motivo
+      });
+    }
+
+    // 4.1 Contas da própria linha (Tot. e CH).
+    ocorrencias.forEach(function (oc) {
+      var a = oc.v.aula, t = oc.v.trab, T = oc.v.tot, H = oc.v.ch;
+      // Cada par (aula, trab) possível, deduzido de dois números da linha;
+      // vence o par que concorda com mais números lidos (≥ 3 = confiável).
+      var candidatos = [];
+      function cand(x, y) { if (x != null && y != null && x >= 0 && y >= 0 && Math.floor(x) === x && Math.floor(y) === y) candidatos.push([x, y]); }
+      cand(a, t);
+      if (T != null && t != null) cand(T - t, t);
+      if (T != null && a != null) cand(a, T - a);
+      if (H != null && t != null) cand((H - 30 * t) / 15, t);
+      if (H != null && a != null) cand(a, (H - 15 * a) / 30);
+      if (T != null && H != null) cand(T - (H - 15 * T) / 15, (H - 15 * T) / 15);
+      var melhor = null, melhorPontos = -1;
+      candidatos.forEach(function (c) {
+        var p = (a === c[0]) + (t === c[1]) + (T === c[0] + c[1]) + (H === 15 * c[0] + 30 * c[1]);
+        if (p > melhorPontos) { melhorPontos = p; melhor = c; }
+      });
+      if (!melhor || melhorPontos < 2) {
+        ['aula', 'trab', 'tot', 'ch'].forEach(function (k) { if (oc.st[k] !== 'lido') oc.st[k] = 'conferir'; });
+        return;
+      }
+      var certo = { aula: melhor[0], trab: melhor[1], tot: melhor[0] + melhor[1], ch: 15 * melhor[0] + 30 * melhor[1] };
+      var confiavel = melhorPontos >= 3;
+      ['aula', 'trab', 'tot', 'ch'].forEach(function (k) {
+        if (oc.v[k] === certo[k]) {
+          if (oc.st[k] !== 'lido') oc.st[k] = confiavel ? 'lido' : 'conferir';
+        } else if (confiavel) {
+          if (modo === 'texto') {
+            // Leitura exata: não "corrige" o documento; só avisa.
+            registrar(oc, k, oc.v[k], oc.v[k], 'aviso', 'Tot./CH não batem com os créditos no próprio relatório');
+          } else {
+            registrar(oc, k, oc.bruto[k], certo[k], 'corrigido', 'recuperado pelas contas da linha (Tot. = Aula + Trab.; CH = 15×Aula + 30×Trab.)');
+            oc.v[k] = certo[k];
+            oc.st[k] = 'corrigido';
+          }
+        } else if (oc.st[k] !== 'lido') {
+          oc.st[k] = 'conferir';
+        }
+      });
+    });
+
+    // 4.2 Subtotais dos grupos (CE, CP, EXT, ATPA e confirmação geral).
+    var conf = { subtotais: 0, subtotaisConferem: 0, subtotaisNaoConferem: 0, subtotaisIlegiveis: 0, subtotaisRecuperados: 0, gruposSemSubtotal: 0, totaisSecao: 0, totaisSecaoConferem: 0, totaisSecaoNaoConferem: 0 };
+
+    // Um número de Subtotal ilegível pode ser recuperado pelo Total da
+    // seção, quando é o único ilegível daquela coluna na seção.
+    function recuperarSubtotaisPeloTotal() {
+      if (modo !== 'ocr') return;
+      secoes.forEach(function (s) {
+        if (!s.total) return;
+        COLUNAS_SOMA.forEach(function (c) {
+          if (s.total[c] == null) return;
+          var semValor = s.grupos.filter(function (g) { return !g.subtotal || g.subtotal[c] == null; });
+          if (semValor.length !== 1 || !semValor[0].subtotal) return;
+          var soma = s.grupos.reduce(function (acc, g) { return acc + (g.subtotal && g.subtotal[c] != null ? g.subtotal[c] : 0); }, 0);
+          var valor = s.total[c] - soma;
+          if (valor >= 0) { semValor[0].subtotal[c] = valor; conf.subtotaisRecuperados++; }
+        });
+      });
+    }
+
+    /**
+     * Confere cada coluna de cada grupo com o Subtotal impresso.
+     * - Soma confere: os números do grupo naquela coluna ficam confirmados.
+     * - Um único número ilegível: recuperado pela diferença (só no OCR).
+     * - Soma não confere: os números ainda não confirmados ficam "conferir".
+     */
+    function conferirSubtotais(registrarContagem) {
+      grupos.forEach(function (g) {
+        if (!g.subtotal) { if (registrarContagem) conf.gruposSemSubtotal++; return; }
+        var todosConferem = true, algumIlegivel = false;
+        COLUNAS_SOMA.forEach(function (c) {
+          var S = g.subtotal[c];
+          if (S == null) { algumIlegivel = true; return; }
+          var semValor = g.ocorrencias.filter(function (oc) { return oc.v[c] == null; });
+          var soma = g.ocorrencias.reduce(function (s, oc) { return s + (oc.v[c] == null ? 0 : oc.v[c]); }, 0);
+          if (!semValor.length) {
+            if (soma === S) {
+              g.ocorrencias.forEach(function (oc) { if (oc.st[c] === 'pendente' || oc.st[c] === 'conferir') oc.st[c] = 'lido'; });
+              if (g.divergencias) delete g.divergencias[c];
+            } else {
+              todosConferem = false;
+              g.ocorrencias.forEach(function (oc) { if (oc.st[c] === 'pendente') oc.st[c] = 'conferir'; });
+              g.divergencias = g.divergencias || {};
+              g.divergencias[c] = { soma: soma, subtotal: S };
+            }
+            return;
+          }
+          if (semValor.length === 1 && modo === 'ocr') {
+            var valor = S - soma;
+            if (valor >= 0) {
+              var oc = semValor[0];
+              registrar(oc, c, oc.bruto[c], valor, 'corrigido', 'recuperado pelo Subtotal do grupo');
+              oc.v[c] = valor; oc.st[c] = 'corrigido';
+              g.ocorrencias.forEach(function (o) { if (o.st[c] === 'pendente' || o.st[c] === 'conferir') o.st[c] = 'lido'; });
+              return;
+            }
+          }
+          todosConferem = false;
+        });
+        if (registrarContagem) {
+          conf.subtotais++;
+          if (algumIlegivel) conf.subtotaisIlegiveis++;
+          else if (todosConferem) conf.subtotaisConferem++;
+          else conf.subtotaisNaoConferem++;
+        }
+      });
+    }
+    recuperarSubtotaisPeloTotal();
+    conferirSubtotais(false);
+
+    // 4.3 Período ideal: é o mesmo em todo o grupo.
+    grupos.forEach(function (g) {
+      var cont = {}, lidos = 0;
+      g.ocorrencias.forEach(function (oc) { if (oc.v.periodo != null) { cont[oc.v.periodo] = (cont[oc.v.periodo] || 0) + 1; lidos++; } });
+      var chaves = Object.keys(cont).sort(function (x, y) { return cont[y] - cont[x]; });
+      if (!chaves.length) return;
+      var maioria = parseInt(chaves[0], 10);
+      // Maioria clara: pelo menos 2 leituras e mais da metade do grupo.
+      var clara = cont[maioria] >= 2 && cont[maioria] * 2 > lidos;
+      g.periodo = maioria;
+      g.ocorrencias.forEach(function (oc) {
+        if (oc.v.periodo === maioria) {
+          if (oc.st.periodo === 'pendente' && (clara || modo === 'texto')) oc.st.periodo = 'lido';
+          return;
+        }
+        if (modo === 'texto') { registrar(oc, 'periodo', oc.v.periodo, oc.v.periodo, 'aviso', 'período diferente do restante do grupo'); return; }
+        if (clara) {
+          registrar(oc, 'periodo', oc.bruto.periodo, maioria, 'corrigido', 'mesmo período das outras disciplinas do grupo');
+          oc.v.periodo = maioria; oc.st.periodo = 'corrigido';
+        } else {
+          oc.st.periodo = 'conferir';
+        }
+      });
+    });
+    // Grupos de uma disciplina só: o período fica entre o do grupo
+    // anterior e o do seguinte, na mesma seção.
+    secoes.forEach(function (s) {
+      s.grupos.forEach(function (g, i) {
+        g.ocorrencias.forEach(function (oc) {
+          if (oc.st.periodo !== 'pendente') return;
+          var ant = i > 0 ? s.grupos[i - 1].periodo : null;
+          var seg = i < s.grupos.length - 1 ? s.grupos[i + 1].periodo : null;
+          var p = oc.v.periodo;
+          var ok = p != null && (ant == null || p > ant) && (seg == null || p < seg);
+          oc.st.periodo = ok ? 'lido' : 'conferir';
+        });
+      });
+    });
+
+    // 4.4 A mesma disciplina em várias habilitações: consenso. Um valor
+    // confirmado numa habilitação confirma (ou corrige) as outras.
+    var porCodigo = {};
+    ocorrencias.forEach(function (oc) { (porCodigo[oc.codigo] = porCodigo[oc.codigo] || []).push(oc); });
+    // Para cada disciplina e coluna: se as habilitações já confirmadas
+    // concordam num único valor, as demais leituras são confirmadas
+    // (valor igual) ou corrigidas (só no OCR). Roda duas vezes.
+    function aplicarConsenso() {
+      Object.keys(porCodigo).forEach(function (codigo) {
+        var lista = porCodigo[codigo];
+        COLUNAS_SOMA.forEach(function (c) {
+          var confirmados = {};
+          lista.forEach(function (oc) { if (oc.st[c] === 'lido' || oc.st[c] === 'corrigido') confirmados[oc.v[c]] = true; });
+          var valores = Object.keys(confirmados);
+          if (valores.length !== 1) return;
+          var valor = parseInt(valores[0], 10);
+          lista.forEach(function (oc) {
+            if (oc.st[c] === 'lido' || oc.st[c] === 'corrigido') return;
+            if (oc.v[c] === valor) { oc.st[c] = 'lido'; return; }
+            if (modo === 'ocr') {
+              registrar(oc, c, oc.bruto[c], valor, 'corrigido', 'mesmo valor lido na disciplina em outra habilitação');
+              oc.v[c] = valor; oc.st[c] = 'corrigido';
+            }
+          });
+        });
+      });
+    }
+    aplicarConsenso();
+    // Nova rodada de subtotais, agora com os valores corrigidos (e
+    // contando o resultado final).
+    conferirSubtotais(true);
+
+    // 4.5 Totais das seções. Quando a soma de TODAS as linhas da seção
+    // numa coluna bate com o Total impresso, os números dessa coluna
+    // ficam confirmados — mesmo que algum Subtotal tenha ficado ilegível
+    // (o OCR costuma confundir o "0" em negrito dos subtotais).
+    secoes.forEach(function (s) {
+      if (!s.total) return;
+      conf.totaisSecao++;
+      var ok = true;
+      COLUNAS_SOMA.forEach(function (c) {
+        if (s.total[c] == null) return;
+        var soma = 0, completa = true;
+        s.grupos.forEach(function (g) { g.ocorrencias.forEach(function (oc) { if (oc.v[c] == null) completa = false; else soma += oc.v[c]; }); });
+        if (!completa) { ok = false; return; }
+        if (soma === s.total[c]) {
+          s.grupos.forEach(function (g) { g.ocorrencias.forEach(function (oc) { if (oc.st[c] === 'pendente' || oc.st[c] === 'conferir') oc.st[c] = 'lido'; }); });
+        } else {
+          ok = false;
+        }
+      });
+      if (ok) conf.totaisSecaoConferem++; else conf.totaisSecaoNaoConferem++;
+    });
+    // O que o Total confirmou pode confirmar a mesma disciplina em outra
+    // habilitação.
+    aplicarConsenso();
+
+    // O que sobrou "pendente" não foi confirmado por nenhuma conta.
+    ocorrencias.forEach(function (oc) {
+      COLUNAS.forEach(function (c) {
+        if (oc.st[c] === 'pendente') oc.st[c] = 'conferir';
+        if (oc.st[c] === 'conferir') registrar(oc, c, oc.bruto[c], oc.v[c], 'conferir', 'não foi possível confirmar o número');
+      });
+    });
+
+    // ------------------------------------------------------------------
+    //  5. Montagem do pacote
+    // ------------------------------------------------------------------
+    pacote.origem.geradoEm = rodape;
+    pacote.curso = est.curso;
+
+    // 5.1 Currículos (a partir dos cabeçalhos e dos blocos de informação).
+    var curriculos = {};
+    // Currículo do pacote para o número dado (cria vazio na primeira vez).
+    function garantirCurriculo(codigo) {
+      if (!curriculos[codigo]) {
+        var dec = C.decomporCurriculo(codigo);
+        curriculos[codigo] = {
+          codigo: codigo, habilitacao: dec.habilitacao, habilitacaoNome: null,
+          ano: dec.ano, semestre: dec.semestre, situacao: null,
+          aacHoras: null, aacPercentual: null, info: null
+        };
+      }
+      return curriculos[codigo];
+    }
+    cabecalhos.forEach(function (cab) {
+      if (!cab || !cab.curriculo) return;
+      var c = garantirCurriculo(cab.curriculo);
+      if (cab.situacao && !c.situacao) c.situacao = cab.situacao;
+      if (cab.complemento) {
+        var dec = C.decomporCurriculo(cab.curriculo);
+        if (cab.complemento.codigo === dec.habilitacao) {
+          if (!c.habilitacaoNome) c.habilitacaoNome = cab.complemento.nome;
+        } else if (!cab.info) {
+          complementoIncoerente++;
+        }
+      }
+    });
+
+    // 5.2 Blocos de informações → currículo.
+    var atribuidos = {};
+    var ordemCurriculos = Object.keys(curriculos);
+    blocos.forEach(function (b, i) {
+      var porCabecalho = null;
+      if (b.primeiroDaPagina && b.curriculoCabecalho && !atribuidos[b.curriculoCabecalho]) porCabecalho = b.curriculoCabecalho;
+      else {
+        var prox = cabecalhos[b.paginaInicio]; // cabeçalho da página seguinte (índice 0-based)
+        if (prox && prox.info && prox.curriculo && !atribuidos[prox.curriculo]) porCabecalho = prox.curriculo;
+      }
+      var textoBloco = b.texto.map(function (x) { return x.texto; }).join(' ');
+      var porTexto = null, mref = RE_INFO.referencia.exec(textoBloco);
+      if (mref) {
+        var hab = String(parseInt(paraDigitos(mref[2]), 10));
+        var achados = ordemCurriculos.filter(function (k) { return curriculos[k].habilitacao === hab && k.slice(0, 5) === mref[1]; });
+        if (achados.length === 1) porTexto = achados[0];
+      }
+      var escolhido = porTexto || porCabecalho;
+      if (porTexto && porCabecalho && porTexto !== porCabecalho) {
+        C.avisar(pacote, 'info', 'PDF_INFO_ATRIBUICAO', 'Um bloco de "Informações Básicas" começa numa página de outra habilitação; foi atribuído ao currículo citado no próprio texto (' + porTexto + ').');
+      }
+      if (!escolhido) {
+        var livres = ordemCurriculos.filter(function (k) { return !atribuidos[k]; });
+        if (livres.length === 1) escolhido = livres[0];
+      }
+      if (!escolhido || atribuidos[escolhido]) {
+        C.avisar(pacote, 'aviso', 'PDF_INFO_SEM_CURRICULO', 'Não foi possível saber a que habilitação pertence um bloco de "Informações Básicas do Currículo" (página ' + b.paginaInicio + '). Ele foi ignorado.');
+        return;
+      }
+      atribuidos[escolhido] = true;
+      var c = garantirCurriculo(escolhido);
+      c.info = montarInfo(b);
+      if (b.aac != null && c.aacHoras == null) c.aacHoras = b.aac;
+      if (b.situacao && !c.situacao) c.situacao = b.situacao;
+    });
+
+    // Bloco lido → objeto "info" do currículo (formato em LeitorComum),
+    // com a conferência interna das somas do quadro de carga horária.
+    function montarInfo(b) {
+      // Texto: novo parágrafo quando a linha começa recuada ou com marcador.
+      var x0s = b.texto.map(function (x) { return x.x0; });
+      var margem = x0s.length ? Math.min.apply(null, x0s) : 0;
+      var paragrafos = [], atual = '';
+      b.texto.forEach(function (x) {
+        var t = x.texto.replace(/^[*•]\s*/, '• ');
+        var novo = /^• /.test(t) || x.x0 - margem > 12;
+        if (novo && atual) { paragrafos.push(atual); atual = ''; }
+        if (atual && /-$/.test(atual) && /^[a-zà-ú]/.test(t)) atual += t;
+        else atual += (atual ? ' ' : '') + t;
+      });
+      if (atual) paragrafos.push(atual);
+      var info = {
+        dataAtivacao: b.ativacao || null,
+        dataDesativacao: b.desativacao || null,
+        duracaoIdeal: n(b.duracaoIdeal), duracaoMinima: n(b.duracaoMinima), duracaoMaxima: n(b.duracaoMaxima),
+        chAulaObrigatoria: n(b.chAulaObrigatoria), chTrabalhoObrigatoria: n(b.chTrabalhoObrigatoria), chObrigatoria: n(b.chObrigatoria),
+        chAulaEletiva: n(b.chAulaEletiva), chTrabalhoEletiva: n(b.chTrabalhoEletiva), chEletiva: n(b.chEletiva),
+        chAulaLivre: n(b.chAulaLivre), chTrabalhoLivre: n(b.chTrabalhoLivre), chLivre: n(b.chLivre),
+        chDisciplinas: n(b.chDisciplinas),
+        estagio: n(b.estagio), aac: n(b.aac), aexApolo: n(b.aexApolo), extensaoOptativas: n(b.extensaoOptativas),
+        chDisciplinasMaisAac: n(b.chDisciplinasMaisAac),
+        extensaoTotal: n(b.extensaoTotal), extensaoPercentual: n(b.extensaoPercentual),
+        totalGeral: n(b.totalGeral),
+        informacoesEspecificas: paragrafos.join('\n'),
+        pagina: b.paginaInicio || null
+      };
+      // Conferências internas do quadro de carga horária.
+      var avisos = [];
+      // Anota "rot" quando os dois valores existem e são diferentes.
+      function confere(a, b2, rot) { if (a != null && b2 != null && a !== b2) avisos.push(rot); }
+      if (info.chAulaObrigatoria != null && info.chTrabalhoObrigatoria != null) confere(info.chAulaObrigatoria + info.chTrabalhoObrigatoria, info.chObrigatoria, 'obrigatórias');
+      if (info.chAulaEletiva != null && info.chTrabalhoEletiva != null) confere(info.chAulaEletiva + info.chTrabalhoEletiva, info.chEletiva, 'eletivas');
+      if (info.chAulaLivre != null && info.chTrabalhoLivre != null) confere(info.chAulaLivre + info.chTrabalhoLivre, info.chLivre, 'livres');
+      if (info.chObrigatoria != null && info.chEletiva != null && info.chLivre != null) confere(info.chObrigatoria + info.chEletiva + info.chLivre, info.chDisciplinas, 'total');
+      info.conferido = avisos.length === 0;
+      if (avisos.length) info.avisosConferencia = avisos;
+      return info;
+    }
+    // Número do bloco ou null (ausente/ilegível).
+    function n(x) { return x == null || isNaN(x) ? null : x; }
+
+    // 5.3 Disciplinas (consolidadas por código).
+    var nomesDeRequisito = {};  // nomes completos citados em requisitos
+    var versoesLidas = {};      // código → { versão: { firmes, corrigidas } }
+    // Conta cada leitura da versão de uma disciplina (na própria linha ou
+    // num requisito). "firme" = lida sem precisar trocar letra por dígito.
+    function contarVersao(codigo, versao, corrigida) {
+      if (versao == null) return;
+      var v = (versoesLidas[codigo] = versoesLidas[codigo] || {});
+      v[versao] = v[versao] || { firmes: 0, corrigidas: 0 };
+      if (corrigida) v[versao].corrigidas++; else v[versao].firmes++;
+    }
+    ocorrencias.forEach(function (oc) {
+      contarVersao(oc.codigo, oc.versao, oc.versaoCorrigida);
+      oc.requisitos.forEach(function (r) {
+        contarVersao(r.codigo, r.versao, r.versaoCorrigida);
+        if (r.nome && (!nomesDeRequisito[r.codigo] || r.nome.length > nomesDeRequisito[r.codigo].length)) nomesDeRequisito[r.codigo] = r.nome;
+      });
+    });
+
+    var disciplinas = [];
+    Object.keys(porCodigo).sort().forEach(function (codigo) {
+      var lista = porCodigo[codigo];
+      var d = { codigo: codigo, nome: null, versao: null, versaoOrigem: null, creditosAula: null, creditosTrabalho: null, ch: null, ce: null, cp: null, ext: null, atpa: null, naoConfirmados: [] };
+      // Páginas em que a disciplina aparece (referência para a revisão humana).
+      d.paginas = lista.map(function (oc) { return oc.pagina; }).filter(function (n, i, l) { return l.indexOf(n) === i; }).sort(function (a, b) { return a - b; });
+      var mapa = { aula: 'creditosAula', trab: 'creditosTrabalho', ch: 'ch', ce: 'ce', cp: 'cp', ext: 'ext', atpa: 'atpa' };
+      Object.keys(mapa).forEach(function (c) {
+        var bons = {};
+        lista.forEach(function (oc) { if (oc.st[c] === 'lido' || oc.st[c] === 'corrigido') bons[oc.v[c]] = (bons[oc.v[c]] || 0) + 1; });
+        var vals = Object.keys(bons);
+        if (vals.length === 1) d[mapa[c]] = parseInt(vals[0], 10);
+        else {
+          if (vals.length > 1) C.avisar(pacote, 'aviso', 'PDF_DIVERGENTE_HABILITACOES', codigo + ': ' + NOME_COLUNA[c] + ' diferente entre habilitações (' + vals.join(' / ') + ').');
+          // leitura exata (modo texto) guarda o primeiro valor lido
+          d[mapa[c]] = modo === 'texto' && lista[0].v[c] != null ? lista[0].v[c] : null;
+          if (modo !== 'texto' || d[mapa[c]] == null) d.naoConfirmados.push(mapa[c]);
+        }
+      });
+      // Nome: o mais longo lido; se um requisito citar o nome completo, usa-o.
+      var nomeLinha = lista.map(function (oc) { return oc.nome; }).sort(function (a, b) { return b.length - a.length; })[0] || '';
+      var nomeReq = nomesDeRequisito[codigo];
+      if (nomeReq && (!nomeLinha || C.semAcento(nomeReq).toLowerCase().indexOf(C.semAcento(nomeLinha).toLowerCase().replace(/\s+\S{0,2}$/, '')) === 0)) d.nome = nomeReq;
+      else d.nome = nomeLinha || nomeReq || null;
+      d.nomePodeEstarCortado = d.nome === nomeLinha && !nomeReq;
+      // Versão
+      var vs = versoesLidas[codigo] || {};
+      var chavesV = Object.keys(vs);
+      if (chavesV.length === 1) {
+        var info = vs[chavesV[0]];
+        if (modo === 'texto' || info.firmes >= 1 || info.corrigidas >= 2) { d.versao = parseInt(chavesV[0], 10); d.versaoOrigem = 'pdf'; }
+        else d.naoConfirmados.push('versao');
+      } else if (chavesV.length > 1) {
+        // Leituras diferentes: fica com a mais lida, se houver folga.
+        chavesV.sort(function (a, b) { return (vs[b].firmes * 2 + vs[b].corrigidas) - (vs[a].firmes * 2 + vs[a].corrigidas); });
+        var p1 = vs[chavesV[0]].firmes * 2 + vs[chavesV[0]].corrigidas, p2 = vs[chavesV[1]].firmes * 2 + vs[chavesV[1]].corrigidas;
+        if (p1 >= 2 * p2 + 2) { d.versao = parseInt(chavesV[0], 10); d.versaoOrigem = 'pdf'; }
+        else { d.naoConfirmados.push('versao'); C.avisar(pacote, 'aviso', 'PDF_VERSAO_DIVERGENTE', codigo + ': versões diferentes no relatório (' + chavesV.join(', ') + ').'); }
+      }
+      disciplinas.push(d);
+    });
+    pacote.disciplinas = disciplinas;
+
+    // 5.4 Vínculos e requisitos.
+    var vistos = {};
+    ocorrencias.forEach(function (oc) {
+      if (!oc.curriculo || !oc.secao) return;
+      var chave = oc.curriculo + '|' + oc.codigo;
+      if (vistos[chave]) {
+        C.avisar(pacote, 'aviso', 'PDF_DISCIPLINA_REPETIDA', oc.codigo + ' aparece duas vezes no currículo ' + oc.curriculo + ' (página ' + oc.pagina + '). Foi considerada uma vez.');
+        return;
+      }
+      vistos[chave] = true;
+      pacote.vinculos.push({
+        curriculo: oc.curriculo, disciplina: oc.codigo, tipo: oc.secao,
+        periodoIdeal: oc.v.periodo,
+        periodoConfirmado: oc.st.periodo === 'lido' || oc.st.periodo === 'corrigido'
+      });
+      var vistosReq = {};
+      oc.requisitos.forEach(function (r) {
+        if (vistosReq[r.codigo]) return;
+        vistosReq[r.codigo] = true;
+        pacote.requisitos.push({
+          curriculo: oc.curriculo, disciplina: oc.codigo, requisito: r.codigo,
+          versaoRequisito: r.versao, nomeRequisito: r.nome || null,
+          tipoRequisito: r.tipo, grupo: r.grupo
+        });
+      });
+    });
+
+    pacote.curriculos = Object.keys(curriculos).sort().map(function (k) { return curriculos[k]; });
+
+    // ------------------------------------------------------------------
+    //  6. Avisos gerais e resumo
+    // ------------------------------------------------------------------
+    if (!ocorrencias.length) {
+      C.avisar(pacote, 'erro', 'PDF_SEM_DISCIPLINAS', modo === 'texto'
+        ? 'Nenhuma disciplina foi encontrada no PDF. Confira se é o relatório "Grade Curricular" do Júpiter.'
+        : 'O OCR não encontrou disciplinas neste PDF. Confira se é o relatório "Grade Curricular" do Júpiter.');
+    }
+    if (!est.curso) C.avisar(pacote, 'aviso', 'PDF_SEM_CURSO', 'O curso não foi encontrado no cabeçalho do PDF.');
+    if (totalPaginasRodape && totalPaginasRodape !== paginas.length) {
+      C.avisar(pacote, 'aviso', 'PDF_PAGINAS', 'O rodapé indica ' + totalPaginasRodape + ' páginas, mas o arquivo tem ' + paginas.length + '. Pode faltar parte do relatório.');
+    }
+    if (complementoIncoerente) {
+      C.avisar(pacote, 'info', 'PDF_COMPLEMENTO_CABECALHO', 'Nas páginas da grade, o campo "Complemento" do cabeçalho não corresponde ao currículo (defeito conhecido do relatório). A habilitação foi identificada pelo número do currículo.');
+    }
+    var semSecao = ocorrencias.filter(function (oc) { return !oc.secao; }).length;
+    if (semSecao) C.avisar(pacote, 'erro', 'PDF_SEM_SECAO', semSecao + ' disciplina(s) apareceram fora de uma seção (Obrigatórias/Eletivas/Livres).');
+
+    var contagem = { lido: 0, corrigido: 0, conferir: 0 };
+    ocorrencias.forEach(function (oc) { COLUNAS.forEach(function (c) { if (contagem[oc.st[c]] != null) contagem[oc.st[c]]++; }); });
+
+    pacote.conferencia = {
+      modo: modo,
+      paginas: paginas.length,
+      linhasDisciplina: ocorrencias.length,
+      numerosLidos: contagem.lido,
+      numerosCorrigidos: contagem.corrigido,
+      numerosAConferir: contagem.conferir,
+      subtotais: conf.subtotais,
+      subtotaisConferem: conf.subtotaisConferem,
+      subtotaisNaoConferem: conf.subtotaisNaoConferem,
+      subtotaisIlegiveis: conf.subtotaisIlegiveis,
+      subtotaisRecuperados: conf.subtotaisRecuperados,
+      gruposSemSubtotal: conf.gruposSemSubtotal,
+      totaisSecao: conf.totaisSecao,
+      totaisSecaoConferem: conf.totaisSecaoConferem,
+      totaisSecaoNaoConferem: conf.totaisSecaoNaoConferem,
+      itens: itensConferencia.slice(0, 400),
+      linhasNaoReconhecidas: naoReconhecidas.slice(0, 60),
+      totalLinhasNaoReconhecidas: naoReconhecidas.length
+    };
+
+    var naoConfirmadas = disciplinas.filter(function (d) { return d.naoConfirmados.length; });
+    if (modo === 'ocr' && naoConfirmadas.length) {
+      C.avisar(pacote, 'aviso', 'PDF_OCR_NAO_CONFIRMADOS',
+        naoConfirmadas.length + ' disciplina(s) têm números que o OCR não conseguiu confirmar. Esses números não serão gravados.',
+        naoConfirmadas.slice(0, 20).map(function (d) { return d.codigo + ' (' + d.naoConfirmados.map(function (k) { return k === 'creditosAula' ? 'créditos-aula' : k === 'creditosTrabalho' ? 'créditos-trabalho' : k.toUpperCase(); }).join(', ') + ')'; }).join('; ') + (naoConfirmadas.length > 20 ? ' …' : ''));
+    }
+    if (naoReconhecidas.length > 15) {
+      C.avisar(pacote, 'aviso', 'PDF_LINHAS_NAO_RECONHECIDAS', naoReconhecidas.length + ' linhas do PDF não foram reconhecidas. Confira a prévia com atenção.');
+    }
+
+    pacote.resumoLeitura = C.resumir(pacote);
+    pacote.resumoLeitura.paginas = paginas.length;
+
+    // Só para testes: onde está cada linha numérica e o valor final.
+    if (opcoes.depurar) {
+      // Soma da coluna c nas ocorrências (valores finais, após as correções).
+      var soma = function (lista, c) { return lista.reduce(function (a, oc) { return a + (oc.v[c] || 0); }, 0); };
+      var linhasDep = ocorrencias.map(function (oc) { return { tipo: 'disciplina', pagina: oc.pagina, y0: oc.y0, y1: oc.y1, valores: oc.v }; });
+      grupos.forEach(function (g) {
+        if (!g.subtotalY) return;
+        var v = {};
+        COLUNAS_SOMA.forEach(function (c) { v[c] = soma(g.ocorrencias, c); });
+        linhasDep.push({ tipo: 'subtotal', pagina: g.paginaSubtotal, y0: g.subtotalY[0], y1: g.subtotalY[1], valores: v });
+      });
+      secoes.forEach(function (sx) {
+        if (!sx.totalY) return;
+        var todas = [];
+        sx.grupos.forEach(function (g) { todas = todas.concat(g.ocorrencias); });
+        var v = {};
+        COLUNAS_SOMA.forEach(function (c) { v[c] = soma(todas, c); });
+        linhasDep.push({ tipo: 'total', pagina: sx.paginaTotal, y0: sx.totalY[0], y1: sx.totalY[1], valores: v });
+      });
+      pacote._depuracao = { linhas: linhasDep };
+    }
+    return pacote;
+  }
+
+  return {
+    analisar: analisar,
+    // expostos para testes e para a fonte de OCR
+    _lerCodigo: lerCodigo,
+    _lerInteiro: lerInteiro,
+    _agruparLinhas: agruparLinhas,
+    _separarPalavras: separarPalavras,
+    _detectarColunas: detectarColunas,
+    _limparNome: limparNome
+  };
+})(EstruturaComum);
+</script>

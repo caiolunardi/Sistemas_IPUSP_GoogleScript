@@ -1,0 +1,21 @@
+# suíte: testar_navegador_etapa2
+# comando: node testar_navegador_etapa2.js /caminho/grade_curricular.csv
+# data: 2026-10-07T21:25:05Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Etapa 2 no navegador
+  ✓ CSV misto: resumo com 3 linhas ignoradas, lista ABERTA com os motivos (inclusive a faixa 5 a 7), só PST2101 com caixa de seleção
+  ✓ incluir: grava só PST2101; a pré-existente fica intacta
+  ✓ (1.8.3) reprodução PST0999: aviso "Linhas 2 a 4" e só PST0804 selecionável; PST0999 não aparece como opção
+  ✓ texto do arquivo não vira HTML (motivo com <img> do arquivo aparece como texto; nenhum <img> injetado, nenhum script executado)
+  ✓ arquivo todo inválido: "Nada a incluir" (aviso) explica as ignoradas, sem botão Incluir e sem escrita
+  ✓ nenhum erro de JavaScript na página
+
+6 ok, 0 falha(s)
+
+# código de saída: 0  (duração: 2 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

@@ -1,0 +1,10 @@
+# Verificação textual — 1.9.3 (11/10/2026 09:47); AJUDA.md só até '## Gatilhos contextuais implementados' (o resto são tabelas históricas de correções)
+"tentativa foi concluída": HTML=0 AJUDA.md=0
+"o envio foi feito": HTML=0 AJUDA.md=0
+"a gravação das abas não terminou": HTML=0 AJUDA.md=0
+"nem todas as etapas do envio foram concluídas": HTML=1 AJUDA.md=1
+"não confirma sozinho que todas as etapas do envio terminaram": HTML=1 AJUDA.md=1
+"Não repita às cegas": HTML=3 AJUDA.md=3
+"procure o Serviço de Graduação antes de decidir reenviar": HTML=1 AJUDA.md=1
+"uma nova cópia será feita": HTML=1 AJUDA.md=1
+"A mensagem diz o nome da cópia de antes do envio": HTML=1 AJUDA.md=1

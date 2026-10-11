@@ -1,0 +1,161 @@
+=== Etapa 8 — confirmação vinculada ao conteúdo da prévia de envio ===
+Fonte testada: DIR_SRC (fonte indicada na linha de comando)
+Versão declarada na fonte: 1.8.11
+
+--- A1. capturar, conferir e enviar sem mudanças: C/D/E/I/J na ordem do servidor, grupos vazios, fórmulas, nome, cópia, índice; nova leitura = conteúdo confirmado
+  conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  gravado PST: [["PST1001","Disciplina teste","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · PSA: [["PSA1005","Obrigatória PSA","Obrigatória",1,2]]
+RESULTADO: ok
+
+--- B1. nome: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  [B1] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B1] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Nome posterior | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B1] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [B1] resposta: {"ok":true,"codigo":null,"erro":null}
+  [B1] GRAVADO (PST): [["PST1001","Nome posterior","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [B1] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- B2. créditos-aula: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  [B2] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B2] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 4 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B2] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [B2] resposta: {"ok":true,"codigo":null,"erro":null}
+  [B2] GRAVADO (PST): [["PST1001","Disciplina teste","Obrigatória",1,4],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [B2] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- B3. observações: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  [B3] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B3] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste – Observação posterior | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B3] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [B3] resposta: {"ok":true,"codigo":null,"erro":null}
+  [B3] GRAVADO (PST): [["PST1001","Disciplina teste – Observação posterior","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [B3] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- B4. código no mesmo grupo (PST1001 → PST1009): a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  [B4] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B4] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1009 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B4] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [B4] resposta: {"ok":true,"codigo":null,"erro":null}
+  [B4] GRAVADO (PST): [["PST1009","Disciplina teste","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [B4] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- B5. remoção de uma e inclusão de outra no mesmo grupo: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  [B5] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B5] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1007 | Fora da grade | Obrigatória | 1 | 2 ; PST2001 | Outra 2001 |  |  | 2
+  [B5] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [B5] resposta: {"ok":true,"codigo":null,"erro":null}
+  [B5] GRAVADO (PST): [["PST1001","Disciplina teste","Obrigatória",1,2],["PST1007","Fora da grade","Obrigatória",1,2],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [B5] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- B6. tipo (oferta ajustada: obrigatória → eletiva): a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  [B6] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B6] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Eletiva | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B6] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [B6] resposta: {"ok":true,"codigo":null,"erro":null}
+  [B6] GRAVADO (PST): [["PST1001","Disciplina teste","Eletiva",1,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [B6] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- B7. semestre ideal 1 → 3, oferecimento continua no 1º: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  [B7] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B7] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 3 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [B7] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [B7] resposta: {"ok":true,"codigo":null,"erro":null}
+  [B7] GRAVADO (PST): [["PST1001","Disciplina teste","Obrigatória",3,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [B7] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- C1. disciplina para outros cursos: nome mudado depois da conferência → recusa
+  [C1] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [C1] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 renomeada |  |  | 2
+  [C1] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [C1] resposta: {"ok":true,"codigo":null,"erro":null}
+  [C1] GRAVADO (PST): [["PST1001","Disciplina teste","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001 renomeada","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [C1] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- C2. oferta efetiva depois da troca de currículo (ajuste associado ao 271, mesmo tipo/período): conteúdo igual → a confirmação continua válida e envia
+  envio depois da troca: {"ok":true,"codigo":null} · PST gravado: [["PST1001","Disciplina teste","Obrigatória",5,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]]
+RESULTADO: ok
+
+--- C3. restauração explícita ao Júpiter (restaurarOferta) muda o semestre ideal 5 → 1: a confirmação anterior é recusada
+  [C3] conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 5 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [C3] atual:     PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste | Obrigatória | 1 | 2 ; PST1003 | Eletiva teste | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  [C3] confirmação usada: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(nenhuma: API antiga)"}
+  [C3] resposta: {"ok":true,"codigo":null,"erro":null}
+  [C3] GRAVADO (PST): [["PST1001","Disciplina teste","Obrigatória",1,2],["PST1003","Eletiva teste","Eletiva",1,4],["PST2001","Outra 2001","","",2]] · arquivo "Grade Horária - 1º semestre de 2027"
+  [C3] efeitos do envio: ["makeCopy","setValues Página1","createSpreadsheet","moveTo","setValues Edições","setValues Página1","clearContent PSA","clearContent PSC","clearContent PSE","clearContent PST","clearContent Interdepartamentais","clearContent Outras Unidades","setValues PSA","setValues PSA","setValues PST","setValues PST","setFormulas PSA","setFormulas PST","rename","setValues Edições"]
+RESULTADO: FALHOU — recusa: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- C4. semestre de oferecimento manual: "1º" → "1º e 2º" não muda a grade do 1º semestre (válida); PSA1005 "1º" → "2º" sai da grade (contagem muda: recusa)
+RESULTADO: ok
+
+--- D1. identificação ausente (pedido antigo, só contagens certas)
+  pedido: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(ausente)"} → {"ok":true,"codigo":null,"erro":null}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"PREVIA_INVALIDA"]
+
+--- D2. identificação malformada
+  pedido: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"xyz"} → {"ok":true,"codigo":null,"erro":null}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"PREVIA_INVALIDA"]
+
+--- D3. identificação alterada (um caractere)
+  pedido: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"0000000000000000"} → {"ok":true,"codigo":null,"erro":null}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- D4. identificação de 2027/1 usada para 2028/1 (as linhas coincidem)
+  pedido: {"semestre":"1","ano":2028,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"0000000000000000"} → {"ok":true,"codigo":null,"erro":null}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- D5. alvo inválido continua com a validação amigável
+  pedido: {"semestre":"3","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(ausente)"} → {"ok":false,"codigo":"DADOS_INVALIDOS","erro":"Escolha o semestre e o ano da grade."}
+RESULTADO: ok
+
+--- D6. leitor continua impedido de enviar
+  pedido: {"semestre":"1","ano":2027,"esperado":{"PSA":1,"PSC":0,"PSE":0,"PST":3,"INTER":0,"OUTRAS":0},"assinatura":"(ausente)"} → {"ok":false,"codigo":"SO_ADMIN","erro":"Só a equipe responsável pela estrutura curricular pode importar arquivos e alterar a estrutura."}
+RESULTADO: ok
+
+--- D7. leitor não obtém a prévia do envio (só administradores)
+RESULTADO: FALHOU — previaEnvioGrade existe
+
+--- E1. mesmos dados lidos de novo: mesma identificação; mudanças fora do conteúdo (campo não enviado, disciplina fora da grade, outro semestre, e-mail/data de alteração) mantêm a confirmação válida e o envio grava o conferido
+RESULTADO: FALHOU — previaEnvioGrade existe
+
+--- E2. representação canônica: zero ≠ vazio; acentos, aspas, barras e quebras de linha; sem colisão por concatenação; ordem e grupos fazem parte; objetos não entram
+RESULTADO: FALHOU — função de conteúdo canônico (controle de unidade, só 1.8.12)
+
+--- E3. observação com quebra de linha, aspas e texto que parece fórmula: a identificação da prévia vale e o gravado é o conferido (textoSeguro_)
+  conferido: PSA: PSA1005 | Obrigatória PSA | Obrigatória | 1 | 2 || PST: PST1001 | Disciplina teste – Turma "A"
+sala 2 | Obrigatória | 1 | 2 ; PST1003 | =1+1 não é fórmula | Eletiva | 1 | 4 ; PST2001 | Outra 2001 |  |  | 2
+  gravado: [["PST1001","Disciplina teste – Turma \"A\"\nsala 2","Obrigatória",1,2],["PST1003","=1+1 não é fórmula","Eletiva",1,4],["PST2001","Outra 2001","","",2]]
+RESULTADO: ok
+
+--- H1. salvamento individual pendente (nome) concluído no pedido de envio: recusa com recuperado; o salvamento continua gravado; nenhum efeito do envio
+  resposta: {"ok":true,"codigo":null,"erro":null,"recuperado":{"codigo":"PST1001","obs":{"chave":"PST1001","texto":"obs pendente"}}}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"PREVIA_DESATUALIZADA"]
+
+--- H2. ação em lote pendente (excluir PST1003 + outros) concluída no pedido de envio: recusa com recuperadoLote; nenhum efeito
+  resposta: {"ok":false,"codigo":"PREVIA_DESATUALIZADA","recuperadoLote":{"acao":"excluir","total":2}}
+RESULTADO: ok
+
+--- H3. controle: recuperação que NÃO muda o conteúdo do envio (CH) é concluída e o envio prossegue com recuperado
+RESULTADO: ok
+
+--- I1. envio aprovado: conferência da identificação e efeitos sob a mesma trava, uma liberação; recusa: conferência sob a trava, sem efeitos, liberada; depois outra execução adquire
+  envio aprovado:
+    A adquirir
+    A makeCopy — trava: A
+    A setFormulas — trava: A
+    A setFormulas — trava: A
+    A rename — trava: A
+    A flush — trava: A
+    A flush — trava: A
+    A flush — trava: A
+    A liberar
+RESULTADO: FALHOU — conferência com a trava
+
+=== Resumo: 8 ok, 18 falhas, 0 pulados

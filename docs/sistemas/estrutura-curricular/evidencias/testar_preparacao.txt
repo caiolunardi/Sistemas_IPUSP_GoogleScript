@@ -1,0 +1,63 @@
+# suíte: testar_preparacao
+# comando: env DIR_SRC_V124=/caminho/fonte-1.2.4/src DIR_SRC_V130=/caminho/fonte-1.3.0/src DIR_SRC_V131=/caminho/fonte-1.3.1/src node testar_preparacao.js /caminho/grade_curricular.csv /caminho/disciplinas_unidade.csv
+# data: 2026-10-07T21:24:41Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== 1. Esquema 3: abas novas
+  ✓ planilha nova ganha "Ajustes manuais" e "Disciplinas para outros cursos", com cabeçalho, notas e proteção só com aviso
+  ✓ base criada pela 1.2.x (esquema 2) é migrada ao abrir: abas novas criadas, dados e histórico intactos, Sobre atualizada
+  ✓ base criada pela 1.3.0 ganha a coluna "Semestre de oferecimento" em "Disciplinas para outros cursos" ao abrir, sem mexer nas linhas
+  ✓ base criada pela 1.3.1: "Semestre ideal" vira "Semestre de oferecimento" (só o cabeçalho) nas abas Disciplinas, Disciplinas por habilitação e outros cursos; valores mantidos; Ajustes ganha a coluna nova; importar depois funciona
+
+== 2. Ajustes manuais na estrutura
+  ✓ editar nome, créditos, EXT e código: só o que difere do Júpiter vai para "Ajustes manuais"; a aba Disciplinas NÃO muda
+  ✓ voltar um campo ao valor do Júpiter apaga o ajuste; sem ajustes, a linha some
+  ✓ alterar o código: vale no painel; código repetido é recusado (CODIGO_REPETIDO) sem salvar nada
+  ✓ oferta ajustada: tipo e período por habilitação; igual à do Júpiter = sem ajuste; habilitação que não é da base é recusada
+  ✓ Observações da ficha vão para a coluna livre "Observações" da aba Disciplinas (e sobrevivem à reimportação)
+  ✓ ajustes sobrevivem a uma nova importação do Júpiter (a aba de ajustes não é regravada)
+
+== 3. Exclusão e restauração
+  ✓ excluir 3 disciplinas em lote: marca "Sim" (não apaga), tira da seleção; restaurar desfaz
+  ✓ adicionar à grade uma disciplina excluída é ignorado
+  ✓ disciplina inexistente ou item inválido: recusa sem gravar
+
+== 4. Disciplinas para outros cursos: lista por unidade (CSV do Júpiter)
+  ✓ prévia com o CSV real: só as disciplinas que não estão na estrutura (34 de 198), com créditos e CH; nada gravado
+  ✓ incluir as 34 (ou só as escolhidas): marcadas "Lista de disciplinas por unidade"; reimportar o mesmo CSV não traz nada
+  ✓ assinatura: se a lista muda entre a prévia e a inclusão, PREVIA_DESATUALIZADA e nada é incluído
+  ✓ código alterado na estrutura: o código original do Júpiter volta como "novo" na lista por unidade (comportamento pedido)
+  ✓ disciplina excluída continua "conhecida": a lista por unidade não a traz de volta
+  ✓ arquivo errado (CSV da grade curricular) é recusado com orientação; linhas inválidas e repetidas são contadas
+
+== 5. Cadastro manual e edição de outros cursos
+  ✓ cadastrar PST0391 com unidade/curso atendidos e observação; CH calculada; código repetido recusado
+  ✓ editar disciplina de outros cursos (inclusive o código) e excluir/restaurar
+  ✓ semestre de oferecimento ("disciplina de semestre") das disciplinas para outros cursos: 1º, 2º, ambos ou vazio; valor inválido recusado
+  ✓ semestre de oferecimento ajustado na estrutura (1.3.2): prática oferecida nos dois semestres; vazio = automático pelo período; a aba Disciplinas não muda
+
+== 6. Grade horária: adicionar e remover (1.4.0)
+  ✓ "Enviar para a Grade Horária" com tudo: entram as que têm semestre de oferecimento (estrutura pelo período); as sem semestre voltam listadas e NÃO entram; uma escrita por aba
+  ✓ "Remover da grade": tira a marca (uma escrita por aba); a disciplina continua na lista; item inexistente recusa o lote sem gravar
+  ✓ (1.4.3) "Adicionar à Grade Horária" com alterações por salvar = UMA chamada (salvarDisciplina com adicionarAGrade) e UMA escrita; sem semestre salva e não adiciona; excluída não entra; erro não grava nada
+
+== 6b. Cadastrar nova grade (1.4.0)
+  ✓ palavra errada: recusa e nada muda
+  ✓ "APAGAR": planilha do zero — estrutura, histórico, ajustes, outros cursos, grade e abas ocultas apagados; abas recriadas vazias; importar de novo funciona
+  ✓ recomeço interrompido (falha ao apagar uma aba): leitor espera; administrador, ao abrir o painel, termina o recomeço
+  ✓ trava ocupada: "Cadastrar nova grade" não começa (OCUPADO) e nada muda
+
+== 7. Permissões, trava e falhas
+  ✓ leitor: recebe os ajustes (vê a lista corrigida) mas não os outros cursos nem "alterado por"; não pode alterar nada
+  ✓ trava ocupada (importação em andamento): OCUPADO, nada gravado
+  ✓ falha persistente na escrita da aba de ajustes: pedido pendente (1.8.7: LOTE_PENDENTE), a aba continua como estava (escrita única)
+  ✓ logs sem e-mail nem conteúdo das disciplinas
+
+Executados: 34 (34 ok, 0 falha(s)); pulados: 0  — evidências em saida/evidencias_preparacao.txt
+
+# código de saída: 0  (duração: 5 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_preparacao.txt
+# interpretação: aprovada

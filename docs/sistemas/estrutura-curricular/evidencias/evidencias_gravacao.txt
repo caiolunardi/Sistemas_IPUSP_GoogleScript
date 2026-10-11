@@ -1,0 +1,79 @@
+=== 1. FALHAS ANTES DA ATIVAÇÃO — PRIMEIRA IMPORTAÇÃO (base vazia; CSV real) ===
+[diário da gravação] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[cópia da 2ª aba (copyTo)] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[escrita da 2ª aba (cenário da auditoria)] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[escrita da 4ª aba (Currículos)] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[histórico: aba Importações] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[histórico: aba Alterações] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[flush antes da ativação] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[escrita do manifesto (ativação não aconteceu)] resposta=NAO_GRAVADA | painel={"versao":0,"disciplinas":0,"ofertas":0} | planilha={"linhasImportacoes":0,"abasNova":0,"diario":false}
+   nova tentativa: ok, {"versao":1,"disciplinas":183,"ofertas":398,"requisitos":238,"curriculos":3,"importacoes":1,"linhasImportacoes":1}
+[falha no histórico + falha no descarte] resposta=NAO_GRAVADA | restos na planilha={"abasNova":4,"linhasImportacoes":1,"diario":true} | painel (leitor) mostra 0 disciplinas e 0 importações; diário continua registrado
+   após reinício: prévia fez a recuperação {"abasNova":0,"linhasImportacoes":0,"diario":false}; nova gravação ok → versão 1, 183 disciplinas, 1 linha em Importações
+
+=== 2. FALHAS ANTES DA ATIVAÇÃO — REIMPORTAÇÃO (base CSV+PDF, Observação e coluna extra; arquivo com 1 nome alterado) ===
+[reimportação, falha em escrita da 2ª aba] resposta=NAO_GRAVADA | versão 2→2 | importações 2→2 | nome PSC1322 continua "Introdução à Psicopatologia" | Observação/extra=["Obs. de teste: turma única","Bloco G"]
+   nova tentativa ok (versão 3, 3 importações, 1 alteração); repetir a mesma operação → "já gravada", sem nova linha
+[reimportação, falha em histórico: aba Alterações] resposta=NAO_GRAVADA | versão 2→2 | importações 2→2 | nome PSC1322 continua "Introdução à Psicopatologia" | Observação/extra=["Obs. de teste: turma única","Bloco G"]
+   nova tentativa ok (versão 3, 3 importações, 1 alteração); repetir a mesma operação → "já gravada", sem nova linha
+[reimportação, falha em escrita do manifesto] resposta=NAO_GRAVADA | versão 2→2 | importações 2→2 | nome PSC1322 continua "Introdução à Psicopatologia" | Observação/extra=["Obs. de teste: turma única","Bloco G"]
+   nova tentativa ok (versão 3, 3 importações, 1 alteração); repetir a mesma operação → "já gravada", sem nova linha
+
+=== 3. FALHAS NA E DEPOIS DA ATIVAÇÃO ===
+[flush pós-manifesto] resposta ok, concluida=true, pendências=["confirmação da escrita (flush)"] | versão 2→3
+[ativação incerta] resposta=RESULTADO_INCERTO | após reinício: verificarImportacao=gravada (IMP-20261007-182429-ab2b5d20) | versão 2→3 | reenvio → já gravada, sem linha duplicada
+[ativação incerta, manifesto não escrito] resposta=RESULTADO_INCERTO | verificar=nao_gravada | painel do admin recuperou: versão 2, 2 linhas em Importações | nova tentativa ok
+[arrumação: renomear a aba anterior (setName do ocupante — caso da auditoria)] resposta ok+pendências=["nomes e ordem das abas"], planilhaDesatualizada=true | manifesto v3 | antes: Disciplinas visível id=1017 × manifesto id=1021 "_nova_disciplinas_a17ac7e8"(oculta); Disciplinas por habilitação visível id=1018 × manifesto id=1022 "_nova_oferta_a17ac7e8"(oculta); Requisitos visível id=1019 × manifesto id=1023 "_nova_requisitos_a17ac7e8"(oculta); Currículos visível id=1020 × manifesto id=1024 "_nova_curriculos_a17ac7e8"(oculta) | PSC1322 na aba visível: "Introdução à Psicopatologia" | reinício; leitor: alerta=true, planilha intacta; admin c/ trava ocupada: adiada | admin abre: 4 abas visíveis = manifesto (IDs, valores, visíveis, protegidas), PSC1322 "Introdução à Psicopatologia (nova ementa)", diário removido
+[arrumação: renomear a aba nova para o nome normal (setName da ativa)] resposta ok+pendências=["nomes e ordem das abas"], planilhaDesatualizada=true | manifesto v3 | antes: Disciplinas visível id=null × manifesto id=1021 "_nova_disciplinas_2132d74a"(oculta); Disciplinas por habilitação visível id=null × manifesto id=1022 "_nova_oferta_2132d74a"(oculta); Requisitos visível id=null × manifesto id=1023 "_nova_requisitos_2132d74a"(oculta); Currículos visível id=null × manifesto id=1024 "_nova_curriculos_2132d74a"(oculta) | PSC1322 na aba visível: "null" | reinício; leitor: alerta=true, planilha intacta; admin c/ trava ocupada: adiada | admin abre: 4 abas visíveis = manifesto (IDs, valores, visíveis, protegidas), PSC1322 "Introdução à Psicopatologia (nova ementa)", diário removido
+[arrumação: ocultar a aba anterior (hideSheet)] resposta ok+pendências=["nomes e ordem das abas"], planilhaDesatualizada=false | manifesto v3 | antes: IDs, nomes e visibilidade das 4 abas conferem; pendência: cópias auxiliares visíveis (_anterior_Disciplinas, _anterior_Disciplinas por habilitação, _anterior_Requisitos, _anterior_Currículos) ordem | PSC1322 na aba visível: "Introdução à Psicopatologia (nova ementa)" | reinício; leitor: alerta=false, planilha intacta; admin c/ trava ocupada: adiada | admin abre: 4 abas visíveis = manifesto (IDs, valores, visíveis, protegidas), PSC1322 "Introdução à Psicopatologia (nova ementa)", diário removido
+[arrumação: mostrar a aba nova (showSheet)] resposta ok+pendências=["nomes e ordem das abas"], planilhaDesatualizada=true | manifesto v3 | antes: Disciplinas visível id=1021(oculta) × manifesto id=1021 "Disciplinas"(oculta); Disciplinas por habilitação visível id=1022(oculta) × manifesto id=1022 "Disciplinas por habilitação"(oculta); Requisitos visível id=1023(oculta) × manifesto id=1023 "Requisitos"(oculta); Currículos visível id=1024(oculta) × manifesto id=1024 "Currículos"(oculta) | PSC1322 na aba visível: "Introdução à Psicopatologia (nova ementa)" | reinício; leitor: alerta=true, planilha intacta; admin c/ trava ocupada: adiada | admin abre: 4 abas visíveis = manifesto (IDs, valores, visíveis, protegidas), PSC1322 "Introdução à Psicopatologia (nova ementa)", diário removido
+[arrumação: mover abas (moveActiveSheet)] resposta ok+pendências=["nomes e ordem das abas"], planilhaDesatualizada=false | manifesto v3 | antes: IDs, nomes e visibilidade das 4 abas conferem; pendência: ordem | PSC1322 na aba visível: "Introdução à Psicopatologia (nova ementa)" | reinício; leitor: alerta=false, planilha intacta; admin c/ trava ocupada: adiada | admin abre: 4 abas visíveis = manifesto (IDs, valores, visíveis, protegidas), PSC1322 "Introdução à Psicopatologia (nova ementa)", diário removido
+[arrumação: proteger a aba nova (protect)] resposta ok+pendências=["nomes e ordem das abas"], planilhaDesatualizada=false | manifesto v3 | antes: IDs, nomes e visibilidade das 4 abas conferem; pendência: sem proteção (Disciplinas, Disciplinas por habilitação, Requisitos, Currículos) ordem | PSC1322 na aba visível: "Introdução à Psicopatologia (nova ementa)" | reinício; leitor: alerta=false, planilha intacta; admin c/ trava ocupada: adiada | admin abre: 4 abas visíveis = manifesto (IDs, valores, visíveis, protegidas), PSC1322 "Introdução à Psicopatologia (nova ementa)", diário removido
+[arrumação: apagar a cópia anterior mais antiga (deleteSheet)] resposta ok+pendências=["nomes e ordem das abas"], planilhaDesatualizada=true | manifesto v3 | antes: Disciplinas visível id=1017 × manifesto id=1021 "_nova_disciplinas_17d22933"(oculta); Disciplinas por habilitação visível id=1018 × manifesto id=1022 "_nova_oferta_17d22933"(oculta); Requisitos visível id=1019 × manifesto id=1023 "_nova_requisitos_17d22933"(oculta); Currículos visível id=1020 × manifesto id=1024 "_nova_curriculos_17d22933"(oculta) | PSC1322 na aba visível: "Introdução à Psicopatologia" | reinício; leitor: alerta=true, planilha intacta; admin c/ trava ocupada: adiada | admin abre: 4 abas visíveis = manifesto (IDs, valores, visíveis, protegidas), PSC1322 "Introdução à Psicopatologia (nova ementa)", diário removido
+[arrumação falha também na recuperação] 1ª abertura do admin: painel ok, alerta + recuperacaoFalhou, diário mantido | 2ª abertura: abas = manifesto, diário removido
+[aba Sobre falhou] resposta ok, pendências=["aba Sobre"] | diário mantido | admin abre: Sobre reescrita, diário removido
+
+=== 4. PRÉVIA × EDIÇÕES MANUAIS ===
+[0 alterações → nome editado → confirmar] resposta=PREVIA_DESATUALIZADA ("A prévia não vale mais: a planilha foi editada à mão depois dela (células mantidas pelo sistema na aba Discipl…") | nova prévia: 1 alteração (Nome: "Nome editado à mão" → "Introdução à Psicopatologia") | confirmada: 1 alteração, igual à prévia
+[Observação/coluna extra editadas depois da prévia] confirmação aceita; 0 alterações (como na prévia); valores preservados: ["Obs. editada depois da prévia","Bloco D"]
+[edição durante a preparação] resposta=EDICAO_DURANTE_GRAVACAO | nada ativado; a edição humana continua na aba em uso
+[edição no instante da ativação] resposta ok + aviso: "Alguém editou a planilha no instante da ativação; essa edição ficou só na cópia de segurança oculta "_anterior_…". Confi…"
+
+=== 5. INFORMAÇÕES BÁSICAS DO PDF (conferência no servidor) ===
+[bloco correto] 3 currículos × 11 contas ok (inclui aula/trabalho obrigatórios × grade do CSV e AAC × CSV); Bacharelado gravado: aula 2160, total obrig. 3870, total geral 4895
+[1000 + 300 = 9999] campos NÃO gravados: chAulaObrigatoria, chTrabalhoObrigatoria, chObrigatoria, chEletiva, chLivre, chDisciplinas | contas com falha: Obrigatórias: aula + trabalho = subtotal (1000 + 300 = 9999); Subtotais = total em disciplinas (9999 + 90 + 540 = 4500); Aula obrigatória = 15 h × créditos-aula das obrigatórias da grade (1000 = 2160 (grade)); Trabalho obrigatório = 30 h × créditos-trabalho das obrigatórias da grade (300 = 1710 (grade)) | Currículos mantém 2160/1710/3870/4500
+[valores ausentes] totalGeral e estágio = "ausente" (não gravados); conta do total geral "não verificável"; Currículos mantém 4895 e 360
+[AAC 90 no PDF × 60 no CSV] AAC "inconsistente" (contas: total+AAC e AAC×CSV falham); AAC gravada continua 60
+[1ª importação pelo PDF] bloco correto: gravado (total geral 4895) | contraditório: campos da conta que falhou ficam vazios; total geral 4895 e AAC 60 gravados
+
+=== 6. IDENTIFICADOR ÚNICO ===
+[mesmo segundo] IMP-20260927-150000-87f16a22 e IMP-20260927-150000-e85b52c9 (data legível na coluna "Data e hora": 27/09/2026 15:00) | alterações por importação: {"IMP-20260927-150000-e85b52c9":1,"IMP-20260927-150000-87f16a22":1}
+
+=== 7. CONFERÊNCIA DO PDF (categorias) ===
+[prévia do PDF] leitura=ocr | coerentes com as contas do relatório: 3582 (6 corrigidos) | concordância com o CSV: 1098/1098 números e 398/398 ofertas | exclusivos do PDF a revisar: 386 itens (EXT, versões sem 2ª fonte, informações)
+
+=== 8. OUTROS ===
+[aba Currículos apagada à mão] painel e prévia: BASE_INCONSISTENTE ("A aba "Currículos" da base foi apagada. Nada foi alterado. Restaure a planilha pelo histór…")
+[migração 1.0.0 → atual] base antiga lida (183 disciplinas, 1 importação, versão 1); nova importação ok (2 importações)
+
+=== 9. REVISÃO HUMANA PAGINADA ===
+[revisão 551 disciplinas] 1.102 valores; prévia traz a página 1 (100) de 12 + resumo (EXT 551: 79 ≠ 0, 472 = 0, páginas 7–12; Versão 551) | caixa marcada só com a pág. 1: REVISAO_INCOMPLETA ("A revisão não foi concluída: 11 de 12 páginas da lista de valores só do PDF não foram abertas (…") | pág. 2–11: REVISAO_INCOMPLETA (falta a 12) | sem a caixa: REVISAO_PENDENTE | nada gravado nas recusas | 12/12 páginas: 1.102 itens acessíveis, sem repetição, todos a gravar | gravou: 551 EXT + 551 versões
+[capacidade] com o limite reduzido a 1.000 no teste: prévia bloqueada ("A lista de valores só do PDF a revisar tem 1102 itens, acima da capacidade da revisão (1000). Nada foi gravado…"); confirmação BLOQUEADA
+[volume máximo] 3.000 disciplinas → 6.000 valores em 60 páginas; maior página no cache: 14401 bytes (< 102.400); resposta da prévia: 14993 bytes; gravado
+[PDF real] 386 valores (EXT 183: 24 ≠ 0 e 159 = 0 nas páginas 3–4; Versão 137; Informações 66) em 4 páginas | 3 de 4 abertas: REVISAO_INCOMPLETA | 4 de 4: gravado
+
+=== 10. LEITURA CONCORRENTE ===
+[painel × 2 importações entre manifesto e lerBase_] 1ª leitura (manifesto v1) encontrou as abas da v1 apagadas → manifesto mudou → releitura: versão 3, PSC1322 "Nome v3", histórico com 3 importações (a última = IMP-20261007-182439-44e8fd0d); lerBase_ chamada 2 vezes
+[prévia × 2 importações intercaladas] prévia calculada sobre a versão 3 (1 alteração) e gravada (versão 4)
+[importações contínuas] 3 tentativas, depois BASE_EM_ATUALIZACAO ("A base foi atualizada por outras importações enquanto era lida. Nada foi alterado. Tente de novo em instantes.")
+[aba apagada de verdade] painel e prévia: BASE_INCONSISTENTE; lerBase_ chamada 1 vez (sem repetição)
+
+=== RESULTADO ===
+Executados: 57 (57 ok, 0 falha(s)); pulados: 0

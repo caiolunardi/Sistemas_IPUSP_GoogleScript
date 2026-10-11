@@ -1,0 +1,32 @@
+# suíte: testar_navegador_etapa6
+# comando: node testar_navegador_etapa6.js
+# data: 2026-10-07T21:25:43Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+
+== 17. Interface: oferta ajustada depois de troca de currículo
+  ✓ 17a. carga: painel = servidor (semestre e oferta principal) para associada e a revisar; selo "Oferta a revisar" só em PST1002
+  ✓ 17b. ficha de PST1001: aviso de associação, "Onde aparece" com tipo/período ajustados no 271, sem caixa de descarte
+  ✓ 17c. ficha de PST1002: aviso "Oferta a revisar" com o vínculo e o motivo; salvar SÓ o nome grava o nome e mantém o vínculo
+  ✓ 17d. mudar o período sem marcar "Descartar": recusa OFERTA_A_REVISAR, rascunho mantido, nada gravado; marcar + cancelar confirmação: nada enviado; aceitar: grava e o aviso some
+  ✓ 17e. prévia da grade (2º semestre): PST1001 adicionada aparece com o período ajustado no Psicólogo; o servidor manda a mesma linha
+
+== 18. (1.8.10) "Voltar aos dados do Júpiter" com oferta associada igual à do Júpiter
+     fatos: {"aviso":"Alterações salvas.","pedido":{"restaurarOferta":true,"oferta":[{"curriculo":"470120000271","tipo":"OBRIGATORIA","periodo":4}],"nome":"Nome Júpiter"},"guardadaDepois":"(sem linha)","fichaDepois":{"associada":false,"ofertaAjustada":false,"ofertaAssociada":0,"nome":"Nome Júpiter"},"reimportacao3":{"guardada":"(sem linha)","painel":{"oferecimento":"1","ofertas":["0:470120000271:OBRIGATORIA:3"],"associada":0},"servidor":{"oferecimento":"1","principal":"470120000271:OBRIGATORIA:3"}}}
+  ✓ 17f. (A) reprodução: Voltar + Salvar envia a intenção, remove o ajuste de oferta (e o de nome); reimportação 4 → 3 passa a valer (semestre "1") no painel e no servidor
+  ✓ 17g. (B) só ajuste de oferta: "Salvar" desabilitado ao abrir e habilitado pelo Voltar (valores visíveis iguais); a restauração salva remove o ajuste
+  ✓ 17h. (C) controle: salvar só o nome / só a observação sem Voltar, com oferta igual à do Júpiter — lista guardada intacta (associada e com vínculo a revisar)
+  ✓ 17i. (D) com vínculo a revisar e parte efetiva igual ao Júpiter: Voltar + Salvar é recusado (rascunho e intenção mantidos); caixa + cancelar não envia; caixa + confirmar restaura
+  ✓ 17j. (E) Voltar e depois mudar o período à mão: vale a escolha final (sem intenção de restauração no pedido)
+  ✓ 17k. (F) Voltar sem salvar e fechar: nada gravado; outra ficha e a mesma reaberta não herdam a intenção; depois de uma restauração concluída, salvar outro campo não a repete
+  ✓ 17l. (G) restauração com falha na escrita da observação: salvamento pendente; "Concluir salvamento pendente" conclui; reaberta e reimportada, vale o Júpiter
+  ✓ 17m. (H) [] intencional: só sai com Voltar + Salvar; oferta associada DIFERENTE do Júpiter: restaurada; disciplina sem ajuste: sem "Voltar"
+
+Executados: 13 · 13 ok · 0 falhas
+
+# código de saída: 0  (duração: 8 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

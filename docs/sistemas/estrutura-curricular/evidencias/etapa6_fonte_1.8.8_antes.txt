@@ -1,0 +1,186 @@
+# suíte: etapa6_fonte_1.8.8_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.8/src DIR_SRC_LEGADO=/caminho/fonte-1.8.8/src node testar_etapa6_oferta.js --evidencias saida/evidencias_etapa6_fonte_1.8.8_antes.txt
+# data: 2026-10-07T21:31:58Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 8/35 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== A. Reprodução: oferta ajustada no currículo 262, importação do sucessor 271
+  ✗ A1. painel e servidor concordam (semestre "2", principal 271 obrigatória 4) — admin e leitor, contexto novo 
+      Error: dono@unidade.example: semestre de oferecimento painel × servidor: "" ≠ "2"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+  ✗ A2. adicionarAGrade aceita e a linha da grade sai com tipo e período ajustados (sem oferta principal vazia) 
+      Error: linha da grade do 2º semestre: [["",null]] ≠ [["Obrigatória",4]]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:242:3
+
+== B. Paridades, várias habilitações e filtros
+  ✗ B1. três habilitações trocadas: ímpar/par/sem período → "ambos"; principal Psicólogo; filtros iguais 
+      Error: PST1001: semestre de oferecimento painel × servidor: "" ≠ "ambos"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+  ✗ B2. só uma habilitação trocada: vínculo direto (Bacharelado 262 em uso) e associado (Psicólogo 262 → 271) juntos 
+      Error:  oferta efetiva painel × servidor (filtros): ["470120100262:OPTATIVA_ELETIVA:6"] ≠ ["470120000262:OBRIGATORIA:4","470120100262:OPTATIVA_ELETIVA:6"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:192:3)
+  ✗ B3. prioridade da grade: sem Psicólogo na oferta ajustada, a principal é a do Bacharelado (antes da Licenciatura) 
+      Error:  semestre de oferecimento painel × servidor: "" ≠ "ambos"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+
+== C. Reimportação do mesmo currículo, complemento por PDF e disciplina sem ajuste
+  ✓ C1. reimportar o MESMO currículo (CSV, Júpiter com outro período): oferta ajustada continua valendo, nada associado
+  ✓ C2. complemento por PDF do mesmo currículo: oferta ajustada intacta e coerente
+  ✓ C3. disciplina SEM ajuste depois da troca: oferta do Júpiter (sucessor) nos dois lados; contrato sem oferta efetiva
+
+== D. Oferta [] intencional
+  ✗ D1. [] continua sendo "retirada de todas as habilitações" depois da troca: sem oferta, sem pendência, sem Júpiter 
+      Error: contrato: [] e efetiva []: [[],null] ≠ [[],[]]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:336:3
+
+== E. Vínculos que não podem ser associados com segurança
+  ✗ E1. currículo desconhecido na lista guardada: a revisar, com motivo; não conta no semestre nem na grade 
+      Error:  semestre de oferecimento painel × servidor: "" ≠ "2"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+  ✗ E2. currículo fora de uso SEM sucessor registrado (texto "Não" sem número): a revisar 
+      Error:  semestre de oferecimento painel × servidor: "" ≠ "2"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+  ✗ E3. sucessor registrado de OUTRA habilitação: a revisar (nunca associa entre habilitações) 
+      Error:  semestre de oferecimento painel × servidor: "" ≠ "ambos"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+  ✗ E4. conflito: vínculo antigo (262 → 271) e vínculo direto 271 com períodos diferentes — o direto vale, o antigo fica a revisar 
+      Error:  semestre de oferecimento painel × servidor: "1" ≠ "ambos"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+  ✗ E5. resolvedor (função do servidor): conflito sem direto, equivalentes, ilegível, circular, cadeia, fora do padrão 
+      Error: resolverOferta_ existe
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:52:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:387:3
+
+== F. Resolução parcial
+  ✗ F1. um vínculo associado, um direto e um a revisar: só os dois primeiros valem; o terceiro fica visível 
+      Error:  semestre de oferecimento painel × servidor: "2" ≠ "ambos"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+
+== G. Base legada (criada, ajustada e importada pela 1.8.8), aberta sem reimportar
+  ✗ G1. legado: admin e leitor veem a oferta associada, coerente nos dois lados, sem nenhuma escrita em Ajustes ao abrir 
+      Error: dono@unidade.example: semestre de oferecimento painel × servidor: "" ≠ "2"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+
+== H. Duas trocas seguidas
+  ✗ H1. 262 → 271 → 272 sem abrir a ficha: associada ao 272 com o período ajustado 
+      Error:  semestre de oferecimento painel × servidor: "" ≠ "2"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+  ✗ H2. ajuste refeito no 271 e nova troca para 272: associada ao 272 
+      Error:  semestre de oferecimento painel × servidor: "" ≠ "1"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+
+== I. Semestre ajustado manualmente continua tendo prioridade
+  ✗ I1. semestre manual 1º com oferta ajustada (período 4) associada ao sucessor: 1º nos dois lados 
+      Error:  oferta efetiva painel × servidor (filtros): [] ≠ ["470120000262:OBRIGATORIA:4"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:192:3)
+  ✗ I2. semestre manual com a oferta toda a revisar: o manual vale, a grade aceita com tipo/período vazios 
+      Error:  oferta efetiva painel × servidor (filtros): [] ≠ ["470120900262:OBRIGATORIA:4"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:192:3)
+
+== J. Ficha: salvar outros campos, descartar e voltar ao Júpiter
+  ✗ J1. salvar SÓ o nome pela ficha (que reenvia a oferta mostrada): nome gravado, lista guardada e pendências intactas 
+      Error: lista guardada intacta (vínculo a revisar não foi apagado): "[]" ≠ "[{\"curriculo\":\"470120000262\",\"tipo\":\"OBRIGATORIA\",\"periodo\":4},{\"curriculo\":\"470120900262\",\"tipo\":\"OPTATIVA_ELETIVA\",\"periodo\":3}]"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:511:3
+  ✗ J2. mudar a oferta sem "Descartar os vínculos a revisar": recusado (OFERTA_A_REVISAR), nada gravado 
+      Error: diferente: [true,null] ≠ [false,"OFERTA_A_REVISAR"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:520:3
+  ✓ J3. mudar a oferta COM descarte: grava a nova lista (só currículos em uso) e as pendências somem
+  ✗ J4. voltar à oferta do Júpiter: sem descarte é recusado; com descarte a coluna fica vazia (oferta do Júpiter) 
+      Error: diferente: undefined ≠ "OFERTA_A_REVISAR"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:536:3
+  ✗ J5. descarte confirmado sem mudar a tabela: grava a oferta efetiva (associada, sem o vínculo a revisar) 
+      Error: diferente: [] ≠ [{"curriculo":"470120000271","tipo":"OBRIGATORIA","periodo":4}]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:547:3
+  ✓ J6. sem pendências, mudar a oferta continua como antes (sem descarte); "oferta: null" não mexe na lista
+
+== K. Grade: adicionar, salvar e adicionar, prévia × linhas enviadas
+  ✗ K1. "Salvar e adicionar à grade" pela ficha depois da troca: adicionada; prévia do painel = linhas da grade 
+      Error: 2º semestre: prévia × grade: [] ≠ ["PST1002::null"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:585:5
+
+== L. Importação interrompida antes da ativação
+  ✗ L1. execução encerrada antes do manifesto: a base anterior continua valendo, coerente; Ajustes nunca escrito; depois a importação completa 
+      Error:  semestre de oferecimento painel × servidor: "" ≠ "2"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at coerente (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:190:3)
+
+== M. Preservação (colunas extras, outros cursos, marcas)
+  ✗ M1. coluna extra em Ajustes, observações, marca de grade e outro curso: intactos depois da troca e de salvar o nome 
+      Error: lista guardada: [] ≠ [{"curriculo":"470120000262","tipo":"OBRIGATORIA","periodo":4}]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:634:3
+
+== N. (1.8.10) Restauração explícita da oferta ao Júpiter (contrato do servidor; a cadeia do botão está em testar_navegador_etapa6.js 17f–17m)
+  ✓ N1. restaurarOferta com a oferta do Júpiter (igual à associada): ajuste removido; contexto novo sem associação; reimportação 4 → 3 vale nos dois lados
+  ✗ N2. controle: o MESMO pedido sem a intenção (salvamento comum) conserva a lista; reimportação 4 → 3 mantém o período ajustado 4 
+      Error: lista intacta: "(sem linha)" ≠ "[{\"curriculo\":\"470120000262\",\"tipo\":\"OBRIGATORIA\",\"periodo\":4}]"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:678:3
+  ✗ N3. restaurarOferta com oferta que não é a do Júpiter da base ativa: recusado (DADOS_INVALIDOS), nada gravado 
+      Error: diferente: [true,null] ≠ [false,"DADOS_INVALIDOS"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:690:3
+  ✗ N4. com vínculo a revisar e parte efetiva igual ao Júpiter: restaurar sem descarte → OFERTA_A_REVISAR (nada gravado); com descarte → ajuste removido 
+      Error: diferente: [true,null] ≠ [false,"OFERTA_A_REVISAR"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:51:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa6_oferta.js:699:3
+  ✓ N5. execução encerrada no meio da restauração (fotografia depois da escrita de Ajustes, antes da observação): reabertura conclui pelo salvamento retomável; Júpiter vale depois da reimportação
+  ✓ N6. leitor: não grava a restauração (permissão), lista intacta
+
+Executados: 35 · 8 ok · 27 falhas · 0 pulados
+Falharam:
+  - A1. painel e servidor concordam (semestre "2", principal 271 obrigatória 4) — admin e leitor, contexto novo
+  - A2. adicionarAGrade aceita e a linha da grade sai com tipo e período ajustados (sem oferta principal vazia)
+  - B1. três habilitações trocadas: ímpar/par/sem período → "ambos"; principal Psicólogo; filtros iguais
+  - B2. só uma habilitação trocada: vínculo direto (Bacharelado 262 em uso) e associado (Psicólogo 262 → 271) juntos
+  - B3. prioridade da grade: sem Psicólogo na oferta ajustada, a principal é a do Bacharelado (antes da Licenciatura)
+  - D1. [] continua sendo "retirada de todas as habilitações" depois da troca: sem oferta, sem pendência, sem Júpiter
+  - E1. currículo desconhecido na lista guardada: a revisar, com motivo; não conta no semestre nem na grade
+  - E2. currículo fora de uso SEM sucessor registrado (texto "Não" sem número): a revisar
+  - E3. sucessor registrado de OUTRA habilitação: a revisar (nunca associa entre habilitações)
+  - E4. conflito: vínculo antigo (262 → 271) e vínculo direto 271 com períodos diferentes — o direto vale, o antigo fica a revisar
+  - E5. resolvedor (função do servidor): conflito sem direto, equivalentes, ilegível, circular, cadeia, fora do padrão
+  - F1. um vínculo associado, um direto e um a revisar: só os dois primeiros valem; o terceiro fica visível
+  - G1. legado: admin e leitor veem a oferta associada, coerente nos dois lados, sem nenhuma escrita em Ajustes ao abrir
+  - H1. 262 → 271 → 272 sem abrir a ficha: associada ao 272 com o período ajustado
+  - H2. ajuste refeito no 271 e nova troca para 272: associada ao 272
+  - I1. semestre manual 1º com oferta ajustada (período 4) associada ao sucessor: 1º nos dois lados
+  - I2. semestre manual com a oferta toda a revisar: o manual vale, a grade aceita com tipo/período vazios
+  - J1. salvar SÓ o nome pela ficha (que reenvia a oferta mostrada): nome gravado, lista guardada e pendências intactas
+  - J2. mudar a oferta sem "Descartar os vínculos a revisar": recusado (OFERTA_A_REVISAR), nada gravado
+  - J4. voltar à oferta do Júpiter: sem descarte é recusado; com descarte a coluna fica vazia (oferta do Júpiter)
+  - J5. descarte confirmado sem mudar a tabela: grava a oferta efetiva (associada, sem o vínculo a revisar)
+  - K1. "Salvar e adicionar à grade" pela ficha depois da troca: adicionada; prévia do painel = linhas da grade
+  - L1. execução encerrada antes do manifesto: a base anterior continua valendo, coerente; Ajustes nunca escrito; depois a importação completa
+  - M1. coluna extra em Ajustes, observações, marca de grade e outro curso: intactos depois da troca e de salvar o nome
+  - N2. controle: o MESMO pedido sem a intenção (salvamento comum) conserva a lista; reimportação 4 → 3 mantém o período ajustado 4
+  - N3. restaurarOferta com oferta que não é a do Júpiter da base ativa: recusado (DADOS_INVALIDOS), nada gravado
+  - N4. com vínculo a revisar e parte efetiva igual ao Júpiter: restaurar sem descarte → OFERTA_A_REVISAR (nada gravado); com descarte → ajuste removido
+
+# código de saída: 1  (duração: 2 s)
+# resultado do processo: defeito demonstrado como previsto (8/35)
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa6_fonte_1.8.8_antes.txt
+# interpretação: defeito demonstrado como previsto (8/35)

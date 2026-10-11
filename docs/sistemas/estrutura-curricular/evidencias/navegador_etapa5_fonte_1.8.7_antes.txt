@@ -1,0 +1,37 @@
+# suíte: navegador_etapa5_fonte_1.8.7_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.7/src node testar_navegador_etapa5.js /caminho/grade_curricular.csv
+# data: 2026-10-07T21:31:53Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 9/11 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== 16. Interface
+  ✓ 16a. etapa 3, lote misto (estrutura + outros cursos) concluído: aviso de sucesso, listas com o gravado, sem aviso fixo, carregamento escondido
+  ✓ 16b. etapa 3, lote misto PENDENTE (escrita de outros cursos falhando): aviso do que falta, aviso fixo com "Concluir ação pendente", listas com o lido, seleção mantida; "Concluir" conclui
+  ✓ 16c. Prévia "Remover da grade" (lote misto) NÃO CONFIRMADO (registro encerrado + leitura falhando): aviso fixo sem "Concluir", seleção mantida, controles livres; repetir conclui
+  ✓ 16d. lote pendente concluído durante OUTRO pedido aceito (salvar outra ficha): aviso distingue a recuperação, listas atualizadas sem reabrir fichas, aviso fixo some
+  ✓ 16e. lote pendente concluído durante outro pedido RECUSADO (código repetido): rascunho preservado, dados do lote aplicados, aviso com a recusa e a recuperação
+  ✓ 16f. ficha, UM item: "Excluir" (outros cursos) pendente → ficha continua aberta e livre, aviso fixo; botão da grade com resposta ATRASADA e pendente, com a ficha de B aberta e editada → B e o rascunho intactos
+  ✓ 16g. botão da grade na ficha (UM item de outros cursos) pendente: controles da ficha liberados, aviso fixo; abertura do painel depois conclui com aviso
+  ✓ 16h. etapa 1, "Excluir" em lote (2 da estrutura) pendente: aviso, aviso fixo, seleção mantida e utilizável, sem erro na página; "Concluir" conclui e a lista mostra as excluídas
+     retrato: resposta {"ok":true,"resultado":"concluido","preparacao":null,"leituraFalhou":true} | planilha {"PST1001":"E","PST2001":"E","pendente":false} | painel {"PST1001":"E","PST2001":"-"} | aviso fixo "(oculto)" | mensagem "Ação \"Excluir\" concluída." | leituras recusadas 1 | remoção do registro observada true
+  ✗ 16i. (1.8.8) "Concluir ação pendente" conclui e confere, mas a leitura final falha: aviso fixo de recarga continua (sem "Concluir"/"Descartar"), mensagem diz que a tela não foi atualizada, dados de antes mantidos, controles livres, ficha aberta e rascunho intactos; recarga normal mostra as duas exclusões 
+      Error: aviso fixo de recarga: (oculto)
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa5.js:30:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa5.js:311:5
+  ✓ 16j. (1.8.8) "Concluir ação pendente" com leitura válida: dados atualizados e aviso do lote removido
+  ✗ 16k. (1.8.8, RESPOSTA SIMULADA — stub do portão, sem executar o servidor) resultado "nenhum" sem leitura: aviso fixo de recarga, mensagem sem afirmar atualização 
+      Error: (oculto)
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa5.js:30:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa5.js:352:5
+
+9 ok, 2 falha(s)
+Falharam:
+  - 16i. (1.8.8) "Concluir ação pendente" conclui e confere, mas a leitura final falha: aviso fixo de recarga continua (sem "Concluir"/"Descartar"), mensagem diz que a tela não foi atualizada, dados de antes mantidos, controles livres, ficha aberta e rascunho intactos; recarga normal mostra as duas exclusões
+  - 16k. (1.8.8, RESPOSTA SIMULADA — stub do portão, sem executar o servidor) resultado "nenhum" sem leitura: aviso fixo de recarga, mensagem sem afirmar atualização
+
+# código de saída: 1  (duração: 5 s)
+# resultado do processo: defeito demonstrado como previsto (9/11)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (9/11)

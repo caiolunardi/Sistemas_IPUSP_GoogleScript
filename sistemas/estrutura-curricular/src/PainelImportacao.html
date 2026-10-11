@@ -1,0 +1,856 @@
+<script>
+/*
+ * =====================================================================
+ *  ESTRUTURA CURRICULAR — tela de importação
+ * =====================================================================
+ *
+ *  PASSOS (base para a futura Central de Ajuda)
+ *  1. Arquivo — escolher ou arrastar o CSV ou o PDF do relatório
+ *     "Grade Curricular" do Júpiter.
+ *  2. Leitura — o arquivo é lido NESTE navegador. CSV: instantâneo.
+ *     PDF com texto: alguns segundos. PDF sem texto (impresso em
+ *     "Microsoft Print to PDF"): leitura por OCR, página a página
+ *     (alguns minutos para ~40 páginas); dá para cancelar.
+ *  3. Conferência da leitura — quantas disciplinas foram encontradas em
+ *     cada habilitação e, no PDF, o resultado das contas de conferência
+ *     (Tot., CH, subtotais e totais do próprio relatório). Erros
+ *     impedem seguir; avisos só informam.
+ *  4. O que vai mudar — o servidor compara com a base e mostra: novas,
+ *     alteradas, que saíram ou voltaram, mudanças de oferta e de
+ *     requisitos, e diferenças que NÃO serão aplicadas (PDF que
+ *     discorda do CSV já gravado). Nada foi gravado ainda.
+ *  5. Gravar — prepara os dados em cópias ocultas e ativa tudo de uma
+ *     vez (Gravacao.gs). Se a resposta se perder, "Verificar agora"
+ *     pergunta ao servidor se a importação foi concluída.
+ *  PDF por OCR com valores que só o PDF traz (EXT, versões,
+ *  informações dos currículos): a gravação exige marcar a revisão.
+ *
+ *  OS DOIS ARQUIVOS DE UMA VEZ (1.4.2): no passo 1 dá para escolher (ou
+ *  arrastar) o CSV e o PDF juntos. O CSV passa pelos passos 3–5 e é
+ *  gravado primeiro; enquanto isso, o PDF é lido em segundo plano (a
+ *  linha "Arquivo 1 de 2" mostra o andamento). Depois de gravar o CSV,
+ *  "Continuar com o PDF" leva o PDF, já lido, aos passos 3–5 como
+ *  complemento. A ordem é sempre CSV → PDF, porque o PDF complementa a
+ *  estrutura gravada pelo CSV.
+ *
+ *  Só administradores veem o botão "Importar arquivo"; o servidor
+ *  confere de novo em cada passo.
+ * =====================================================================
+ */
+var Importacao = (function (P) {
+  'use strict';
+
+  var TAMANHO_MAXIMO = 40 * 1024 * 1024; // 40 MB
+  // Passos mostrados no topo da janela (o atual recebe aria-current="step").
+  var PASSOS = [
+    { id: 'arquivo', rotulo: '1. Arquivo' },
+    { id: 'leitura', rotulo: '2. Leitura' },
+    { id: 'conferencia', rotulo: '3. Conferência' },
+    { id: 'previa', rotulo: '4. O que vai mudar' },
+    { id: 'pronto', rotulo: '5. Gravado' }
+  ];
+  // Estado da importação em curso (recomeça a cada abertura da janela):
+  //   passo    id do passo atual (PASSOS)
+  //   arquivo  { nome, tamanho } do arquivo escolhido
+  //   pacote   pacote de importação lido no navegador
+  //   previa   resposta de prepararImportacao (inclui a assinatura)
+  //   sinal    { cancelado } compartilhado com a leitura do PDF
+  //   ocupado  true durante leitura, prévia ou gravação (a janela não fecha)
+  //   segundo  (1.4.2) o PDF escolhido junto com o CSV: { nome, tamanho,
+  //            situacao: lendo|lido|erro|cancelado, progresso, resultado,
+  //            erro, sinal, promessa, emUso (true quando chegou a vez dele) }
+  var estado = novoEstado();
+  function novoEstado() { return { passo: 'arquivo', arquivo: null, pacote: null, previa: null, sinal: null, ocupado: false, segundo: null }; }
+  var esc = P.esc;
+  var gatilho = P.gatilhoAjuda;   // (1.9.0) botões "?" da Central de Ajuda
+
+  /** Atalho para document.getElementById. */
+  function $(id) { return document.getElementById(id); }
+  /** Troca o conteúdo da janela (sempre com a barra de passos no topo). */
+  function corpo(html) { $('importacaoCorpo').innerHTML = passosHtml() + statusSegundoHtml() + html; }
+  /** Troca os botões do rodapé da janela. */
+  function rodape(html) { $('importacaoRodape').innerHTML = html; }
+  /** Barra de passos: anteriores "feitos", atual marcado. */
+  function passosHtml() {
+    var atual = PASSOS.map(function (p) { return p.id; }).indexOf(estado.passo);
+    return '<ol class="passos">' + PASSOS.map(function (p, i) {
+      return '<li' + (i === atual ? ' aria-current="step"' : '') + (i < atual ? ' class="feito"' : '') + '>' + p.rotulo + '</li>';
+    }).join('') + '</ol>';
+  }
+  /** Nome curto da habilitação de um currículo do pacote ("Psicologia - Bacharelado" → "Bacharelado"). */
+  function nomeHabilitacao(c, nomeCurso) {
+    var n = c.habilitacaoNome || '';
+    if (nomeCurso && n.toLowerCase().indexOf(nomeCurso.toLowerCase() + ' - ') === 0) n = n.slice(nomeCurso.length + 3);
+    return n || ('Habilitação ' + c.habilitacao);
+  }
+  /** Número no formato brasileiro; vazio conta como 0. */
+  function numero(n) { return Number(n || 0).toLocaleString('pt-BR'); }
+
+  /*------------------------------------------------------------
+    Abrir / fechar
+  ------------------------------------------------------------*/
+
+  /**
+   * Abre a janela de importação no passo 1. Como todas as janelas do
+   * painel, só fecha pelo "X", "Cancelar" ou "Ver a estrutura".
+   * Enquanto algo estiver em andamento, o "X" também não fecha: na
+   * leitura do PDF, pergunta se a pessoa quer cancelar.
+   */
+  function abrir() {
+    cancelarSegundo();
+    estado = novoEstado();
+    mostrarArquivo();
+    P.Modal.abrir($('modalImportacao'), {
+      podeFechar: function () {
+        if (!estado.ocupado) return true;
+        if (estado.passo === 'leitura' && estado.sinal && confirm('Cancelar a leitura do arquivo?')) { estado.sinal.cancelado = true; }
+        return false;
+      },
+      aoFechar: function () { if (estado.sinal) estado.sinal.cancelado = true; cancelarSegundo(); }
+    });
+  }
+  /** Fecha a janela (se nada estiver em andamento). */
+  function fechar() {
+    if (estado.ocupado) return;
+    P.Modal.fechar($('modalImportacao'));
+  }
+
+  /*------------------------------------------------------------
+    Passo 1 — arquivo
+  ------------------------------------------------------------*/
+
+  /** Passo 1: escolher ou arrastar o arquivo; erro = mensagem da tentativa anterior. */
+  function mostrarArquivo(erro) {
+    estado.passo = 'arquivo';
+    corpo(
+      (erro ? '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">Não foi possível usar este arquivo</div><p>' + esc(erro) + '</p></div>' : '') +
+      '<div class="soltarArquivo" id="soltarArquivo">' +
+        '<div class="soltarArquivo__icone" aria-hidden="true">📄</div>' +
+        '<div><strong>Arraste o arquivo para cá</strong> — ou os dois, CSV e PDF — ou</div>' +
+        '<label class="botao botao--primario" for="entradaArquivo">Escolher arquivo(s)</label>' +
+        '<input type="file" id="entradaArquivo" class="somenteLeitor" multiple accept=".csv,.pdf,text/csv,application/pdf">' +
+        '<div class="pequeno texto-suave">CSV e/ou PDF do relatório "Grade Curricular" do Júpiter. Com os dois, o CSV é gravado primeiro e o PDF, lido enquanto isso, vem em seguida.</div>' +
+      '</div>' +
+      '<div class="opcoesArquivo">' +
+        '<div><h4>CSV — recomendado</h4><p>Júpiter › Estrutura Curricular › Relatórios: curso e currículo vigentes, complemento em branco (todas as habilitações), tipo Ativo, as três obrigatoriedades. Importe o arquivo como veio, sem abrir e salvar no Excel.</p></div>' +
+        '<div><h4>PDF — complemento</h4><p>O mesmo relatório em PDF acrescenta o que o CSV não tem: versão da disciplina, horas de extensão (EXT), requisitos alternativos ("ou") e as informações básicas de cada currículo. PDF sem texto é lido por OCR e leva alguns minutos.</p></div>' +
+      '</div>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-antes-gerar', 'Como gerar o arquivo no Júpiter') + gatilho('ajuda-antes-privacidade', 'Para onde vão o arquivo e os dados') + '</div>');
+    rodape('<button type="button" class="botao botao--secundario" data-imp="fechar">Cancelar</button>');
+
+    var zona = $('soltarArquivo'), entrada = $('entradaArquivo');
+    entrada.addEventListener('change', function () { if (entrada.files && entrada.files.length) lerArquivos(entrada.files); });
+    ['dragenter', 'dragover'].forEach(function (t) { zona.addEventListener(t, function (ev) { ev.preventDefault(); zona.classList.add('arrastando'); }); });
+    ['dragleave', 'drop'].forEach(function (t) { zona.addEventListener(t, function (ev) { ev.preventDefault(); zona.classList.remove('arrastando'); }); });
+    zona.addEventListener('drop', function (ev) {
+      var fs = ev.dataTransfer && ev.dataTransfer.files;
+      if (fs && fs.length) lerArquivos(fs);
+    });
+  }
+
+  /**
+   * "pdf" pelos 4 primeiros bytes (%PDF), não pela extensão; "csv" pela
+   * extensão .csv/.txt; "pdf-invalido" para .pdf sem assinatura de PDF.
+   */
+  function tipoDoArquivo(nome, bytes) {
+    var ehPdf = bytes.length > 4 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46; // %PDF
+    if (ehPdf) return 'pdf';
+    if (/\.pdf$/i.test(nome)) return 'pdf-invalido';
+    if (/\.(csv|txt)$/i.test(nome)) return 'csv';
+    return null;
+  }
+
+  /** Bytes de um arquivo (Promise de Uint8Array). */
+  function bytesDe(arquivo) {
+    return new Promise(function (ok, falha) {
+      var leitor = new FileReader();
+      leitor.onerror = function () { falha(new Error('O navegador não conseguiu abrir o arquivo ' + arquivo.name + '.')); };
+      leitor.onload = function () { ok(new Uint8Array(leitor.result)); };
+      leitor.readAsArrayBuffer(arquivo);
+    });
+  }
+
+  /**
+   * Um arquivo → lerArquivo. Dois (1.4.2) → precisam ser um CSV e um PDF:
+   * o PDF começa a ser lido em segundo plano e o CSV segue para a
+   * conferência. Mais de dois, ou dois do mesmo tipo, é recusado.
+   */
+  function lerArquivos(lista) {
+    var arquivos = Array.prototype.slice.call(lista);
+    if (arquivos.length === 1) { lerArquivo(arquivos[0]); return; }
+    if (arquivos.length > 2) { mostrarArquivo('Escolha no máximo dois arquivos: o CSV e o PDF do mesmo relatório.'); return; }
+    var grande = arquivos.filter(function (a) { return a.size > TAMANHO_MAXIMO; })[0];
+    if (grande) { mostrarArquivo('O arquivo ' + grande.name + ' tem ' + Math.round(grande.size / 1048576) + ' MB; o limite é 40 MB.'); return; }
+    Promise.all(arquivos.map(bytesDe)).then(function (bytes) {
+      var tipos = arquivos.map(function (a, i) { return tipoDoArquivo(a.name, bytes[i]); });
+      var iCsv = tipos.indexOf('csv'), iPdf = tipos.indexOf('pdf');
+      if (iCsv < 0 || iPdf < 0) {
+        mostrarArquivo(tipos.indexOf('pdf-invalido') >= 0 ? 'Um dos arquivos tem extensão .pdf, mas não é um PDF válido.' : 'Com dois arquivos, escolha um CSV e um PDF (o mesmo relatório "Grade Curricular" nos dois formatos).');
+        return;
+      }
+      var csv;
+      try { csv = LeitorCsvJupiter.lerBytes(bytes[iCsv], arquivos[iCsv].name); }
+      catch (e) { mostrarArquivo('Erro ao ler o CSV: ' + (e && e.message ? e.message : e)); return; }
+      iniciarSegundo(bytes[iPdf], arquivos[iPdf]);
+      estado.arquivo = { nome: arquivos[iCsv].name, tamanho: arquivos[iCsv].size };
+      mostrarConferencia(csv);
+    }, function (erro) { mostrarArquivo(erro.message); });
+  }
+
+  /*------------------------------------------------------------
+    Os dois arquivos de uma vez: o PDF em segundo plano (1.4.2)
+  ------------------------------------------------------------*/
+  /** Começa a ler o PDF enquanto a pessoa confere e grava o CSV. */
+  function iniciarSegundo(bytes, arquivo) {
+    cancelarSegundo();
+    var seg = estado.segundo = { nome: arquivo.name, tamanho: arquivo.size, situacao: 'lendo', progresso: null, resultado: null, erro: '', sinal: { cancelado: false }, emUso: false, inicio: Date.now() };
+    seg.promessa = LeitorPdfFontes.ler(bytes, {
+      sinal: seg.sinal,
+      aoProgredir: function (info) {
+        seg.progresso = info;
+        atualizarStatusSegundo();
+        if (seg.emUso && estado.passo === 'leitura') progressoLeitura(info);
+      }
+    }).then(function (r) {
+      seg.situacao = 'lido';
+      seg.resultado = r;
+      atualizarStatusSegundo();
+      return r;
+    }, function (erro) {
+      seg.situacao = erro && erro.cancelado ? 'cancelado' : 'erro';
+      seg.erro = erro && erro.message ? erro.message : String(erro);
+      atualizarStatusSegundo();
+      throw erro;
+    });
+    seg.promessa.catch(function () { /* tratado ao continuar */ });
+  }
+
+  /** Cancela a leitura em segundo plano (fechar, recomeçar, desistir do PDF). */
+  function cancelarSegundo() {
+    if (estado && estado.segundo && estado.segundo.situacao === 'lendo') estado.segundo.sinal.cancelado = true;
+    if (estado) estado.segundo = null;
+  }
+
+  /** Linha "Arquivo 1 de 2" enquanto o CSV é conferido e gravado. */
+  function statusSegundoHtml() {
+    var seg = estado.segundo;
+    if (!seg || seg.emUso || estado.passo === 'pronto') return '';   // no fim do CSV, o aviso "Próximo: o PDF" já diz isso
+    return '<p class="statusSegundo pequeno" id="statusSegundo" role="status">' + textoStatusSegundo(seg) + '</p>';
+  }
+  function textoStatusSegundo(seg) {
+    var inicio = '<strong>Arquivo 1 de 2: CSV.</strong> ';
+    if (seg.situacao === 'lido') return inicio + 'O PDF (' + esc(seg.nome) + ') já foi lido: depois de gravar o CSV, clique em "Continuar com o PDF".';
+    if (seg.situacao === 'erro') return inicio + 'Não foi possível ler o PDF (' + esc(seg.nome) + '): ' + esc(seg.erro) + ' Grave o CSV; o PDF pode ser importado depois.';
+    if (seg.situacao === 'cancelado') return inicio + 'A leitura do PDF foi cancelada.';
+    var info = seg.progresso;
+    var pct = info && info.total ? Math.max(0, Math.round(((info.pagina || 0) - (info.etapa === 'ocr' ? 1 : 0)) / info.total * 100)) : 0;
+    return inicio + 'O PDF (' + esc(seg.nome) + ') está sendo lido enquanto isso' + (info && info.mensagem ? ': ' + esc(info.mensagem) + (pct ? ' (' + pct + '%)' : '') : '…');
+  }
+  function atualizarStatusSegundo() {
+    var seg = estado.segundo;
+    if (!seg || seg.emUso) return;
+    var el = $('statusSegundo'), prox = $('proximoPdf');
+    if (el) el.innerHTML = textoStatusSegundo(seg);
+    if (prox) prox.innerHTML = textoProximoPdf(seg);
+  }
+  /** Texto do aviso "Próximo: o PDF" (tela do CSV gravado). */
+  function textoProximoPdf(seg) {
+    return esc(seg.nome) + (seg.situacao === 'lido' ? ' já foi lido.' : seg.situacao === 'erro' ? ' não pôde ser lido: ' + esc(seg.erro) : seg.situacao === 'cancelado' ? ': a leitura foi cancelada.' : ' ainda está sendo lido.') +
+      ' Ele complementa o que o CSV não tem (versão, extensão, requisitos "ou" e informações dos currículos).';
+  }
+
+  /** "Continuar com o PDF": agora é a vez do PDF (lido ou ainda em leitura). */
+  function continuarComPdf() {
+    var seg = estado.segundo;
+    if (!seg) return;
+    seg.emUso = true;
+    estado.arquivo = { nome: seg.nome, tamanho: seg.tamanho };
+    estado.pacote = null; estado.previa = null; estado.revisao = null;
+    if (seg.situacao === 'lido') { analisarSegundo(seg); return; }
+    if (seg.situacao !== 'lendo') { estado.segundo = null; mostrarArquivo(seg.situacao === 'erro' ? 'Não foi possível ler o PDF: ' + seg.erro : null); return; }
+    telaLeitura();
+    estado.sinal = seg.sinal;
+    leituraAtual.inicio = seg.inicio;
+    if (seg.progresso) progressoLeitura(seg.progresso);
+    seg.promessa.then(function () {
+      estado.ocupado = false;
+      analisarSegundo(seg);
+    }, function (erro) {
+      estado.ocupado = false;
+      estado.segundo = null;
+      if (erro && erro.cancelado) { mostrarArquivo(); return; }
+      mostrarArquivo(erro && erro.message ? erro.message : String(erro));
+    });
+  }
+  function analisarSegundo(seg) {
+    var pacote = LeitorPdfJupiter.analisar(seg.resultado.paginas, { modo: seg.resultado.modo, arquivo: seg.nome, tamanhoBytes: seg.tamanho });
+    pacote.origem.segundosLeitura = Math.round((Date.now() - seg.inicio) / 1000);
+    estado.segundo = null;
+    mostrarConferencia(pacote);
+  }
+
+  /** Lê os bytes do arquivo escolhido e encaminha: CSV direto à conferência; PDF ao passo 2. */
+  function lerArquivo(arquivo) {
+    if (arquivo.size > TAMANHO_MAXIMO) { mostrarArquivo('O arquivo tem ' + Math.round(arquivo.size / 1048576) + ' MB; o limite é 40 MB.'); return; }
+    estado.arquivo = { nome: arquivo.name, tamanho: arquivo.size };
+    var leitor = new FileReader();
+    leitor.onerror = function () { mostrarArquivo('O navegador não conseguiu abrir o arquivo.'); };
+    leitor.onload = function () {
+      var bytes = new Uint8Array(leitor.result);
+      var tipo = tipoDoArquivo(arquivo.name, bytes);
+      if (tipo === 'csv') {
+        try {
+          mostrarConferencia(LeitorCsvJupiter.lerBytes(bytes, arquivo.name));
+        } catch (e) {
+          mostrarArquivo('Erro ao ler o CSV: ' + (e && e.message ? e.message : e));
+        }
+      } else if (tipo === 'pdf') {
+        lerPdf(bytes, arquivo);
+      } else if (tipo === 'pdf-invalido') {
+        mostrarArquivo('O arquivo tem extensão .pdf, mas não é um PDF válido.');
+      } else {
+        mostrarArquivo('Escolha um arquivo .csv ou .pdf exportado do Júpiter.');
+      }
+    };
+    leitor.readAsArrayBuffer(arquivo);
+  }
+
+  /*------------------------------------------------------------
+    Passo 2 — leitura do PDF (com progresso)
+  ------------------------------------------------------------*/
+  /**
+   * Passo 2 (só PDF): palavras (texto ou OCR) → LeitorPdfJupiter → passo 3.
+   * Mostra barra de progresso e, no OCR, estimativa do tempo restante
+   * (média por página já lida). Cancelar volta ao passo 1.
+   */
+  function lerPdf(bytes, arquivo) {
+    telaLeitura();
+    estado.sinal = { cancelado: false };
+    var inicio = leituraAtual.inicio = Date.now();
+    LeitorPdfFontes.ler(bytes, { aoProgredir: progressoLeitura, sinal: estado.sinal }).then(function (r) {
+      var pacote = LeitorPdfJupiter.analisar(r.paginas, { modo: r.modo, arquivo: arquivo.name, tamanhoBytes: arquivo.size });
+      pacote.origem.segundosLeitura = Math.round((Date.now() - inicio) / 1000);
+      estado.ocupado = false;
+      mostrarConferencia(pacote);
+    }, function (erro) {
+      estado.ocupado = false;
+      if (erro && erro.cancelado) { mostrarArquivo(); return; }
+      mostrarArquivo(erro && erro.message ? erro.message : String(erro));
+    });
+  }
+
+  // Início da leitura e do OCR (para a estimativa do tempo restante).
+  var leituraAtual = { inicio: 0, inicioOcr: 0 };
+
+  /** Tela do passo 2 (barra de progresso). */
+  function telaLeitura() {
+    estado.passo = 'leitura';
+    estado.ocupado = true;
+    corpo('<div aria-live="polite"><p id="leituraMensagem"><strong>Abrindo o PDF…</strong></p>' +
+      '<div class="barraProgresso" role="progressbar" aria-labelledby="leituraMensagem" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="barraLeitura"><div class="barraProgresso__valor" id="barraLeituraValor"></div></div>' +
+      '<p class="pequeno texto-suave" id="leituraDetalhe">O arquivo é lido neste navegador; nada é enviado antes da sua confirmação.</p></div>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-antes-pdf', 'Leitura do PDF: texto ou OCR') + '</div>');
+    rodape('<button type="button" class="botao botao--secundario" data-imp="cancelar-leitura">Cancelar leitura</button>');
+  }
+
+  /** Recebe { etapa, pagina, total, mensagem } de LeitorPdfFontes.ler e atualiza a tela do passo 2. */
+  function progressoLeitura(info) {
+    var msg = $('leituraMensagem'), barra = $('barraLeitura'), valor = $('barraLeituraValor'), det = $('leituraDetalhe');
+    if (!msg) return;
+    if (info.etapa === 'ocr' && info.pagina === 1) leituraAtual.inicioOcr = Date.now();
+    msg.innerHTML = '<strong>' + esc(info.mensagem || '') + '</strong>';
+    var pct = info.total ? Math.round(((info.pagina || 0) - (info.etapa === 'ocr' ? 1 : 0)) / info.total * 100) : 0;
+    if (info.etapa === 'ocr-preparando') pct = 0;
+    barra.setAttribute('aria-valuenow', String(Math.max(0, pct)));
+    valor.style.width = Math.max(0, pct) + '%';
+    if (info.etapa === 'ocr' && info.pagina > 1 && leituraAtual.inicioOcr) {
+      var porPagina = (Date.now() - leituraAtual.inicioOcr) / (info.pagina - 1);
+      var resta = Math.round(porPagina * (info.total - info.pagina + 1) / 1000);
+      det.textContent = 'O PDF não tem texto: cada página é lida por OCR e conferida pelas contas do relatório. Tempo restante estimado: ' + (resta > 90 ? Math.round(resta / 60) + ' min' : resta + ' s') + '.';
+    } else if (info.etapa === 'ocr-preparando') {
+      det.textContent = 'Baixando o leitor de OCR e o modelo de português (só na primeira leitura desta sessão).';
+    }
+  }
+
+  /*------------------------------------------------------------
+    Passo 3 — conferência da leitura
+  ------------------------------------------------------------*/
+  /** Itens <li> dos avisos do pacote com o nível dado ("erro", "aviso" ou "info"). */
+  function listaAvisos(avisos, nivel) {
+    return avisos.filter(function (a) { return a.nivel === nivel; }).map(function (a) {
+      return '<li>' + esc(a.mensagem) + (a.detalhe ? '<span class="detalheAviso">' + esc(a.detalhe) + '</span>' : '') + '</li>';
+    }).join('');
+  }
+
+  /**
+   * Passo 3: o que foi lido (origem, disciplinas por habilitação), o
+   * resultado das contas de conferência do PDF e os avisos. Erros do
+   * leitor desabilitam "Ver o que vai mudar". Nada foi enviado ainda.
+   */
+  function mostrarConferencia(pacote) {
+    estado.passo = 'conferencia';
+    estado.pacote = pacote;
+    var r = pacote.resumoLeitura || EstruturaComum.resumir(pacote);
+    var nomeCurso = pacote.curso ? pacote.curso.nome : '';
+    var erros = listaAvisos(pacote.avisos, 'erro'), avisos = listaAvisos(pacote.avisos, 'aviso'), infos = listaAvisos(pacote.avisos, 'info');
+    var html = '';
+
+    if (erros) html += '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">O arquivo não pode ser importado</div><ul>' + erros + '</ul></div>';
+
+    var origem = pacote.origem.formato === 'csv'
+      ? 'CSV (' + esc(pacote.origem.codificacao || '') + ', ' + numero(r.linhasLidas) + ' linhas; ' + numero(r.linhasDeRequisito) + ' linhas extras de requisitos foram juntadas à disciplina)'
+      : (pacote.origem.leitura === 'ocr' ? 'PDF sem texto, lido por OCR' : 'PDF com texto') + ' (' + numero(r.paginas) + ' páginas' + (pacote.origem.segundosLeitura != null ? ', ' + pacote.origem.segundosLeitura + ' s' : '') + ')' +
+        (pacote.origem.geradoEm ? '; relatório gerado no Júpiter em ' + esc(pacote.origem.geradoEm.replace(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}:\d{2}).*$/, '$3/$2/$1 $4')) : '');
+    html += '<p style="margin-top:0"><strong>' + esc(estado.arquivo ? estado.arquivo.nome : pacote.origem.arquivo) + '</strong><br><span class="pequeno texto-suave">' + origem + '</span></p>';
+
+    if (pacote.curso) html += '<p class="pequeno" style="margin:0 0 6px">Curso ' + esc(pacote.curso.codigo) + ' — ' + esc(pacote.curso.nome) + '</p>';
+    if (pacote.curriculos.length) {
+      html += '<div class="tabelaScroll"><table class="tabela"><caption class="somenteLeitor">Disciplinas encontradas por habilitação</caption><thead><tr><th scope="col">Habilitação</th><th scope="col">Currículo</th><th scope="col" class="num">Disciplinas</th><th scope="col" class="num">Obrig.</th><th scope="col" class="num">Eletivas</th><th scope="col" class="num">Livres</th><th scope="col" class="num">Requisitos</th></tr></thead><tbody>' +
+        pacote.curriculos.map(function (c) {
+          var x = r.porCurriculo[c.codigo] || {};
+          return '<tr><td>' + esc(nomeHabilitacao(c, nomeCurso)) + '</td><td class="mono" data-rotulo="Currículo">' + esc(c.codigo) + ' <span class="texto-suave pequeno">(' + c.ano + '/' + c.semestre + ')</span></td>' +
+            '<td class="num" data-rotulo="Disciplinas">' + numero(x.disciplinas) + '</td><td class="num" data-rotulo="Obrigatórias">' + numero(x.OBRIGATORIA) + '</td><td class="num" data-rotulo="Eletivas">' + numero(x.OPTATIVA_ELETIVA) + '</td><td class="num" data-rotulo="Livres">' + numero(x.OPTATIVA_LIVRE) + '</td><td class="num" data-rotulo="Requisitos">' + numero(x.requisitos) + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        '<p class="pequeno texto-suave">' + numero(r.disciplinas) + ' disciplinas diferentes no total (a mesma disciplina aparece em mais de uma habilitação).</p>';
+    }
+
+    // Conferência do PDF
+    var cf = pacote.conferencia;
+    if (cf) {
+      var coerentes = (cf.numerosLidos || 0) + (cf.numerosCorrigidos || 0);
+      var classe = cf.numerosAConferir ? 'alerta--aviso' : 'alerta--info';
+      html += '<div class="alerta ' + classe + '"><div class="alerta__titulo">Leitura do PDF e coerência com as contas do relatório</div>' +
+        '<p><strong>Leitura:</strong> ' + (pacote.origem.leitura === 'ocr' ? 'por reconhecimento de caracteres (OCR), sujeita a erro de leitura' : 'pela camada de texto do PDF (transcrição exata)') + '; ' + numero(cf.linhasDisciplina) + ' linhas de disciplina.</p>' +
+        '<p><strong>Coerência aritmética:</strong> ' + numero(coerentes) + ' números são coerentes com as contas do próprio relatório (Tot. = Aula + Trab.; CH = 15 h × Aula + 30 h × Trab.; ' +
+        numero(cf.subtotaisConferem) + ' de ' + numero(cf.subtotais) + ' subtotais e ' + numero(cf.totaisSecaoConferem) + ' de ' + numero(cf.totaisSecao) + ' totais de seção). ' +
+        (cf.numerosCorrigidos ? numero(cf.numerosCorrigidos) + ' foram corrigidos pelas contas. ' : '') +
+        'Coerência não prova cada leitura: dois erros que se compensam mantêm uma soma.</p>' +
+        (cf.numerosAConferir ? '<p><strong>' + numero(cf.numerosAConferir) + ' números sem coerência verificada não serão gravados.</strong></p>' : '') +
+        '<p class="pequeno">A comparação com a base (CSV) e a revisão dos valores que só o PDF traz aparecem no próximo passo.</p>' +
+        gatilho('ajuda-conferencia-pdf', 'O que esta conferência prova') +
+        '</div>';
+      var itens = (cf.itens || []).filter(function (i) { return i.situacao !== 'lido'; });
+      if (itens.length) {
+        html += '<details class="grupoMudancas"><summary>Ver números corrigidos pelas contas ou sem coerência verificada (' + itens.length + ')</summary><ul class="listaMudancas">' +
+          itens.map(function (i) {
+            return '<li>Página ' + i.pagina + ' — <span class="mono">' + esc(i.codigo) + '</span>, ' + esc(i.campo) + ': lido "' + esc(i.lido) + '"' +
+              (i.situacao === 'corrigido' ? ' → <strong>' + esc(i.valor) + '</strong>' : '') + ' <span class="texto-suave">(' + esc(i.motivo) + ')</span></li>';
+          }).join('') + '</ul></details>';
+      }
+    }
+
+    if (avisos) html += '<div class="alerta alerta--aviso"><div class="alerta__titulo">Avisos</div><ul>' + avisos + '</ul></div>';
+    if (infos) html += '<div class="alerta alerta--info"><div class="alerta__titulo">Para saber</div><ul>' + infos + '</ul></div>';
+    if (!erros) html += '<p class="pequeno texto-suave">Nada foi gravado ainda. O próximo passo mostra o que vai mudar na base.</p>';
+    html += '<div class="ajudaLinha">' + gatilho('ajuda-importar-passos', 'Os passos da importação') + '</div>';
+
+    corpo(html);
+    rodape('<button type="button" class="botao botao--secundario" data-imp="outro">Escolher outro arquivo</button>' +
+      '<button type="button" class="botao botao--primario" data-imp="previa"' + (erros ? ' disabled' : '') + '>Ver o que vai mudar</button>');
+    focarTopo();
+  }
+
+  /** Cópia do pacote sem o que o servidor não precisa (listas de conferência). */
+  function pacoteParaServidor(pacote) {
+    var c = JSON.parse(JSON.stringify(pacote));
+    if (c.conferencia) { delete c.conferencia.itens; delete c.conferencia.linhasNaoReconhecidas; }
+    return c;
+  }
+
+  /*------------------------------------------------------------
+    Passo 4 — prévia (servidor)
+  ------------------------------------------------------------*/
+  /** Envia o pacote a prepararImportacao; recusa volta à conferência com a mensagem. */
+  function pedirPrevia() {
+    estado.ocupado = true;
+    rodape('<button type="button" class="botao botao--primario" disabled>Comparando com a base…</button>');
+    P.chamarServidor('prepararImportacao', pacoteParaServidor(estado.pacote)).then(function (previa) {
+      estado.ocupado = false;
+      estado.previa = previa;
+      mostrarPrevia(previa);
+    }, function (erro) {
+      estado.ocupado = false;
+      mostrarConferencia(estado.pacote);
+      $('importacaoCorpo').insertAdjacentHTML('afterbegin', '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">O servidor recusou a importação</div><p>' + esc(erro.mensagem) + '</p></div>');
+    });
+  }
+
+  /** Lista recolhível de mudanças ("Título (n)"); vazia → nada. aberto = já expandida. */
+  function grupo(titulo, itens, formatar, aberto) {
+    if (!itens.length) return '';
+    return '<details class="grupoMudancas"' + (aberto ? ' open' : '') + '><summary>' + esc(titulo) + ' (' + itens.length + ')</summary><ul class="listaMudancas">' +
+      itens.map(function (i) { return '<li>' + formatar(i) + '</li>'; }).join('') + '</ul></details>';
+  }
+  /** "CÓDIGO Nome" de uma disciplina na lista de mudanças. */
+  function disc(i) { return '<span class="mono">' + esc(i.codigo) + '</span> ' + esc(i.nome || ''); }
+
+  /**
+   * Passo 4: bloqueios (se houver), o que será gravado por currículo
+   * (completo/complemento/substituição), contagens e listas de mudanças,
+   * diferenças que NÃO serão aplicadas e o que o PDF acrescenta.
+   */
+  function mostrarPrevia(pv) {
+    estado.passo = 'previa';
+    var t = pv.totais;
+    var html = '';
+    if (pv.bloqueios.length) {
+      html += '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">A importação não pode ser gravada</div><ul>' +
+        pv.bloqueios.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul></div>';
+    }
+    html += '<h3 class="secao__titulo">O que será gravado</h3><ul class="listaMudancas" style="margin-bottom:12px">' + pv.curriculos.map(function (c) {
+      var modo = c.modo === 'complemento'
+        ? 'complemento: acrescenta só o que o CSV não tem (este currículo já está na base)'
+        : 'estrutura completa desta habilitação (' + c.disciplinas + ' disciplinas: ' + c.obrigatorias + ' obrigatórias, ' + c.eletivas + ' eletivas, ' + c.livres + ' livres)';
+      return '<li><strong>' + esc(c.habilitacao) + '</strong> — currículo <span class="mono">' + esc(c.codigo) + '</span> (' + esc(c.cadastradoEm) + '): ' + esc(modo) +
+        (c.substitui ? '. <strong>Substitui</strong> o currículo <span class="mono">' + esc(c.substitui) + '</span>' : '') + '</li>';
+    }).join('') + '</ul>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-importar-previa', 'Completo, complemento e diferenças') + '</div>';
+
+    if (pv.primeiraCarga) {
+      html += '<div class="alerta alerta--info"><div class="alerta__titulo">Primeira importação</div><p>' + numero(t.novas) + ' disciplinas serão gravadas na base.</p></div>';
+    } else {
+      html += '<div class="contagens">' +
+        [['novas', 'novas'], ['alteradas', 'alteradas'], ['sairam', 'saem da estrutura'], ['voltaram', 'voltam à estrutura'], ['ofertas', 'mudanças de oferta'], ['requisitos', 'mudanças de requisitos'], ['divergencias', 'diferenças não aplicadas']]
+          .map(function (k) { return '<div class="contagem"><div class="contagem__valor">' + numero(t[k[0]]) + '</div><div class="contagem__rotulo">' + k[1] + '</div></div>'; }).join('') + '</div>';
+      var nada = !t.novas && !t.alteradas && !t.sairam && !t.voltaram && !t.ofertas && !t.requisitos;
+      if (nada) html += '<p>Nenhuma mudança nas disciplinas, na oferta ou nos requisitos em relação à base.</p>';
+    }
+
+    var m = pv.mudancas;
+    // Listas curtas (até 12 itens) já aparecem abertas.
+    var poucas = function (l) { return l.length <= 12; };
+    if (!pv.primeiraCarga) html += grupo('Disciplinas novas', m.novas, disc, poucas(m.novas));
+    html += grupo('Disciplinas alteradas', m.alteradas, function (i) {
+      return disc(i) + '<span class="detalheAviso">' + i.campos.map(function (c) { return esc(c.campo) + ': ' + esc(c.antes) + ' → ' + esc(c.depois); }).join(' · ') + '</span>';
+    }, poucas(m.alteradas));
+    html += grupo('Saem da estrutura (ficam registradas como "fora da estrutura")', m.sairam, disc, poucas(m.sairam));
+    html += grupo('Voltam à estrutura', m.voltaram, disc, poucas(m.voltaram));
+    html += grupo('Mudanças de oferta', m.ofertas, function (i) {
+      return disc(i) + '<span class="detalheAviso">' + esc(i.habilitacao) + ' — ' + esc(i.tipo) + ': ' + esc(i.antes) + ' → ' + esc(i.depois) + '</span>';
+    }, poucas(m.ofertas));
+    html += grupo('Mudanças de requisitos', m.requisitos, function (i) {
+      return disc(i) + '<span class="detalheAviso">' + esc(i.habilitacao) + ': ' + esc(i.antes) + ' → ' + esc(i.depois) + '</span>';
+    }, poucas(m.requisitos));
+    html += grupo('Diferenças entre o PDF e a base (não serão aplicadas)', m.divergencias, function (i) {
+      return disc(i) + '<span class="detalheAviso">' + (i.habilitacao ? esc(i.habilitacao) + ' — ' : '') + esc(i.campo) + ': na base "' + esc(i.base) + '", no arquivo "' + esc(i.arquivo) + '"</span>';
+    }, poucas(m.divergencias));
+
+    var cp = pv.complementos;
+    if (pv.arquivo.formato === 'pdf') {
+      html += '<div class="alerta alerta--info"><div class="alerta__titulo">O que o PDF acrescenta</div><p>Versão de ' + numero(cp.versoes) + ' disciplinas; extensão (EXT) de ' + numero(cp.ext) + '; relação entre requisitos ("e"/"ou") informada em ' + numero(cp.gruposOu) + ' disciplinas; informações básicas de ' + numero(cp.infoCurriculos) + ' currículos.</p></div>';
+      html += conferenciaPdfHtml(pv);
+      html += infoCurriculosHtml(pv);
+      html += revisaoHtml(pv);
+    }
+    if (pv.recuperacao) {
+      html += '<div class="alerta alerta--info"><div class="alerta__titulo">Gravação anterior interrompida</div><p>' +
+        (pv.recuperacao.descartada ? 'Uma tentativa de gravação que não chegou a ser concluída foi descartada; a base não tinha mudado.' : pv.recuperacao.pendencias && pv.recuperacao.pendencias.length ? 'Os ajustes finais de uma gravação já concluída ainda não puderam ser feitos (' + esc(pv.recuperacao.pendencias.join(', ')) + '); serão tentados de novo.' : 'Os ajustes finais de uma gravação já concluída foram terminados.') + '</p></div>';
+    }
+    if (pv.podeGravar) html += '<p class="pequeno texto-suave">Confira e clique em "Gravar na base". A importação fica registrada na aba Importações da planilha. Se a planilha for editada nas colunas mantidas pelo sistema antes da gravação, será preciso gerar a prévia de novo.</p>';
+
+    corpo(html);
+    var exigeRevisao = pv.revisao && pv.revisao.necessaria;
+    rodape('<button type="button" class="botao botao--secundario" data-imp="voltar-conferencia">Voltar</button>' +
+      '<button type="button" class="botao botao--primario" data-imp="gravar"' + (pv.podeGravar && !exigeRevisao ? '' : ' disabled') + '>Gravar na base</button>');
+    iniciarRevisao(pv);
+    var marca = $('confirmarRevisao');
+    if (marca) marca.addEventListener('change', atualizarBotaoGravar);
+    atualizarBotaoGravar();
+    focarTopo();
+  }
+
+  /**
+   * Conferência do PDF separada por tipo de evidência: leitura,
+   * coerência aritmética, concordância com a base (CSV) nos campos que
+   * os dois têm, valores exclusivos do PDF e o que exige conferência.
+   */
+  function conferenciaPdfHtml(pv) {
+    var c = pv.conferenciaPdf;
+    if (!c) return '';
+    var ct = c.contas || {};
+    var coerentes = (ct.numerosLidos || 0) + (ct.numerosCorrigidos || 0);
+    var k = c.concordancia || {};
+    var linhas = [
+      ['Leitura', c.leitura === 'ocr' ? 'OCR (reconhecimento de caracteres): pode ter erros de leitura.' : 'Camada de texto do PDF: transcrição exata do arquivo.'],
+      ['Coerência aritmética', numero(coerentes) + ' números coerentes com as contas do relatório' + (ct.numerosCorrigidos ? ' (' + numero(ct.numerosCorrigidos) + ' corrigidos pelas contas)' : '') + '. Indica consistência, não prova cada leitura.'],
+      ['Concordância com a base (CSV)', k.campos || k.ofertas ? numero(k.camposIguais) + ' de ' + numero(k.campos) + ' números e ' + numero(k.ofertasIguais) + ' de ' + numero(k.ofertas) + ' ofertas iguais aos já gravados. Diferenças não são aplicadas (lista acima).' : 'Sem base anterior para comparar (primeira importação destes currículos).'],
+      ['Só no PDF, sem segunda fonte', 'Extensão (EXT), versões que o CSV não traz e informações básicas dos currículos: ' + numero(pv.revisao ? pv.revisao.total : 0) + ' valores a gravar (lista abaixo).'],
+      ['Exige conferência humana', (c.naoConfirmados && c.naoConfirmados.length ? numero(c.naoConfirmados.length) + ' disciplina(s) com números sem coerência verificada (não serão gravados). ' : '') + (pv.revisao && pv.revisao.necessaria ? 'Os valores só do PDF lidos por OCR precisam da sua revisão antes de gravar.' : 'Nada pendente.')]
+    ];
+    return '<h3 class="secao__titulo">Conferência do PDF</h3><div class="tabelaScroll"><table class="tabela"><caption class="somenteLeitor">Conferência do PDF por tipo de evidência</caption><tbody>' +
+      linhas.map(function (l) { return '<tr><th scope="row">' + esc(l[0]) + '</th><td>' + esc(l[1]) + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-conferencia-pdf-cinco', 'As cinco partes da conferência') + '</div>';
+  }
+
+  /** Informações Básicas: contas refeitas no servidor e campos que não serão gravados. */
+  function infoCurriculosHtml(pv) {
+    var lista = pv.infoConferencia || [];
+    if (!lista.length) return '';
+    var rotuloSit = { coerente: 'coerente com as contas', sem_conferencia: 'sem conta possível', inconsistente: 'NÃO será gravado: conta não fecha', ausente: 'não lido: não será gravado' };
+    return '<h3 class="secao__titulo">Informações básicas dos currículos</h3>' + lista.map(function (ic) {
+      var falhas = ic.relacoes.filter(function (r) { return r.situacao === 'falha'; });
+      var okN = ic.relacoes.filter(function (r) { return r.situacao === 'ok'; }).length;
+      var semConta = ic.relacoes.filter(function (r) { return r.situacao === 'nao_verificavel'; }).length;
+      var problemas = ic.campos.filter(function (x) { return x.situacao === 'inconsistente' || (x.situacao === 'ausente' && x.anterior != null); });
+      return '<details class="grupoMudancas"' + (falhas.length ? ' open' : '') + '><summary>' + esc(ic.habilitacao) + (ic.pagina ? ' (página ' + ic.pagina + ')' : '') + ': ' + okN + ' contas conferem' + (falhas.length ? ', ' + falhas.length + ' não conferem' : '') + (semConta ? ', ' + semConta + ' sem dados para conferir' : '') + '</summary>' +
+        (falhas.length ? '<div class="alerta alerta--erro"><div class="alerta__titulo">Contas que não fecham</div><ul>' + falhas.map(function (r) { return '<li>' + esc(r.rotulo) + ': ' + esc(r.conta) + '</li>'; }).join('') + '</ul><p>Os campos envolvidos não serão gravados; os valores anteriores ficam como estão.</p></div>' : '') +
+        (problemas.length ? '<ul class="listaMudancas">' + problemas.map(function (x) { return '<li>' + esc(x.rotulo) + ': lido ' + esc(x.valor == null ? '—' : x.valor) + ' — ' + esc(rotuloSit[x.situacao]) + (x.anterior != null ? ' (continua ' + esc(x.anterior) + ')' : '') + '</li>'; }).join('') + '</ul>' : '<p class="pequeno">Nenhum campo bloqueado.</p>') +
+        '</details>';
+    }).join('');
+  }
+
+  /**
+   * Revisão humana dos valores que só o PDF traz e que serão gravados.
+   * A lista COMPLETA é paginada (páginas de pv.revisao.tamanhoPagina): a
+   * prévia traz a página 1 e as outras vêm do servidor
+   * (obterPaginaRevisao), que registra cada página entregue. A caixa de
+   * confirmação só é liberada depois que TODAS as páginas foram abertas;
+   * o servidor confere isso de novo ao gravar (REVISAO_INCOMPLETA).
+   * Os EXT = 0 ficam reunidos nas últimas páginas e resumidos no topo.
+   */
+  function revisaoHtml(pv) {
+    var r = pv.revisao;
+    if (!r || !r.total) return '';
+    var rs = r.resumo || { porTipo: {}, extZero: 0 };
+    var tipos = Object.keys(rs.porTipo).map(function (t) {
+      var n = rs.porTipo[t];
+      if (t === 'EXT' && rs.extZero) return 'EXT ' + numero(n) + ' (' + numero(n - rs.extZero) + ' diferentes de zero ou que mudam um valor; ' + numero(rs.extZero) + ' iguais a 0)';
+      return t + ' ' + numero(n);
+    });
+    var html = '<h3 class="secao__titulo" id="revisaoTitulo">Valores só do PDF que serão gravados (' + numero(r.total) + ')</h3>' +
+      '<p class="pequeno">Não há segunda fonte para estes valores (a coerência com as contas do relatório não prova cada leitura). Confira no PDF, pela página indicada, principalmente os diferentes de zero e os que mudam um valor já gravado.</p>' +
+      '<p class="pequeno" id="revisaoResumo"><strong>Todos os ' + numero(r.total) + ' valores</strong> estão na lista, em ' + numero(r.paginas) + ' página' + (r.paginas > 1 ? 's' : '') + ' de até ' + numero(r.tamanhoPagina) + ': ' + esc(tipos.join('; ')) + '.' +
+      (rs.extZero ? ' Os ' + numero(rs.extZero) + ' valores de EXT = 0 estão reunidos no fim (' + (rs.extZeroPaginas[0] === rs.extZeroPaginas[1] ? 'página ' + rs.extZeroPaginas[0] : 'páginas ' + rs.extZeroPaginas[0] + '–' + rs.extZeroPaginas[1]) + ').' : '') + '</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-conferencia-pdf-revisao', 'Como fazer a revisão') + '</div>' +
+      '<div id="revisaoLista" aria-live="polite"></div>';
+    if (r.necessaria) {
+      html += '<p class="pequeno" id="revisaoProgresso" role="status"></p>' +
+        '<label class="marcador confirmacaoRevisao"><input type="checkbox" id="confirmarRevisao" disabled> Conferi no PDF os ' + numero(r.total) + ' valores da lista e quero gravá-los.</label>';
+    }
+    return html;
+  }
+
+  /** Estado da revisão paginada da prévia atual. */
+  function iniciarRevisao(pv) {
+    var r = pv.revisao;
+    // Mesma prévia redesenhada (ex.: depois de uma recusa): mantém as páginas já abertas.
+    if (estado.revisao && estado.revisao.operacao === pv.operacao) { estado.revisao.carregando = false; desenharPaginaRevisao(); return; }
+    estado.revisao = r && r.total ? { operacao: pv.operacao, total: r.total, paginas: r.paginas, atual: 1, itens: { 1: r.itens }, vistas: { 1: true }, carregando: false, erro: '' } : null;
+    if (estado.revisao) desenharPaginaRevisao();
+  }
+
+  /** Páginas já abertas. */
+  function paginasVistas() {
+    var rv = estado.revisao;
+    return rv ? Object.keys(rv.vistas).length : 0;
+  }
+
+  /** true quando todas as páginas da lista foram abertas. */
+  function revisaoCompleta() {
+    var rv = estado.revisao;
+    return !rv || paginasVistas() >= rv.paginas;
+  }
+
+  /** Desenha a página atual da lista, a navegação e o progresso. */
+  function desenharPaginaRevisao() {
+    var rv = estado.revisao;
+    var alvo = $('revisaoLista');
+    if (!rv || !alvo) return;
+    var itens = rv.itens[rv.atual] || [];
+    var grupos = [], porTipo = {};
+    itens.forEach(function (i) {
+      var chave = i.tipo === 'EXT' && i.valor === 0 && (i.anterior == null || i.anterior === 0 || i.anterior === '') ? 'EXT = 0' : i.tipo;
+      if (!porTipo[chave]) { porTipo[chave] = []; grupos.push(chave); }
+      porTipo[chave].push(i);
+    });
+    var inicio = (rv.atual - 1) * estado.previa.revisao.tamanhoPagina;
+    var nav = '<nav class="paginacaoRevisao" aria-label="Páginas da lista de valores a revisar">' +
+      '<button type="button" class="botao botao--secundario" data-imp="rev-anterior"' + (rv.atual <= 1 || rv.carregando ? ' disabled' : '') + '>‹ Anterior</button>' +
+      '<span class="paginacaoRevisao__estado">Página <strong>' + rv.atual + '</strong> de ' + rv.paginas + ' · itens ' + numero(inicio + (itens.length ? 1 : 0)) + '–' + numero(inicio + itens.length) + ' de ' + numero(rv.total) + '</span>' +
+      '<button type="button" class="botao botao--secundario" data-imp="rev-proxima"' + (rv.atual >= rv.paginas || rv.carregando ? ' disabled' : '') + '>Próxima ›</button>' +
+      '</nav>';
+    var corpoLista = rv.carregando ? '<p class="pequeno" role="status">Carregando a página…</p>' : grupos.map(function (g) {
+      var lista = porTipo[g];
+      return '<h4 class="revisaoGrupo">' + esc(g) + ' (' + numero(lista.length) + ' nesta página)</h4>' +
+        '<div class="tabelaScroll"><table class="tabela"><thead><tr><th scope="col">' + (g === 'Informações do currículo' ? 'Currículo' : 'Disciplina') + '</th><th scope="col">Campo</th><th scope="col">Valor do PDF</th><th scope="col">Antes</th><th scope="col">Página</th></tr></thead><tbody>' +
+        lista.map(function (i) {
+          return '<tr><td><span class="mono">' + esc(i.codigo) + '</span> ' + esc(i.nome || '') + '</td><td data-rotulo="Campo">' + esc(i.campo) + (i.situacao === 'sem_conferencia' ? ' <span class="texto-suave pequeno">(sem conta possível)</span>' : '') + '</td><td data-rotulo="Valor do PDF"><strong>' + esc(i.valor) + '</strong></td><td data-rotulo="Antes">' + esc(i.anterior == null ? '—' : i.anterior) + '</td><td data-rotulo="Página">' + esc((i.paginas || []).join(', ') || '—') + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }).join('');
+    alvo.innerHTML = nav + (rv.erro ? '<div class="alerta alerta--erro" role="alert"><p>' + esc(rv.erro) + '</p></div>' : '') + corpoLista + (rv.paginas > 1 ? nav : '');
+    var prog = $('revisaoProgresso');
+    if (prog) {
+      var faltam = rv.paginas - paginasVistas();
+      prog.innerHTML = faltam > 0
+        ? 'Páginas abertas: ' + paginasVistas() + ' de ' + rv.paginas + '. <strong>Abra todas as páginas</strong> (faltam ' + faltam + ') para liberar a confirmação.'
+        : 'Todas as ' + rv.paginas + ' páginas foram abertas.';
+    }
+    var marca = $('confirmarRevisao');
+    if (marca) {
+      marca.disabled = !revisaoCompleta();
+      if (marca.disabled) marca.checked = false;
+    }
+    atualizarBotaoGravar();
+  }
+
+  /** Vai para a página n da lista (busca no servidor se ainda não veio). */
+  function irParaPaginaRevisao(n) {
+    var rv = estado.revisao;
+    if (!rv || n < 1 || n > rv.paginas || rv.carregando) return;
+    rv.atual = n;
+    rv.erro = '';
+    if (rv.itens[n]) { desenharPaginaRevisao(); return; }
+    rv.carregando = true;
+    desenharPaginaRevisao();
+    P.chamarServidor('obterPaginaRevisao', rv.operacao, n).then(function (res) {
+      if (estado.revisao !== rv) return;
+      rv.carregando = false;
+      rv.itens[res.pagina] = res.itens;
+      rv.vistas[res.pagina] = true;
+      desenharPaginaRevisao();
+    }, function (erro) {
+      if (estado.revisao !== rv) return;
+      rv.carregando = false;
+      rv.erro = erro.mensagem;
+      rv.atual = n > 1 ? n - 1 : 1;
+      desenharPaginaRevisao();
+    });
+  }
+
+  /** "Gravar" só com a prévia gravável e, se exigida, a revisão completa e marcada. */
+  function atualizarBotaoGravar() {
+    var b = document.querySelector('[data-imp="gravar"]');
+    var pv = estado.previa;
+    if (!b || !pv) return;
+    var exige = pv.revisao && pv.revisao.necessaria;
+    var marca = $('confirmarRevisao');
+    b.disabled = !(pv.podeGravar && (!exige || (revisaoCompleta() && marca && marca.checked)));
+  }
+
+  /*------------------------------------------------------------
+    Passo 5 — gravação
+  ------------------------------------------------------------*/
+  /**
+   * Passo 5: confirmarImportacao com a assinatura da prévia. Se a base
+   * mudou nesse meio-tempo (PREVIA_DESATUALIZADA), oferece gerar a
+   * prévia de novo.
+   */
+  function gravar() {
+    if (!estado.previa || !estado.previa.podeGravar) return;
+    var marca = $('confirmarRevisao');
+    estado.ocupado = true;
+    rodape('<button type="button" class="botao botao--primario" disabled>Gravando…</button>');
+    var opcoes = { operacao: estado.previa.operacao, revisaoPdf: !!(marca && marca.checked && revisaoCompleta()), previa: estado.previa.impressao };
+    P.chamarServidor('confirmarImportacao', pacoteParaServidor(estado.pacote), estado.previa.assinatura, opcoes).then(function (res) {
+      estado.ocupado = false;
+      mostrarGravado(res);
+    }, function (erro) {
+      estado.ocupado = false;
+      if (erro.codigo === 'RESULTADO_INCERTO' || erro.codigo === 'FALHA_REDE') { mostrarIncerto(erro); return; }
+      mostrarPrevia(estado.previa);
+      var titulo = erro.codigo === 'NAO_GRAVADA' || erro.codigo === 'EDICAO_DURANTE_GRAVACAO' ? 'Não foi gravado — a base continua como estava' : 'Não foi gravado';
+      $('importacaoCorpo').insertAdjacentHTML('afterbegin', '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">' + titulo + '</div><p>' + esc(erro.mensagem) + '</p>' + gatilho('ajuda-importar-resultado', 'O que fazer agora') + '</div>');
+      if (erro.codigo === 'PREVIA_DESATUALIZADA' || erro.codigo === 'EDICAO_DURANTE_GRAVACAO' || erro.codigo === 'REVISAO_EXPIRADA' || (erro.codigo === 'REVISAO_INCOMPLETA' && revisaoCompleta())) {
+        rodape('<button type="button" class="botao botao--primario" data-imp="previa">Gerar a prévia de novo</button>');
+      }
+      focarTopo();
+    });
+  }
+
+  /** Resultado da gravação (concluída; pode ter pendências de arrumação ou avisos). */
+  function mostrarGravado(res) {
+    estado.passo = 'pronto';
+    var extra = '';
+    if (res.planilhaDesatualizada) {
+      extra += '<div class="alerta alerta--aviso" role="alert"><div class="alerta__titulo">A planilha ainda mostra a versão anterior</div><p>A importação está gravada e o painel já mostra os dados novos, mas a organização das abas falhou: na planilha, ' + esc((res.abasDivergentes || []).map(function (a) { return '"' + a + '"'; }).join(', ')) + ((res.abasDivergentes || []).length > 1 ? ' ainda não mostram' : ' ainda não mostra') + ' a versão gravada. Clique em "Ver a estrutura": a correção é tentada automaticamente ao abrir o painel. Até lá, não use as abas da planilha como referência.</p></div>';
+    } else if (res.pendencias && res.pendencias.length) {
+      extra += '<p class="pequeno">A importação está concluída. Ajustes de organização da planilha (' + esc(res.pendencias.join(', ')) + ') ficaram pendentes e são feitos automaticamente ao abrir o painel.</p>';
+    }
+    if (res.avisos && res.avisos.length) extra += '<div class="alerta alerta--aviso"><div class="alerta__titulo">Atenção</div><ul>' + res.avisos.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>';
+    var seg = estado.segundo;
+    if (seg && !seg.emUso && seg.situacao !== 'cancelado') {
+      extra += '<div class="alerta alerta--info"><div class="alerta__titulo">Próximo: o PDF</div><p id="proximoPdf" aria-live="polite">' + textoProximoPdf(seg) + '</p></div>';
+    }
+    corpo('<div class="alerta alerta--sucesso" role="status"><div class="alerta__titulo">' + (res.jaGravada ? 'Esta importação já estava gravada' : 'Importação gravada') + '</div><p>' + esc(res.dataHora) + ' — ' + esc(res.resumo) + '</p><p class="pequeno">Registro: ' + esc(res.id) + '</p></div>' + extra);
+    if (seg && !seg.emUso && (seg.situacao === 'lido' || seg.situacao === 'lendo')) {
+      rodape('<button type="button" class="botao botao--secundario" data-imp="concluir">Ver a estrutura (sem o PDF)</button><button type="button" class="botao botao--primario" data-imp="continuar-pdf">Continuar com o PDF</button>');
+    } else {
+      rodape('<button type="button" class="botao botao--primario" data-imp="concluir">Ver a estrutura</button>');
+    }
+    focarTopo();
+  }
+
+  /**
+   * A confirmação terminou sem resposta segura (falha de rede ou
+   * RESULTADO_INCERTO): não dizemos "não gravado". A pessoa verifica.
+   */
+  function mostrarIncerto(erro) {
+    estado.passo = 'pronto';
+    corpo('<div class="alerta alerta--aviso" role="alert"><div class="alerta__titulo">Não foi possível confirmar se a importação foi gravada</div><p>' + esc(erro.mensagem) + '</p><p>Clique em "Verificar agora". Não importe o arquivo de novo antes de verificar.</p>' + gatilho('ajuda-mensagens-importacao-incerta', 'Resultado não confirmado: o que fazer') + '</div>');
+    rodape('<button type="button" class="botao botao--primario" data-imp="verificar">Verificar agora</button>');
+    focarTopo();
+  }
+
+  /** Pergunta ao servidor se a operação desta prévia foi concluída. */
+  function verificar() {
+    estado.ocupado = true;
+    rodape('<button type="button" class="botao botao--primario" disabled>Verificando…</button>');
+    P.chamarServidor('verificarImportacao', estado.previa.operacao).then(function (v) {
+      estado.ocupado = false;
+      if (v.situacao === 'gravada') {
+        mostrarGravado({ id: v.id, dataHora: v.dataHora, resumo: 'A importação foi concluída.', pendencias: [], avisos: [] });
+        return;
+      }
+      corpo('<div class="alerta alerta--info" role="status"><div class="alerta__titulo">A importação não foi gravada</div><p>A base continua como estava.' + (v.limpezaPendente ? ' Restos da tentativa serão limpos automaticamente na próxima importação.' : '') + ' Você pode tentar de novo.</p></div>');
+      rodape('<button type="button" class="botao botao--primario" data-imp="previa">Gerar a prévia de novo</button>');
+      focarTopo();
+    }, function (erro) {
+      estado.ocupado = false;
+      mostrarIncerto(erro);
+    });
+  }
+
+  /** Leva o foco ao título da janela e rola para o topo (a cada troca de passo). */
+  function focarTopo() {
+    var t = $('modalImportacaoTitulo');
+    t.setAttribute('tabindex', '-1');
+    t.focus();
+    $('modalImportacao').scrollTop = 0;
+  }
+
+  /*------------------------------------------------------------
+    Botões (delegação)
+  ------------------------------------------------------------*/
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest ? ev.target.closest('[data-imp], #importacaoFechar') : null;
+    if (!b) return;
+    var acao = b.id === 'importacaoFechar' ? 'fechar' : b.getAttribute('data-imp');
+    if (acao === 'fechar') {
+      if (estado.ocupado && estado.passo === 'leitura') {
+        if (confirm('Cancelar a leitura do arquivo?')) estado.sinal.cancelado = true;
+        return;
+      }
+      fechar();
+    }
+    else if (acao === 'cancelar-leitura' && estado.sinal) { estado.sinal.cancelado = true; b.disabled = true; b.textContent = 'Cancelando…'; }
+    else if (acao === 'outro') { cancelarSegundo(); mostrarArquivo(); }
+    else if (acao === 'continuar-pdf') continuarComPdf();
+    else if (acao === 'previa') pedirPrevia();
+    else if (acao === 'voltar-conferencia') mostrarConferencia(estado.pacote);
+    else if (acao === 'gravar') gravar();
+    else if (acao === 'verificar') verificar();
+    else if (acao === 'rev-anterior' && estado.revisao) irParaPaginaRevisao(estado.revisao.atual - 1);
+    else if (acao === 'rev-proxima' && estado.revisao) irParaPaginaRevisao(estado.revisao.atual + 1);
+    else if (acao === 'concluir') { cancelarSegundo(); fechar(); P.carregar('Atualizando a estrutura…'); }
+  });
+
+  /** Abre a janela já no passo 3 com um pacote lido (usado pelos testes visuais). */
+  function abrirComPacote(pacote) {
+    abrir();
+    estado.arquivo = { nome: pacote.origem.arquivo, tamanho: pacote.origem.tamanhoBytes || 0 };
+    mostrarConferencia(pacote);
+  }
+
+  return { abrir: abrir, abrirComPacote: abrirComPacote };
+})(Painel);
+</script>

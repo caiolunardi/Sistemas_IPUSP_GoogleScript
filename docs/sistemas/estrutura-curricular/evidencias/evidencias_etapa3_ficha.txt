@@ -1,0 +1,77 @@
+=== Etapa 3 — estado assíncrono da ficha (navegador, respostas controladas) ===
+Fonte testada: ../src (fonte deste pacote)
+Versão declarada na fonte: 1.9.2
+
+--- R. Reprodução: salvar A (PST1001), passar para B (PST1002), resposta de A chega
+Pedido enviado: salvarDisciplina {"origem":"outros","chave":"PST1001","nome":"A editada"}
+Antes da resposta: {"fichaAtual":"O:PST1002","titulo":"Disciplina B","nome":"B rascunho","alterada":true}
+Depois da resposta de A: {"aberta":true,"fichaAtual":"O:PST1002","titulo":"Disciplina B","codigo":"PST1002","nome":"B rascunho","alterada":true,"aviso":"PST1001 — Alterações salvas."}
+Gravado: PST1001 = "A editada" · PST1002 = "Disciplina B"
+→ a ficha B e o rascunho ficaram intactos
+
+--- 1. salvar A normalmente: pedido certo, ficha redesenhada com o gravado, mensagem, botões e foco
+RESULTADO: ok
+
+--- 2. salvar A, passar para B e responder com SUCESSO: B e seu rascunho intactos; A atualizada nos dados confirmados
+RESULTADO: ok
+
+--- 3. mesmo cenário com resposta de ERRO: B intacta e utilizável, nenhum erro de JavaScript
+RESULTADO: ok
+
+--- 4. salvar A e FECHAR antes da resposta (sucesso): a janela não reaparece, sem foco indevido nem erro
+RESULTADO: ok
+
+--- 4. salvar A e FECHAR antes da resposta (erro): a janela não reaparece, sem foco indevido nem erro
+RESULTADO: ok
+
+--- 4. salvar A e FECHAR antes da resposta (falha de rede): a janela não reaparece, sem foco indevido nem erro
+RESULTADO: ok
+
+--- 5. salvar A, fechar e REABRIR A com nova edição: a resposta antiga não substitui a nova instância (mesmo id)
+RESULTADO: ok
+
+--- 6. editar DURANTE a espera (sucesso): a edição posterior não se perde (política: campos travados durante a gravação e liberados no fim)
+Durante a espera: campos travados = [true,true]
+RESULTADO: ok
+
+--- 6. editar DURANTE a espera (erro): a edição posterior não se perde (política: campos travados durante a gravação e liberados no fim)
+Durante a espera: campos travados = [true,true]
+RESULTADO: ok
+
+--- 7. dois pedidos rápidos da mesma ficha: uma gravação só; controles liberados no fim
+RESULTADO: ok
+
+--- 8. cadastro manual pendente, com fechamento e troca para B: disciplina criada, B e o rascunho preservados, mensagem do cadastro
+RESULTADO: ok
+
+--- 8b. cadastro pendente com a janela ainda aberta: a resposta mostra a disciplina criada (chave do servidor)
+RESULTADO: ok
+
+--- 9. salvar com adicionarAGrade: pedido e retorno certos; trocar para B antes da resposta não apaga B
+RESULTADO: ok
+
+--- 9b. salvar com adicionarAGrade, com a ficha aberta: retorno aplicado à própria ficha
+RESULTADO: ok
+
+--- 10. navegação por requisito e "Voltar" durante a gravação: a resposta não muda a ficha atual nem a pilha
+RESULTADO: ok
+
+--- 11. operações sobrepostas: com A pendente, "Salvar" de B não envia nada (aviso); depois da resposta de A, B salva normalmente
+RESULTADO: ok
+
+--- 12a. "Adicionar à Grade" da ficha pendente e troca para B (sucesso): B intacta; A marcada só no sucesso
+RESULTADO: ok
+
+--- 12a. "Adicionar à Grade" da ficha pendente e troca para B (erro): B intacta; A marcada só no sucesso
+RESULTADO: ok
+
+--- 12b. "Adicionar à Grade" com a ficha aberta: campos travados durante a espera e ficha atualizada no fim
+RESULTADO: ok
+
+--- 12c. excluir pela ficha (sucesso): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto
+RESULTADO: ok
+
+--- 12c. excluir pela ficha (erro): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto
+RESULTADO: ok
+
+=== TOTAL: 21 ok, 0 falha(s) ===

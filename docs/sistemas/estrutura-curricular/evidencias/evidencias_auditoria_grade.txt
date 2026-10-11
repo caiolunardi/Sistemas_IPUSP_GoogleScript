@@ -1,0 +1,14 @@
+[auditoria] envio 2027/1 → planilha "Auditoria - Grade Horária - 1º semestre de 2027" na pasta das auditorias (abas Edições/Sobre); índice: 2026/1 | cópia | — e 2027/1 | — | auditoria; evento do sistema: B4:S999 das 6 abas apagado e regravado com 93 disciplinas (PSA 21, PSC 13, PSE 18, PST 21, Interdepartamentais 7, Outras…
+[auditoria] reenvio 2027/1 → mesma auditoria, 2º evento; índice 2027/1 | cópia | auditoria
+[auditoria] envio 2027/2 → auditoria nova; "Grade encerrada" na de 2027/1; cópia final de 2027/1 em linha nova
+[recusa CONFIGURACAO] índice sem a coluna C "Auditoria_ID" — "A planilha-índice das grades anteriores deve ter, na linha 1, "Semestre" (A), "ID" (B) e "Auditoria_ID" (C). Nada foi alterado."
+[recusa CONFIGURACAO] chave AUDITORIA_GRADES_ANTERIORES ausente no ID_INDEX — "A chave AUDITORIA_GRADES_ANTERIORES não foi encontrada na planilha ID_INDEX."
+[recusa AUDITORIA_FALHOU] falha ao criar a planilha de auditoria: cópia feita e registrada, grade intacta — "A cópia de segurança foi feita e registrada ("Grade Horária - 1º Semestre de 2026 (cópia de 02/10/2026 16:00)"), mas não foi possível criar a planilha de auditoria de 2027/1 na pasta das auditorias. Nada foi apagado nem gravado na planilha da grade. Confira o acesso à pasta e tente de novo (uma nova cópia será feita)."
+[recusa CONFIGURACAO] índice aponta uma auditoria que não abre — "O índice das grades anteriores aponta uma planilha de auditoria para 2027/1 que não abre (apagada ou sem acesso para a conta do sistema). Corrija a coluna C (Auditoria_ID) dessa linha. Nada foi alterado."
+[ativar] ativarAuditoriaGrade: auditoria de 2026/1 criada (Edições, Aberturas, Sobre), 2 acionadores (edição e abertura → planilha das secretarias); repetir = sem duplicar; envio depois: registro ativo, sem aviso
+[registro] célula K6 (Dia da semana) da PSA: Preencheu → Alterou (Terça → Quarta) → Apagou, com código PSA1302 e e-mail de quem editou
+[aberturas] 2 aberturas registradas (com e sem e-mail); chamadas inventadas, outra planilha e semestre sem auditoria ignorados
+[validação] conflito: PSA3311 (PSA, optativa, 3º) terça 11:00 × obrigatória PST1360 (PST) terça 10:00 → apagado com nota: "Conflito de horário. PSA3311 (Livre, 3º semestre ideal), Terça-Feira 11:00–13:00, coincide com a obrigatória PST1360 - Psicologia Social I (aba PST), 10:00–13:00. Escolha outro dia ou horário."
+
+=== RESULTADO ===
+Executados: 19 (19 ok, 0 falha(s)); pulados: 0

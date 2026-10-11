@@ -1,0 +1,54 @@
+# suíte: testar_etapa8_previa_envio
+# comando: node testar_etapa8_previa_envio.js
+# data: 2026-10-07T21:25:52Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+
+== A. Prévia vigente
+  ✓ A1. capturar, conferir e enviar sem mudanças: C/D/E/I/J na ordem do servidor, grupos vazios, fórmulas, nome, cópia, índice; nova leitura = conteúdo confirmado
+
+== B. Mudanças com as mesmas contagens, depois da conferência
+  ✓ B1. nome: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  ✓ B2. créditos-aula: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  ✓ B3. observações: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  ✓ B4. código no mesmo grupo (PST1001 → PST1009): a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  ✓ B5. remoção de uma e inclusão de outra no mesmo grupo: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  ✓ B6. tipo (oferta ajustada: obrigatória → eletiva): a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+  ✓ B7. semestre ideal 1 → 3, oferecimento continua no 1º: a confirmação anterior é recusada antes de cópia, índice, auditoria, grade e renomeação
+
+== C. Origem dos dados e oferta
+  ✓ C1. disciplina para outros cursos: nome mudado depois da conferência → recusa
+  ✓ C2. oferta efetiva depois da troca de currículo (ajuste associado ao 271, mesmo tipo/período): conteúdo igual → a confirmação continua válida e envia
+  ✓ C3. restauração explícita ao Júpiter (restaurarOferta) muda o semestre ideal 5 → 1: a confirmação anterior é recusada
+  ✓ C4. semestre de oferecimento manual: "1º" → "1º e 2º" não muda a grade do 1º semestre (válida); PSA1005 "1º" → "2º" sai da grade (contagem muda: recusa)
+
+== D. Alvo, formato e chamadas antigas
+  ✓ D1. identificação ausente (pedido antigo, só contagens certas)
+  ✓ D2. identificação malformada
+  ✓ D3. identificação alterada (um caractere)
+  ✓ D4. identificação de 2027/1 usada para 2028/1 (as linhas coincidem)
+  ✓ D5. alvo inválido continua com a validação amigável
+  ✓ D6. leitor continua impedido de enviar
+  ✓ D7. leitor não obtém a prévia do envio (só administradores)
+
+== E. Conteúdo equivalente e representação canônica
+  ✓ E1. mesmos dados lidos de novo: mesma identificação; mudanças fora do conteúdo (campo não enviado, disciplina fora da grade, outro semestre, e-mail/data de alteração) mantêm a confirmação válida e o envio grava o conferido
+  ✓ E2. representação canônica: zero ≠ vazio; acentos, aspas, barras e quebras de linha; sem colisão por concatenação; ordem e grupos fazem parte; objetos não entram
+  ✓ E3. observação com quebra de linha, aspas e texto que parece fórmula: a identificação da prévia vale e o gravado é o conferido (textoSeguro_)
+
+== H. Recuperação anterior ao envio
+  ✓ H1. salvamento individual pendente (nome) concluído no pedido de envio: recusa com recuperado; o salvamento continua gravado; nenhum efeito do envio
+  ✓ H2. ação em lote pendente (excluir PST1003 + outros) concluída no pedido de envio: recusa com recuperadoLote; nenhum efeito
+  ✓ H3. controle: recuperação que NÃO muda o conteúdo do envio (CH) é concluída e o envio prossegue com recuperado
+
+== I. Trava durante a conferência e o envio
+  ✓ I1. envio aprovado: conferência da identificação e efeitos sob a mesma trava, uma liberação; recusa: conferência sob a trava, sem efeitos, liberada; depois outra execução adquire
+
+Executados: 26 · 26 ok · 0 falhas · 0 pulados
+
+# código de saída: 0  (duração: 1 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa8_previa_envio.txt
+# interpretação: aprovada

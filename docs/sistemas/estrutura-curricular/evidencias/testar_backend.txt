@@ -1,0 +1,69 @@
+# suíte: testar_backend
+# comando: node testar_backend.js /caminho/grade_curricular.csv saida/paginas_ocr_navegador.json
+# data: 2026-10-07T21:24:24Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Acesso e preparação da planilha
+  ✓ leitor antes da preparação recebe orientação
+  ✓ conta fora da aba de permissões é recusada (mesmo do mesmo domínio)
+  ✓ conta de fora do domínio é recusada
+  ✓ conta não identificada é recusada
+  ✓ dono abre o painel: abas criadas
+  ✓ cabeçalhos com notas e proteção só com aviso
+  ✓ segunda abertura não recria nada
+  ✓ leitor não pode importar
+  ✓ administrador da lista pode importar (prévia)
+
+== Primeira importação (CSV)
+  ✓ prévia do CSV
+  ✓ assinatura errada é recusada
+  ✓ outra importação em andamento
+  ✓ gravação do CSV
+  ✓ códigos e currículo gravados como texto (zero à esquerda)
+  ✓ campos derivados de uma disciplina
+  ✓ requisitos: relação "não informada" só com o CSV
+  ✓ AAC no currículo, não na disciplina
+  ✓ painel recebe a base
+  ✓ leitor vê importações sem e-mail
+
+== PDF (OCR) como complemento
+  ✓ prévia do PDF: complemento dos 3 currículos, sem divergências
+  ✓ PDF por OCR: sem a revisão humana dos valores exclusivos, nada é gravado
+  ✓ gravação do PDF completa EXT, versão, grupos e informações
+
+== Reimportação e mudanças
+  ✓ mesmo CSV de novo: nada muda, grupos "ou" e EXT preservados
+  ✓ Observações e coluna extra sobrevivem à importação
+  ✓ colunas reordenadas continuam sendo lidas pelo título
+  ✓ estrutura nova do Bacharelado: prévia mostra as mudanças
+  ✓ gravação da estrutura nova
+  ✓ disciplina que sai de todas as habilitações fica "Fora da estrutura"
+  ✓ estrutura mais antiga é recusada
+
+== PDF sozinho numa base vazia
+  ✓ PDF por OCR com tudo confirmado pode ser a primeira importação
+  ✓ PDF por OCR com número não confirmado é bloqueado numa base vazia
+
+== Validação do pacote no servidor
+  ✓ pacote adulterado é recusado
+  ✓ erro apontado pelo leitor bloqueia a gravação
+  ✓ configuração ausente gera mensagem orientativa
+  ✓ erros inesperados não vazam detalhes
+
+== Permissões de acesso (1.7.0)
+  ✓ dono da planilha sem linha na aba de permissões não entra; as antigas propriedades não valem mais
+  ✓ perfil: ADMINISTRADOR = admin; LEITOR, vazio ou desconhecido = leitor; maiúsculas, espaços e e-mail em caixa alta não atrapalham
+  ✓ e-mail repetido na aba: vale o menor acesso
+  ✓ tirar a pessoa da aba corta o acesso (depois do cache)
+  ✓ configuração: sem a chave PERMISSOES_DE_ACESSO, sem a aba ESTRUTURA_CURRICULAR ou com colunas fora do lugar → CONFIGURACAO (ninguém entra), sem IDs na mensagem
+  ✓ diagnosticarConfiguracao: contagens por perfil, sem e-mails; avisa propriedades antigas
+  ✓ nenhum log com e-mail ou conteúdo
+
+Executados: 42 (42 ok, 0 falha(s)); pulados: 0
+
+# código de saída: 0  (duração: 2 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

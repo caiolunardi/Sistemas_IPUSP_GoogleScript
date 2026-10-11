@@ -1,0 +1,97 @@
+# suíte: etapa1_fonte_1.8.0_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.0/src node testar_etapa1_identidade_outros.js --evidencias saida/evidencias_etapa1_fonte_1.8.0_antes.txt
+# data: 2026-10-07T21:26:09Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 5/17 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== R. Retrato da reprodução (só registra; as asserções estão em A–G)
+  (retrato gravado nas evidências)
+
+== A. Regressão principal (código editado + CSV com o código antigo)
+  ✗ A. PST0391 aparece como nova; a inclusão cria registro independente e preserva o corrigido (gravado e após reabrir) 
+      Error: após inclusão: identificadores repetidos na aba: ["PST0391"] ≠ []
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:38:80)
+          at semRepeticao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:77:3)
+  ✗ A2. Mesmo cenário com o registro original vindo do próprio CSV da unidade 
+      Error: identificadores repetidos: ["PST0391"] ≠ []
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:38:80)
+          at semRepeticao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:77:3)
+
+== B. Preservação dos campos do registro corrigido
+  ✗ B. nome, créditos/CH, observações, unidade/curso, semestre e marca "na grade" não mudam com a importação 
+      Error: linhas com Identificador PST0391: 2 ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:38:80)
+          at porId (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:81:3)
+
+== C. Independência das operações
+  ✗ C1. editar o novo registro não altera o antigo (e vice-versa) 
+      TypeError: Cannot read properties of undefined (reading 'Identificador')
+          at cenarioPosInclusao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:229:32)
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:232:37
+  ✗ C2. excluir o novo não exclui o antigo; restaurar o novo não mexe no antigo 
+      TypeError: Cannot read properties of undefined (reading 'Identificador')
+          at cenarioPosInclusao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:229:32)
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:246:37
+  ✗ C3. operação inversa: excluir o antigo não exclui o novo 
+      TypeError: Cannot read properties of undefined (reading 'Identificador')
+          at cenarioPosInclusao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:229:32)
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:257:36
+  ✗ C4. marcação para a grade usa a identidade correta (cada registro com o seu código na grade) 
+      TypeError: Cannot read properties of undefined (reading 'Identificador')
+          at cenarioPosInclusao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:229:32)
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:264:30
+
+== D. Reimportação
+  ✗ D. reimportar o mesmo CSV com PST0391 e PST0392 já presentes não cria outro registro 
+      TypeError: Cannot read properties of undefined (reading 'Identificador')
+          at cenarioPosInclusao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:229:32)
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:284:19
+
+== E. Colisão com a chave alternativa
+  ✗ E. a primeira chave alternativa também ocupada: o alocador acha outra livre sem sobrescrever 
+      TypeError: Cannot read properties of undefined (reading 'Identificador')
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:301:85
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:31:9)
+  ✗ E2. chave alternativa ocupada por registro EXCLUÍDO também não é reaproveitada 
+      TypeError: Cannot read properties of undefined (reading 'Identificador')
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:322:85
+          at teste (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:31:9)
+
+== F. Fluxos sem colisão
+  ✓ F1. importação normal: chave = código, dados do CSV, sem repetição
+  ✓ F2. seleção de só parte das novas continua funcionando
+  ✓ F3. edição posterior do código mantém a identidade interna
+  ✓ F4. chave de registro excluído (sem código editado) não é reutilizada nem o código volta como novo
+  ✗ F5. lote com várias disciplinas, algumas com a chave ocupada por registros de código editado 
+      Error: identificadores repetidos: ["PST0501","PSA0502"] ≠ []
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:38:80)
+          at semRepeticao (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:77:3)
+  ✗ F6. código numérico (interdepartamental) com a chave ocupada: chave alternativa gravada como texto e lida igual após reabrir 
+      Error: diferente: [["4709991","4709991"],["4709991","4709991"]] ≠ [["4709991","4709992"],["4709991-2","4709991"]]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:38:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa1_identidade_outros.js:408:3
+
+== G. Cadastro manual (conferência, sem mudança de comportamento)
+  ✓ G. cadastro manual do código antigo com a chave ocupada é recusado e nada é gravado
+
+5 ok, 12 falha(s)
+Falharam:
+  - A. PST0391 aparece como nova; a inclusão cria registro independente e preserva o corrigido (gravado e após reabrir)
+  - A2. Mesmo cenário com o registro original vindo do próprio CSV da unidade
+  - B. nome, créditos/CH, observações, unidade/curso, semestre e marca "na grade" não mudam com a importação
+  - C1. editar o novo registro não altera o antigo (e vice-versa)
+  - C2. excluir o novo não exclui o antigo; restaurar o novo não mexe no antigo
+  - C3. operação inversa: excluir o antigo não exclui o novo
+  - C4. marcação para a grade usa a identidade correta (cada registro com o seu código na grade)
+  - D. reimportar o mesmo CSV com PST0391 e PST0392 já presentes não cria outro registro
+  - E. a primeira chave alternativa também ocupada: o alocador acha outra livre sem sobrescrever
+  - E2. chave alternativa ocupada por registro EXCLUÍDO também não é reaproveitada
+  - F5. lote com várias disciplinas, algumas com a chave ocupada por registros de código editado
+  - F6. código numérico (interdepartamental) com a chave ocupada: chave alternativa gravada como texto e lida igual após reabrir
+
+# código de saída: 1  (duração: 0 s)
+# resultado do processo: defeito demonstrado como previsto (5/17)
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa1_fonte_1.8.0_antes.txt
+# interpretação: defeito demonstrado como previsto (5/17)

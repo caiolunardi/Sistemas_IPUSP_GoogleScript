@@ -1,0 +1,1678 @@
+<script>
+/*
+ * =====================================================================
+ *  ESTRUTURA CURRICULAR — painel (lista, busca, filtros, ficha,
+ *  currículos e histórico)
+ * =====================================================================
+ *
+ *  COMO O PAINEL FUNCIONA (base para a futura Central de Ajuda)
+ *  - Ao abrir, pede ao servidor a base inteira (obterDadosPainel). A
+ *    partir daí, busca, filtros, ordenação e a ficha da disciplina
+ *    funcionam no navegador, sem novas chamadas.
+ *  - Aba "Disciplinas": busca por código ou nome (sem diferença de
+ *    acentos e maiúsculas; várias palavras = todas precisam aparecer) e
+ *    filtros. Filtros de habilitação, obrigatoriedade, período ideal
+ *    e "com requisito" valem JUNTOS para a mesma habilitação:
+ *    "Bacharelado + Obrigatória" mostra o que é obrigatório NO
+ *    Bacharelado (e não o que é obrigatório em outra habilitação).
+ *  - Período ideal (= semestre ideal do curso, 1º a 10º) × semestre de
+ *    OFERECIMENTO (semestre do ano: 1º, 2º ou os dois). O oferecimento
+ *    vem do período ideal (ímpar = 1º, par = 2º), pode ser ajustado no
+ *    painel (ex.: prática oferecida nos dois semestres) e, nas
+ *    disciplinas para outros cursos, é informado na ficha. O filtro
+ *    "Semestre de oferecimento" usa o valor em vigor da disciplina.
+ *  - Clique numa disciplina para abrir a ficha: resumo em linguagem
+ *    simples, cargas horárias, onde aparece, requisitos (com "ou" / "e"
+ *    quando o PDF foi importado), de quais disciplinas ela é requisito,
+ *    observações e histórico de mudanças.
+ *  - "Baixar lista (CSV)" baixa exatamente o que está filtrado.
+ *  - Aba "Currículos": um cartão por habilitação, com as informações
+ *    básicas do currículo (vêm do PDF).
+ *  - Aba "Importações": cada arquivo importado e o que mudou.
+ * =====================================================================
+ */
+var Painel = (function () {
+  'use strict';
+
+  // Filtros ao abrir o painel e ao clicar em "Limpar filtros". Por padrão
+  // só aparecem disciplinas "Na estrutura atual" (situacao: 'NA').
+  var FILTROS_PADRAO = {
+    texto: '', habilitacao: '', tipo: '', periodo: '', semestre: '', departamento: '', creditos: '',
+    situacao: 'NA', comEstagio: false, comExtensao: false, comPraticas: false, comRequisito: false, varia: false,
+    selecionadas: '', ajustadas: false
+  };
+  var ROTULO_TIPO = { OBRIGATORIA: 'Obrigatória', OPTATIVA_ELETIVA: 'Optativa eletiva', OPTATIVA_LIVRE: 'Optativa livre' };
+  var ROTULO_TIPO_CURTO = { OBRIGATORIA: 'Obrigatória', OPTATIVA_ELETIVA: 'Eletiva', OPTATIVA_LIVRE: 'Livre' };
+  var ORDEM_DEPARTAMENTOS = ['PSA', 'PSC', 'PSE', 'PST', 'Interdepartamental', 'Outra unidade'];
+  var NOME_DEPARTAMENTO = {
+    PSA: 'PSA — Psicologia da Aprendizagem, do Desenvolvimento e da Personalidade',
+    PSC: 'PSC — Psicologia Clínica',
+    PSE: 'PSE — Psicologia Experimental',
+    PST: 'PST — Psicologia Social e do Trabalho',
+    'Interdepartamental': 'Interdepartamental (código 470…)',
+    'Outra unidade': 'Outra unidade da USP'
+  };
+  var SITUACAO_NA = 'Na estrutura atual';
+  // SEMESTRE DE OFERECIMENTO ("disciplina de semestre"): semestre do ANO
+  // em que a disciplina é oferecida (1º, 2º ou os dois). Não confundir com
+  // o PERÍODO IDEAL (semestre ideal do curso, 1º a 10º). Código → texto.
+  var ROTULO_SEMESTRE = { '1': '1º semestre', '2': '2º semestre', ambos: '1º e 2º semestres' };
+  var ROTULO_SEMESTRE_CURTO = { '1': '1º', '2': '2º', ambos: '1º e 2º' };
+
+  /** Pelo período ideal: ímpar = '1', par = '2', os dois = 'ambos', sem período = ''. */
+  function oferecimentoPeloPeriodo(ofertas) {
+    var par = {};
+    ofertas.forEach(function (o) { if (o.periodo) par[o.periodo % 2] = true; });
+    return par[1] && par[0] ? 'ambos' : par[1] ? '1' : par[0] ? '2' : '';
+  }
+
+  /**
+   * Semestre de oferecimento em vigor: na estrutura, o ajustado no painel
+   * ou, sem ajuste, o calculado pelo período ideal; nas disciplinas para
+   * outros cursos, o informado na ficha ('' = não informado).
+   */
+  function oferecimentoDe(d) {
+    if (d._origem === 'outros') return d.oferecimento || '';
+    return d.oferecimento || oferecimentoPeloPeriodo(ofertasDe(d));
+  }
+
+  /** A disciplina é oferecida no semestre s ('1' ou '2') do ano? */
+  function oferecidaNoSemestre(d, s) { var o = oferecimentoDe(d); return o === 'ambos' || o === s; }
+  var DEPARTAMENTOS_LISTA = ['PSA', 'PSC', 'PSE', 'PST', 'Interdepartamental', 'Outra unidade'];
+
+  // Estado da tela (só no navegador; nada disso vai ao servidor):
+  //   dados       resposta de obterDadosPainel
+  //   idx         índices montados por indexar()
+  //   etapa       etapa aberta (1 estrutura, 2 outros cursos, 3 lista para a grade)
+  //   pilhaFicha  fichas abertas antes da atual (botão "Voltar" da ficha)
+  //   fichaAtual  id da disciplina aberta na ficha
+  //   respostaEmAplicacao  (1.8.13) chamada cuja recuperação está sendo aplicada (ver chamarServidor)
+  // Cada LISTA (ver criarLista) guarda seus próprios filtros e ordenação.
+  var estado = { dados: null, idx: null, etapa: 1, pilhaFicha: [], fichaAtual: null, respostaEmAplicacao: null };
+
+  /*----------------------------------------------------------------
+    Utilidades
+  ----------------------------------------------------------------*/
+  /** Cópia profunda de um objeto simples (sem funções nem datas). */
+  function copiar(o) { return JSON.parse(JSON.stringify(o)); }
+  /** Atalho para document.getElementById. */
+  function $(id) { return document.getElementById(id); }
+  /** Escapa texto para inserir em HTML (todo dado da base passa por aqui). */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  /** Texto para busca: sem acentos e minúsculo. */
+  function normalizar(s) {
+    return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  }
+  /** "1 disciplina" / "3 disciplinas". */
+  function plural(n, um, varios) { return n + ' ' + (n === 1 ? um : varios); }
+  /** ["A","B","C"] → "A, B e C". */
+  function juntar(lista) {
+    if (lista.length <= 1) return lista.join('');
+    return lista.slice(0, -1).join(', ') + ' e ' + lista[lista.length - 1];
+  }
+  /** Preposição + artigo para o nome da habilitação ("da Licenciatura", "do Bacharelado"). */
+  function artigoHab(nome) { return /a$/i.test(String(nome).trim()) ? 'da ' : 'do '; }
+  /** "do Bacharelado e da Licenciatura". */
+  function deHabs(nomes) { return juntar(nomes.map(function (n) { return artigoHab(n) + n; })); }
+  /** Número no formato brasileiro (1.234); outros valores viram texto. */
+  function fmt(v) { return typeof v === 'number' ? v.toLocaleString('pt-BR') : String(v); }
+  /** Número formatado com sufixo, ou "—" quando não há valor. */
+  function numeroOuTraco(v, sufixo) { return v === null || v === undefined || v === '' ? '—' : fmt(v) + (sufixo || ''); }
+  /** "60 h", ou null quando não há valor (quem chama decide o que mostrar). */
+  function horas(v) { return v === null || v === undefined || v === '' ? null : fmt(v) + ' h'; }
+  /** "470120100262" → "47012 0100 262" (curso · habilitação · cadastro). */
+  function formatarCurriculo(c) { return String(c).replace(/^(\d{5})(\d{4})(\d{3})$/, '$1 $2 $3'); }
+
+  var temporizadorAviso = null;
+  /** Mensagem curta no canto da tela (some sozinha em 5 s; lida por leitores de tela). */
+  // (1.8.7) Nota de uma ação em lote pendente concluída no início do último
+  // pedido: vai junto dos avisos do próprio pedido (dados na mesma rodada de
+  // tratamento da resposta), separada deles; se nenhum aviso vier, aparece sozinha.
+  var notaRecuperacao = '', notaMostrada = false;
+  function mostrarAviso(msg) {
+    var el = $('aviso');
+    if (notaRecuperacao) { msg = msg ? msg + ' ' + notaRecuperacao : notaRecuperacao; notaMostrada = true; }
+    el.textContent = msg;
+    el.hidden = false;
+    clearTimeout(temporizadorAviso);
+    temporizadorAviso = setTimeout(function () { el.hidden = true; }, 5000);
+  }
+
+  /** Chama uma função do servidor e devolve uma Promise com os "dados". */
+  function chamarServidor(nome) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    // (1.8.13) Identidade desta chamada (promessa.chamada): enquanto a recuperação
+    // devolvida por ESTA resposta é aplicada, estado.respostaEmAplicacao aponta para
+    // ela — assim a confirmação do envio distingue a recuperação trazida pela própria
+    // prévia de uma mudança independente nos dados da página.
+    var chamada = { nome: nome };
+    var promessa = new Promise(function (resolve, reject) {
+      var runner = google.script.run
+        .withSuccessHandler(function (r) {
+          estado.respostaEmAplicacao = chamada;
+          try {
+            // (1.8.6) Salvamento pendente concluído no início deste pedido:
+            // aplica o que ele gravou ANTES de devolver a resposta (ou a recusa)
+            // a quem chamou, que aplica os próprios dados, mais recentes.
+            if (r && r.dados && r.dados.recuperado) aplicarRecuperado(r.dados.recuperado);
+            // (1.8.7) O mesmo para uma ação em lote pendente concluída antes deste pedido.
+            if (r && r.dados && r.dados.recuperadoLote) aplicarRecuperadoLote(r.dados.recuperadoLote);
+          } finally { estado.respostaEmAplicacao = null; }
+          if (r && r.ok) {
+            // (1.8.7) Gravação concluída: não há ação em lote pendente (o servidor
+            // conclui ou recusa antes); sem leitura dos dados, pede para recarregar.
+            if (r.dados && r.dados.resultado === 'concluido') aposConcluir(r.dados);
+            resolve(r.dados);
+          } else {
+            // (1.8.7) Ação em lote pendente ou não confirmada (de qualquer tela, inclusive
+            // com um item só): dados LIDOS da planilha nas listas e o aviso fixo.
+            if (r && r.dados && r.dados.lote) aplicarRecusaLote(r.dados);
+            else if (r && r.codigo === 'NAO_SALVO' && r.dados && r.dados.preparacao) aplicarPreparacao(r.dados.preparacao);
+            // (1.8.5) dados: o que o servidor leu da planilha numa recusa (ex.: salvamento pendente)
+            reject({ mensagem: (r && r.erro) || 'Resposta inesperada do servidor.', codigo: r && r.codigo, dados: r && r.dados });
+          }
+        })
+        .withFailureHandler(function (e) {
+          reject({ mensagem: 'Não foi possível falar com o servidor. Verifique a conexão e tente de novo.', codigo: 'FALHA_REDE', detalhe: e && e.message });
+        });
+      runner[nome].apply(runner, args);
+    });
+    promessa.chamada = chamada;
+    return promessa;
+  }
+
+  /*----------------------------------------------------------------
+    Janela modal genérica: foco preso, volta do foco, rolagem
+  ----------------------------------------------------------------*/
+  var Modal = (function () {
+    var pilha = [];  // janelas abertas (a do topo recebe o teclado)
+    var SELETOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+    /** Elementos visíveis que recebem foco dentro de el, na ordem da página. */
+    function focaveis(el) {
+      return Array.prototype.filter.call(el.querySelectorAll(SELETOR), function (x) { return x.offsetParent !== null || x === document.activeElement; });
+    }
+    /**
+     * Abre a janela el. opcoes: { foco: elemento inicial,
+     * podeFechar(): false impede fechar pelos botões (ex.: durante
+     * a gravação), aoFechar(): chamada ao fechar }.
+     * Regra do painel: NENHUMA janela fecha por ESC ou clique no fundo;
+     * só pelos botões dela ("X", "Fechar", "Cancelar"…). Assim um clique
+     * por engano não descarta o que está na tela (arquivo lido, dados em
+     * preenchimento nas próximas fases).
+     * Guarda quem tinha o foco para devolvê-lo ao fechar.
+     *
+     * (1.9.0) Opções que só a Central de Ajuda (EstruturaAjudaUI) usa — as
+     * janelas operacionais não as passam e continuam exatamente como antes:
+     *   retorno       elemento para devolver o foco (o gatilho da ajuda), no
+     *                 lugar de document.activeElement;
+     *   aoEsc()       ESC chama esta função quando a janela está no topo
+     *                 (opt-in: sem ela, ESC continua sem fazer nada);
+     *   guardarFoco   enquanto a janela está no topo, um foco que vá para
+     *                 trás dela (ex.: resposta atrasada que foca a ficha) volta
+     *                 para dentro dela; o destino pedido fica em focoAdiado;
+     *   retornoSeguro ao fechar, o foco vai para o retorno se ele ainda
+     *                 existe, está visível e pertence à janela que ficou no
+     *                 topo (ou à página, se não ficou nenhuma); senão, para o
+     *                 focoAdiado nas mesmas condições; senão, para a janela
+     *                 do topo; senão, para o conteúdo principal.
+     */
+    function abrir(el, opcoes) {
+      opcoes = opcoes || {};
+      if (!el.hidden) return;
+      var item = { el: el, retorno: opcoes.retorno || document.activeElement, podeFechar: opcoes.podeFechar || function () { return true; }, aoFechar: opcoes.aoFechar,
+        aoEsc: opcoes.aoEsc || null, guardarFoco: !!opcoes.guardarFoco, retornoSeguro: !!opcoes.retornoSeguro, focoAdiado: null, ultimoFoco: null };
+      var t = topo();
+      el.hidden = false;
+      document.body.classList.add('modalAberto');
+      var alvo = opcoes.foco || focaveis(el)[0];
+      // (1.9.0) A Central de Ajuda no topo continua no topo: uma janela aberta
+      // por trás dela (resposta assíncrona) entra logo abaixo, e o foco que ela
+      // pediria fica guardado para quando a Central fechar.
+      if (t && t.guardarFoco && !item.guardarFoco) {
+        if (t.el.contains(item.retorno)) item.retorno = t.retorno;
+        pilha.splice(pilha.length - 1, 0, item);
+        t.focoAdiado = alvo || null;
+        return;
+      }
+      pilha.push(item);
+      if (alvo) alvo.focus();
+    }
+    /** Fecha a janela el, libera a rolagem se era a última e devolve o foco. */
+    function fechar(el) {
+      var i = -1;
+      pilha.forEach(function (p, k) { if (p.el === el) i = k; });
+      if (i < 0) return;
+      var item = pilha.splice(i, 1)[0];
+      el.hidden = true;
+      if (!pilha.length) document.body.classList.remove('modalAberto');
+      if (item.aoFechar) item.aoFechar();
+      if (item.retornoSeguro) { devolverFocoSeguro(item); return; }   // (1.9.0) só a Central de Ajuda
+      if (item.retorno && document.body.contains(item.retorno)) item.retorno.focus();
+    }
+    /** Janela aberta mais recente (ou undefined). */
+    function topo() { return pilha[pilha.length - 1]; }
+    /** (1.9.0) O elemento está na página, visível e habilitado? */
+    function utilizavel(x) {
+      return !!(x && x !== document.body && document.body.contains(x) && !x.disabled && typeof x.focus === 'function' && x.getClientRects().length);
+    }
+    /** (1.9.0) Retorno do foco de uma janela com retornoSeguro (ver abrir). */
+    function devolverFocoSeguro(item) {
+      var t = topo();
+      var cabe = function (x) { return utilizavel(x) && (t ? t.el.contains(x) : true); };
+      var alvo = cabe(item.retorno) ? item.retorno : cabe(item.focoAdiado) ? item.focoAdiado : null;
+      if (!alvo && t) alvo = (t.ultimoFoco && cabe(t.ultimoFoco) ? t.ultimoFoco : null) || focaveis(t.el)[0] || null;
+      if (!alvo) alvo = document.getElementById('conteudo');
+      if (alvo) alvo.focus();
+    }
+    // (1.9.0) Guarda do foco (só janelas com guardarFoco, a Central de Ajuda):
+    // um foco que vá para trás da janela do topo volta para dentro dela.
+    // Nas outras janelas, ultimoFoco só registra onde o foco esteve.
+    document.addEventListener('focusin', function (ev) {
+      var t = topo();
+      if (!t) return;
+      if (t.el.contains(ev.target)) { t.ultimoFoco = ev.target; return; }
+      if (!t.guardarFoco) return;
+      t.focoAdiado = ev.target;
+      var volta = utilizavel(t.ultimoFoco) && t.el.contains(t.ultimoFoco) ? t.ultimoFoco : (focaveis(t.el)[0] || null);
+      if (volta) volta.focus();
+    });
+    // Tab/Shift+Tab circulam só dentro da janela do topo. ESC e clique no
+    // fundo não fecham (ver a regra acima) — (1.9.0) salvo a janela que
+    // pediu aoEsc (a Central de Ajuda): ESC fecha só ela.
+    document.addEventListener('keydown', function (ev) {
+      var t = topo();
+      if (!t) return;
+      if (ev.key === 'Escape' && t.aoEsc) { ev.preventDefault(); t.aoEsc(); return; }
+      if (ev.key !== 'Tab') return;
+      var f = focaveis(t.el);
+      if (!f.length) return;
+      var primeiro = f[0], ultimo = f[f.length - 1];
+      // (1.9.1) Só na janela com guardarFoco (a Central de Ajuda): o foco pode
+      // estar num elemento fora da ordem de Tab (título com tabindex="-1",
+      // focado ao abrir um assunto, ou a área rolável). Sem isto, o navegador
+      // procurava o próximo controle FORA da janela, a guarda devolvia o foco
+      // ao mesmo título e o Tab ficava parado nele. Vai ao controle seguinte
+      // (ou anterior) na ordem do documento; sem nenhum, circula.
+      var ativo = document.activeElement;
+      if (t.guardarFoco && t.el.contains(ativo) && f.indexOf(ativo) < 0) {
+        ev.preventDefault();
+        var alvo = null, i;
+        if (ev.shiftKey) { for (i = f.length - 1; i >= 0 && !alvo; i--) if (ativo.compareDocumentPosition(f[i]) & Node.DOCUMENT_POSITION_PRECEDING) alvo = f[i]; }
+        else { for (i = 0; i < f.length && !alvo; i++) if (ativo.compareDocumentPosition(f[i]) & Node.DOCUMENT_POSITION_FOLLOWING) alvo = f[i]; }
+        (alvo || (ev.shiftKey ? ultimo : primeiro)).focus();
+        return;
+      }
+      if (ev.shiftKey && (document.activeElement === primeiro || !t.el.contains(document.activeElement))) { ev.preventDefault(); ultimo.focus(); }
+      else if (!ev.shiftKey && (document.activeElement === ultimo || !t.el.contains(document.activeElement))) { ev.preventDefault(); primeiro.focus(); }
+    });
+    return { abrir: abrir, fechar: fechar, aberto: function (el) { return pilha.some(function (p) { return p.el === el; }); },
+      noTopo: function (el) { var t = topo(); return !!(t && t.el === el); } };   // (1.9.0) usado pelos testes da Central de Ajuda
+  })();
+
+  /**
+   * (1.9.0) Botão "?" que abre a Central de Ajuda no assunto destino (id
+   * "ajuda-…" de EstruturaAjuda.html). destino e texto são fixos, escritos
+   * no código (nunca dados da base). O clique é tratado por delegação em
+   * EstruturaAjudaUI: vale também depois de a tela ser redesenhada.
+   */
+  function gatilhoAjuda(destino, texto) {
+    return '<button type="button" class="ajudaGatilho" data-gradip-help-open="' + esc(destino) + '"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>' + esc(texto) + '</button>';
+  }
+
+  /*----------------------------------------------------------------
+    Carga dos dados
+  ----------------------------------------------------------------*/
+  /** Mostra a camada "Carregando…" com o texto dado. */
+  function mostrarCarregando(texto) {
+    $('carregandoTexto').textContent = texto || 'Carregando a estrutura curricular…';
+    $('carregando').hidden = false;
+  }
+  /** Esconde a camada "Carregando…". */
+  function esconderCarregando() { $('carregando').hidden = true; }
+
+  /**
+   * (Re)carrega a base do servidor e redesenha a tela. Usada ao abrir o
+   * painel e depois de cada importação gravada. Em caso de erro, mostra a
+   * mensagem do servidor (já orientativa) e o botão "Tentar de novo".
+   */
+  function carregar(mensagem) {
+    mostrarCarregando(mensagem);
+    return chamarServidor('obterDadosPainel').then(function (dados) {
+      estado.dados = dados;
+      estado.idx = indexar(dados);
+      $('versaoSistema').textContent = 'Estrutura Curricular · versão ' + (dados.versaoSistema || '—');
+      esconderCarregando();
+      renderizarTudo();
+      // 1.7.0: seção "Auditoria da grade" (todos os perfis)
+      if (window.Auditoria && window.Auditoria.aoCarregarPainel) window.Auditoria.aoCarregarPainel(dados);
+      // 1.8.5: salvamento de disciplina pendente (concluído agora ou ainda pendente)
+      if (ehAdmin() && window.Preparacao && window.Preparacao.mostrarPendencia) window.Preparacao.mostrarPendencia(dados.salvamentoPendente, true);
+      // 1.8.7: ação em lote pendente (concluída agora ou ainda pendente)
+      if (ehAdmin() && window.Preparacao && window.Preparacao.mostrarPendencia && dados.lotePendente) window.Preparacao.mostrarPendencia(dados.lotePendente, true);
+      if (dados.planilhaPreparadaAgora && dados.planilhaPreparadaAgora.length) {
+        mostrarAviso('A planilha da estrutura foi preparada: ' + dados.planilhaPreparadaAgora.length + ' abas criadas.');
+      }
+      return dados;
+    }, function (erro) {
+      esconderCarregando();
+      $('areaDados').hidden = true;
+      $('estadoBase').className = 'cartao estadoBase estadoBase--vazio';
+      $('estadoBase').innerHTML =
+        '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">Não foi possível abrir o painel</div><p>' + esc(erro.mensagem) + '</p></div>' +
+        '<button type="button" class="botao botao--secundario" id="tentarDeNovo">Tentar de novo</button>' +
+        '<div class="ajudaLinha">' + gatilhoAjuda('ajuda-acesso', 'Problemas para abrir o painel') + '</div>';   // (1.9.0) a Central não depende dos dados
+      $('tentarDeNovo').addEventListener('click', function () { carregar(); });
+    });
+  }
+
+  /**
+   * Índices usados pelas listas, filtros e ficha, montados a cada carga e
+   * depois de cada alteração da preparação:
+   *   curriculos/vigentes/habs  currículos (em uso primeiro por habilitação)
+   *   lista        disciplinas da ESTRUTURA já com os ajustes manuais
+   *                aplicados ("Júpiter + ajustes"); cada uma tem _id e
+   *                _chave (= código do Júpiter), _jupiter (valores
+   *                originais), _ajustes (campos ajustados), _excluida,
+   *                _naGrade (adicionada à grade horária), _fora e _busca
+   *   outros       disciplinas para outros cursos (_id = "O:" + identificador)
+   *   itens        _id → disciplina (das duas origens)
+   *   disciplinas  código do Júpiter → disciplina da estrutura (requisitos)
+   *   ofertas      código do Júpiter → [{curriculo, habCodigo, habNome, tipo,
+   *                periodo}] (currículos em uso; oferta ajustada, se houver)
+   *   requisitos   "currículo|código" → requisitos da disciplina
+   *   requisitoDe  código → onde ele é requisito
+   *   alteracoes   código → histórico recente
+   *   periodos, departamentos   valores existentes (opções dos filtros)
+   */
+  function indexar(d) {
+    var b = d.base;
+    var prep = d.preparacao || { ajustes: [], outros: [] };
+    var curriculos = b.curriculos.slice().sort(function (x, y) { return (+x.habilitacaoCodigo) - (+y.habilitacaoCodigo) || (x.curriculo < y.curriculo ? 1 : -1); });
+    var porCurriculo = {};
+    curriculos.forEach(function (c) { porCurriculo[c.curriculo] = c; });
+    var vigentes = curriculos.filter(function (c) { return c.vigente; });
+    var habs = vigentes.map(function (c) { return { codigo: c.habilitacaoCodigo, nome: c.habilitacao || ('Habilitação ' + c.habilitacaoCodigo), curriculo: c.curriculo }; });
+    var habPorCurriculo = {};
+    habs.forEach(function (h) { habPorCurriculo[h.curriculo] = h; });
+
+    var ajustes = {};
+    (prep.ajustes || []).forEach(function (a) { ajustes[a.chave] = a; });
+
+    // Estrutura: Júpiter + ajustes (a base original fica em _jupiter).
+    var disciplinas = {}, itens = {}, lista = [];
+    b.disciplinas.forEach(function (orig) {
+      var x = Object.assign({}, orig);
+      var a = ajustes[orig.codigo];
+      x._origem = 'estrutura';
+      x._chave = orig.codigo;
+      x._id = orig.codigo;
+      x._jupiter = orig;
+      x._ajustes = a ? Object.keys(a.campos || {}) : [];
+      if (a) x._ajustes.forEach(function (k) { x[k] = a.campos[k]; });
+      x._ofertaAjustada = !!(a && a.oferta);
+      // (1.8.9) Vínculos da oferta ajustada que não puderam ser associados ao currículo em uso
+      // (preservados, com motivo; não contam em semestre, filtros nem grade) e quantos foram associados.
+      x._ofertaPendencias = a && a.ofertaPendencias ? a.ofertaPendencias : [];
+      x._ofertaAssociada = a && a.ofertaAssociada ? a.ofertaAssociada : 0;
+      x._excluida = !!(a && a.excluida);
+      x._naGrade = !!(a && a.naGrade);
+      x._alteradoEm = a ? a.alteradoEm : '';
+      x._alteradoPor = a ? a.alteradoPor : '';
+      x._fora = !!(x.situacao && x.situacao !== SITUACAO_NA);
+      x._busca = normalizar(x.codigo + ' ' + x.nome + (x.codigo !== orig.codigo ? ' ' + orig.codigo : '') + (x.nome !== orig.nome ? ' ' + orig.nome : ''));
+      disciplinas[x._chave] = x;
+      itens[x._id] = x;
+      lista.push(x);
+    });
+
+    // Outros cursos (só vêm para administradores).
+    var outros = (prep.outros || []).map(function (o) {
+      var x = Object.assign({}, o);
+      x._origem = 'outros';
+      x._chave = o.chave;
+      x._id = 'O:' + o.chave;
+      x._ajustes = [];
+      x._excluida = !!o.excluida;
+      x._naGrade = !!o.naGrade;
+      x._fora = false;
+      x.situacao = '';
+      x._busca = normalizar([o.codigo, o.nome, o.codigo !== o.chave ? o.chave : '', o.unidadeAtendida, o.cursoAtendido].join(' '));
+      itens[x._id] = x;
+      return x;
+    });
+
+    var ofertas = {};
+    b.vinculos.forEach(function (v) {
+      var h = habPorCurriculo[v.curriculo];
+      if (!h) return;
+      (ofertas[v.codigo] = ofertas[v.codigo] || []).push({ curriculo: v.curriculo, habCodigo: h.codigo, habNome: h.nome, tipo: v.tipo, periodo: v.periodoIdeal });
+    });
+    // Oferta ajustada no painel substitui a do Júpiter (a original fica em ofertasJupiter).
+    // (1.8.9) Usa a oferta EFETIVA calculada pelo servidor (ofertaEfetiva: vínculos já
+    // associados ao currículo em uso; os a revisar ficam fora) — a mesma do semestre de
+    // oferecimento, das ações em lote e da grade. Sem ela (resposta antiga), a de antes.
+    var ofertasJupiter = {};
+    Object.keys(ajustes).forEach(function (k) {
+      var a = ajustes[k];
+      if (!a.oferta) return;
+      ofertasJupiter[k] = ofertas[k] || [];
+      ofertas[k] = (a.ofertaEfetiva || a.oferta).filter(function (o) { return habPorCurriculo[o.curriculo]; }).map(function (o) {
+        var h = habPorCurriculo[o.curriculo];
+        return { curriculo: o.curriculo, habCodigo: h.codigo, habNome: h.nome, tipo: o.tipo, periodo: o.periodo, associadoDe: o.origem || '' };
+      });
+    });
+    Object.keys(ofertas).forEach(function (k) { ofertas[k].sort(function (x, y) { return (+x.habCodigo) - (+y.habCodigo); }); });
+
+    var requisitos = {}, requisitoDe = {};
+    b.requisitos.forEach(function (r) {
+      if (!habPorCurriculo[r.curriculo]) return;
+      (requisitos[r.curriculo + '|' + r.codigo] = requisitos[r.curriculo + '|' + r.codigo] || []).push(r);
+      (requisitoDe[r.requisito] = requisitoDe[r.requisito] || []).push(r);
+    });
+
+    var alteracoes = {};
+    (d.alteracoes || []).forEach(function (a) { if (a.codigo) (alteracoes[a.codigo] = alteracoes[a.codigo] || []).push(a); });
+
+    var periodos = {}, departamentos = {};
+    Object.keys(ofertas).forEach(function (k) { ofertas[k].forEach(function (o) { if (o.periodo) periodos[o.periodo] = true; }); });
+    lista.concat(outros).forEach(function (x) { departamentos[x.departamento] = true; });
+
+    return {
+      curriculos: curriculos, vigentes: vigentes, habs: habs, habPorCurriculo: habPorCurriculo, porCurriculo: porCurriculo,
+      disciplinas: disciplinas, lista: lista, outros: outros, itens: itens,
+      ofertas: ofertas, ofertasJupiter: ofertasJupiter, requisitos: requisitos, requisitoDe: requisitoDe,
+      alteracoes: alteracoes,
+      periodos: Object.keys(periodos).map(Number).sort(function (x, y) { return x - y; }),
+      departamentos: ORDEM_DEPARTAMENTOS.filter(function (k) { return departamentos[k]; }).concat(Object.keys(departamentos).filter(function (k) { return k && ORDEM_DEPARTAMENTOS.indexOf(k) < 0; }).sort())
+    };
+  }
+
+  /**
+   * A pessoa é administradora? Só decide o que MOSTRAR (botão Importar);
+   * quem autoriza de fato é o servidor em cada chamada.
+   */
+  function ehAdmin() { return estado.dados && estado.dados.usuario && estado.dados.usuario.papel === 'admin'; }
+
+  /*----------------------------------------------------------------
+    Tela inteira
+  ----------------------------------------------------------------*/
+  /** Redesenha tudo a partir de estado.dados/estado.idx. */
+  function renderizarTudo() {
+    renderizarEstadoBase();
+    var temDados = estado.idx.lista.length > 0;
+    $('areaDados').hidden = !temDados;
+    if ($('acoesGrade')) $('acoesGrade').hidden = !ehAdmin();
+    if (!temDados) {
+      // Base vazia (primeira vez ou depois de "Cadastrar nova grade"): só o cartão da base.
+      $('etapas').hidden = true;
+      estado.etapa = 1;
+      $('estadoBase').hidden = false;
+      return;
+    }
+    listasAtivas().forEach(function (L) {
+      preencherOpcoesFiltros(L);
+      sincronizarControlesFiltros(L);
+      renderizarLista(L);
+    });
+    renderizarCurriculos();
+    renderizarHistorico();
+    renderizarEtapas();
+  }
+
+  /** Listas em uso: a da estrutura sempre; as das etapas 2 e 3 só para administradores. */
+  function listasAtivas() {
+    return ehAdmin() ? [LISTAS.estrutura, LISTAS.outros, LISTAS.grade] : [LISTAS.estrutura];
+  }
+
+  /*----------------------------------------------------------------
+    Etapas (1 estrutura · 2 outros cursos · 3 lista para a grade)
+  ----------------------------------------------------------------*/
+  /** Barra de etapas (só administradores) com as contagens de cada uma. */
+  function renderizarEtapas() {
+    var nav = $('etapas');
+    if (!nav) return;
+    nav.hidden = !ehAdmin();
+    if (!ehAdmin()) { ativarEtapa(1); return; }
+    var idx = estado.idx;
+    var naEstrutura = idx.lista.filter(function (d) { return !d._fora && !d._excluida; }).length;
+    var outros = idx.outros.filter(function (d) { return !d._excluida; }).length;
+    var naGrade = idx.lista.concat(idx.outros).filter(function (d) { return !d._excluida && d._naGrade; }).length;
+    $('etapaContagem1').textContent = naEstrutura + ' disciplinas';
+    $('etapaContagem2').textContent = outros + (outros === 1 ? ' disciplina' : ' disciplinas');
+    $('etapaContagem3').textContent = naGrade + (naGrade === 1 ? ' adicionada à grade' : ' adicionadas à grade');
+    $('etapaContagem4').textContent = naGrade + (naGrade === 1 ? ' disciplina' : ' disciplinas');
+    if (window.Preparacao && window.Preparacao.renderizarPrevia) window.Preparacao.renderizarPrevia();
+    ativarEtapa(estado.etapa);
+  }
+
+  /** Mostra a etapa n (1 a 4); focar = leva o foco ao botão da etapa. */
+  function ativarEtapa(n, focar) {
+    if (!ehAdmin()) n = 1;
+    estado.etapa = n;
+    [1, 2, 3, 4].forEach(function (k) {
+      var botao = $('etapa-' + k), painel = $('etapaPainel-' + k);
+      if (!botao || !painel) return;
+      var ativa = k === n;
+      botao.setAttribute('aria-selected', ativa ? 'true' : 'false');
+      botao.tabIndex = ativa ? 0 : -1;
+      painel.hidden = !ativa;
+      if (ativa && focar) botao.focus();
+    });
+    var estadoBase = $('estadoBase');
+    if (estadoBase) estadoBase.hidden = n !== 1;
+  }
+
+  /**
+   * Cartão do topo: base vazia (orientação para a primeira importação)
+   * ou resumo da base (curso, disciplinas, habilitações, cadastro e
+   * última importação). O botão "Importar arquivo" só aparece para
+   * administradores.
+   */
+  function renderizarEstadoBase() {
+    var el = $('estadoBase');
+    var idx = estado.idx;
+    var botao = ehAdmin() ? '<button type="button" class="botao botao--primario" data-abrir-importacao><span class="botao__icone" aria-hidden="true">⤒</span> Importar arquivo</button>' : '';
+    if (!idx.lista.length) {
+      el.className = 'cartao estadoBase estadoBase--vazio';
+      el.innerHTML =
+        '<h1 class="estadoBase__titulo">Nenhuma estrutura curricular importada ainda</h1>' +
+        (ehAdmin()
+          ? '<p>Comece pelo CSV do relatório "Grade Curricular" do Júpiter (Estrutura Curricular › Relatórios, com o complemento em branco para trazer todas as habilitações). Depois, se quiser, importe também o PDF do mesmo relatório para completar versão, extensão e requisitos alternativos.</p>' + botao
+          : '<p>Assim que a equipe responsável importar a estrutura do Júpiter, as disciplinas aparecem aqui.</p>');
+      return;
+    }
+    var ult = estado.dados.importacoes[0];
+    var cadastros = {};
+    idx.vigentes.forEach(function (c) { if (c.cadastradoEm) cadastros[c.cadastradoEm] = true; });
+    var naEstrutura = idx.lista.filter(function (d) { return !d._fora; }).length;
+    var semPdf = idx.vigentes.some(function (c) { return !c.infoPdfEm; });
+    var nomeCurso = idx.vigentes[0] && idx.vigentes[0].curso ? idx.vigentes[0].curso.replace(/^\d+\s*-\s*/, '') : '';
+    el.className = 'cartao estadoBase';
+    el.innerHTML =
+      '<div>' +
+        '<h1 class="estadoBase__titulo">Estrutura curricular' + (nomeCurso ? ' — ' + esc(nomeCurso) : '') + '</h1>' +
+        '<p class="estadoBase__meta"><strong>' + naEstrutura + '</strong> disciplinas em <strong>' + idx.habs.length + '</strong> habilitações (' + esc(idx.habs.map(function (h) { return h.nome; }).join(', ')) + ')' +
+        ' · estrutura cadastrada em ' + esc(Object.keys(cadastros).join(', ')) + '</p>' +
+        (ult ? '<p class="estadoBase__meta">Última importação: ' + esc(ult.dataHora) + ' — ' + esc(ult.leitura || ult.formato) + '</p>' : '') +
+        (semPdf && ehAdmin() ? '<p class="estadoBase__meta">Dica: importe também o PDF do relatório para completar versão, extensão (EXT), requisitos alternativos ("ou") e as informações dos currículos.</p>' : '') +
+        avisoGravacao() +
+      '</div>' + botao;
+  }
+
+  /**
+   * Avisos sobre a gravação (ver Gravacao.gs). O painel mostra sempre a
+   * última importação CONCLUÍDA (pelo manifesto). Se as abas visíveis da
+   * planilha ainda são de uma versão anterior (arrumação pendente), TODOS
+   * veem um alerta explícito; o administrador vê também o que foi feito.
+   */
+  function avisoGravacao() {
+    var g = estado.dados && estado.dados.gravacao;
+    if (!g) return '';
+    var html = '';
+    if (g.planilhaDesatualizada) {
+      var abas = (g.abasDivergentes || []).map(function (a) { return '"' + a + '"'; }).join(', ');
+      html += '<div class="alerta alerta--aviso avisoPlanilha" role="alert"><div class="alerta__titulo">A planilha ainda não mostra a versão em uso</div>' +
+        '<p>Este painel mostra a última importação concluída (versão ' + esc(estado.dados.base.versao) + '), mas na planilha a' + ((g.abasDivergentes || []).length > 1 ? 's abas ' : ' aba ') + esc(abas) + ' ainda ' + ((g.abasDivergentes || []).length > 1 ? 'mostram dados de uma versão anterior ou estão fora do lugar' : 'mostra dados de uma versão anterior ou está fora do lugar') + '. Consulte os dados por este painel até a correção.</p>' +
+        (ehAdmin()
+          ? '<p>' + (g.recuperacaoAdiada ? 'A correção automática não pôde rodar agora porque outra operação estava em andamento.' : 'A correção automática não conseguiu terminar.') + ' Recarregue o painel em alguns instantes; ela é tentada de novo a cada abertura do painel e a cada nova importação.</p>'
+          : '<p>A correção é automática na próxima vez que a equipe responsável abrir o painel.</p>') +
+        gatilhoAjuda('ajuda-problema-organizacao', 'O que este aviso significa') +
+        '</div>';
+    }
+    if (!ehAdmin()) return html;
+    if (g.interrompida) html += '<p class="estadoBase__meta" role="status"><strong>Uma gravação foi interrompida antes de terminar.</strong> O painel mostra a última importação concluída; a limpeza é feita automaticamente na próxima abertura do painel ou importação.</p>';
+    else if (g.recuperada) html += '<p class="estadoBase__meta" role="status">Uma gravação interrompida foi limpa agora; o painel mostra a última importação concluída.</p>';
+    if (g.arrumadaAgora && !g.planilhaDesatualizada) html += '<p class="estadoBase__meta" role="status">Os ajustes pendentes da última importação (nomes, ordem e proteção das abas) foram concluídos agora.</p>';
+    else if (g.arrumacaoPendente && !g.planilhaDesatualizada) html += '<p class="estadoBase__meta" role="status">Há ajustes de organização da planilha pendentes (' + (g.recuperacaoAdiada ? 'outra operação em andamento' : 'serão tentados de novo') + '); os dados já estão corretos.</p>';
+    return html;
+  }
+
+  /*----------------------------------------------------------------
+    Listas (estrutura, outros cursos, lista para a grade)
+  ----------------------------------------------------------------*/
+  /**
+   * As três listas usam o MESMO código (filtros, ordenação, tabela,
+   * download). Cada uma tem:
+   *   p         prefixo dos ids dos elementos ("" estrutura, "o", "g")
+   *   raizId    elemento que contém os controles [data-filtro]
+   *   filtros   filtros atuais (formato de padrao)
+   *   fonte()   disciplinas da lista (estrutura, outros ou as duas)
+   *   selecao   "acao"  = caixas para agir em lote (excluir/restaurar);
+   *             "grade" = caixas para escolher o que enviar para a grade
+   *             ("Enviar para a Grade Horária"); as já adicionadas ficam
+   *             marcadas e travadas
+   *   marcados  { _id: true } das caixas marcadas agora (não gravadas)
+   */
+  var FILTROS_GRADE = Object.assign({}, FILTROS_PADRAO, { origem: '' });
+  var LISTAS = {};
+  function criarLista(id, p, raizId, padrao, fonte, selecao) {
+    // semOferecimento (só a lista "grade"): códigos que o último envio
+    // não pôde adicionar por falta do semestre de oferecimento.
+    LISTAS[id] = { id: id, p: p, raizId: raizId, padrao: padrao, filtros: copiar(padrao), ordem: 'codigo', fonte: fonte, selecao: selecao, marcados: {}, semOferecimento: [], ultimoResultado: [] };
+    return LISTAS[id];
+  }
+  criarLista('estrutura', '', 'painel-disciplinas', FILTROS_PADRAO, function () { return estado.idx.lista; }, 'acao');
+  criarLista('outros', 'o', 'etapaPainel-2', FILTROS_GRADE, function () { return estado.idx.outros; }, 'acao');
+  criarLista('grade', 'g', 'etapaPainel-3', FILTROS_GRADE, function () { return estado.idx.lista.concat(estado.idx.outros); }, 'grade');
+
+  /** Elemento "nome" da lista L (ids com o prefixo da lista; null se não existir). */
+  function el(L, nome) { return $(L.p ? L.p + nome.charAt(0).toUpperCase() + nome.slice(1) : nome); }
+
+  /** Opções dos filtros que dependem da base (habilitações, períodos, departamentos). */
+  function preencherOpcoesFiltros(L) {
+    var idx = estado.idx;
+    var hab = el(L, 'filtroHabilitacao'), per = el(L, 'filtroPeriodo'), dep = el(L, 'filtroDepartamento');
+    if (hab) hab.innerHTML = '<option value="">Todas</option>' + idx.habs.map(function (h) { return '<option value="' + esc(h.codigo) + '">' + esc(h.nome) + '</option>'; }).join('');
+    if (per) per.innerHTML = '<option value="">Todos</option><option value="impar">Ímpares (1º, 3º, 5º, 7º, 9º)</option><option value="par">Pares (2º, 4º, 6º, 8º, 10º)</option>' + idx.periodos.map(function (p) { return '<option value="' + p + '">' + p + 'º período</option>'; }).join('');
+    if (dep) dep.innerHTML = '<option value="">Todos</option>' + idx.departamentos.map(function (d) { return '<option value="' + esc(d) + '">' + esc(NOME_DEPARTAMENTO[d] || d) + '</option>'; }).join('');
+  }
+
+  /**
+   * Põe nos controles da tela os valores de L.filtros. Se uma opção
+   * guardada não existir mais (ex.: habilitação que saiu da base), o
+   * filtro volta ao valor que o controle aceitou.
+   */
+  function sincronizarControlesFiltros(L) {
+    var f = L.filtros;
+    var busca = el(L, 'campoBusca');
+    if (busca) busca.value = f.texto;
+    var raiz = $(L.raizId);
+    if (!raiz) return;
+    raiz.querySelectorAll('[data-filtro]').forEach(function (c) {
+      var k = c.getAttribute('data-filtro');
+      if (c.type === 'checkbox') c.checked = !!f[k];
+      else c.value = f[k] == null ? '' : f[k];
+      if (c.tagName === 'SELECT' && c.value !== String(f[k])) { f[k] = c.value; }
+    });
+    var ord = el(L, 'ordenacao');
+    if (ord) ord.value = L.ordem;
+  }
+
+  /** Filtros em uso, como "chips" removíveis: [{ chave, rotulo }]. */
+  function filtrosAtivos(L) {
+    var f = L.filtros, lista = [];
+    var idx = estado.idx;
+    // Nome da habilitação pelo código.
+    function hab(c) { var h = idx.habs.filter(function (x) { return x.codigo === c; })[0]; return h ? h.nome : c; }
+    if (f.texto) lista.push({ chave: 'texto', rotulo: 'Busca: "' + f.texto + '"' });
+    if (f.origem) lista.push({ chave: 'origem', rotulo: f.origem === 'outros' ? 'Disciplinas para outros cursos' : 'Estrutura curricular' });
+    if (f.habilitacao) lista.push({ chave: 'habilitacao', rotulo: hab(f.habilitacao) });
+    if (f.tipo) lista.push({ chave: 'tipo', rotulo: ROTULO_TIPO[f.tipo] });
+    if (f.periodo) lista.push({ chave: 'periodo', rotulo: f.periodo === 'impar' ? 'Períodos ímpares' : f.periodo === 'par' ? 'Períodos pares' : f.periodo + 'º período' });
+    if (f.semestre) lista.push({ chave: 'semestre', rotulo: f.semestre === '1' ? 'Oferecida no 1º semestre' : f.semestre === '2' ? 'Oferecida no 2º semestre' : 'Semestre de oferecimento não informado' });
+    if (f.departamento) lista.push({ chave: 'departamento', rotulo: f.departamento });
+    if (f.creditos) lista.push({ chave: 'creditos', rotulo: f.creditos + ' crédito(s)-aula' });
+    if (f.situacao !== L.padrao.situacao) lista.push({ chave: 'situacao', rotulo: { FORA: 'Fora da estrutura atual', EXCLUIDA: 'Excluídas', '': 'Todas as situações (menos excluídas)', NA: 'Na estrutura atual' }[f.situacao] });
+    if (f.selecionadas) lista.push({ chave: 'selecionadas', rotulo: f.selecionadas === 'sim' ? 'Adicionadas à grade' : 'Ainda não adicionadas à grade' });
+    if (f.comEstagio) lista.push({ chave: 'comEstagio', rotulo: 'Com estágio' });
+    if (f.comExtensao) lista.push({ chave: 'comExtensao', rotulo: 'Com extensão' });
+    if (f.comPraticas) lista.push({ chave: 'comPraticas', rotulo: 'Com práticas' });
+    if (f.comRequisito) lista.push({ chave: 'comRequisito', rotulo: 'Com requisito' });
+    if (f.varia) lista.push({ chave: 'varia', rotulo: 'Varia entre habilitações' });
+    if (f.ajustadas) lista.push({ chave: 'ajustadas', rotulo: 'Ajustadas no painel' });
+    return lista;
+  }
+
+  /** Ofertas (habilitações) de uma disciplina; disciplinas para outros cursos não têm. */
+  function ofertasDe(d) { return d._origem === 'estrutura' ? (estado.idx.ofertas[d._chave] || []) : []; }
+
+  /**
+   * Aplica busca e filtros da lista L. Devolve [{ d, ofertas, filtradas }],
+   * em que "filtradas" são as ofertas (habilitações) que satisfazem, TODAS
+   * JUNTAS, os filtros de habilitação, tipo, período, semestre e
+   * requisito — é isso que faz "Bacharelado + Obrigatória" significar
+   * "obrigatória no Bacharelado". Os demais filtros olham a disciplina.
+   * Situação: NA = na estrutura atual; FORA = fora da estrutura; "" =
+   * todas menos as excluídas; EXCLUIDA = só as excluídas no painel.
+   */
+  function filtrar(L) {
+    var f = L.filtros, idx = estado.idx;
+    var palavras = normalizar(f.texto).split(/\s+/).filter(Boolean);
+    var filtroOferta = f.habilitacao || f.tipo || f.periodo || f.comRequisito;
+    var resultado = [];
+    L.fonte().forEach(function (d) {
+      if (f.situacao === 'EXCLUIDA') { if (!d._excluida) return; }
+      else {
+        if (d._excluida) return;
+        if (f.situacao === 'NA' && d._fora) return;
+        if (f.situacao === 'FORA' && !d._fora) return;
+      }
+      if (f.origem && d._origem !== f.origem) return;
+      if (f.selecionadas === 'sim' && !d._naGrade) return;
+      if (f.selecionadas === 'nao' && d._naGrade) return;
+      if (f.ajustadas && !(d._ajustes.length || d._ofertaAjustada)) return;
+      if (palavras.length && !palavras.every(function (p) { return d._busca.indexOf(p) >= 0; })) return;
+      if (f.departamento && d.departamento !== f.departamento) return;
+      if (f.creditos) {
+        if (f.creditos === '5+') { if (!(d.creditosAula >= 5)) return; }
+        else if (d.creditosAula !== Number(f.creditos)) return;
+      }
+      if (f.comEstagio && !(d.ce > 0)) return;
+      if (f.comExtensao && !(d.ext > 0)) return;
+      if (f.comPraticas && !(d.cp > 0)) return;
+      // Semestre de oferecimento: vale para a DISCIPLINA (ajustado, calculado
+      // pelo período ideal ou, em outros cursos, informado na ficha).
+      if (f.semestre === 'nenhum') { if (oferecimentoDe(d)) return; }
+      else if (f.semestre && !oferecidaNoSemestre(d, f.semestre)) return;
+      // Disciplinas para outros cursos não têm habilitação, tipo nem
+      // período ideal: esses filtros não se aplicam a elas.
+      if (d._origem === 'outros') {
+        if (f.varia || filtroOferta) return;
+        resultado.push({ d: d, ofertas: [], filtradas: [] });
+        return;
+      }
+      var ofertas = ofertasDe(d);
+      if (f.varia) {
+        var combinacoes = {};
+        ofertas.forEach(function (o) { combinacoes[o.tipo + '|' + o.periodo] = true; });
+        if (Object.keys(combinacoes).length < 2) return;
+      }
+      var filtradas = ofertas;
+      if (filtroOferta) {
+        filtradas = ofertas.filter(function (o) {
+          if (f.habilitacao && o.habCodigo !== f.habilitacao) return false;
+          if (f.tipo && o.tipo !== f.tipo) return false;
+          if (f.periodo === 'impar') { if (!(o.periodo % 2 === 1)) return false; }
+          else if (f.periodo === 'par') { if (!(o.periodo && o.periodo % 2 === 0)) return false; }
+          else if (f.periodo && String(o.periodo) !== String(f.periodo)) return false;
+          if (f.comRequisito && !(idx.requisitos[o.curriculo + '|' + d._chave] || []).length) return false;
+          return true;
+        });
+        if (!filtradas.length) return;
+      }
+      resultado.push({ d: d, ofertas: ofertas, filtradas: filtradas });
+    });
+    var ordem = L.ordem;
+    // Para ordenar por período: o menor período entre as ofertas filtradas.
+    function menorPeriodo(r) { var ps = r.filtradas.map(function (o) { return o.periodo || 99; }); return ps.length ? Math.min.apply(null, ps) : 99; }
+    resultado.sort(function (a, b) {
+      if (ordem === 'nome') return a.d.nome.localeCompare(b.d.nome, 'pt-BR') || (a.d.codigo < b.d.codigo ? -1 : 1);
+      if (ordem === 'periodo') return menorPeriodo(a) - menorPeriodo(b) || (a.d.codigo < b.d.codigo ? -1 : 1);
+      if (ordem === 'creditos') return (b.d.creditosAula || 0) - (a.d.creditosAula || 0) || (a.d.codigo < b.d.codigo ? -1 : 1);
+      return a.d.codigo < b.d.codigo ? -1 : a.d.codigo > b.d.codigo ? 1 : 0;
+    });
+    return resultado;
+  }
+
+  /** Selo "Bacharelado · Obrigatória · 3º" (com anel de destaque quando atende aos filtros). */
+  function seloOferta(o, destacar) {
+    return '<span class="selo selo--' + o.tipo + (destacar ? ' selo--destaque' : '') + '">' + esc(o.habNome) +
+      ' · ' + esc(ROTULO_TIPO_CURTO[o.tipo]) + (o.periodo ? ' · ' + o.periodo + 'º' : '') + '</span>';
+  }
+
+  /** Selo "Outros cursos · FEA — Administração" das disciplinas para outros cursos. */
+  function seloOutros(d) {
+    var alvo = [d.unidadeAtendida, d.cursoAtendido].filter(Boolean).join(' — ');
+    var sem = d.oferecimento ? '<span class="selo">Oferecida: ' + esc(ROTULO_SEMESTRE[d.oferecimento]) + '</span>' : '<span class="selo selo--aviso">Semestre de oferecimento não informado</span>';
+    return '<span class="selo selo--OUTROS">Para outros cursos</span>' + sem + (alvo ? '<span class="pequeno texto-suave seloOutros__alvo">' + esc(alvo) + '</span>' : '');
+  }
+
+  /** A pessoa pode agir em lote nesta lista (caixas de seleção)? */
+  function temSelecao(L) { return ehAdmin() && !!L.selecao; }
+
+  /**
+   * A caixa da disciplina está marcada? Modo "acao": marcada agora. Modo
+   * "grade": já adicionada à grade (caixa travada) ou escolhida agora.
+   */
+  function marcado(L, d) {
+    if (L.selecao === 'grade' && d._naGrade) return true;
+    return !!L.marcados[d._id];
+  }
+
+  /** Pode ser escolhida na lista "grade"? (não excluída e ainda fora da grade) */
+  function escolhivel(d) { return !d._excluida && !d._naGrade; }
+
+  /**
+   * Desenha contagens, chips de filtros, a barra de ações em lote e a
+   * tabela da lista L (que vira cartões em telas estreitas, pelo CSS).
+   * Guarda o resultado em L.ultimoResultado (download e "selecionar todas").
+   */
+  function renderizarLista(L) {
+    if (!el(L, 'corpoTabela')) return;
+    var resultado = filtrar(L);
+    if (L.id === 'estrutura') {
+      var total = estado.idx.lista.filter(function (d) { return !d._fora && !d._excluida; }).length;
+      $('contagemAbaDisciplinas').textContent = '(' + total + ')';
+    }
+    el(L, 'contagemResultado').textContent = resultado.length === 1 ? '1 disciplina' : resultado.length + ' disciplinas';
+    var ativos = filtrosAtivos(L);
+    var semTexto = ativos.filter(function (a) { return a.chave !== 'texto'; }).length;
+    if (el(L, 'contagemFiltros')) el(L, 'contagemFiltros').textContent = semTexto ? '(' + semTexto + ')' : '';
+    el(L, 'chipsFiltros').innerHTML = ativos.map(function (a) {
+      return '<li class="chip">' + esc(a.rotulo) + '<button type="button" class="chip__remover" data-lista="' + L.id + '" data-remover-filtro="' + a.chave + '" aria-label="Remover filtro: ' + esc(a.rotulo) + '">×</button></li>';
+    }).join('');
+
+    var sel = temSelecao(L);
+    var cabSel = el(L, 'cabSelecao');
+    if (cabSel) cabSel.hidden = !sel;
+    var filtroOferta = !!(L.filtros.habilitacao || L.filtros.tipo || L.filtros.periodo || L.filtros.semestre || L.filtros.comRequisito);
+    el(L, 'corpoTabela').innerHTML = resultado.map(function (r) {
+      var d = r.d;
+      var creditos = d.creditosAula == null ? '—' : d.creditosAula + ' + ' + (d.creditosTrabalho == null ? '?' : d.creditosTrabalho);
+      var selos = d._origem === 'outros' ? seloOutros(d) : r.ofertas.map(function (o) { return seloOferta(o, filtroOferta && r.filtradas.indexOf(o) >= 0); }).join('');
+      var marcas = '';
+      if (d._naGrade && ehAdmin()) marcas += '<span class="selo selo--grade tabela__fora">✓ Adicionada à Grade Horária</span>';
+      if (d._fora) marcas += '<span class="selo selo--aviso tabela__fora">Fora da estrutura atual</span>';
+      if (d._excluida) marcas += '<span class="selo selo--excluida tabela__fora">Excluída</span>';
+      if (d._ajustes.length || d._ofertaAjustada) marcas += '<span class="selo selo--ajustada tabela__fora" title="Corrigida no painel">Ajustada</span>';
+      if (d._ofertaPendencias && d._ofertaPendencias.length) marcas += '<span class="selo selo--aviso tabela__fora" title="Oferta ajustada com vínculos de um currículo substituído que não puderam ser associados ao atual">Oferta a revisar</span>';
+      if (d._origem === 'estrutura' && d.oferecimento) marcas += '<span class="selo tabela__fora">Oferecida: ' + esc(ROTULO_SEMESTRE[d.oferecimento]) + '</span>';
+      var travada = L.selecao === 'grade' && d._naGrade;
+      var caixa = sel ? '<td class="celSelecao"><label><input type="checkbox" class="caixaSelecao" data-lista="' + L.id + '" data-sel="' + esc(d._id) + '"' + (marcado(L, d) ? ' checked' : '') + (travada ? ' disabled' : '') + ' aria-label="' + esc((travada ? 'Já adicionada à grade: ' : L.selecao === 'grade' ? 'Escolher para enviar à grade: ' : 'Selecionar ') + d.codigo + ' ' + d.nome) + '"></label></td>' : '';
+      return '<tr data-id="' + esc(d._id) + '" data-codigo="' + esc(d.codigo) + '"' + (sel && marcado(L, d) ? ' class="linhaMarcada"' : '') + '>' + caixa +
+        '<td><button type="button" class="tabela__abrir" data-abrir-ficha="' + esc(d._id) + '">' +
+          '<span class="tabela__codigo mono">' + esc(d.codigo) + '</span><span class="tabela__nome">' + esc(d.nome) + '</span></button>' + marcas + '</td>' +
+        '<td data-rotulo="Departamento">' + esc(d.departamento) + '</td>' +
+        '<td class="num" data-rotulo="Créditos (aula + trab.)">' + esc(creditos) + '</td>' +
+        '<td class="num" data-rotulo="CH">' + esc(numeroOuTraco(d.ch, ' h')) + '</td>' +
+        '<td data-rotulo="Oferta"><div class="selos">' + (selos || '<span class="texto-suave pequeno">sem oferta na estrutura atual</span>') + '</div></td>' +
+      '</tr>';
+    }).join('');
+    var vazio = el(L, 'listaVazia');
+    vazio.hidden = resultado.length > 0;
+    el(L, 'tabelaDisciplinas').hidden = resultado.length === 0;
+    if (!resultado.length) {
+      vazio.innerHTML = '<p>' + (L.id === 'outros' && !estado.idx.outros.length ? 'Nenhuma disciplina para outros cursos ainda. Use "Importar lista da unidade (CSV)" ou "Cadastrar disciplina".' : 'Nenhuma disciplina encontrada com esses critérios.') + '</p>' +
+        (ativos.length ? '<button type="button" class="botao botao--secundario" data-lista="' + L.id + '" data-limpar-filtros>Limpar busca e filtros</button>' : '');
+    }
+    L.ultimoResultado = resultado;
+    renderizarBarraLote(L);
+  }
+
+  /**
+   * Barra acima da tabela com a seleção em lote.
+   * Modo "acao": "N selecionadas · Excluir (ou Restaurar) · Limpar seleção".
+   * Modo "grade": "X de Y selecionadas para a grade · Selecionar todas as
+   * filtradas · Desmarcar as filtradas".
+   * A caixa do cabeçalho marca/desmarca todas as linhas filtradas.
+   */
+  function renderizarBarraLote(L) {
+    var barra = el(L, 'barraLote');
+    var todas = el(L, 'selTodos');
+    if (!barra) return;
+    if (!temSelecao(L)) { barra.hidden = true; return; }
+    var visiveis = L.ultimoResultado.map(function (r) { return r.d; });
+    var marcadosVisiveis = visiveis.filter(function (d) { return marcado(L, d); }).length;
+    if (todas) {
+      todas.checked = visiveis.length > 0 && marcadosVisiveis === visiveis.length;
+      todas.indeterminate = marcadosVisiveis > 0 && marcadosVisiveis < visiveis.length;
+      todas.disabled = !visiveis.length;
+    }
+    if (L.selecao === 'grade') {
+      var todasGrade = L.fonte().filter(function (d) { return !d._excluida; });
+      var naGrade = todasGrade.filter(function (d) { return d._naGrade; }).length;
+      var escolhidas = Object.keys(L.marcados).length;
+      var livresVisiveis = visiveis.filter(escolhivel);
+      var todasEscolhidas = livresVisiveis.length > 0 && livresVisiveis.every(function (d) { return L.marcados[d._id]; });
+      if (todas) {
+        todas.checked = todasEscolhidas || (visiveis.length > 0 && !livresVisiveis.length);
+        todas.indeterminate = !todasEscolhidas && livresVisiveis.some(function (d) { return L.marcados[d._id]; });
+        todas.disabled = !livresVisiveis.length;
+      }
+      barra.hidden = false;
+      barra.innerHTML = '<span class="barraLote__texto" role="status"><strong>' + naGrade + '</strong> de ' + todasGrade.length + ' disciplinas adicionadas à grade horária' +
+          (escolhidas ? ' · <strong>' + escolhidas + '</strong> ' + (escolhidas === 1 ? 'escolhida para enviar' : 'escolhidas para enviar') : '') +
+          (L.semOferecimento.length ? '<span class="barraLote__aviso">Não enviadas por falta do semestre de oferecimento: ' + esc(L.semOferecimento.join(', ')) + '. Abra a ficha, escolha a "Disciplina de semestre" e salve. ' + gatilhoAjuda('ajuda-lista-grade-semestre', 'Por que não entraram') + '</span>' : '') + '</span>' +
+        '<span class="barraLote__acoes"><button type="button" class="botao botao--secundario" data-lista="' + L.id + '" data-lote="selecionar"' + (!livresVisiveis.length || todasEscolhidas ? ' disabled' : '') + '>Selecionar todas as filtradas</button>' +
+        (escolhidas ? '<button type="button" class="botao botao--texto" data-lista="' + L.id + '" data-lote="limpar">Limpar</button>' : '') +
+        '<button type="button" class="botao botao--primario" data-lista="' + L.id + '" data-lote="enviarGrade"' + (escolhidas ? '' : ' disabled') + '>Enviar para a Grade Horária</button></span>';
+      return;
+    }
+    var n = Object.keys(L.marcados).length;
+    barra.hidden = n === 0;
+    if (!n) { barra.innerHTML = ''; return; }
+    var restaurar = L.filtros.situacao === 'EXCLUIDA';
+    barra.innerHTML = '<span class="barraLote__texto" role="status"><strong>' + n + '</strong> ' + (n === 1 ? 'disciplina selecionada' : 'disciplinas selecionadas') + '</span>' +
+      '<span class="barraLote__acoes">' + (restaurar
+        ? '<button type="button" class="botao botao--primario" data-lista="' + L.id + '" data-lote="restaurar">Restaurar</button>'
+        : '<button type="button" class="botao botao--perigo" data-lista="' + L.id + '" data-lote="excluir">Excluir</button>') +
+      '<button type="button" class="botao botao--secundario" data-lista="' + L.id + '" data-lote="limpar">Limpar seleção</button></span>';
+  }
+
+  /** CSV da lista filtrada L (UTF-8 com BOM, ";" — abre direto no Excel). */
+  function baixarLista(L) {
+    var idx = estado.idx;
+    var resultado = L.ultimoResultado || [];
+    // Célula CSV: aspas quando preciso e apóstrofo antes de =, +, - ou @.
+    function celula(v) {
+      var t = v == null ? '' : String(v);
+      if (/^[=+\-@]/.test(t)) t = "'" + t; // evita fórmula ao abrir na planilha
+      return /[";\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+    }
+    var comOrigem = L.id !== 'estrutura';
+    var cab = ['Código', 'Nome', 'Departamento', 'Créditos-aula', 'Créditos-trabalho', 'CH (h)', 'Estágio CE (h)', 'Práticas CP (h)', 'Extensão EXT (h)', 'Versão'];
+    idx.habs.forEach(function (h) { cab.push(h.nome + ' — tipo', h.nome + ' — período ideal'); });
+    cab.push('Semestre de oferecimento', 'Situação', 'Observações');
+    if (comOrigem) cab.push('Origem', 'Unidade atendida', 'Curso atendido', 'Adicionada à grade horária');
+    var linhas = [cab.map(celula).join(';')];
+    resultado.forEach(function (r) {
+      var d = r.d;
+      var l = [d.codigo, d.nome, d.departamento, d.creditosAula, d.creditosTrabalho, d.ch, d.ce, d.cp, d.ext, d.versao];
+      idx.habs.forEach(function (h) {
+        var o = r.ofertas.filter(function (x) { return x.habCodigo === h.codigo; })[0];
+        l.push(o ? ROTULO_TIPO[o.tipo] : '', o ? o.periodo : '');
+      });
+      var semestre = ROTULO_SEMESTRE[oferecimentoDe(d)] || '';
+      l.push(semestre, d._excluida ? 'Excluída no painel' : d.situacao, d.observacoes);
+      if (comOrigem) l.push(d._origem === 'outros' ? 'Disciplina para outros cursos' : 'Estrutura curricular', d.unidadeAtendida || '', d.cursoAtendido || '', d._naGrade ? 'Sim' : 'Não');
+      linhas.push(l.map(celula).join(';'));
+    });
+    var blob = new Blob(['\ufeff' + linhas.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    var hoje = new Date();
+    a.href = URL.createObjectURL(blob);
+    a.download = { estrutura: 'estrutura-curricular-', outros: 'disciplinas-outros-cursos-', grade: 'lista-grade-horaria-' }[L.id] + hoje.getFullYear() + String(hoje.getMonth() + 1).padStart(2, '0') + String(hoje.getDate()).padStart(2, '0') + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    mostrarAviso('Lista com ' + resultado.length + ' disciplinas baixada.');
+  }
+
+  /*----------------------------------------------------------------
+    Ações em lote e atualização depois de gravar
+  ----------------------------------------------------------------*/
+  /**
+   * Troca os dados da preparação pelos que o servidor devolveu (depois de
+   * salvar, excluir, selecionar ou incluir) e redesenha as listas, a barra
+   * de etapas e, se aberta, a ficha. Filtros e ordenação são mantidos.
+   */
+  function aplicarPreparacao(prep, observacao) {
+    if (prep) estado.dados.preparacao = prep;   // (1.8.7) sem leitura (null): mantém os dados que já tinha
+    if (observacao) {
+      var orig = estado.dados.base.disciplinas.filter(function (x) { return x.codigo === observacao.chave; })[0];
+      if (orig) orig.observacoes = observacao.texto;
+    }
+    estado.idx = indexar(estado.dados);
+    listasAtivas().forEach(function (L) {
+      // Escolhas que não valem mais: disciplina sumiu ou (lista "grade")
+      // foi excluída ou já está na grade.
+      Object.keys(L.marcados).forEach(function (id) {
+        var d = estado.idx.itens[id];
+        if (!d || (L.selecao === 'grade' && !escolhivel(d))) delete L.marcados[id];
+      });
+      preencherOpcoesFiltros(L);
+      sincronizarControlesFiltros(L);
+      renderizarLista(L);
+    });
+    renderizarEtapas();
+  }
+
+  /**
+   * (1.8.6) Um pedido concluiu antes um salvamento pendente: aplica aos
+   * dados confirmados do painel o que ele gravou (observação lida da
+   * planilha — null = não mudava a observação, nada a fazer — e, se veio,
+   * a preparação). Não mexe em formulário aberto nem em rascunho. Sem
+   * leitura da preparação, avisa para recarregar.
+   */
+  function aplicarRecuperado(rec) {
+    if (!rec || !estado.dados || !estado.dados.base) return;
+    try {
+      aplicarPreparacao(rec.preparacao || estado.dados.preparacao, rec.observacao);
+      var Pp = window.Preparacao;
+      if (Pp && Pp.mostrarPendencia) {
+        Pp.mostrarPendencia(rec.leituraFalhou
+          ? { estado: 'recarregar', codigo: rec.codigo, mensagem: 'O salvamento de ' + (rec.codigo || 'uma disciplina') + ' que tinha ficado pendente foi concluído, mas o painel não conseguiu ler todos os dados atualizados. Recarregue a página.' }
+          : null);
+      }
+    } catch (e) { /* a resposta do pedido segue normalmente */ }
+  }
+
+  /**
+   * (1.8.7) Uma ação em lote pendente foi concluída no início do pedido:
+   * aplica a preparação lida (se veio; senão a resposta do pedido traz) e
+   * deixa a nota para o aviso do pedido, distinguindo as duas coisas.
+   */
+  function aplicarRecuperadoLote(rec) {
+    if (!rec || !estado.dados || !estado.dados.base) return;
+    try {
+      if (rec.preparacao) aplicarPreparacao(rec.preparacao);
+      var Pp = window.Preparacao;
+      if (Pp && Pp.mostrarPendencia) Pp.mostrarPendencia(rec.leituraFalhou ? avisoRecarregarLote() : { tipo: 'lote', estado: 'nenhum' });
+    } catch (e) { /* a resposta do pedido segue normalmente */ }
+    notaRecuperacao = '(Antes, foi concluída a ação pendente "' + (rec.nome || 'em lote') + '" em ' + rec.total + (rec.total === 1 ? ' disciplina' : ' disciplinas') + (rec.em ? ', de ' + rec.em : '') + '.)';
+    notaMostrada = false;
+    setTimeout(function () { if (!notaMostrada) mostrarAviso(''); notaRecuperacao = ''; }, 0);
+  }
+  function avisoRecarregarLote() {
+    return { tipo: 'lote', estado: 'recarregar', mensagem: 'A gravação foi concluída, mas o painel não conseguiu ler todos os dados atualizados. Recarregue a página.' };
+  }
+  /** Resposta 'concluido': some o aviso de ação em lote; sem leitura, pede recarga. */
+  function aposConcluir(d) {
+    var Pp = window.Preparacao;
+    if (!Pp || !Pp.mostrarPendencia) return;
+    var semLeitura = d.leituraFalhou || (d.recuperadoLote && d.recuperadoLote.leituraFalhou);
+    if (semLeitura) Pp.mostrarPendencia(avisoRecarregarLote());
+    else if (!d.recuperadoLote) Pp.mostrarPendencia({ tipo: 'lote', estado: 'nenhum' });
+  }
+  /** Recusa LOTE_PENDENTE / LOTE_INCERTO: dados lidos nas listas (sem tocar em formulários) e aviso fixo. */
+  function aplicarRecusaLote(d) {
+    try {
+      if (d.preparacao && estado.dados) aplicarPreparacao(d.preparacao);
+      if (window.Preparacao && window.Preparacao.mostrarPendencia) window.Preparacao.mostrarPendencia(d.lote);
+    } catch (e) { /* a recusa segue para quem chamou */ }
+  }
+
+  /** Itens {origem, chave} para o servidor a partir de ids da tela. */
+  function itensDe(ids) {
+    return ids.map(function (id) { var d = estado.idx.itens[id]; return d ? { origem: d._origem, chave: d._chave } : null; }).filter(Boolean);
+  }
+
+  /** Executa uma ação em lote da lista L (excluir, restaurar, limpar, selecionar, enviarGrade). */
+  function acaoLote(L, acao) {
+    if (acao === 'limpar') { L.marcados = {}; L.semOferecimento = []; renderizarLista(L); return; }
+    var visiveis = L.ultimoResultado.map(function (r) { return r.d; });
+    if (acao === 'excluir' || acao === 'restaurar') {
+      var ids = Object.keys(L.marcados);
+      if (!ids.length) return;
+      if (acao === 'excluir' && !confirm('Excluir ' + (ids.length === 1 ? 'a disciplina selecionada' : 'as ' + ids.length + ' disciplinas selecionadas') + '?\n\nElas deixam de aparecer na lista e na grade. Os dados do Júpiter continuam guardados: dá para restaurar pelo filtro Situação › Excluídas.')) return;
+      executarNoServidor('excluirDisciplinas', [itensDe(ids), acao === 'excluir'], acao === 'excluir' ? 'Excluindo…' : 'Restaurando…').then(function (r) {
+        L.marcados = {};
+        aplicarPreparacao(r.preparacao);
+        mostrarAviso((acao === 'excluir' ? 'Excluídas: ' : 'Restauradas: ') + r.alteradas + '.');
+      }, function () {
+        // (1.8.7) Recusa (pendente, não confirmada, não salva…): o aviso já foi mostrado e
+        // as listas já têm os dados lidos; a seleção continua para conferir/repetir.
+        renderizarLista(L);
+      });
+      return;
+    }
+    // Etapa 3: escolher é só na tela; "Enviar para a Grade Horária" grava.
+    if (acao === 'selecionar') {
+      visiveis.filter(escolhivel).forEach(function (d) { L.marcados[d._id] = true; });
+      renderizarLista(L);
+      return;
+    }
+    if (acao === 'enviarGrade') enviarParaGrade(L);
+  }
+
+  /**
+   * "Enviar para a Grade Horária": grava "Adicionada à grade horária" nas
+   * escolhidas. As que não têm semestre de oferecimento definido NÃO
+   * entram (o servidor confere) e ficam listadas na barra.
+   */
+  function enviarParaGrade(L) {
+    var ids = Object.keys(L.marcados);
+    if (!ids.length) return;
+    executarNoServidor('adicionarAGrade', [itensDe(ids)], 'Enviando para a grade horária…').then(function (r) {
+      var faltam = {};
+      r.semOferecimento.forEach(function (x) { faltam[x.origem === 'outros' ? 'O:' + x.chave : x.chave] = true; });
+      L.marcados = {};
+      Object.keys(faltam).forEach(function (id) { if (estado.idx.itens[id]) L.marcados[id] = true; });
+      L.semOferecimento = r.semOferecimento.map(function (x) { return x.codigo; });
+      aplicarPreparacao(r.preparacao);
+      mostrarAviso(r.adicionadas + (r.adicionadas === 1 ? ' disciplina adicionada' : ' disciplinas adicionadas') + ' à grade horária' +
+        (r.semOferecimento.length ? '; ' + r.semOferecimento.length + ' sem semestre de oferecimento (continuam marcadas).' : '.'));
+    }, function () {
+      // (1.8.7) Recusa: aviso já mostrado, listas com os dados lidos; a escolha continua (sem o que já entrou).
+      renderizarLista(L);
+    });
+  }
+
+  /** Caixa de uma linha (ou do cabeçalho) mudou. */
+  function caixaMudou(L, caixa) {
+    if (caixa === el(L, 'selTodos')) {
+      var visiveis = L.ultimoResultado.map(function (r) { return r.d; });
+      if (L.selecao === 'grade') visiveis = visiveis.filter(escolhivel);
+      visiveis.forEach(function (d) { if (caixa.checked) L.marcados[d._id] = true; else delete L.marcados[d._id]; });
+      renderizarLista(L);
+      return;
+    }
+    var id = caixa.getAttribute('data-sel');
+    var d = estado.idx.itens[id];
+    if (!d) return;
+    if (L.selecao === 'grade' && !escolhivel(d)) { caixa.checked = true; return; }
+    if (caixa.checked) L.marcados[id] = true; else delete L.marcados[id];
+    var linha = caixa.closest('tr');
+    if (linha) linha.classList.toggle('linhaMarcada', caixa.checked);
+    renderizarBarraLote(L);
+  }
+
+  /**
+   * Chama uma função de gravação do servidor mostrando a camada
+   * "carregando" (texto) ou nada (null). Erro: aviso com a mensagem do
+   * servidor e a Promise é rejeitada.
+   */
+  function executarNoServidor(nome, args, texto) {
+    if (texto) mostrarCarregando(texto);
+    return chamarServidor.apply(null, [nome].concat(args)).then(function (r) {
+      if (texto) esconderCarregando();
+      return r;
+    }, function (erro) {
+      if (texto) esconderCarregando();
+      mostrarAviso(erro.mensagem);
+      throw erro;
+    });
+  }
+
+  /*----------------------------------------------------------------
+    Ficha da disciplina (janela)
+  ----------------------------------------------------------------*/
+  /**
+   * Abre a ficha da disciplina. vindoDe = código da ficha anterior quando
+   * a pessoa navegou por um requisito (habilita o botão "Voltar"); sem
+   * vindoDe, a navegação recomeça. Se a janela já está aberta, só troca o
+   * conteúdo e leva o foco ao título.
+   */
+  function abrirFicha(id, vindoDe) {
+    var d = estado.idx.itens[id] || estado.idx.disciplinas[id];
+    if (!d) return;
+    if (vindoDe) estado.pilhaFicha.push(vindoDe); else estado.pilhaFicha = [];
+    estado.fichaAtual = d._id;
+    renderizarFicha(d);
+    var modal = $('modalDisciplina');
+    if (Modal.aberto(modal)) {
+      $('modalDisciplinaTitulo').setAttribute('tabindex', '-1');
+      $('modalDisciplinaTitulo').focus();
+      modal.scrollTop = 0;
+    } else {
+      Modal.abrir(modal, { aoFechar: function () { estado.pilhaFicha = []; estado.fichaAtual = null; } });
+    }
+  }
+
+  /**
+   * Fecha a ficha. Com alterações não salvas (administrador editando),
+   * pergunta antes de descartar.
+   */
+  function fecharFicha() {
+    var prep = window.Preparacao;
+    // (1.8.4) Gravação desta ficha em andamento: as alterações já foram enviadas.
+    if (prep && prep.gravando && prep.gravando()) {
+      if (!confirm('A gravação desta disciplina ainda não terminou. Fechar a ficha mesmo assim?\n\nA gravação continua; o aviso dirá se ela deu certo. Se falhar, as alterações não ficam guardadas.')) return;
+    } else if (prep && prep.fichaAlterada() && !confirm('Descartar as alterações não salvas desta disciplina?')) return;
+    Modal.fechar($('modalDisciplina'));
+  }
+
+  /**
+   * Frases do "Resumo" da ficha, em linguagem simples: créditos e horas,
+   * cargas especiais, onde é obrigatória/eletiva/livre e em que período,
+   * onde não aparece, paridade do período e requisitos. Devolve [frases].
+   */
+  function textoResumo(d, ofertas) {
+    var idx = estado.idx;
+    var partes = [];
+    if (d.creditosAula != null) {
+      var t = 'Tem ' + plural(d.creditosAula, 'crédito-aula', 'créditos-aula');
+      if (d.creditosTrabalho) t += ' e ' + plural(d.creditosTrabalho, 'crédito-trabalho', 'créditos-trabalho');
+      t += ': ' + plural(d.creditosAula, 'hora', 'horas') + ' de aula por semana';
+      if (d.ch != null) t += ' e ' + d.ch + ' horas no semestre';
+      partes.push(t + '.');
+    }
+    var especiais = [];
+    if (d.ce > 0) especiais.push(d.ce + ' h de estágio');
+    if (d.cp > 0) especiais.push(d.cp + ' h de práticas como componente curricular');
+    if (d.ext > 0) especiais.push(d.ext + ' h de atividade extensionista');
+    if (d.atpa > 0) especiais.push(d.atpa + ' h de ATPA');
+    if (especiais.length) partes.push('Carga horária especial: ' + juntar(especiais) + '.');
+    if (d._fora) {
+      partes.push('Não aparece na estrutura curricular atual: estava numa importação anterior e não veio na última.');
+      return partes;
+    }
+    var grupos = {}, ordem = [];
+    ofertas.forEach(function (o) {
+      var k = o.tipo + '|' + o.periodo;
+      if (!grupos[k]) { grupos[k] = []; ordem.push(k); }
+      grupos[k].push(o.habNome);
+    });
+    var frases = ordem.map(function (k) {
+      var p = k.split('|');
+      return ROTULO_TIPO[p[0]] + (p[1] && p[1] !== 'null' ? ' no ' + p[1] + 'º período ' : ' ') + deHabs(grupos[k]);
+    });
+    frases = frases.map(function (f, i) { return i === 0 ? f : f.charAt(0).toLowerCase() + f.slice(1); });
+    if (frases.length) partes.push(juntar(frases) + '.');
+    var ausentes = idx.habs.filter(function (h) { return !ofertas.some(function (o) { return o.habCodigo === h.codigo; }); }).map(function (h) { return h.nome; });
+    if (ausentes.length && ofertas.length) partes.push('Não faz parte ' + deHabs(ausentes) + '.');
+    var calc = oferecimentoPeloPeriodo(ofertas);
+    var peloPeriodo = calc === 'ambos' ? 'o período ideal é ímpar numa habilitação e par em outra, então seria oferecida nos dois semestres do ano'
+      : calc === '1' ? 'pelo período ideal (ímpar), seria oferecida no 1º semestre do ano'
+      : calc === '2' ? 'pelo período ideal (par), seria oferecida no 2º semestre do ano' : '';
+    if (d.oferecimento && d.oferecimento !== calc) {
+      partes.push('Semestre de oferecimento ajustado no painel: ' + (d.oferecimento === 'ambos' ? 'oferecida nos dois semestres do ano' : 'oferecida no ' + ROTULO_SEMESTRE[d.oferecimento] + ' do ano') + (peloPeriodo ? ' (' + peloPeriodo + ').' : '.'));
+    } else if (calc === 'ambos') partes.push('O período ideal é ímpar numa habilitação e par em outra: é oferecida nos dois semestres do ano.');
+    else if (calc) partes.push('Pelo período ideal (' + (calc === '1' ? 'ímpar' : 'par') + '), é oferecida no ' + ROTULO_SEMESTRE[calc] + ' do ano.');
+    return partes;
+  }
+
+  /** Quadro "número + rótulo + explicação" da ficha e dos currículos ("não informado" se vazio). */
+  function blocoNumero(valor, rotulo, explicacao) {
+    var vazio = valor === null || valor === undefined || valor === '';
+    return '<div class="numero' + (vazio ? ' numero--vazio' : '') + '"><div class="numero__valor">' + (vazio ? 'não informado' : esc(valor)) + '</div>' +
+      '<div class="numero__rotulo">' + esc(rotulo) + '</div><div class="numero__explicacao">' + esc(explicacao) + '</div></div>';
+  }
+
+  /**
+   * Requisitos de uma disciplina numa habilitação, em HTML. Com a
+   * informação de grupos (PDF): cada grupo com mais de um item vira
+   * "Basta um destes: A ou B", e grupos diferentes são ligados por
+   * "e também". Sem grupos (só CSV): lista simples e uma nota explicando
+   * que o CSV não diz se valem todos ou basta um.
+   * codigoAtual permite o "Voltar" depois de navegar para um requisito.
+   */
+  function listaRequisitosHtml(lista, codigoAtual) {
+    var idx = estado.idx;
+    // Um requisito: código (clicável se estiver na base), nome e observações.
+    function item(r) {
+      var efetiva = idx.disciplinas[r.requisito];
+      var nome = (efetiva && efetiva.nome) || r.nomeRequisito || '';
+      var codigo = efetiva
+        ? '<button type="button" class="linkDisciplina mono" data-abrir-ficha="' + esc(r.requisito) + '" data-vindo-de="' + esc(codigoAtual) + '">' + esc(efetiva.codigo) + '</button>'
+        : '<span class="mono">' + esc(r.requisito) + '</span>';
+      var extra = [];
+      if (r.versaoRequisito) extra.push('versão ' + r.versaoRequisito);
+      if (/fraco/i.test(r.tipoRequisito || '')) extra.push('requisito fraco');
+      if (!idx.disciplinas[r.requisito]) extra.push('não está na estrutura importada');
+      return '<li>' + codigo + ' — ' + esc(nome) + (extra.length ? ' <span class="texto-suave pequeno">(' + esc(extra.join('; ')) + ')</span>' : '') + '</li>';
+    }
+    var semGrupo = lista.some(function (r) { return r.grupo == null; });
+    if (lista.length === 1) return '<ul class="requisitos__lista">' + item(lista[0]) + '</ul>';
+    if (semGrupo) {
+      return '<ul class="requisitos__lista">' + lista.map(item).join('') + '</ul>' +
+        '<p class="secao__nota">O CSV não diz se estes requisitos valem todos juntos ou se basta um deles. Importe o PDF do relatório para saber.</p>';
+    }
+    var grupos = {}, ordem = [];
+    lista.forEach(function (r) { if (!grupos[r.grupo]) { grupos[r.grupo] = []; ordem.push(r.grupo); } grupos[r.grupo].push(r); });
+    ordem.sort(function (a, b) { return a - b; });
+    return ordem.map(function (g, i) {
+      var membros = grupos[g];
+      var html = '<ul class="requisitos__lista">' + membros.map(function (r, k) {
+        return (k > 0 ? '<li><span class="requisitos__conector">ou</span></li>' : '') + item(r);
+      }).join('') + '</ul>';
+      if (membros.length > 1) html = '<p class="pequeno texto-suave" style="margin:0 0 4px">Basta um destes:</p>' + html;
+      return (i > 0 ? '<span class="requisitos__conector">e também</span>' : '') + html;
+    }).join('');
+  }
+
+  /**
+   * Conteúdo da ficha (leitura): Em resumo · Créditos e carga horária ·
+   * Onde aparece · Requisitos para cursar (habilitações com a mesma lista
+   * são agrupadas) · É requisito para · Observações · Histórico.
+   * Administradores veem a ficha EDITÁVEL (PainelPreparacao.html), que
+   * reaproveita as seções abaixo (secoesFicha).
+   */
+  function renderizarFicha(d) {
+    var rodapeEdicao = $('fichaSalvar');
+    // Administrador: ficha editável (PainelPreparacao.html).
+    if (ehAdmin() && window.Preparacao) { window.Preparacao.renderizarFichaEditavel(d); return; }
+    if (rodapeEdicao) { rodapeEdicao.hidden = true; $('fichaExcluir').hidden = true; $('fichaGrade').hidden = true; $('fichaGradeNota').textContent = ''; }
+    $('modalDisciplinaCodigo').innerHTML = cabecalhoFicha(d);
+    $('modalDisciplinaTitulo').textContent = d.nome;
+    var sec = secoesFicha(d);
+    var ofertas = ofertasDe(d);
+    var html = sec.voltar + sec.avisos + sec.resumo;
+    html += '<section class="secao"><h3 class="secao__titulo">Créditos e carga horária</h3><div class="numeros">' +
+      blocoNumero(d.creditosAula, 'Créditos-aula', d.creditosAula != null ? plural(d.creditosAula, 'hora', 'horas') + ' de aula por semana' : 'horas de aula por semana') +
+      blocoNumero(d.creditosTrabalho, 'Créditos-trabalho', 'cada um vale 30 h de atividades no semestre') +
+      blocoNumero(horas(d.ch), 'Carga horária total', '15 h por crédito-aula + 30 h por crédito-trabalho') +
+      blocoNumero(horas(d.ce), 'Estágio (CE)', 'carga horária de estágio') +
+      blocoNumero(horas(d.cp), 'Práticas (CP)', 'práticas como componente curricular') +
+      blocoNumero(horas(d.ext), 'Extensão (EXT)', d.ext != null ? 'atividade extensionista' : 'só o PDF do Júpiter informa') +
+      blocoNumero(horas(d.atpa), 'ATPA', 'atividades teórico-práticas de aprofundamento (licenciatura)') +
+      '</div></section>';
+    if (ofertas.length) {
+      html += '<section class="secao"><h3 class="secao__titulo">Onde aparece</h3><div class="tabelaScroll"><table class="tabela"><thead><tr><th scope="col">Habilitação</th><th scope="col">Tipo</th><th scope="col" class="num">Período ideal</th><th scope="col">Oferecimento (pelo período)</th></tr></thead><tbody>' +
+        ofertas.map(function (o) {
+          return '<tr><td>' + esc(o.habNome) + '</td><td data-rotulo="Tipo">' + esc(ROTULO_TIPO[o.tipo]) + '</td><td class="num" data-rotulo="Período ideal">' + (o.periodo ? o.periodo + 'º' : '—') + '</td><td data-rotulo="Oferecimento pelo período">' + (o.periodo ? (o.periodo % 2 ? '1º semestre' : '2º semestre') : '—') + '</td></tr>';
+        }).join('') + '</tbody></table></div></section>';
+    }
+    html += sec.requisitos + sec.ehRequisito;
+    if (d.observacoes) {
+      html += '<section class="secao"><h3 class="secao__titulo">Observações do Serviço de Graduação</h3><div class="alerta alerta--info"><p style="margin:0;white-space:pre-line">' + esc(d.observacoes) + '</p></div></section>';
+    }
+    html += sec.historico;
+    $('modalDisciplinaCorpo').innerHTML = html;
+  }
+
+  /** Linha acima do título da ficha: código · versão · departamento (ou "outros cursos"). */
+  function cabecalhoFicha(d) {
+    if (d._origem === 'outros') return '<span class="mono">' + esc(d.codigo) + '</span> · Disciplina para outros cursos · ' + esc(NOME_DEPARTAMENTO[d.departamento] || d.departamento || '');
+    return '<span class="mono">' + esc(d.codigo) + '</span>' + (d.versao ? ' · versão ' + esc(d.versao) : '') + ' · ' + esc(NOME_DEPARTAMENTO[d.departamento] || d.departamento);
+  }
+
+  /**
+   * Seções da ficha que não dependem do modo (leitura/edição), em HTML:
+   * voltar, avisos, resumo, requisitos, ehRequisito, historico.
+   */
+  function secoesFicha(d) {
+    var idx = estado.idx;
+    var r = { voltar: '', avisos: '', resumo: '', requisitos: '', ehRequisito: '', historico: '' };
+    var anterior = estado.pilhaFicha[estado.pilhaFicha.length - 1];
+    if (anterior && idx.itens[anterior]) {
+      r.voltar = '<p><button type="button" class="botao botao--texto" data-voltar-ficha>← Voltar para ' + esc(idx.itens[anterior].codigo) + '</button></p>';
+    }
+    if (d._excluida) r.avisos += '<div class="alerta alerta--aviso"><div class="alerta__titulo">Excluída no painel</div><p>Esta disciplina não aparece na lista nem na grade. Para voltar a usá-la, restaure-a (lista com o filtro Situação › Excluídas).</p></div>';
+    if (d._fora) r.avisos += '<div class="alerta alerta--aviso"><div class="alerta__titulo">Fora da estrutura atual</div><p>Esta disciplina estava numa importação anterior e não veio na última.</p></div>';
+    // (1.8.9) Oferta ajustada depois de troca de currículo.
+    if (d._ofertaPendencias && d._ofertaPendencias.length) {
+      r.avisos += '<div class="alerta alerta--aviso" data-oferta-a-revisar><div class="alerta__titulo">Oferta a revisar</div><p>A oferta ajustada no painel tem ' + (d._ofertaPendencias.length === 1 ? 'um vínculo' : d._ofertaPendencias.length + ' vínculos') + ' de currículo que não pôde ser associado com segurança ao currículo em uso. ' + (d._ofertaPendencias.length === 1 ? 'Ele está guardado' : 'Eles estão guardados') + ', mas não conta para o semestre de oferecimento, os filtros e a grade até ser revisado:</p><ul>' +
+        d._ofertaPendencias.map(function (p) { return '<li>Currículo ' + esc(p.curriculo || '?') + (p.tipo && ROTULO_TIPO[p.tipo] ? ' · ' + esc(ROTULO_TIPO[p.tipo]) : '') + (p.periodo ? ' · ' + esc(p.periodo) + 'º período' : '') + ' — ' + esc(p.motivo || '') + '</li>'; }).join('') +
+        '</ul>' + (ehAdmin() ? '<p>Para resolver: ajuste "Onde aparece" abaixo, marque "Descartar os vínculos a revisar" e salve. Salvar outros campos sem mexer na oferta não descarta esses vínculos.</p>' : '') + gatilhoAjuda('ajuda-oferta-revisar', 'Entenda a oferta a revisar') + '</div>';
+    }
+    if (d._ofertaAssociada) r.avisos += '<div class="alerta alerta--info"><div class="alerta__titulo">Oferta ajustada associada ao currículo atual</div><p>' + (d._ofertaAssociada === 1 ? 'Um vínculo da oferta ajustada era' : d._ofertaAssociada + ' vínculos da oferta ajustada eram') + ' de um currículo substituído e ' + (d._ofertaAssociada === 1 ? 'foi associado' : 'foram associados') + ' ao currículo em uso da mesma habilitação, com o tipo e o período ajustados.</p>' + gatilhoAjuda('ajuda-oferta-revisar-associada', 'O que isto quer dizer') + '</div>';
+    if (d._origem === 'outros') {
+      r.resumo = '<section class="secao"><h3 class="secao__titulo">Em resumo</h3><div class="resumoDidatico"><p>Disciplina do IP ministrada para cursos de outras unidades' +
+        (d.unidadeAtendida || d.cursoAtendido ? ' (' + esc([d.unidadeAtendida, d.cursoAtendido].filter(Boolean).join(' — ')) + ')' : '') + '. Não faz parte da estrutura curricular do curso de Psicologia.</p>' +
+        '<p>' + (d.oferecimento === 'ambos' ? 'Oferecida nos dois semestres do ano.' : d.oferecimento ? 'Oferecida no ' + ROTULO_SEMESTRE[d.oferecimento] + ' do ano.' : 'Semestre de oferecimento não informado: escolha abaixo, em "Disciplina de semestre", se é oferecida no 1º, no 2º ou nos dois semestres do ano.') + '</p>' +
+        (d.creditosAula != null ? '<p>' + esc(plural(d.creditosAula, 'crédito-aula', 'créditos-aula')) + (d.creditosTrabalho ? ' e ' + esc(plural(d.creditosTrabalho, 'crédito-trabalho', 'créditos-trabalho')) : '') + (d.ch != null ? ', ' + esc(d.ch) + ' horas no semestre' : '') + '.</p>' : '') +
+        '</div></section>';
+      r.historico = '<section class="secao"><h3 class="secao__titulo">Histórico</h3><p class="pequeno texto-suave" style="margin:0">' +
+        esc([d.origem ? 'Origem: ' + d.origem : '', d.incluidaEm ? 'incluída em ' + d.incluidaEm : '', d.ativacao ? 'ativação no Júpiter: ' + d.ativacao : '', d.alteradoEm ? 'última alteração no painel: ' + d.alteradoEm + (d.alteradoPor ? ' por ' + d.alteradoPor : '') : ''].filter(Boolean).join(' · ')) + '</p></section>';
+      return r;
+    }
+    var ofertas = ofertasDe(d);
+    r.resumo = '<section class="secao"><h3 class="secao__titulo">Em resumo</h3><div class="resumoDidatico">' +
+      textoResumo(d, ofertas).map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div></section>';
+
+    // Requisitos (habilitações com a mesma lista aparecem juntas)
+    var porAssinatura = {}, ordemAss = [];
+    ofertas.forEach(function (o) {
+      var lista = (idx.requisitos[o.curriculo + '|' + d._chave] || []).slice().sort(function (a, b) { return (a.grupo || 0) - (b.grupo || 0) || (a.requisito < b.requisito ? -1 : 1); });
+      var ass = lista.map(function (q) { return q.requisito + ':' + q.grupo; }).join(',');
+      if (!porAssinatura[ass]) { porAssinatura[ass] = { habs: [], lista: lista }; ordemAss.push(ass); }
+      porAssinatura[ass].habs.push(o.habNome);
+    });
+    if (ofertas.length) {
+      r.requisitos = '<section class="secao"><h3 class="secao__titulo">Requisitos para cursar</h3>' +
+        '<div class="ajudaLinha ajudaLinha--secao">' + gatilhoAjuda('ajuda-ficha-requisitos', '"Basta um destes" e "e também"') + '</div><div class="requisitos">' +
+        ordemAss.map(function (a) {
+          var g = porAssinatura[a];
+          var titulo = g.habs.length === idx.habs.length && idx.habs.length > 1 ? 'Em todas as habilitações' : g.habs.join(', ');
+          return '<div class="requisitos__hab"><h4>' + esc(titulo) + '</h4>' +
+            (g.lista.length ? listaRequisitosHtml(g.lista, d._id) : '<p class="texto-suave" style="margin:0">Sem requisito.</p>') + '</div>';
+        }).join('') + '</div></section>';
+    }
+
+    // É requisito de
+    var dependentes = {};
+    (idx.requisitoDe[d._chave] || []).forEach(function (q) {
+      var h = idx.habPorCurriculo[q.curriculo];
+      (dependentes[q.codigo] = dependentes[q.codigo] || []).push(h ? h.nome : q.curriculo);
+    });
+    var codigosDep = Object.keys(dependentes).sort();
+    if (codigosDep.length) {
+      r.ehRequisito = '<section class="secao"><h3 class="secao__titulo">É requisito para</h3><ul class="requisitos__lista">' +
+        codigosDep.map(function (c) {
+          var x = idx.disciplinas[c];
+          return '<li><button type="button" class="linkDisciplina mono" data-abrir-ficha="' + esc(c) + '" data-vindo-de="' + esc(d._id) + '">' + esc(x ? x.codigo : c) + '</button> — ' + esc(x ? x.nome : '') + ' <span class="texto-suave pequeno">(' + esc(dependentes[c].join(', ')) + ')</span></li>';
+        }).join('') + '</ul></section>';
+    }
+
+    // Origem dos dados e histórico
+    var origem = [];
+    if (d.versao) origem.push('Versão ' + d.versao + (d.versaoOrigem === 'PDF' ? ', lida no PDF' : d.versaoOrigem ? ', tirada do CSV (de outra disciplina que a tem como requisito)' : ''));
+    if (d.incluidaEm) origem.push('Incluída na base em ' + d.incluidaEm);
+    if (d.alteradaEm && d.alteradaEm !== d.incluidaEm) origem.push('Última alteração em ' + d.alteradaEm);
+    if (d.complementoPdfEm) origem.push('Extensão e versão conferidas no PDF em ' + d.complementoPdfEm);
+    if (d._ajustes.length || d._ofertaAjustada) origem.push('Ajustada no painel' + (d._alteradoEm ? ' em ' + d._alteradoEm : '') + (d._alteradoPor ? ' por ' + d._alteradoPor : ''));
+    var hist = idx.alteracoes[d._chave] || [];
+    r.historico = '<section class="secao"><h3 class="secao__titulo">Histórico</h3>' +
+      (origem.length ? '<p class="pequeno texto-suave" style="margin-top:0">' + esc(origem.join(' · ')) + '</p>' : '') +
+      (hist.length
+        ? '<ul class="historico">' + hist.map(function (a) {
+            var detalhe = a.campo ? a.campo + ': ' + (a.antes || '—') + ' → ' + (a.depois || '—') : '';
+            return '<li><strong>' + esc(a.dataHora) + '</strong> — ' + esc(a.tipo) + (a.habilitacao ? ' (' + esc(a.habilitacao) + ')' : '') + (detalhe ? '<br><span class="texto-suave">' + esc(detalhe) + '</span>' : '') + '</li>';
+          }).join('') + '</ul>'
+        : '<p class="texto-suave pequeno" style="margin:0">Nenhuma mudança registrada desde a primeira importação.</p>') +
+      '</section>';
+    return r;
+  }
+
+  /*----------------------------------------------------------------
+    Currículos
+  ----------------------------------------------------------------*/
+  /**
+   * Aba Currículos: um cartão por habilitação em uso (contagens e, se o
+   * PDF já foi importado, duração, quadro de carga horária, estágio, AAC,
+   * AEX, extensão, total geral e o texto da habilitação) e, no fim, as
+   * estruturas anteriores guardadas na base.
+   */
+  function renderizarCurriculos() {
+    var idx = estado.idx;
+    // Linha do quadro de carga horária (aula, trabalho, total).
+    function linhaCh(rotulo, aula, trab, total) {
+      return '<tr><th scope="row">' + esc(rotulo) + '</th><td>' + esc(numeroOuTraco(aula)) + '</td><td>' + esc(numeroOuTraco(trab)) + '</td><td>' + esc(numeroOuTraco(total)) + '</td></tr>';
+    }
+    var html = idx.vigentes.map(function (c) {
+      var i = c.info || {};
+      var temInfo = !!c.infoPdfEm;
+      var partes = [];
+      partes.push('<div class="curriculo__topo"><h2 class="curriculo__nome">' + esc(c.habilitacao) + '</h2>' +
+        '<span class="texto-suave pequeno">Currículo <span class="mono">' + esc(formatarCurriculo(c.curriculo)) + '</span> · cadastrado em ' + esc(c.cadastradoEm) + (c.situacaoJupiter ? ' · ' + esc(c.situacaoJupiter) : '') + '</span></div>');
+      partes.push('<div class="contagens">' +
+        contagem(c.disciplinas, 'disciplinas') + contagem(c.obrigatorias, 'obrigatórias') + contagem(c.eletivas, 'optativas eletivas') + contagem(c.livres, 'optativas livres') + contagem(c.requisitos, 'requisitos') +
+        (temInfo ? contagem(i.duracaoIdeal, 'semestres (duração ideal)') : '') + '</div>');
+      if (temInfo) {
+        partes.push('<p class="pequeno" style="margin:0 0 6px">' +
+          (i.dataAtivacao ? 'Ativo desde ' + esc(i.dataAtivacao) + ' · ' : '') +
+          'Duração: ideal ' + esc(numeroOuTraco(i.duracaoIdeal)) + ', mínima ' + esc(numeroOuTraco(i.duracaoMinima)) + ', máxima ' + esc(numeroOuTraco(i.duracaoMaxima)) + ' semestres</p>');
+        partes.push('<div class="tabelaScroll"><table class="quadroCh"><caption class="somenteLeitor">Carga horária exigida em horas</caption><thead><tr><th scope="col">Carga horária (h)</th><th scope="col">Aula</th><th scope="col">Trabalho</th><th scope="col">Total</th></tr></thead><tbody>' +
+          linhaCh('Obrigatórias', i.chAulaObrigatoria, i.chTrabalhoObrigatoria, i.chObrigatoria) +
+          linhaCh('Optativas eletivas', i.chAulaEletiva, i.chTrabalhoEletiva, i.chEletiva) +
+          linhaCh('Optativas livres', i.chAulaLivre, i.chTrabalhoLivre, i.chLivre) +
+          '<tr><th scope="row">Total em disciplinas</th><td></td><td></td><td><strong>' + esc(numeroOuTraco(i.chDisciplinas)) + '</strong></td></tr>' +
+          '</tbody></table></div>');
+        partes.push('<div class="numeros" style="margin-top:12px">' +
+          blocoNumero(horas(i.estagio), 'Estágio', 'exigido no currículo') +
+          blocoNumero(horas(c.aacHoras), 'AAC', 'atividades acadêmicas complementares' + (c.aacPercentual != null ? ' (' + String(c.aacPercentual).replace('.', ',') + '%)' : '')) +
+          blocoNumero(horas(i.aexApolo), 'AEX Apolo', 'extensão registrada no Apolo') +
+          blocoNumero(horas(i.extensaoTotal), 'Extensão exigida', i.extensaoPercentual != null ? String(i.extensaoPercentual).replace('.', ',') + '% da carga horária' : 'no currículo') +
+          blocoNumero(horas(i.totalGeral), 'Total geral', 'disciplinas + AAC + AEX + extensão em optativas') +
+          '</div>');
+        if (i.informacoesEspecificas) {
+          partes.push('<details class="textoLongo"><summary>Informações específicas da habilitação</summary>' +
+            i.informacoesEspecificas.split('\n').map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</details>');
+        }
+      } else {
+        partes.push('<p class="secao__nota">AAC exigida: ' + esc(numeroOuTraco(c.aacHoras, ' h')) + '. Duração, cargas horárias exigidas e o texto do currículo aparecem aqui depois que o PDF do relatório for importado.</p>');
+      }
+      return '<article class="cartao curriculo">' + partes.join('') + '</article>';
+    });
+    var antigos = idx.curriculos.filter(function (c) { return !c.vigente; });
+    if (antigos.length) {
+      html.push('<section class="cartao curriculo"><h2 class="curriculo__nome" style="font-size:16px">Estruturas anteriores guardadas na base</h2><ul class="listaMudancas">' +
+        antigos.map(function (c) { return '<li>' + esc(c.habilitacao) + ' — currículo <span class="mono">' + esc(formatarCurriculo(c.curriculo)) + '</span> (' + esc(c.cadastradoEm) + '): ' + esc(c.vigenteTexto) + '</li>'; }).join('') + '</ul></section>');
+    }
+    $('listaCurriculos').innerHTML = html.join('');
+  }
+
+  /** Pequeno quadro "valor + rótulo" das contagens do currículo. */
+  function contagem(valor, rotulo) {
+    return '<div class="contagem"><div class="contagem__valor">' + esc(numeroOuTraco(valor)) + '</div><div class="contagem__rotulo">' + esc(rotulo) + '</div></div>';
+  }
+
+  /*----------------------------------------------------------------
+    Histórico de importações
+  ----------------------------------------------------------------*/
+  /**
+   * Aba Importações: um cartão por importação (mais recente primeiro),
+   * com números do que mudou e a lista de mudanças registradas. O e-mail
+   * de quem importou só vem do servidor para administradores.
+   */
+  function renderizarHistorico() {
+    var d = estado.dados;
+    var porImportacao = {};
+    (d.alteracoes || []).forEach(function (a) { (porImportacao[a.importacao] = porImportacao[a.importacao] || []).push(a); });
+    if (!d.importacoes.length) { $('listaImportacoes').innerHTML = '<div class="cartao vazio">Nenhuma importação registrada.</div>'; return; }
+    $('listaImportacoes').innerHTML = d.importacoes.map(function (imp) {
+      var alt = porImportacao[imp.id] || [];
+      var numeros = [];
+      if (imp.novas) numeros.push(plural(imp.novas, 'nova', 'novas'));
+      if (imp.alteradas) numeros.push(plural(imp.alteradas, 'alterada', 'alteradas'));
+      if (imp.sairam) numeros.push(imp.sairam + ' saíram');
+      if (imp.voltaram) numeros.push(imp.voltaram + ' voltaram');
+      if (imp.ofertasAlteradas) numeros.push(plural(imp.ofertasAlteradas, 'mudança de oferta', 'mudanças de oferta'));
+      return '<article class="cartao importacao">' +
+        '<div class="importacao__topo"><h3 class="importacao__titulo">' + esc(imp.dataHora) + ' — ' + esc(imp.arquivo) + '</h3><span class="selo selo--info">' + esc(imp.leitura || imp.formato) + '</span></div>' +
+        '<p class="pequeno texto-suave" style="margin:6px 0 0">' + esc(imp.modo) + (imp.usuario ? ' · por ' + esc(imp.usuario) : '') + '</p>' +
+        '<p class="pequeno" style="margin:6px 0 0">' + esc(imp.curriculos) + '</p>' +
+        '<p class="pequeno" style="margin:6px 0 0">' + esc(imp.disciplinas) + ' disciplinas no arquivo' + (numeros.length ? ' · ' + esc(numeros.join(' · ')) : ' · nenhuma mudança nas disciplinas') + '</p>' +
+        (alt.length ? '<details><summary>Ver mudanças registradas (' + alt.length + ')</summary><ul class="listaMudancas">' + alt.map(function (a) {
+          var alvo = a.codigo ? '<span class="mono">' + esc(a.codigo) + '</span> ' + esc(a.nome) + ' — ' : '';
+          var detalhe = a.campo || a.antes || a.depois ? ' (' + esc([a.campo, (a.antes || '') + (a.antes || a.depois ? ' → ' : '') + (a.depois || '')].filter(Boolean).join(': ')) + ')' : '';
+          return '<li>' + alvo + esc(a.tipo) + (a.habilitacao ? ' — ' + esc(a.habilitacao) : '') + detalhe + '</li>';
+        }).join('') + '</ul></details>' : '') +
+        '</article>';
+    }).join('');
+  }
+
+  /*----------------------------------------------------------------
+    Abas
+  ----------------------------------------------------------------*/
+  /** Mostra a aba id ("disciplinas", "curriculos" ou "historico"); focar = levar o foco à aba. */
+  function ativarAba(id, focar) {
+    ['disciplinas', 'curriculos', 'historico'].forEach(function (nome) {
+      var aba = $('aba-' + nome), painel = $('painel-' + nome);
+      var ativa = nome === id;
+      aba.setAttribute('aria-selected', ativa ? 'true' : 'false');
+      aba.tabIndex = ativa ? 0 : -1;
+      painel.hidden = !ativa;
+      if (ativa && focar) aba.focus();
+    });
+  }
+
+  /*----------------------------------------------------------------
+    Eventos
+  ----------------------------------------------------------------*/
+  /**
+   * Liga os eventos da página (uma vez, ao carregar o script): em cada
+   * lista, busca com espera de 150 ms, filtros, ordenação, download,
+   * botão "Filtros" no celular e caixas de seleção; cliques delegados
+   * (ficha, chips, ações em lote, voltar, importar); abas e etapas com
+   * setas/Home/End.
+   */
+  function ligarEventos() {
+    Object.keys(LISTAS).forEach(function (id) {
+      var L = LISTAS[id];
+      var raiz = $(L.raizId);
+      if (!raiz) return;
+      var temporizadorBusca;
+      var busca = el(L, 'campoBusca');
+      if (busca) busca.addEventListener('input', function () {
+        clearTimeout(temporizadorBusca);
+        var valor = this.value;
+        temporizadorBusca = setTimeout(function () { L.filtros.texto = valor.trim(); renderizarLista(L); }, 150);
+      });
+      raiz.querySelectorAll('[data-filtro]').forEach(function (c) {
+        c.addEventListener('change', function () {
+          var k = c.getAttribute('data-filtro');
+          L.filtros[k] = c.type === 'checkbox' ? c.checked : c.value;
+          if (k === 'situacao') L.marcados = {};
+          renderizarLista(L);
+        });
+      });
+      var ord = el(L, 'ordenacao');
+      if (ord) ord.addEventListener('change', function () { L.ordem = this.value; renderizarLista(L); });
+      var limpar = el(L, 'limparFiltros');
+      if (limpar) limpar.addEventListener('click', function () { limparFiltros(L); });
+      var baixar = el(L, 'baixarLista');
+      if (baixar) baixar.addEventListener('click', function () { baixarLista(L); });
+      var botaoFiltros = el(L, 'botaoFiltros');
+      if (botaoFiltros) botaoFiltros.addEventListener('click', function () {
+        var f = el(L, 'filtros');
+        var fechado = f.getAttribute('data-fechado') === 'true';
+        f.setAttribute('data-fechado', fechado ? 'false' : 'true');
+        this.setAttribute('aria-expanded', fechado ? 'true' : 'false');
+      });
+      raiz.addEventListener('change', function (ev) {
+        var caixa = ev.target.closest ? ev.target.closest('.caixaSelecao, [data-sel-todos]') : null;
+        if (caixa) caixaMudou(L, caixa);
+      });
+    });
+
+    // Cliques delegados (listas, chips, ficha, estado da base)
+    document.addEventListener('click', function (ev) {
+      var alvo = ev.target.closest ? ev.target : null;
+      if (!alvo) return;
+      if (alvo.closest('.caixaSelecao, [data-sel-todos], .celSelecao')) {
+        // Clique na célula da caixa (fora da caixa) marca/desmarca a caixa.
+        var cel = alvo.closest('.celSelecao');
+        if (cel && !alvo.closest('input, label')) { var cx = cel.querySelector('input'); if (cx && !cx.disabled) cx.click(); }
+        return;
+      }
+      var botaoFicha = alvo.closest('[data-abrir-ficha]');
+      if (botaoFicha) { abrirFicha(botaoFicha.getAttribute('data-abrir-ficha'), botaoFicha.getAttribute('data-vindo-de')); return; }
+      var linha = alvo.closest('tbody tr[data-id]');
+      if (linha && linha.closest('.tabelaLista') && !alvo.closest('button, a, input')) { abrirFicha(linha.getAttribute('data-id')); return; }
+      var lote = alvo.closest('[data-lote]');
+      if (lote) { acaoLote(LISTAS[lote.getAttribute('data-lista')], lote.getAttribute('data-lote')); return; }
+      var remover = alvo.closest('[data-remover-filtro]');
+      if (remover) {
+        var L = LISTAS[remover.getAttribute('data-lista')] || LISTAS.estrutura;
+        var k = remover.getAttribute('data-remover-filtro');
+        L.filtros[k] = L.padrao[k];
+        if (k === 'situacao') L.marcados = {};
+        sincronizarControlesFiltros(L);
+        renderizarLista(L);
+        if (el(L, 'campoBusca')) el(L, 'campoBusca').focus();
+        return;
+      }
+      var limpar = alvo.closest('[data-limpar-filtros]');
+      if (limpar) { limparFiltros(LISTAS[limpar.getAttribute('data-lista')] || LISTAS.estrutura); return; }
+      if (alvo.closest('[data-voltar-ficha]')) {
+        var anterior = estado.pilhaFicha.pop();
+        if (anterior && estado.idx.itens[anterior]) { estado.fichaAtual = anterior; renderizarFicha(estado.idx.itens[anterior]); $('modalDisciplinaTitulo').setAttribute('tabindex', '-1'); $('modalDisciplinaTitulo').focus(); }
+        return;
+      }
+      if (alvo.closest('[data-fechar-modal]')) { fecharFicha(); return; }
+      if (alvo.closest('[data-abrir-importacao]') && window.Importacao) { window.Importacao.abrir(); }
+    });
+
+    // Abas da etapa 1 e etapas: clique e setas do teclado
+    function ligarTabs(ids, ativar) {
+      ids.forEach(function (nome, i, todas) {
+        var aba = $(nome);
+        if (!aba) return;
+        aba.addEventListener('click', function () { ativar(i); });
+        aba.addEventListener('keydown', function (ev) {
+          var j = null;
+          if (ev.key === 'ArrowRight') j = (i + 1) % todas.length;
+          if (ev.key === 'ArrowLeft') j = (i - 1 + todas.length) % todas.length;
+          if (ev.key === 'Home') j = 0;
+          if (ev.key === 'End') j = todas.length - 1;
+          if (j !== null) { ev.preventDefault(); ativar(j, true); }
+        });
+      });
+    }
+    var abas = ['disciplinas', 'curriculos', 'historico'];
+    ligarTabs(abas.map(function (n) { return 'aba-' + n; }), function (i, focar) { ativarAba(abas[i], focar); });
+    ligarTabs(['etapa-1', 'etapa-2', 'etapa-3', 'etapa-4'], function (i, focar) { ativarEtapa(i + 1, focar); });
+  }
+
+  /** Volta busca e filtros da lista L ao padrão e leva o foco ao campo de busca. */
+  function limparFiltros(L) {
+    L = L || LISTAS.estrutura;
+    L.filtros = copiar(L.padrao);
+    L.marcados = {};
+    sincronizarControlesFiltros(L);
+    renderizarLista(L);
+    if (el(L, 'campoBusca')) el(L, 'campoBusca').focus();
+  }
+
+  ligarEventos();
+
+  // Usados por PainelImportacao.html (janela, chamadas ao servidor, avisos
+  // e recarga da base depois de gravar).
+  return {
+    carregar: carregar,
+    abrirFicha: abrirFicha,
+    Modal: Modal,
+    esc: esc,
+    gatilhoAjuda: gatilhoAjuda,   // (1.9.0) botão "?" da Central de Ajuda
+    chamarServidor: chamarServidor,
+    mostrarAviso: mostrarAviso,
+    estado: estado,
+    // Usados por PainelPreparacao.html (etapas 2 e 3 e ficha editável).
+    interno: {
+      $: $, ehAdmin: ehAdmin, secoesFicha: secoesFicha, cabecalhoFicha: cabecalhoFicha, ofertasDe: ofertasDe,
+      aplicarPreparacao: aplicarPreparacao, avisoRecarregarLote: avisoRecarregarLote, executarNoServidor: executarNoServidor, ativarEtapa: ativarEtapa, itensDe: itensDe, carregar: carregar,
+      renderizarFicha: renderizarFicha, fecharFicha: fecharFicha, mostrarCarregando: mostrarCarregando, esconderCarregando: esconderCarregando,
+      ROTULO_SEMESTRE: ROTULO_SEMESTRE, ROTULO_SEMESTRE_CURTO: ROTULO_SEMESTRE_CURTO, oferecimentoPeloPeriodo: oferecimentoPeloPeriodo, oferecimentoDe: oferecimentoDe,
+      ROTULO_TIPO: ROTULO_TIPO, NOME_DEPARTAMENTO: NOME_DEPARTAMENTO, DEPARTAMENTOS_LISTA: DEPARTAMENTOS_LISTA, LISTAS: LISTAS
+    }
+  };
+})();
+
+window.addEventListener('load', function () { Painel.carregar(); });
+</script>

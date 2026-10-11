@@ -1,0 +1,49 @@
+# suíte: testar_navegador
+# comando: node testar_navegador.js /caminho/grade_curricular.csv /caminho/grade_curricular.pdf
+# data: 2026-10-07T21:37:17Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Importação do CSV pela interface
+  ✓ abre a importação e lê o CSV (conferência) (0 s)
+  ✓ janela de importação só fecha pelos botões: ESC e clique no fundo não descartam o arquivo lido (0 s)
+  ✓ prévia da primeira carga e gravação (1 s)
+
+== Falhas na gravação vistas pela interface
+  ✓ falha antes da ativação: "não foi gravado — a base continua como estava"; nova tentativa grava uma vez só (2 s)
+  ✓ resultado incerto: a interface não diz "não gravado" e "Verificar agora" confirma a gravação (2 s)
+
+== Busca e filtros
+  ✓ busca sem acento e por código (1 s)
+  ✓ habilitação + obrigatoriedade + período valem para a MESMA habilitação (0 s)
+  ✓ semestre ideal, departamento, créditos e características (1 s)
+  ✓ chips de filtros removem o filtro (0 s)
+  ✓ ordenação e download da lista (0 s)
+
+== Ficha da disciplina
+  ✓ ficha abre pelo teclado, mostra o resumo, NÃO fecha com ESC nem clique fora, fecha no "X" devolvendo o foco (1 s)
+  ✓ navegar para um requisito e voltar (1 s)
+
+== Abas
+  ✓ currículos e importações (setas do teclado) (0 s)
+
+== Revisão paginada e alerta de planilha desatualizada
+  ✓ revisão de 1.102 valores: 12 páginas; "Gravar" e a caixa bloqueados até abrir todas; caixa forçada pelo DOM → servidor recusa; com as 12 páginas → grava (2 s)
+  ✓ arrumação falha ao gravar: tela diz "gravada" + alerta; leitor vê o alerta no painel; admin reabre → corrigido e alerta some (1 s)
+
+== PDF sem texto: leitura por OCR no navegador
+      OCR concluído em 104 s
+       Coerência aritmética: 3.582 números são coerentes com as contas do próprio relatório (Tot. = Aula + Trab.; CH = 15 h × Aula + 30 h × Trab.; 57 de 68 subtotais e 9 de 9 totais de seção). 6 foram corrigidos pelas contas. Coerência não prova cada leitura: dois erros que se compensam mantêm uma soma.A comparação com a base (CSV)
+  ✓ lê o PDF por OCR, confere e complementa a base (107 s)
+  ✓ ficha mostra versão, EXT e requisitos "ou" vindos do PDF (2 s)
+  ✓ versão implantada aparece no fim da página (0 s)
+  ✓ nenhum erro de JavaScript na página (0 s)
+   chamadas ao servidor: obterDadosPainel, prepararImportacao, confirmarImportacao, obterDadosPainel, prepararImportacao, confirmarImportacao, confirmarImportacao, obterDadosPainel, prepararImportacao, confirmarImportacao, verificarImportacao, obterDadosPainel, prepararImportacao, obterPaginaRevisao, obterPaginaRevisao, obterPaginaRevisao, confirmarImportacao, obterDadosPainel
+
+Executados: 19 (19 ok, 0 falha(s)); pulados: 0
+
+# código de saída: 0  (duração: 120 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

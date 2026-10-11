@@ -1,0 +1,6 @@
+[leitor] 2027/1: 8 linhas (6 das secretarias), 6 abas, sem IDs e sem link
+[2027/2] semestres: 2027/2, 2027/1; 2027/1 encerrada com 9 linhas
+[visual] menor contraste: light 360 .auditoriaAba__total 5.01:1 | light 768 .auditoriaAba__total 5.01:1 | light 1280 .auditoriaAba__total 5.01:1
+
+=== RESULTADO ===
+Executados: 19 (19 ok, 0 falha(s)); pulados: 0

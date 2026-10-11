@@ -1,0 +1,47 @@
+# suíte: navegador_etapa2_fonte_1.8.1_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.1/src node testar_navegador_etapa2.js /caminho/grade_curricular.csv
+# data: 2026-10-07T21:27:11Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 1/6 aprovados
+
+
+== Etapa 2 no navegador
+  ✗ CSV misto: resumo com 3 linhas ignoradas, lista ABERTA com os motivos (inclusive a faixa 5 a 7), só PST2101 com caixa de seleção 
+      Error: unidade_mista_sintetica.csv: 6 disciplinas no arquivo · 5 ainda não estão na lista · 0 já estão · 1 linhas ignoradas.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa2.js:30:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa2.js:90:5
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa2.js:26:9)
+  ✗ incluir: grava só PST2101; a pré-existente fica intacta 
+      page.waitForFunction: Timeout 30000ms exceeded.
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa2.js:104:18
+          at async teste (/caminho/fonte-1.9.2/testes/testar_navegador_etapa2.js:26:9)
+          at async /caminho/fonte-1.9.2/testes/testar_navegador_etapa2.js:102:3
+  ✗ (1.8.3) reprodução PST0999: aviso "Linhas 2 a 4" e só PST0804 selecionável; PST0999 não aparece como opção 
+      page.click: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('[data-abrir-unidade]')[22m
+      [2m    - locator resolved to <button type="button" data-abrir-unidade="" class="botao botao--primario">…</button>[22m
+  ✗ texto do arquivo não vira HTML (motivo com <img> do arquivo aparece como texto; nenhum <img> injetado, nenhum script executado) 
+      page.setInputFiles: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('#entradaUnidade')[22m
+      
+  ✗ arquivo todo inválido: "Nada a incluir" (aviso) explica as ignoradas, sem botão Incluir e sem escrita 
+      page.click: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('[data-abrir-unidade]')[22m
+      [2m    - locator resolved to <button type="button" data-abrir-unidade="" class="botao botao--primario">…</button>[22m
+  ✓ nenhum erro de JavaScript na página
+
+1 ok, 5 falha(s)
+Falharam:
+  - CSV misto: resumo com 3 linhas ignoradas, lista ABERTA com os motivos (inclusive a faixa 5 a 7), só PST2101 com caixa de seleção
+  - incluir: grava só PST2101; a pré-existente fica intacta
+  - (1.8.3) reprodução PST0999: aviso "Linhas 2 a 4" e só PST0804 selecionável; PST0999 não aparece como opção
+  - texto do arquivo não vira HTML (motivo com <img> do arquivo aparece como texto; nenhum <img> injetado, nenhum script executado)
+  - arquivo todo inválido: "Nada a incluir" (aviso) explica as ignoradas, sem botão Incluir e sem escrita
+
+# código de saída: 1  (duração: 121 s)
+# resultado do processo: defeito demonstrado como previsto (1/6)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (1/6)

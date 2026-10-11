@@ -1,0 +1,26 @@
+# suíte: testar_dois_arquivos
+# comando: node testar_dois_arquivos.js /caminho/grade_curricular.csv saida/grade_curricular_com_texto_sintetico.pdf /caminho/grade_curricular.pdf
+# data: 2026-10-07T21:41:06Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Escolha dos arquivos
+  ✓ a caixa de arquivo aceita mais de um arquivo e diz que pode receber os dois (0 s)
+  ✓ dois CSV, ou três arquivos: recusados com explicação, nada gravado (0 s)
+
+== CSV e PDF juntos (PDF com texto)
+  ✓ PDF antes do CSV na lista: CSV primeiro ("Arquivo 1 de 2"), grava; "Continuar com o PDF" → complemento; duas importações (2 s)
+  ✓ "Ver a estrutura (sem o PDF)": fica só o CSV; a leitura do PDF é abandonada sem erro (4 s)
+
+== PDF ainda em leitura (sem texto, OCR)
+  ✓ "Continuar com o PDF" antes do fim da leitura mostra o progresso; "Cancelar leitura" volta à escolha do arquivo (1 s)
+  ✓ fechar a janela com o PDF em leitura: nada quebra e a próxima importação começa limpa (2 s)
+  ✓ nenhum erro de JavaScript nas páginas (0 s)
+
+Executados: 7 (7 ok, 0 falha(s)); pulados: 0
+
+# código de saída: 0  (duração: 10 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

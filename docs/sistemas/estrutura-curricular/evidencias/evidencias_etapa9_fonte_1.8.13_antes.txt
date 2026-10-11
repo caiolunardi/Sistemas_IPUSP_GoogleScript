@@ -1,0 +1,45 @@
+=== Etapa 9 / A9 — resultado do envio sem o endereço da auditoria ===
+Ambiente: funções reais do servidor no simulador de Apps Script (mockGoogle.js); dados sintéticos.
+Fonte testada: DIR_SRC (fonte indicada na linha de comando)
+Versão declarada na fonte: 1.8.13
+
+--- L1. envio 2027/1 que CRIA a auditoria: dados.auditoria = {nome, criada: true, registroAtivo: false} — sem url nem ID — no objeto serializado; aviso de ativação mantido
+  [L1] auditoria: {"nome":"Auditoria - Grade Horária - 1º semestre de 2027","url":"https://docs.google.com/spreadsheets/d/ID_NOVA_2/edit","criada":true,"registroAtivo":false} · avisos: ["O registro das edições e das aberturas da planilha das secretarias não está completo: no editor do Apps Script, com a conta que implantou o Web App, execute ativarAuditoriaGrade (menu Executar) e aceite as permissões."]
+  auditoria no índice: ID_NOVA_2 · endereço interno: https://docs.google.com/spreadsheets/d/ID_NOVA_2/edit
+  resposta serializada (dados.auditoria): {"nome":"Auditoria - Grade Horária - 1º semestre de 2027","url":"https://docs.google.com/spreadsheets/d/ID_NOVA_2/edit","criada":true,"registroAtivo":false} · chaves: ["criada","nome","registroAtivo","url"]
+RESULTADO: FALHOU — contrato de auditoria: ["criada","nome","registroAtivo","url"] ≠ ["criada","nome","registroAtivo"]
+
+--- L2. reenvio de 2027/1 que REAPROVEITA a auditoria: criada = false, mesmo nome e situação, sem url nem ID; a MESMA planilha no índice
+  [L2] auditoria: {"nome":"Auditoria - Grade Horária - 1º semestre de 2027","url":"https://docs.google.com/spreadsheets/d/ID_NOVA_2/edit","criada":false,"registroAtivo":false}
+  auditoria no índice: ID_NOVA_2 · endereço interno: https://docs.google.com/spreadsheets/d/ID_NOVA_2/edit
+  resposta serializada (dados.auditoria): {"nome":"Auditoria - Grade Horária - 1º semestre de 2027","url":"https://docs.google.com/spreadsheets/d/ID_NOVA_2/edit","criada":false,"registroAtivo":false} · chaves: ["criada","nome","registroAtivo","url"]
+RESULTADO: FALHOU — contrato de auditoria: ["criada","nome","registroAtivo","url"] ≠ ["criada","nome","registroAtivo"]
+
+--- L3. registro ATIVO (ativarAuditoriaGrade antes): registroAtivo = true e sem o aviso de ativação; INATIVO (L1): false e com o aviso; nos dois, sem url
+  [L3] ativa: {"nome":"Auditoria - Grade Horária - 1º semestre de 2027","url":"https://docs.google.com/spreadsheets/d/ID_NOVA_3/edit","criada":true,"registroAtivo":true} · avisos: []
+  auditoria no índice: ID_NOVA_3 · endereço interno: https://docs.google.com/spreadsheets/d/ID_NOVA_3/edit
+  resposta serializada (dados.auditoria): {"nome":"Auditoria - Grade Horária - 1º semestre de 2027","url":"https://docs.google.com/spreadsheets/d/ID_NOVA_3/edit","criada":true,"registroAtivo":true} · chaves: ["criada","nome","registroAtivo","url"]
+RESULTADO: FALHOU — contrato de auditoria: ["criada","nome","registroAtivo","url"] ≠ ["criada","nome","registroAtivo"]
+
+--- L7. cópia de segurança (controle, nas duas versões): dados.backup = {nome, url https, semestre 2026/1}; o endereço é o da cópia na pasta e o ID dela está na coluna B do índice
+  [L7] backup: {"nome":"Grade Horária - 1º Semestre de 2026 (cópia de 07/10/2026 18:36)","url":"https://docs.google.com/spreadsheets/d/ID_COPIA_1/edit","semestre":"2026/1"}
+RESULTADO: ok
+
+--- L8. auditoria interna intacta: ID na coluna C do índice, planilha na pasta das auditorias com o evento "Envio da grade" (2 depois do reenvio); obterAuditoriaGrade funciona para administrador e leitor
+  [L8] índice: [["2026/1","ID_COPIA_1",""],["2027/1","ID_COPIA_3","ID_NOVA_2"]] · eventos: ["Envio da grade","Envio da grade"] · obterAuditoriaGrade (admin): 2 linha(s) ["Envio da grade","Envio da grade"]; (leitor): 2
+RESULTADO: ok
+
+--- L8b. envio 2027/2: auditoria NOVA de 2027/2 (criada = true) e "Grade encerrada" anotada na de 2027/1; resposta sem url nem ID
+  auditoria no índice: ID_NOVA_5 · endereço interno: https://docs.google.com/spreadsheets/d/ID_NOVA_5/edit
+  resposta serializada (dados.auditoria): {"nome":"Auditoria - Grade Horária - 2º semestre de 2027","url":"https://docs.google.com/spreadsheets/d/ID_NOVA_5/edit","criada":true,"registroAtivo":false} · chaves: ["criada","nome","registroAtivo","url"]
+RESULTADO: FALHOU — contrato de auditoria: ["criada","nome","registroAtivo","url"] ≠ ["criada","nome","registroAtivo"]
+
+--- L8c. recusa sem auditoria disponível (falha ao criar a planilha de auditoria): AUDITORIA_FALHOU, cópia feita, grade intacta — o caminho de erro continua igual
+  [L8c] {"ok":false,"codigo":"AUDITORIA_FALHOU","erro":"A cópia de segurança foi feita e registrada (\"Grade Horária - 1º Semestre de 2026 (cópia de 07/10/2026 18:36)\"), mas não foi possível criar a planilha de auditoria de 2027/1 na pasta das auditorias. Nada foi apagado nem gravado na planilha da grade. Confira o acesso à pasta e tente de novo (uma nova cópia será feita)."}
+RESULTADO: ok
+
+--- L9. (complementar, só leitura do código) EnvioGrade.gs não monta o endereço da auditoria na resposta e PainelPreparacao.html não usa auditoria.url
+  [L9] retorno: auditoria: { nome: aud.ss.getName(), url: aud.ss.getUrl(), criada: aud.criada, registroAtivo: ativa } · painel usa auditoria.url: true
+RESULTADO: FALHOU — retorno sem url: auditoria: { nome: aud.ss.getName(), url: aud.ss.getUrl(), criada: aud.criada, registroAtivo: ativa }
+
+=== Resumo: 3 ok, 5 falhas, 0 pulados

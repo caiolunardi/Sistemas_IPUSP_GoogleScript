@@ -1,0 +1,78 @@
+# 07/10/2026 18:44 — Chromium real (Playwright), teclas reais; ponto de partida pelo gatilho real (glossário) ou pela API pública da Central
+# fonte 1.9.0
+fonte /caminho/fonte-1.9.0/src navegador 141.0.7390.37
+
+ajuda-glossario-semestre
+  H4 "Período ideal × semestre de of"
+  Tab→ H4 "Período ideal × semestre de of"
+  Tab→ H4 "Período ideal × semestre de of"
+  Tab→ H4 "Período ideal × semestre de of"
+  Tab→ H4 "Período ideal × semestre de of"
+  reaberto: H4 "Período ideal × semestre de of"
+  ShiftTab→ DIV#centralAjudaConteudo "Como podemos ajudar? Este pain"
+  ShiftTab→ BUTTON[ajuda-sobre] "Limites e suporte"
+  ShiftTab→ BUTTON[ajuda-glossario] "Glossário"
+  ShiftTab→ BUTTON[ajuda-faq] "Perguntas frequentes"
+
+ajuda-curriculos-anteriores
+  H4 "Estruturas anteriores"
+  Tab→ H4 "Estruturas anteriores"
+  Tab→ H4 "Estruturas anteriores"
+  Tab→ H4 "Estruturas anteriores"
+  Tab→ H4 "Estruturas anteriores"
+  reaberto: H4 "Estruturas anteriores"
+  ShiftTab→ BUTTON[ajuda-conferencia-pdf] "Conferência do PDF"
+  ShiftTab→ BUTTON[ajuda-sobre] "Limites e suporte"
+  ShiftTab→ BUTTON[ajuda-glossario] "Glossário"
+  ShiftTab→ BUTTON[ajuda-faq] "Perguntas frequentes"
+
+ajuda-ajustes-gravando
+  H4 "Enquanto a ficha está salvando"
+  Tab→ H4 "Enquanto a ficha está salvando"
+  Tab→ H4 "Enquanto a ficha está salvando"
+  Tab→ H4 "Enquanto a ficha está salvando"
+  Tab→ H4 "Enquanto a ficha está salvando"
+  reaberto: H4 "Enquanto a ficha está salvando"
+  ShiftTab→ BUTTON[ajuda-oferta-revisar] "Oferta a revisar"
+  ShiftTab→ BUTTON[ajuda-sobre] "Limites e suporte"
+  ShiftTab→ BUTTON[ajuda-glossario] "Glossário"
+  ShiftTab→ BUTTON[ajuda-faq] "Perguntas frequentes"
+
+# fonte 1.9.2 (PainelApp.html igual ao da 1.9.1)
+fonte /caminho/fonte-1.9.2/src navegador 141.0.7390.37
+
+ajuda-glossario-semestre
+  H4 "Período ideal × semestre de of"
+  Tab→ BUTTON#centralAjudaInicio[ajuda-inicio] "⌂ Início"
+  Tab→ BUTTON "✕ Fechar a Central de Ajuda"
+  Tab→ INPUT#centralAjudaBusca ""
+  Tab→ BUTTON[ajuda-comece] "Comece aqui"
+  reaberto: H4 "Período ideal × semestre de of"
+  ShiftTab→ BUTTON[ajuda-sobre] "Limites e suporte"
+  ShiftTab→ BUTTON[ajuda-glossario] "Glossário"
+  ShiftTab→ BUTTON[ajuda-faq] "Perguntas frequentes"
+  ShiftTab→ BUTTON[ajuda-nova-grade] "Recomeçar do zero"
+
+ajuda-curriculos-anteriores
+  H4 "Estruturas anteriores"
+  Tab→ BUTTON#centralAjudaInicio[ajuda-inicio] "⌂ Início"
+  Tab→ BUTTON "✕ Fechar a Central de Ajuda"
+  Tab→ INPUT#centralAjudaBusca ""
+  Tab→ BUTTON[ajuda-comece] "Comece aqui"
+  reaberto: H4 "Estruturas anteriores"
+  ShiftTab→ BUTTON[ajuda-conferencia-pdf] "Conferência do PDF"
+  ShiftTab→ BUTTON[ajuda-sobre] "Limites e suporte"
+  ShiftTab→ BUTTON[ajuda-glossario] "Glossário"
+  ShiftTab→ BUTTON[ajuda-faq] "Perguntas frequentes"
+
+ajuda-ajustes-gravando
+  H4 "Enquanto a ficha está salvando"
+  Tab→ BUTTON#centralAjudaInicio[ajuda-inicio] "⌂ Início"
+  Tab→ BUTTON "✕ Fechar a Central de Ajuda"
+  Tab→ INPUT#centralAjudaBusca ""
+  Tab→ BUTTON[ajuda-comece] "Comece aqui"
+  reaberto: H4 "Enquanto a ficha está salvando"
+  ShiftTab→ BUTTON[ajuda-oferta-revisar] "Oferta a revisar"
+  ShiftTab→ BUTTON[ajuda-sobre] "Limites e suporte"
+  ShiftTab→ BUTTON[ajuda-glossario] "Glossário"
+  ShiftTab→ BUTTON[ajuda-faq] "Perguntas frequentes"

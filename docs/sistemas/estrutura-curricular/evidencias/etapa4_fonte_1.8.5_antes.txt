@@ -1,0 +1,133 @@
+# suíte: etapa4_fonte_1.8.5_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.5/src node testar_etapa4_salvamento.js /caminho/grade_curricular.csv --evidencias saida/evidencias_etapa4_fonte_1.8.5_antes.txt
+# data: 2026-10-07T21:31:34Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 28/39 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== R. Reprodução da revisão (só registra)
+  (retrato gravado nas evidências)
+
+== 1. Sucesso
+  ✓ 1a. campos e observação juntos: concluído, gravados, resposta com o que foi lido, releitura igual
+  ✓ 1b–1f. só campos; só observação; limpar observação; omitir observação; voltar ao Júpiter (linha removida)
+
+== 2. Ajustes anteriores
+  ✓ 2. sem ajuste anterior cria a linha; com ajustes anteriores, campos não enviados, marca de grade, exclusão e coluna extra sobrevivem
+
+== 3. Falha antes da primeira escrita e entre as escritas
+  ✓ 3a. validação recusada: nada muda (resposta, persistência, releitura)
+  ✓ 3b. falha na PRIMEIRA escrita (antes de aplicar): "não concluído", estado anterior confirmado, nada pendente
+  ✓ 3c. falha na escrita da OBSERVAÇÃO (uma vez): nova tentativa na mesma chamada conclui; nada parcial
+  ✓ 3d. REPRODUÇÃO: falha persistente na observação depois dos ajustes: nada de parcial silencioso — pendência explícita com o que já foi gravado; reabertura conclui
+
+== 4. Escrita aplicada seguida de exceção
+  ✓ 4. observação (setValue aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+  ✓ 4. ajustes (setValues aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+  ✓ 4. primeira escrita do fluxo — registro do pedido (gravado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+
+== 5. Falha durante a recuperação
+  ✓ 5a. recuperação falha de novo (reabertura com a escrita ainda falhando): pendência continua; depois, "Concluir" conclui
+  ✓ 5b. falha ao remover o registro depois de tudo gravado: pendente com "já gravado"; a próxima ação confirma sem reescrever
+
+== 6–7. Execução encerrada (fotografia da persistência) e reabertura
+  ✓ 6a. encerrada logo depois do registro do pedido (antes de qualquer dado): a reabertura reconhece e conclui o pedido
+  ✓ 6b. encerrada ENTRE as escritas (ajustes gravados, observação não): a reabertura reconhece e conclui o pedido
+  ✓ 7. encerrada depois das escritas principais, antes de concluir/responder: a reabertura reconhece e conclui o pedido
+  ✓ 6c. encerrada entre as escritas e reaberta por um LEITOR: dados como estão + aviso de salvamento em andamento; nada é escrito
+
+== 8. Flush
+  ✓ 8. falha no flush depois das escritas (uma vez): conferência e nova tentativa concluem (o simulador não reproduz os buffers reais do Google)
+
+== 9. Repetição e pedidos posteriores
+  ✓ 9a. recuperação repetida (duas reaberturas) não duplica linha nem perde ajustes anteriores
+  ✓ 9b. pendência que não conclui bloqueia novo salvamento da MESMA disciplina; liberada a escrita, o pedido antigo é concluído ANTES e o novo vale por último
+
+== 10. Salvar com adicionarAGrade
+  ✓ 10a. sucesso: marca de grade e observação gravadas juntas
+  ✓ 10b. sem semestre de oferecimento: salva e informa; excluída: salva sem marcar
+  ✓ 10c. falha entre as escritas: a marca de grade segue o mesmo pedido (pendente, depois concluída), não fica esquecida
+
+== 11. Identidade
+  ✓ 11. código efetivo alterado: observação e recuperação ficam na chave original; código numérico; observação parecida com fórmula continua texto
+
+== 12. Outras disciplinas, aba ativa, reimportação
+  ✓ 12. outras disciplinas e colunas extras intactas; aba Disciplinas EM USO (depois de reimportar); reimportação preserva a observação
+
+== 13. Pendência persistente e pontos conflitantes
+  ✓ 13a. com a pendência sem concluir: outra disciplina, ação em lote, importação e recomeço são recusados com a mensagem da pendência; nada muda
+  ✓ 13b. base mudou (registro de outra aba Disciplinas): não reaplica; "Descartar" só nesse caso
+
+== 15. Outros cursos (regressão)
+  ✓ 15. salvar disciplina para outros cursos com campos e observação (uma linha), cadastro e lista por unidade continuam
+
+== 16. (1.8.6) Recuperação automática: o que foi concluído chega ao painel
+  ✗ 16a. REPRODUÇÃO A→B→A: A pendente, B salva (conclui A), A reaberta depois e salva só o nome — a observação recuperada não se perde (planilha, dados do painel, ficha, contexto novo) 
+      Error: observação de A preservada na planilha: {"nome":"Outra correção em A","creditosAula":"","naGrade":"","obs":"","pendente":false} ≠ {"nome":"Outra correção em A","creditosAula":"","naGrade":"","obs":"Observação recuperada de A","pendente":false}
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:540:3
+  ✗ 16b. recuperação antes de OUTRAS operações (grade em lote, exclusão, outros cursos, lista por unidade): a observação de A vem em "recuperado" e o painel a aplica 
+      Error: adicionarAGrade: painel: "" ≠ "Observação recuperada de A"
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:562:5
+  ✗ 16c. recuperação concluída e o NOVO pedido recusado ou com falha (validação, escrita, erro inesperado, leitura, importação): "recuperado" vem na recusa e o painel aplica 
+      Error: painel atualizado: ["","A corrigida"] ≠ ["Observação recuperada de A","A corrigida"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:593:3
+  ✗ 16d. ordem dos valores: novo pedido de A que MUDA a observação vence o valor recuperado; recuperação SEM mudança de observação não apaga o texto existente 
+      Error: contrato 1.8.6: os dois valores, identificados: [null,{"chave":"PST1001","texto":"Observação mais recente de A"}] ≠ [{"chave":"PST1001","texto":"Observação recuperada de A"},{"chave":"PST1001","texto":"Observação mais recente de A"}]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:649:3
+
+== 17. (1.8.6) Exceção depois de remover o registro
+  ✗ 17a. remoção aplicada e exceção (metadadoRemoverDepois): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica 
+      Error: resposta: [false,"SALVAMENTO_PENDENTE","pendente"] ≠ [true,null,"concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:688:5
+  ✗ 17b. falha no SEGUNDO flush (depois da remoção; o 8 cobre o primeiro): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica 
+      Error: resposta: [false,"SALVAMENTO_PENDENTE","pendente"] ≠ [true,null,"concluido"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:688:5
+  ✓ 17c. falha ANTES da remoção (registro presente): pendente identificado, com "já gravado"; conclusão sem reescrever
+  ✗ 17d. remoção feita + falha de LEITURA na conferência: não declara sucesso nem "nada gravado"; SALVAMENTO_INCERTO identificado, rascunho preservável; contexto novo e repetição corretos 
+      Error: incerto, identificado: [false,"SALVAMENTO_PENDENTE","pendente","nenhum",null,null,null,null] ≠ [false,"SALVAMENTO_INCERTO","incerto","incerto","8f6f9339-0a10-4d0f-b6a4-a5145e95b0fc","PST1001","PST1001",null]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:728:3
+  ✗ 17e. "Concluir salvamento pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído (nada de pendente inexistente) 
+      Error: explícito: [false,"pendente",{"chave":"PST1001","texto":"Observação nova"}] ≠ [true,"concluido",{"chave":"PST1001","texto":"Observação nova"}]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:749:3
+
+== 18. (1.8.6) Colunas extras de "Ajustes manuais" na retomada
+  ✗ 18a. REPRODUÇÃO: data em coluna extra continua DATA (mesmo getTime) depois da retomada; texto parecido com ISO, número, booleano e vazio intactos; outra disciplina intacta 
+      Error: PST1001: tipo e valor de cada extra: {"Data livre":{"tipo":"string","valor":"2026-10-01T12:00:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2026-10-01"},"Número":{"tipo":"number","valor":42},"Booleano":{"tipo":"boolean","valor":true},"Vazio":{"tipo":"string","valor":""}} ≠ {"Data livre":{"tipo":"Date","getTime":1790856000000,"iso":"2026-10-01T12:00:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2026-10-01"},"Número":{"tipo":"number","valor":42},"Booleano":{"tipo":"boolean","valor":true},"Vazio":{"tipo":"string","valor":""}}
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:813:3
+  ✗ 18b. registro no formato da 1.8.5 (ajuste com _extras e datas viradas texto ISO pelo JSON) é concluído sem converter a data em texto 
+      Error: PST1001: extras com tipo e valor: {"Data livre":{"tipo":"string","valor":"2026-10-01T12:00:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2026-10-01"},"Número":{"tipo":"number","valor":42},"Booleano":{"tipo":"boolean","valor":true},"Vazio":{"tipo":"string","valor":""}} ≠ {"Data livre":{"tipo":"Date","getTime":1790856000000,"iso":"2026-10-01T12:00:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2026-10-01"},"Número":{"tipo":"number","valor":42},"Booleano":{"tipo":"boolean","valor":true},"Vazio":{"tipo":"string","valor":""}}
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:838:3
+  ✗ 18c. extra alterado na planilha DEPOIS do pedido pendente não é sobrescrito pelo registro (vale a linha atual) 
+      Error: valores atuais preservados: ["string",null,{"tipo":"number","valor":42}] ≠ ["Date",1798859045000,{"tipo":"number","valor":7}]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:44:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa4_salvamento.js:851:3
+
+28 ok, 11 falha(s)
+Falharam:
+  - 16a. REPRODUÇÃO A→B→A: A pendente, B salva (conclui A), A reaberta depois e salva só o nome — a observação recuperada não se perde (planilha, dados do painel, ficha, contexto novo)
+  - 16b. recuperação antes de OUTRAS operações (grade em lote, exclusão, outros cursos, lista por unidade): a observação de A vem em "recuperado" e o painel a aplica
+  - 16c. recuperação concluída e o NOVO pedido recusado ou com falha (validação, escrita, erro inesperado, leitura, importação): "recuperado" vem na recusa e o painel aplica
+  - 16d. ordem dos valores: novo pedido de A que MUDA a observação vence o valor recuperado; recuperação SEM mudança de observação não apaga o texto existente
+  - 17a. remoção aplicada e exceção (metadadoRemoverDepois): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica
+  - 17b. falha no SEGUNDO flush (depois da remoção; o 8 cobre o primeiro): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica
+  - 17d. remoção feita + falha de LEITURA na conferência: não declara sucesso nem "nada gravado"; SALVAMENTO_INCERTO identificado, rascunho preservável; contexto novo e repetição corretos
+  - 17e. "Concluir salvamento pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído (nada de pendente inexistente)
+  - 18a. REPRODUÇÃO: data em coluna extra continua DATA (mesmo getTime) depois da retomada; texto parecido com ISO, número, booleano e vazio intactos; outra disciplina intacta
+  - 18b. registro no formato da 1.8.5 (ajuste com _extras e datas viradas texto ISO pelo JSON) é concluído sem converter a data em texto
+  - 18c. extra alterado na planilha DEPOIS do pedido pendente não é sobrescrito pelo registro (vale a linha atual)
+
+# código de saída: 1  (duração: 2 s)
+# resultado do processo: defeito demonstrado como previsto (28/39)
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa4_fonte_1.8.5_antes.txt
+# interpretação: defeito demonstrado como previsto (28/39)

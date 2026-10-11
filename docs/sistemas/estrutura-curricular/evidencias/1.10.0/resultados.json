@@ -1,0 +1,79 @@
+{
+  "versao": "1.10.0",
+  "data": "2026-10-11",
+  "aprovados": 169,
+  "falhas": 0,
+  "ambiente": {
+    "node": "v24.19.0",
+    "playwright": "1.56.0",
+    "chromium": "148.0.7778.0",
+    "servidor": "simulador local de Apps Script"
+  },
+  "suites": [
+    {
+      "suite": "navegacao-visual",
+      "aprovados": 21,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "navegacao-visual.txt"
+    },
+    {
+      "suite": "central-ajuda",
+      "aprovados": 50,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "central-ajuda.txt"
+    },
+    {
+      "suite": "previa-envio",
+      "aprovados": 26,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "previa-envio.txt"
+    },
+    {
+      "suite": "auditoria-envio",
+      "aprovados": 8,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "auditoria-envio.txt"
+    },
+    {
+      "suite": "trava-auditoria",
+      "aprovados": 19,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "trava-auditoria.txt"
+    },
+    {
+      "suite": "navegador-envio",
+      "aprovados": 27,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "navegador-envio.txt"
+    },
+    {
+      "suite": "navegador-auditoria",
+      "aprovados": 5,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "navegador-auditoria.txt"
+    },
+    {
+      "suite": "navegador-oferta",
+      "aprovados": 13,
+      "falhas": 0,
+      "exit_code": 0,
+      "dados": "sintéticos",
+      "arquivo": "navegador-oferta.txt"
+    }
+  ],
+  "google_workspace": "não executado"
+}

@@ -1,0 +1,643 @@
+<base target="_top">
+<!--
+  ESTRUTURA CURRICULAR — página do painel
+  O tema (GradipTema) vem primeiro para evitar o "flash" do tema errado.
+  O conteúdo é montado por PainelApp (etapas, listas, filtros, ficha,
+  currículos, histórico), PainelImportacao (tela de importação) e
+  PainelPreparacao (etapas 2 e 3, ficha editável, lista por unidade), a
+  partir dos dados de obterDadosPainel().
+  (1.9.0) Central de Ajuda: EstruturaAjudaEstilos (depois do tema e dos
+  estilos), EstruturaAjuda (conteúdo estático, depois das janelas) e
+  EstruturaAjudaUI (comportamento, por último). Os botões "?" das telas
+  usam data-gradip-help-open="id do assunto"; não dependem dos dados.
+-->
+<?!= include_('GradipTema') ?>
+<?!= include_('PainelEstilos') ?>
+<?!= include_('EstruturaAjudaEstilos') ?>
+<?!= include_('EstruturaNavegacaoEstilos') ?>
+
+<a class="pularParaConteudo" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="cabecalho">
+  <div class="cabecalho__marca">
+    <?!= include_('GradipMarcaIPUSP') ?>
+    <div class="cabecalho__textos">
+      <div class="cabecalho__titulo">Estrutura Curricular</div>
+      <div class="cabecalho__subtitulo">Serviço de Graduação — Instituto de Psicologia</div>
+    </div>
+  </div>
+  <div class="cabecalho__acoes">
+    <?!= include_('GradipTemaControle') ?>
+    <!-- (1.9.0) Central de Ajuda: funciona mesmo se a carga dos dados falhar -->
+    <button type="button" class="ajudaCabecalho" id="botaoAjuda" data-gradip-help-open="" aria-haspopup="dialog"><span class="ajudaCabecalho__icone" aria-hidden="true">?</span><span class="ajudaCabecalho__texto">Ajuda</span></button>
+    <span class="logoUSPWrap"><?!= include_('GradipMarcaUSP') ?></span>
+  </div>
+</header>
+<div class="barraInstitucional" aria-hidden="true"></div>
+
+<main id="conteudo" class="conteudo" tabindex="-1">
+
+  <!-- (1.10.0) Apresentação: os mesmos tablists são movidos entre os layouts. -->
+  <?!= include_('EstruturaNavegacao') ?>
+  <div class="estruturaLayout" id="estruturaLayout" data-navegacao="sidebar">
+    <aside class="estruturaSidebar" id="estruturaSidebar" aria-label="Navegação do sistema">
+      <div class="estruturaSidebar__topo">
+        <p class="estruturaSidebar__titulo">Navegação</p>
+        <button type="button" class="estruturaMenuMovel" id="estruturaMenuMovel" aria-expanded="true" aria-controls="estruturaSidebarConteudo">Recolher menu</button>
+      </div>
+      <div id="estruturaSidebarConteudo">
+        <section class="estruturaSidebar__grupo" id="estruturaGrupoVisoes" aria-labelledby="estruturaTituloVisoes" hidden>
+          <h2 class="estruturaSidebar__rotulo" id="estruturaTituloVisoes">Seções do sistema</h2>
+          <div id="estruturaSlotVisoes"></div>
+        </section>
+        <section class="estruturaSidebar__grupo" id="estruturaGrupoEtapas" aria-labelledby="estruturaTituloEtapas" hidden>
+          <h2 class="estruturaSidebar__rotulo" id="estruturaTituloEtapas">Preparação da grade</h2>
+          <div id="estruturaSlotEtapas"></div>
+        </section>
+        <section class="estruturaSidebar__grupo" id="estruturaGrupoAbas" aria-labelledby="estruturaTituloAbas" hidden>
+          <h2 class="estruturaSidebar__rotulo" id="estruturaTituloAbas">Consultas da estrutura</h2>
+          <div id="estruturaSlotAbas"></div>
+        </section>
+      </div>
+    </aside>
+    <div class="estruturaConteudo" id="estruturaConteudo">
+
+  <!-- (1.7.0) Seções do sistema: Estrutura curricular / Auditoria da grade (todos os perfis; PainelAuditoria) -->
+  <nav class="visoes" id="visoes" role="tablist" aria-label="Seções do sistema" hidden>
+    <button type="button" class="visoes__botao" role="tab" id="visao-estrutura" aria-controls="visaoEstrutura" aria-selected="true">Estrutura curricular</button>
+    <button type="button" class="visoes__botao" role="tab" id="visao-auditoria" aria-controls="visaoAuditoria" aria-selected="false" tabindex="-1">Auditoria da grade</button>
+  </nav>
+
+  <div id="visaoEstrutura" role="tabpanel" aria-labelledby="visao-estrutura">
+
+  <!-- (1.8.5) Salvamento de disciplina pendente (só administradores; PainelPreparacao.mostrarPendencia) -->
+  <div class="alerta alerta--aviso" id="salvamentoPendente" role="status" hidden></div>
+
+  <!-- Grade em preparação: recomeçar / grades antigas (só administradores; PainelPreparacao) -->
+  <div class="acoesGrade" id="acoesGrade" hidden>
+    <span class="acoesGrade__rotulo">Grade horária</span>
+    <button type="button" class="botao botao--secundario" data-cadastrar-nova-grade><span class="botao__icone" aria-hidden="true">↺</span> Cadastrar nova grade</button>
+    <button type="button" class="botao botao--secundario" id="carregarGradeAntiga" disabled aria-describedby="carregarGradeAntigaNota">Carregar grade antiga</button>
+    <span class="pequeno texto-suave" id="carregarGradeAntigaNota">(indisponível nesta versão)</span>
+    <span class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-preparar"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como preparar a grade</button><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-nova-grade"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>O que "Cadastrar nova grade" apaga</button></span>
+  </div>
+
+  <!-- Etapas da preparação da grade (só administradores; PainelApp.renderizarEtapas) -->
+  <nav class="etapas" id="etapas" role="tablist" aria-label="Etapas da preparação da grade horária" hidden>
+    <button type="button" class="etapas__etapa" role="tab" id="etapa-1" aria-controls="etapaPainel-1" aria-selected="true">
+      <span class="etapas__numero" aria-hidden="true">1</span><span class="etapas__textos"><span class="etapas__titulo">Estrutura curricular</span><span class="etapas__contagem" id="etapaContagem1"></span></span>
+    </button>
+    <button type="button" class="etapas__etapa" role="tab" id="etapa-2" aria-controls="etapaPainel-2" aria-selected="false" tabindex="-1">
+      <span class="etapas__numero" aria-hidden="true">2</span><span class="etapas__textos"><span class="etapas__titulo">Disciplinas para outros cursos</span><span class="etapas__contagem" id="etapaContagem2"></span></span>
+    </button>
+    <button type="button" class="etapas__etapa" role="tab" id="etapa-3" aria-controls="etapaPainel-3" aria-selected="false" tabindex="-1">
+      <span class="etapas__numero" aria-hidden="true">3</span><span class="etapas__textos"><span class="etapas__titulo">Lista para a grade horária</span><span class="etapas__contagem" id="etapaContagem3"></span></span>
+    </button>
+    <button type="button" class="etapas__etapa" role="tab" id="etapa-4" aria-controls="etapaPainel-4" aria-selected="false" tabindex="-1">
+      <span class="etapas__numero" aria-hidden="true">4</span><span class="etapas__textos"><span class="etapas__titulo">Prévia da grade horária</span><span class="etapas__contagem" id="etapaContagem4"></span></span>
+    </button>
+  </nav>
+
+  <!-- Situação da base (preenchido por PainelApp) -->
+  <section id="estadoBase" class="cartao estadoBase" aria-live="polite"></section>
+
+  <div id="areaDados" hidden>
+   <div id="etapaPainel-1" role="tabpanel" aria-labelledby="etapa-1">
+    <div class="abas" id="abasEstrutura" role="tablist" aria-label="Seções do painel">
+      <button type="button" class="abas__aba" role="tab" id="aba-disciplinas" aria-controls="painel-disciplinas" aria-selected="true">Disciplinas <span class="abas__contagem" id="contagemAbaDisciplinas"></span></button>
+      <button type="button" class="abas__aba" role="tab" id="aba-curriculos" aria-controls="painel-curriculos" aria-selected="false" tabindex="-1">Currículos</button>
+      <button type="button" class="abas__aba" role="tab" id="aba-historico" aria-controls="painel-historico" aria-selected="false" tabindex="-1">Importações</button>
+    </div>
+
+    <!-- DISCIPLINAS -->
+    <section id="painel-disciplinas" role="tabpanel" aria-labelledby="aba-disciplinas">
+      <div class="cartao busca">
+        <div class="busca__linha">
+          <div class="campo campo--busca">
+            <label class="campo__rotulo" for="campoBusca">Buscar por código ou nome</label>
+            <input type="search" id="campoBusca" autocomplete="off" placeholder="Ex.: PSA1302, psicopatologia, estágio">
+          </div>
+          <button type="button" class="botao botao--secundario busca__alternarFiltros" id="botaoFiltros" aria-expanded="false" aria-controls="filtros">
+            Filtros <span id="contagemFiltros"></span>
+          </button>
+        </div>
+        <div class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-consultar"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como buscar e filtrar</button></div>
+        <div class="filtros" id="filtros" data-fechado="true">
+          <div class="campo">
+            <label class="campo__rotulo" for="filtroHabilitacao">Habilitação</label>
+            <select id="filtroHabilitacao" data-filtro="habilitacao"></select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="filtroTipo">Obrigatoriedade</label>
+            <select id="filtroTipo" data-filtro="tipo">
+              <option value="">Todas</option>
+              <option value="OBRIGATORIA">Obrigatória</option>
+              <option value="OPTATIVA_ELETIVA">Optativa eletiva</option>
+              <option value="OPTATIVA_LIVRE">Optativa livre</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="filtroPeriodo">Período ideal</label>
+            <select id="filtroPeriodo" data-filtro="periodo"></select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="filtroSemestre">Semestre de oferecimento</label>
+            <select id="filtroSemestre" data-filtro="semestre">
+              <option value="">Qualquer</option>
+              <option value="1">Oferecida no 1º semestre</option>
+              <option value="2">Oferecida no 2º semestre</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="filtroDepartamento">Departamento</label>
+            <select id="filtroDepartamento" data-filtro="departamento"></select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="filtroCreditos">Créditos-aula</label>
+            <select id="filtroCreditos" data-filtro="creditos">
+              <option value="">Qualquer</option>
+              <option value="1">1 (1 h/semana)</option>
+              <option value="2">2 (2 h/semana)</option>
+              <option value="3">3 (3 h/semana)</option>
+              <option value="4">4 (4 h/semana)</option>
+              <option value="5+">5 ou mais</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="filtroSituacao">Situação</label>
+            <select id="filtroSituacao" data-filtro="situacao">
+              <option value="NA">Na estrutura atual</option>
+              <option value="FORA">Fora da estrutura atual</option>
+              <option value="">Todas (menos excluídas)</option>
+              <option value="EXCLUIDA">Excluídas no painel</option>
+            </select>
+          </div>
+          <fieldset class="filtros__marcadores">
+            <legend>Características</legend>
+            <label class="marcador"><input type="checkbox" data-filtro="ajustadas"> Ajustadas no painel</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comEstagio"> Com estágio (CE)</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comExtensao"> Com extensão (EXT)</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comPraticas"> Com práticas (CP)</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comRequisito"> Com requisito</label>
+            <label class="marcador"><input type="checkbox" data-filtro="varia"> Tipo ou período diferente entre habilitações</label>
+          </fieldset>
+          <div class="filtros__acoes">
+            <button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-glossario-semestre"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Semestre de oferecimento × período ideal</button>
+            <button type="button" class="botao botao--texto" id="limparFiltros">Limpar filtros</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="resultado__topo">
+        <div class="resultado__contagem" id="contagemResultado" aria-live="polite"></div>
+        <div class="resultado__ferramentas">
+          <div class="campo">
+            <label class="campo__rotulo" for="ordenacao">Ordenar por</label>
+            <select id="ordenacao">
+              <option value="codigo">Código</option>
+              <option value="nome">Nome</option>
+              <option value="periodo">Período ideal</option>
+              <option value="creditos">Créditos-aula</option>
+            </select>
+          </div>
+          <button type="button" class="botao botao--secundario" id="baixarLista">Baixar lista (CSV)</button>
+        </div>
+      </div>
+      <ul class="chips" id="chipsFiltros" aria-label="Filtros ativos"></ul>
+      <div class="barraLote" id="barraLote" hidden></div>
+
+      <div class="tabelaScroll">
+        <table class="tabela tabelaLista" id="tabelaDisciplinas">
+          <caption class="somenteLeitor">Disciplinas da estrutura curricular. Selecione uma disciplina para ver todos os dados.</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="celSelecao" id="cabSelecao" hidden><label><input type="checkbox" id="selTodos" data-sel-todos aria-label="Selecionar todas as disciplinas da lista filtrada"></label></th>
+              <th scope="col">Disciplina</th>
+              <th scope="col">Departamento</th>
+              <th scope="col" class="num">Créditos (aula + trab.)</th>
+              <th scope="col" class="num">CH</th>
+              <th scope="col">Oferta por habilitação</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela"></tbody>
+        </table>
+      </div>
+      <div id="listaVazia" class="cartao vazio" hidden></div>
+    </section>
+
+    <!-- CURRÍCULOS -->
+    <section id="painel-curriculos" role="tabpanel" aria-labelledby="aba-curriculos" hidden>
+      <div class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-curriculos"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como ler os currículos</button></div>
+      <div id="listaCurriculos" class="curriculos"></div>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="painel-historico" role="tabpanel" aria-labelledby="aba-historico" hidden>
+      <div class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-historico-importacoes"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como ler o histórico de importações</button></div>
+      <div id="listaImportacoes" class="importacoes"></div>
+    </section>
+   </div>
+
+    <!-- ETAPA 2: DISCIPLINAS PARA OUTROS CURSOS (PainelPreparacao) -->
+    <section id="etapaPainel-2" role="tabpanel" aria-labelledby="etapa-2" hidden>
+      <div class="cartao etapaTopo">
+        <div class="etapaTopo__textos">
+          <h1 class="estadoBase__titulo">Disciplinas para outros cursos</h1>
+          <p class="estadoBase__meta">Disciplinas do IP ministradas para cursos de outras unidades (ex.: PST0391 para a FEA). Elas não vêm na estrutura curricular do curso de Psicologia: carregue a <strong>Lista de disciplinas por unidade</strong> do Júpiter (CSV) — só entram as que ainda não estão na lista — ou cadastre uma a uma.</p>
+          <div class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-outros-cursos"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como incluir disciplinas para outros cursos</button></div>
+        </div>
+        <div class="etapaTopo__acoes">
+          <button type="button" class="botao botao--primario" data-abrir-unidade><span class="botao__icone" aria-hidden="true">⤒</span> Importar lista da unidade (CSV)</button>
+          <button type="button" class="botao botao--secundario" data-cadastrar-outros>+ Cadastrar disciplina</button>
+        </div>
+      </div>
+      <div class="cartao busca">
+        <div class="busca__linha">
+          <div class="campo campo--busca">
+            <label class="campo__rotulo" for="oCampoBusca">Buscar por código ou nome</label>
+            <input type="search" id="oCampoBusca" autocomplete="off" placeholder="Ex.: PST0391, liderança">
+          </div>
+          <button type="button" class="botao botao--secundario busca__alternarFiltros" id="oBotaoFiltros" aria-expanded="false" aria-controls="oFiltros">
+            Filtros <span id="oContagemFiltros"></span>
+          </button>
+        </div>
+        <div class="filtros" id="oFiltros" data-fechado="true">
+          <div class="campo">
+            <label class="campo__rotulo" for="oFiltroSituacao">Situação</label>
+            <select id="oFiltroSituacao" data-filtro="situacao">
+              <option value="NA">Em uso</option>
+              <option value="EXCLUIDA">Excluídas no painel</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="oFiltroSemestre">Semestre de oferecimento</label>
+            <select id="oFiltroSemestre" data-filtro="semestre">
+              <option value="">Qualquer</option>
+              <option value="1">Oferecida no 1º semestre</option>
+              <option value="2">Oferecida no 2º semestre</option>
+              <option value="nenhum">Não informado</option>
+            </select>
+          </div>
+          <div class="filtros__acoes">
+            <button type="button" class="botao botao--texto" id="oLimparFiltros">Limpar filtros</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="resultado__topo">
+        <div class="resultado__contagem" id="oContagemResultado" aria-live="polite"></div>
+        <div class="resultado__ferramentas">
+          <div class="campo">
+            <label class="campo__rotulo" for="oOrdenacao">Ordenar por</label>
+            <select id="oOrdenacao">
+              <option value="codigo">Código</option>
+              <option value="nome">Nome</option>
+              <option value="creditos">Créditos-aula</option>
+            </select>
+          </div>
+          <button type="button" class="botao botao--secundario" id="oBaixarLista">Baixar lista (CSV)</button>
+        </div>
+      </div>
+      <ul class="chips" id="oChipsFiltros" aria-label="Filtros ativos"></ul>
+      <div class="barraLote" id="oBarraLote" hidden></div>
+
+      <div class="tabelaScroll">
+        <table class="tabela tabelaLista" id="oTabelaDisciplinas">
+          <caption class="somenteLeitor">Disciplinas do IP para cursos de outras unidades. Selecione uma disciplina para ver e editar os dados.</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="celSelecao" id="oCabSelecao" hidden><label><input type="checkbox" id="oSelTodos" data-sel-todos aria-label="Selecionar todas as disciplinas da lista filtrada"></label></th>
+              <th scope="col">Disciplina</th>
+              <th scope="col">Departamento</th>
+              <th scope="col" class="num">Créditos (aula + trab.)</th>
+              <th scope="col" class="num">CH</th>
+              <th scope="col">Para quem</th>
+            </tr>
+          </thead>
+          <tbody id="oCorpoTabela"></tbody>
+        </table>
+      </div>
+      <div id="oListaVazia" class="cartao vazio" hidden></div>
+    </section>
+
+    <!-- ETAPA 3: LISTA PARA A GRADE HORÁRIA -->
+    <section id="etapaPainel-3" role="tabpanel" aria-labelledby="etapa-3" hidden>
+      <div class="cartao etapaTopo">
+        <div class="etapaTopo__textos">
+          <h1 class="estadoBase__titulo">Lista para a grade horária</h1>
+          <p class="estadoBase__meta">Todas as disciplinas da estrutura curricular e das disciplinas para outros cursos (menos as excluídas). Marque as que vão para a grade horária que as secretarias vão preencher e clique em <strong>Enviar para a Grade Horária</strong>. Só entram as que têm o <strong>semestre de oferecimento</strong> definido (na ficha: "Disciplina de semestre"); as já adicionadas ficam marcadas, com o rótulo "Adicionada à Grade Horária", e saem pela Prévia (etapa 4).</p>
+          <div class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-lista-grade"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Marcar, enviar para a grade e enviar às secretarias: a diferença</button></div>
+        </div>
+      </div>
+      <div class="cartao busca">
+        <div class="busca__linha">
+          <div class="campo campo--busca">
+            <label class="campo__rotulo" for="gCampoBusca">Buscar por código ou nome</label>
+            <input type="search" id="gCampoBusca" autocomplete="off" placeholder="Ex.: PSA1302, PST0391, psicopatologia">
+          </div>
+          <button type="button" class="botao botao--secundario busca__alternarFiltros" id="gBotaoFiltros" aria-expanded="false" aria-controls="gFiltros">
+            Filtros <span id="gContagemFiltros"></span>
+          </button>
+        </div>
+        <div class="filtros" id="gFiltros" data-fechado="true">
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroOrigem">Origem</label>
+            <select id="gFiltroOrigem" data-filtro="origem">
+              <option value="">Todas</option>
+              <option value="estrutura">Estrutura curricular</option>
+              <option value="outros">Disciplinas para outros cursos</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroSelecionadas">Grade horária</label>
+            <select id="gFiltroSelecionadas" data-filtro="selecionadas">
+              <option value="">Todas</option>
+              <option value="sim">Adicionadas à grade</option>
+              <option value="nao">Ainda não adicionadas</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroHabilitacao">Habilitação</label>
+            <select id="gFiltroHabilitacao" data-filtro="habilitacao"></select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroTipo">Obrigatoriedade</label>
+            <select id="gFiltroTipo" data-filtro="tipo">
+              <option value="">Todas</option>
+              <option value="OBRIGATORIA">Obrigatória</option>
+              <option value="OPTATIVA_ELETIVA">Optativa eletiva</option>
+              <option value="OPTATIVA_LIVRE">Optativa livre</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroPeriodo">Período ideal</label>
+            <select id="gFiltroPeriodo" data-filtro="periodo"></select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroSemestre">Semestre de oferecimento</label>
+            <select id="gFiltroSemestre" data-filtro="semestre">
+              <option value="">Qualquer</option>
+              <option value="1">Oferecida no 1º semestre</option>
+              <option value="2">Oferecida no 2º semestre</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroDepartamento">Departamento</label>
+            <select id="gFiltroDepartamento" data-filtro="departamento"></select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroCreditos">Créditos-aula</label>
+            <select id="gFiltroCreditos" data-filtro="creditos">
+              <option value="">Qualquer</option>
+              <option value="1">1 (1 h/semana)</option>
+              <option value="2">2 (2 h/semana)</option>
+              <option value="3">3 (3 h/semana)</option>
+              <option value="4">4 (4 h/semana)</option>
+              <option value="5+">5 ou mais</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label class="campo__rotulo" for="gFiltroSituacao">Situação</label>
+            <select id="gFiltroSituacao" data-filtro="situacao">
+              <option value="NA">Em uso</option>
+              <option value="FORA">Fora da estrutura atual</option>
+              <option value="">Todas (menos excluídas)</option>
+              <option value="EXCLUIDA">Excluídas no painel</option>
+            </select>
+          </div>
+          <fieldset class="filtros__marcadores">
+            <legend>Características</legend>
+            <label class="marcador"><input type="checkbox" data-filtro="ajustadas"> Ajustadas no painel</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comEstagio"> Com estágio (CE)</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comExtensao"> Com extensão (EXT)</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comPraticas"> Com práticas (CP)</label>
+            <label class="marcador"><input type="checkbox" data-filtro="comRequisito"> Com requisito</label>
+          </fieldset>
+          <div class="filtros__acoes">
+            <button type="button" class="botao botao--texto" id="gLimparFiltros">Limpar filtros</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="resultado__topo">
+        <div class="resultado__contagem" id="gContagemResultado" aria-live="polite"></div>
+        <div class="resultado__ferramentas">
+          <div class="campo">
+            <label class="campo__rotulo" for="gOrdenacao">Ordenar por</label>
+            <select id="gOrdenacao">
+              <option value="codigo">Código</option>
+              <option value="nome">Nome</option><option value="periodo">Período ideal</option>
+              <option value="creditos">Créditos-aula</option>
+            </select>
+          </div>
+          <button type="button" class="botao botao--secundario" id="gBaixarLista">Baixar lista (CSV)</button>
+        </div>
+      </div>
+      <ul class="chips" id="gChipsFiltros" aria-label="Filtros ativos"></ul>
+      <div class="barraLote" id="gBarraLote" hidden></div>
+
+      <div class="tabelaScroll">
+        <table class="tabela tabelaLista" id="gTabelaDisciplinas">
+          <caption class="somenteLeitor">Disciplinas para a grade horária, com a caixa de seleção. Selecione uma disciplina para ver e editar os dados.</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="celSelecao" id="gCabSelecao" hidden><label><input type="checkbox" id="gSelTodos" data-sel-todos aria-label="Escolher todas as disciplinas da lista filtrada (as já adicionadas à grade ficam como estão)"></label></th>
+              <th scope="col">Disciplina</th>
+              <th scope="col">Departamento</th>
+              <th scope="col" class="num">Créditos (aula + trab.)</th>
+              <th scope="col" class="num">CH</th>
+              <th scope="col">Oferta</th>
+            </tr>
+          </thead>
+          <tbody id="gCorpoTabela"></tbody>
+        </table>
+      </div>
+      <div id="gListaVazia" class="cartao vazio" hidden></div>
+    </section>
+
+    <!-- ETAPA 4: PRÉVIA DA GRADE HORÁRIA (PainelPreparacao.renderizarPrevia) -->
+    <section id="etapaPainel-4" role="tabpanel" aria-labelledby="etapa-4" hidden>
+      <div class="cartao etapaTopo">
+        <div class="etapaTopo__textos">
+          <h1 class="estadoBase__titulo">Prévia da grade horária</h1>
+          <p class="estadoBase__meta">As disciplinas adicionadas à grade, separadas como nas abas da planilha que as secretarias preenchem: cada departamento pelo prefixo do código (PSA, PSC, PSE, PST; as disciplinas que o IP dá para outros cursos ficam no seu departamento), <strong>Interdepartamentais</strong> (código começando por 470) e <strong>Outras Unidades</strong> (os demais códigos: disciplinas que outras unidades dão aos alunos do IP). Clique numa disciplina para abrir a ficha.</p>
+          <div class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-previa-grade"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como funciona a prévia</button></div>
+        </div>
+      </div>
+      <!-- Grade de qual semestre/ano (1.4.1): filtra a prévia pelo semestre de oferecimento -->
+      <div class="cartao gradeAlvo" id="gradeAlvo">
+        <div class="campo">
+          <label class="campo__rotulo" for="gradeSemestre">Semestre da grade</label>
+          <select id="gradeSemestre">
+            <option value="1">1º semestre (ímpar)</option>
+            <option value="2">2º semestre (par)</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label class="campo__rotulo" for="gradeAno">Ano</label>
+          <select id="gradeAno"></select>
+        </div>
+        <div class="gradeAlvo__envio">
+          <button type="button" class="botao botao--primario" id="enviarGradePreenchimento" data-enviar-grade>Enviar Grade para Preenchimento</button>
+          <button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-envio-grade-efeitos"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>O que o envio apaga e preserva</button>
+        </div>
+        <p class="gradeAlvo__resumo" id="gradeAlvoResumo" role="status"></p>
+      </div>
+      <div class="abas" role="tablist" aria-label="Abas da prévia da grade horária" id="previaAbas"></div>
+      <div id="previaPaineis"></div>
+    </section>
+  </div>
+  </div><!-- /visaoEstrutura -->
+
+  <!-- (1.7.0) Auditoria da grade horária (só leitura; montada por PainelAuditoria) -->
+  <section id="visaoAuditoria" role="tabpanel" aria-labelledby="visao-auditoria" hidden>
+    <div class="cartao auditoriaTopo">
+      <div class="auditoriaTopo__textos">
+        <h2 class="titulo2" id="auditoriaTitulo">Auditoria da grade horária</h2>
+        <p class="pequeno texto-suave" id="auditoriaSubtitulo">Acompanhe o preenchimento da grade pelas secretarias dos departamentos: o que já foi informado e cada alteração feita na planilha.</p>
+        <div class="ajudaLinha"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-auditoria"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como ler a auditoria</button><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-secretarias"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como as secretarias preenchem</button></div>
+      </div>
+      <div class="auditoriaTopo__acoes">
+        <div class="campo">
+          <label class="campo__rotulo" for="auditoriaSemestre">Grade</label>
+          <select id="auditoriaSemestre" disabled></select>
+        </div>
+        <button type="button" class="botao botao--secundario" id="auditoriaAtualizar" disabled>Atualizar</button>
+      </div>
+      <p class="pequeno texto-suave auditoriaTopo__situacao" id="auditoriaSituacao" role="status"></p>
+    </div>
+    <div id="auditoriaConteudo"></div>
+  </section>
+
+  <!-- Versão implantada (conferência na homologação e no suporte) -->
+  <p id="versaoSistema" class="versaoSistema pequeno texto-suave"></p>
+    </div><!-- /estruturaConteudo -->
+  </div><!-- /estruturaLayout -->
+</main>
+
+<!-- Ficha da disciplina -->
+<div id="modalDisciplina" class="modal" hidden>
+  <div class="modal__painel" role="dialog" aria-modal="true" aria-labelledby="modalDisciplinaTitulo">
+    <div class="modal__topo">
+      <div>
+        <p class="modal__subtitulo" id="modalDisciplinaCodigo"></p>
+        <h2 class="modal__titulo" id="modalDisciplinaTitulo"></h2>
+        <div class="ajudaLinha ajudaLinha--topo"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-ficha"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como ler a ficha</button></div>
+      </div>
+      <button type="button" class="modal__fechar" data-fechar-modal aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__corpo" id="modalDisciplinaCorpo"></div>
+    <div class="modal__rodape">
+      <div class="modal__rodapeEsquerda rodapeFicha">
+        <button type="button" class="botao botao--perigo" id="fichaExcluir" hidden>Excluir disciplina</button>
+        <button type="button" class="botao botao--secundario" id="fichaGrade" hidden>Adicionar à Grade Horária</button>
+        <span class="rodapeFicha__nota pequeno" id="fichaGradeNota" role="status"></span>
+      </div>
+      <button type="button" class="botao botao--secundario" data-fechar-modal>Fechar</button>
+      <button type="button" class="botao botao--primario" id="fichaSalvar" hidden disabled>Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Importação (montada por PainelImportacao) -->
+<div id="modalImportacao" class="modal" hidden>
+  <div class="modal__painel" role="dialog" aria-modal="true" aria-labelledby="modalImportacaoTitulo">
+    <div class="modal__topo">
+      <div>
+        <h2 class="modal__titulo" id="modalImportacaoTitulo">Importar estrutura curricular</h2>
+        <p class="modal__subtitulo">Arquivo do Júpiter: CSV ou PDF do relatório "Grade Curricular"</p>
+        <div class="ajudaLinha ajudaLinha--topo"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-importar"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como funciona a importação</button></div>
+      </div>
+      <button type="button" class="modal__fechar" id="importacaoFechar" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__corpo" id="importacaoCorpo"></div>
+    <div class="modal__rodape" id="importacaoRodape"></div>
+  </div>
+</div>
+
+<!-- Lista de disciplinas por unidade (montada por PainelPreparacao) -->
+<!-- Cadastrar nova grade (PainelPreparacao) -->
+<div id="modalRecomeco" class="modal" hidden>
+  <div class="modal__painel modal__painel--estreito" role="dialog" aria-modal="true" aria-labelledby="modalRecomecoTitulo">
+    <div class="modal__topo">
+      <div>
+        <h2 class="modal__titulo" id="modalRecomecoTitulo">Cadastrar nova grade</h2>
+        <p class="modal__subtitulo">Recomeçar tudo do zero</p>
+        <div class="ajudaLinha ajudaLinha--topo"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-nova-grade"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>O que é apagado</button></div>
+      </div>
+      <button type="button" class="modal__fechar" data-fechar-recomeco aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__corpo" id="recomecoCorpo"></div>
+    <div class="modal__rodape" id="recomecoRodape"></div>
+  </div>
+</div>
+
+<!-- Enviar Grade para Preenchimento (1.5.0, PainelPreparacao): confirmação e resultado -->
+<div id="modalEnvioGrade" class="modal" hidden>
+  <div class="modal__painel modal__painel--estreito" role="dialog" aria-modal="true" aria-labelledby="modalEnvioGradeTitulo">
+    <div class="modal__topo">
+      <div>
+        <h2 class="modal__titulo" id="modalEnvioGradeTitulo">Enviar Grade para Preenchimento</h2>
+        <p class="modal__subtitulo" id="envioGradeSubtitulo"></p>
+        <div class="ajudaLinha ajudaLinha--topo"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-envio-grade"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como funciona o envio</button></div>
+      </div>
+      <button type="button" class="modal__fechar" data-fechar-envio aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__corpo" id="envioGradeCorpo"></div>
+    <div class="modal__rodape" id="envioGradeRodape"></div>
+  </div>
+</div>
+
+<div id="modalUnidade" class="modal" hidden>
+  <div class="modal__painel" role="dialog" aria-modal="true" aria-labelledby="modalUnidadeTitulo">
+    <div class="modal__topo">
+      <div>
+        <h2 class="modal__titulo" id="modalUnidadeTitulo">Importar lista de disciplinas da unidade</h2>
+        <p class="modal__subtitulo">Júpiter › Estrutura Curricular › Relatórios › Lista de disciplinas por unidade (CSV)</p>
+        <div class="ajudaLinha ajudaLinha--topo"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-outros-cursos-lista"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Como gerar e importar a lista</button></div>
+      </div>
+      <button type="button" class="modal__fechar" data-fechar-unidade aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__corpo" id="unidadeCorpo"></div>
+    <div class="modal__rodape" id="unidadeRodape"></div>
+  </div>
+</div>
+
+<!-- (1.7.0) Histórico de uma disciplina na auditoria (PainelAuditoria) -->
+<div id="modalHistoricoAuditoria" class="modal" hidden>
+  <div class="modal__painel" role="dialog" aria-modal="true" aria-labelledby="historicoAuditoriaTitulo">
+    <div class="modal__topo">
+      <div>
+        <h2 class="modal__titulo" id="historicoAuditoriaTitulo">Histórico da disciplina</h2>
+        <p class="modal__subtitulo" id="historicoAuditoriaSubtitulo"></p>
+        <div class="ajudaLinha ajudaLinha--topo"><button type="button" class="ajudaGatilho" data-gradip-help-open="ajuda-auditoria-historico"><span class="ajudaGatilho__icone" aria-hidden="true">?</span><span class="somenteLeitor">Ajuda: </span>Sobre o histórico</button></div>
+      </div>
+      <button type="button" class="modal__fechar" data-fechar-historico-auditoria aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal__corpo" id="historicoAuditoriaCorpo"></div>
+    <div class="modal__rodape"><button type="button" class="botao botao--secundario" data-fechar-historico-auditoria>Fechar</button></div>
+  </div>
+</div>
+
+<!-- (1.9.0) Central de Ajuda (conteúdo estático; janela da pilha Painel.Modal) -->
+<?!= include_('EstruturaAjuda') ?>
+
+<div id="carregando" class="carregando" role="status" aria-live="polite">
+  <div class="carregando__caixa">
+    <?!= include_('GradipMarcaIPUSP') ?>
+    <div class="carregando__texto" id="carregandoTexto">Carregando a estrutura curricular…</div>
+  </div>
+</div>
+<div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
+
+<?!= include_('LeitorComum') ?>
+<?!= include_('LeitorCsv') ?>
+<?!= include_('LeitorPdf') ?>
+<?!= include_('LeitorPdfFontes') ?>
+<?!= include_('PainelApp') ?>
+<?!= include_('PainelImportacao') ?>
+<?!= include_('PainelPreparacao') ?>
+<?!= include_('PainelAuditoria') ?>
+<?!= include_('EstruturaAjudaUI') ?>
+<?!= include_('EstruturaIcones') ?>
+<?!= include_('EstruturaNavegacaoUI') ?>

@@ -1,0 +1,197 @@
+=== Etapa 5 — ações em lote mistas (estrutura + outros cursos) ===
+Fonte testada: ../src (fonte deste pacote)
+Versão declarada na fonte: 1.9.2
+
+--- R-excluir (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":true}
+  resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · painel {"estrutura:PST1001":"E","outros:PST2001":"E"} · lotePendente null
+RESULTADO: ok
+
+--- R-excluir (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":true}
+  resposta: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Excluir\" em 2 disciplinas não terminou: 1 de 2 já estão gravadas (estrutura: 1 de 1; outros cursos: 0 de 1). O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"excluir","total":2,"confirmados":1,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}}
+  persistido depois da chamada: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":true}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · painel {"estrutura:PST1001":"E","outros:PST2001":"E"} · lotePendente {"estado":"concluido","acao":"excluir"}
+RESULTADO: ok
+
+--- R-restaurar (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":true}
+  resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"-"} · lotePendente null
+RESULTADO: ok
+
+--- R-restaurar (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":true}
+  resposta: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Restaurar\" em 2 disciplinas não terminou: 1 de 2 já estão gravadas (estrutura: 1 de 1; outros cursos: 0 de 1). O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"restaurar","total":2,"confirmados":1,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":true}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"-"} · lotePendente {"estado":"concluido","acao":"restaurar"}
+RESULTADO: ok
+
+--- R-adicionar (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":true}
+  resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · painel {"estrutura:PST1001":"G","outros:PST2001":"G"} · lotePendente null
+RESULTADO: ok
+
+--- R-adicionar (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":true}
+  resposta: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Adicionar à grade horária\" em 2 disciplinas não terminou: 1 de 2 já estão gravadas (estrutura: 1 de 1; outros cursos: 0 de 1). O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"adicionar","total":2,"confirmados":1,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}}
+  persistido depois da chamada: {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":true}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · painel {"estrutura:PST1001":"G","outros:PST2001":"G"} · lotePendente {"estado":"concluido","acao":"adicionar"}
+RESULTADO: ok
+
+--- R-remover (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":true}
+  resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"-"} · lotePendente null
+RESULTADO: ok
+
+--- R-remover (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":true}
+  resposta: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Remover da grade horária\" em 2 disciplinas não terminou: 1 de 2 já estão gravadas (estrutura: 1 de 1; outros cursos: 0 de 1). O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"remover","total":2,"confirmados":1,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":true}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"-"} · lotePendente {"estado":"concluido","acao":"remover"}
+RESULTADO: ok
+
+--- 1a. misto com 2+2 itens: excluir, restaurar, adicionar, remover — contagens, persistência, sem registro, contexto novo igual
+RESULTADO: ok
+
+--- 1b. homogêneo (só estrutura, só outros) e um item (ficha): as quatro ações
+RESULTADO: ok
+
+--- 2a. registro do pedido recusado (partes): NAO_SALVO, nada alterado, nada pendente, nenhuma parte solta
+  resposta: {"ok":false,"codigo":"NAO_SALVO","resultado":"nao_concluido","erro":"Nada foi alterado: a planilha não aceitou registrar a ação \"Excluir\". As disciplinas continuam selecionadas; tente de novo em alguns instantes.","lote":null}
+RESULTADO: ok
+
+--- 2b. cabeçalho do registro recusado (antes de aplicar): NAO_SALVO; partes limpas
+RESULTADO: ok
+
+--- 2c. falha (persistente) ANTES da primeira escrita de dados: pendente "nenhuma gravada ainda", pedido registrado; contexto novo conclui
+  resposta: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Excluir\" em 2 disciplinas não terminou: nenhuma está gravada ainda. O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"excluir","total":2,"confirmados":0,"grupos":[{"origem":"estrutura","total":1,"confirmados":0,"faltam":["PST1001"]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}}
+RESULTADO: ok
+
+--- 2d. falha (persistente) antes da escrita SEGUINTE, 2+2 itens: grupos identificam cada item (estrutura confirmados, outros faltam)
+RESULTADO: ok
+
+--- 3a. escrita de Ajustes aplicada e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":true} · resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+RESULTADO: ok
+
+--- 3b. ÚLTIMA escrita (outros cursos) aplicada e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":true} · resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+RESULTADO: ok
+
+--- 3c. cabeçalho do registro gravado e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":true} · resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+RESULTADO: ok
+
+--- 3d. flush depois das escritas: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":true} · resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+RESULTADO: ok
+
+--- 4a. encerrada logo depois da escrita de Ajustes: a foto tem o parcial + o registro; a abertura do painel conclui
+  na foto: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":true} · depois da abertura: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · lotePendente {"estado":"concluido","nome":"Excluir","total":2}
+RESULTADO: ok
+
+--- 4b. encerrada entre as escritas e reaberta por OUTRA gravação: o lote é concluído antes e vem em recuperadoLote (separado das contagens do novo pedido)
+  resposta: {"adicionadas":1,"recuperadoLote":{"acao":"excluir","total":2,"resumo":{"alteradas":2}}}
+RESULTADO: ok
+
+--- 4c. encerrada logo depois do registro (antes de qualquer dado): contexto novo conclui o pedido inteiro
+RESULTADO: ok
+
+--- 5. recuperação que falha de novo: pendência identificada (mesmo id), sem falsa confirmação; "Concluir" depois conclui
+  abertura com a escrita falhando: {"estado":"pendente","id":true,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}
+RESULTADO: ok
+
+--- 6a. repetir o pedido já concluído: sem linhas nem identidades duplicadas; inclusão repetida = jaEstavam
+RESULTADO: ok
+
+--- 6b. conclusão repetida (duas reaberturas): a segunda não escreve nada
+RESULTADO: ok
+
+--- 6c. ação posterior OPOSTA: o pedido antigo é concluído antes e o novo vale por último; reabrir não reaplica o antigo
+RESULTADO: ok
+
+--- 7. excluir itens na grade tira da grade; restaurar não reinclui (também depois de uma retomada)
+RESULTADO: ok
+
+--- 8. inclusão com elegíveis, excluída, já incluída e sem semestre: contagens e listas; iguais depois de uma pendência e da recuperação
+  com a escrita de outros cursos falhando: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Adicionar à grade horária\" em 2 disciplinas não terminou: 1 de 2 já estão gravadas (estrutura: 1 de 1; outros cursos: 0 de 1). O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"adicionar","total":2,"confirmados":1,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}} · resumo {"adicionadas":2,"jaEstavam":1,"ignoradas":1,"semOferecimento":1}
+RESULTADO: ok
+
+--- 9. lista vazia, origem inválida, itens repetidos e alvo inexistente no FIM: validações atuais; nada gravado nem registrado
+RESULTADO: ok
+
+--- 10. código efetivo alterado (estrutura e outros) + código antigo reaparecendo como registro novo: retomada pela chave original, o outro registro intacto
+  chave do registro novo: PST2001-2 · depois da retomada: {"estrutura:PST1001":"E","outros:PST2001":"E","outros:PST2001-2":"-","pendente":false}
+RESULTADO: ok
+
+--- 11. campos fora da ação, observações, outras linhas e colunas extras (Date, texto ISO, número, booleano, vazio) intactos depois de retomar; linha de ajuste que fica vazia segue a regra (removida)
+  extras antes  (Ajustes PST1001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+  extras depois (Ajustes PST1001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+  extras antes  (outros PST2001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+  extras depois (outros PST2001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+RESULTADO: ok
+
+--- 12a. salvamento individual pendente: o lote é recusado enquanto ele não conclui; depois, ele é concluído ANTES do lote (recuperado com a observação)
+RESULTADO: ok
+
+--- 12b. lote pendente: salvamento CONFLITANTE (mesma disciplina) recusado com a ação pendente identificada; depois, lote concluído antes e o salvamento por último
+RESULTADO: ok
+
+--- 12c. os dois registros ao mesmo tempo (montado no teste): um não apaga nem esconde o outro; o individual conclui e vem em "recuperado" mesmo com o lote recusado
+  pedido com os dois registros: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Excluir\" em 2 disciplinas não terminou: 1 de 2 já estão gravadas (estrutura: 1 de 1; outros cursos: 0 de 1). O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"excluir","total":2,"confirmados":1,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":0,"faltam":["PST2001"]}]}} · recuperado {"chave":"PST1002","texto":"Obs de B"}
+RESULTADO: ok
+
+--- 12d. ordem dos dados no painel: lote recuperado aplicado ANTES do pedido mais recente (adicionar pendente, depois remover)
+RESULTADO: ok
+
+--- 13. outro pedido aceito: recuperadoLote sem preparação (a resposta traz); outro pedido recusado: recuperadoLote com a preparação lida
+  recusado: {"ok":false,"codigo":"CODIGO_REPETIDO","recuperadoLote":{"acao":"excluir","preparacao":true}}
+RESULTADO: ok
+
+--- 14a. falha ANTES da remoção do registro (persistente): pendente "todas já como pedido"; contexto novo conclui SEM reescrever
+  resposta: {"ok":false,"codigo":"LOTE_PENDENTE","resultado":"pendente","erro":"A ação \"Excluir\" em 2 disciplinas não terminou: todas já estão como pedido, falta só confirmar. O pedido continua registrado: o painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir ação pendente\". Até lá, outras gravações ficam bloqueadas.","lote":{"estado":"pendente","acao":"excluir","total":2,"confirmados":2,"grupos":[{"origem":"estrutura","total":1,"confirmados":1,"faltam":[]},{"origem":"outros","total":1,"confirmados":1,"faltam":[]}]}}
+RESULTADO: ok
+
+--- 14b. remoção aplicada e exceção: conferido → concluído (nunca pendente inexistente); repetir não duplica
+  registro no instante do erro: null · resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+RESULTADO: ok
+
+--- 14c. flush DEPOIS da remoção: conferido → concluído (nunca pendente inexistente); repetir não duplica
+  registro no instante do erro: null · resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"lote":null}
+RESULTADO: ok
+
+--- 14d. remoção feita + leitura falhando na conferência: LOTE_INCERTO identificado (sem confirmar, sem "nada gravado", sem recriar o registro); contexto novo e repetição corretos
+  resposta: {"ok":false,"codigo":"LOTE_INCERTO","resultado":"incerto","erro":"Não foi possível confirmar a ação \"Excluir\" em 2 disciplinas: o registro da ação já foi encerrado na planilha, mas não foi possível ler a planilha para conferir. Recarregue o painel e confira; se faltar algo, repita a ação.","lote":{"estado":"incerto","acao":"excluir","total":2,"confirmados":null,"grupos":[{"origem":"estrutura","total":1,"confirmados":null,"faltam":null},{"origem":"outros","total":1,"confirmados":null,"faltam":null}]}} · leituras recusadas: 2
+RESULTADO: ok
+
+--- 14e. "Concluir ação pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído
+RESULTADO: ok
+
+--- 14f. registro ilegível (parte faltando): não é tratado como inexistente nem aplicado; recusa identificada
+RESULTADO: ok
+
+--- 15a. com o lote pendente (sem concluir): importação, recomeço, envio da grade, salvar, outros cursos e lista por unidade recusados com a pendência; nada muda
+  códigos: ["importacao=LOTE_PENDENTE","recomeco=LOTE_PENDENTE","envio=LOTE_PENDENTE","salvar=LOTE_PENDENTE","outros=LOTE_PENDENTE","unidade=LOTE_PENDENTE"]
+RESULTADO: ok
+
+--- 15b. leitor: não grava (ações em lote recusadas), vê só que há algo pendente; o registro fica para o administrador, que conclui
+RESULTADO: ok
+
+--- 15c. base mudou (outra importação ativa) depois do registro: não aplica; "Descartar" só nesse caso e com o id; descartar NÃO desfaz o já gravado
+  aviso: A ação "Excluir" em 2 disciplinas não pôde ser concluída porque a base mudou depois dela (1 de 2 já estão gravadas (estrutura: 1 de 1; outros cursos: 0 de 1)). Confira as disciplinas e use "Descartar ação pendente": descartar encerra a pendência, mas NÃO desfaz o que já foi gravado. Nada mais pode ser gravado até lá.
+RESULTADO: ok
+
+--- 17. lote misto de 6.000 itens válidos (3.000 da estrutura + 3.000 de outros cursos com chave de 20 caracteres): registro em partes ≤ 9 KB nas Propriedades; retomada conclui; 6.001 itens recusados como antes
+  6.000 itens: 13 partes, maior 8000 bytes, Propriedades no total 100217 bytes; tempo da chamada 880 ms (simulador)
+  fotografia entre as escritas: 3000 excluídas (só a estrutura); depois da abertura do painel: 6000
+RESULTADO: ok
+
+=== TOTAL: 45 ok, 0 falha(s); pulados: 0 ===

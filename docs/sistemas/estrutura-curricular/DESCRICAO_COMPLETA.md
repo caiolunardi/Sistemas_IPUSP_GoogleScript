@@ -1,4 +1,6 @@
 > **Status no repositório central**
+
+> Registro histórico do pacote 1.8.0. A fonte atual é 1.10.0, sobre baseline 1.9.3 auditada. Use o [índice atual](README.md), [manual](MANUAL_OPERACAO.md) e [contratos](CONTRATOS_E_FLUXOS.md) para manutenção; este documento não descreve sozinho as correções posteriores.
 >
 > Documento incorporado em 04/10/2026 a partir do descritivo entregue com o snapshot **1.8.0**. Nesta etapa ele é fonte documental. A auditoria independente do código será feita separadamente antes de o snapshot ser promovido como baseline canônica em `sistemas/estrutura-curricular/src/`.
 

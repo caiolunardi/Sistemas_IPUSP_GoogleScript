@@ -1,0 +1,37 @@
+# suíte: reproduzir_auditoria_antes
+# comando: env DIR_SRC=/caminho/fonte-1.1.0/src node reproduzir_auditoria.js /caminho/grade_curricular.csv saida/paginas_ocr_navegador.json
+# data: 2026-10-07T21:41:16Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte: /caminho/fonte-1.1.0/src
+
+### ACHADO 1 — falha em setName depois da ativação
+confirmarImportacao: ok=true pendencias=["nomes e ordem das abas"] planilhaDesatualizada=undefined
+manifesto.versaoBase=2 diário presente=false
+  Disciplinas: visível id=1011 | manifesto id=1015 "_nova_disciplinas_a6b40780" (oculta) DIVERGE
+  Disciplinas por habilitação: visível id=1012 | manifesto id=1016 "_nova_oferta_a6b40780" (oculta) DIVERGE
+  Requisitos: visível id=1013 | manifesto id=1017 "_nova_requisitos_a6b40780" (oculta) DIVERGE
+  Currículos: visível id=1014 | manifesto id=1018 "_nova_curriculos_a6b40780" (oculta) DIVERGE
+nome de PSC1322 na aba visível "Disciplinas": Introdução à Psicopatologia
+reinício + obterDadosPainel (admin): ok=true versão no painel=2 nome no painel=Introdução à Psicopatologia (nova ementa) gravacao={"interrompida":false,"arrumacaoPendente":false,"recuperada":false}
+  Disciplinas: visível id=1011 | manifesto id=1015 "_nova_disciplinas_a6b40780" (oculta) DIVERGE
+  Disciplinas por habilitação: visível id=1012 | manifesto id=1016 "_nova_oferta_a6b40780" (oculta) DIVERGE
+  Requisitos: visível id=1013 | manifesto id=1017 "_nova_requisitos_a6b40780" (oculta) DIVERGE
+  Currículos: visível id=1014 | manifesto id=1018 "_nova_curriculos_a6b40780" (oculta) DIVERGE
+nome de PSC1322 na aba visível "Disciplinas": Introdução à Psicopatologia
+
+### ACHADO 2 — revisão humana com 1.102 valores (pacote sintético de 551 disciplinas)
+CSV sintético: ok=true
+prévia: podeGravar=true revisao.total=1102 itens enviados nesta resposta=1000 (sem paginação)
+confirmar com a caixa marcada, sem abrir as demais páginas: ok=true (GRAVOU)
+EXT gravados na base (valores não nulos): 551
+
+### ACHADO 3 — duas importações intercaladas entre o manifesto e lerBase_
+obterDadosPainel: ok=false codigo=SEM_ACESSO — Sua conta não tem acesso a este painel. Se você precisa consultar a estrutura curricular, peça acesso ao Serviço de Graduação.
+manifesto depois: versaoBase=1 importacao=IMP-20261007-184117-13862606
+
+# código de saída: 0  (duração: 1 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

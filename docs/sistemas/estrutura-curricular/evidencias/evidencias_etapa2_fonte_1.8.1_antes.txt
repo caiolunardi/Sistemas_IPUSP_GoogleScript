@@ -1,0 +1,164 @@
+=== Etapa 2 — validação do CSV da lista de disciplinas por unidade ===
+Fonte testada: DIR_SRC (fonte indicada na linha de comando)
+Versão declarada na fonte: 1.8.1
+
+--- R. Retrato das três falhas
+A) crédito negativo — CSV: "PST0391;Sintética PST0391;01/01/2026;;Semestral;-2;0"
+Prévia: total 1 · novas [["PST0391","Sintética PST0391",-2,0,-30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+Inclusão (todas as novas + o código da linha): ok, 1 incluída(s)
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): [["PST0391","PST0391","Sintética PST0391",-2,0,-30]]
+B) texto em campo numérico — CSV: "PST0392;Sintética PST0392;01/01/2026;;Semestral;2;abc"
+Prévia: total 1 · novas [["PST0392","Sintética PST0392",2,null,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+Inclusão (todas as novas + o código da linha): ok, 1 incluída(s)
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): [["PST0392","PST0392","Sintética PST0392",2,"",30]]
+C) aspas não encerradas no nome — CSV: "PST0393;\"Nome sem fim;01/01/2026;;Semestral;2;0"
+Prévia: total 1 · novas [["PST0393","Nome sem fim;01/01/2026;;Semestral;2;0",null,null,null]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+Inclusão (todas as novas + o código da linha): ok, 1 incluída(s)
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): [["PST0393","PST0393","Nome sem fim;01/01/2026;;Semestral;2;0","","",""]]
+
+--- 1a. créditos-aula negativo (-2; 0): linha recusada com motivo, nada gravado (nem com chamada direta)
+Prévia: total 1 · novas [["PST0391","Sintética PST0391",-2,0,-30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",-2,0,-30]]
+
+--- 1b. créditos-trabalho negativo (2; -1): linha recusada com motivo, nada gravado
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",2,-1,0]]
+
+--- 1c. os dois negativos: um motivo para cada campo
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",-2,-3,-120]]
+
+--- 2. "abc", "2abc", "2 créditos", "1/2", "1,5", "1.5", "NaN", "Infinity", "+2", "1e1": todas recusadas com o valor no motivo
+Prévia: total 11 · novas [["PST0510","Sintética PST0510",2,null,30],["PST0511","Sintética PST0511",2,null,30],["PST0512","Sintética PST0512",2,null,30],["PST0513","Sintética PST0513",2,null,30],["PST0514","Sintética PST0514",2,1.5,75],["PST0515","Sintética PST0515",2,1.5,75],["PST0516","Sintética PST0516",2,null,30],["PST0517","Sintética PST0517",2,null,30],["PST0518","Sintética PST0518",2,null,30],["PST0519","Sintética PST0519",2,null,30],["PST0599","Sintética PST0599",null,0,0]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0510","Sintética PST0510",2,null,30],["PST0511","Sintética PST0511",2,null,30],["PST0512","Sintética PST0512",2,null,30],["PST0513","Sintética PST0513",2,null,30],["PST0514","Sintética PST0514",2,1.5,75],["PST0515","Sintética PST0515",2,1.5,75],["PST0516","Sintética PST0516",2,null,30],["PST0517","Sintética PST0517",2,null,30],["PST0518","Sintética PST0518",2,null,30],["PST0519","Sintética PST0519",2,null,30],["PST0599","Sintética PST0599",null,0,0]]
+
+--- 3. 0/0, 2/1, 4/0, 0/2, "02" e "3,0": aceitos, CH = 15 × aula + 30 × trabalho, gravados e lidos iguais
+Prévia: total 6 · novas [["PST0601","Sintética PST0601",0,0,0],["PST0602","Sintética PST0602",2,1,60],["PST0603","Sintética PST0603",4,0,60],["PST0604","Sintética PST0604",0,2,60],["PST0605","Sintética PST0605",2,1,60],["PST0606","Sintética PST0606",3,0,45]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 4. aula vazia, trabalho vazio, ambos vazios, só espaços e colunas finais ausentes: aceitos como antes
+Prévia: total 6 · novas [["PST0701","Sintética PST0701",null,1,30],["PST0702","Sintética PST0702",2,null,30],["PST0703","Sintética PST0703",null,null,null],["PST0704","Sintética PST0704",null,null,null],["PST0705","Sem colunas de créditos",null,null,null],["PST0706","Só código e nome",null,null,null]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 5a. aspas não encerradas no nome: recusada (não engole os campos seguintes), nada gravado
+Prévia: total 1 · novas [["PST0801","Nome sem fim;01/01/2026;;Semestral;2;0",null,null,null]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0801","Nome sem fim;01/01/2026;;Semestral;2;0",null,null,null]]
+
+--- 5b. aspas não encerradas em campo numérico: recusada, nada gravado
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0802","Nome",null,null,null]]
+
+--- 5c. campo entre aspas que continua na linha seguinte (quebra de linha dentro de aspas): as duas linhas recusadas, nenhum fragmento vira disciplina
+Prévia: total 3 · novas [["PST0803","Nome em",null,null,null],["PST0804","Sintética PST0804",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 3: código \"duas linhas;01/01/2026;;Semestral;2;0\" não reconhecido"]
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = ["Linha 3: código \"duas linhas;01/01/2026;;Semestral;2;0\" não reconhecido"]; novas = [["PST0803","Nome em",null,null,null],["PST0804","Sintética PST0804",2,0,30]]
+
+--- 5d. aspas no meio de um campo sem aspas e texto depois das aspas de fechamento: recusadas (interpretação ambígua)
+Prévia: total 2 · novas [["PST0805","Nome apelido; x",2,0,30],["PST0806","Nomeresto",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0805","Nome apelido; x",2,0,30],["PST0806","Nomeresto",2,0,30]]
+
+--- 5e. mais colunas preenchidas que o cabeçalho (ex.: "1,5" num arquivo separado por vírgula): recusada
+Prévia: total 2 · novas [["PST0807","Nome",1,5,165],["PST0808","Nome com coluna final vazia",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0807","Nome",1,5,165],["PST0808","Nome com coluna final vazia",2,0,30]]
+
+--- 5f. cabeçalho com aspas não encerradas: erro amigável (PACOTE_INVALIDO), sem prévia
+Resposta: {"ok":true,"novas":["PST0809"]}
+RESULTADO: FALHOU — diferente: [true,null] ≠ [false,"PACOTE_INVALIDO"]
+
+--- 6. nome entre aspas com separador e com aspas escapadas (""): aceitos e gravados certos
+Prévia: total 4 · novas [["PST0901","Nome; com ponto e vírgula",2,0,30],["PST0902","Nome com \"aspas\" internas",3,1,75],["PST0903","Tudo entre aspas",2,2,90],["PST0904","Aspas depois de espaço",1,0,15]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 7. ";", "," e tabulação; BOM; LF e CRLF; linhas vazias: mesma prévia
+RESULTADO: ok
+
+--- 8. misto: motivos de todas as inválidas, só as válidas selecionáveis, inclusão só das válidas, registros anteriores intactos
+Prévia: total 6 · novas [["PST1101","Sintética PST1101",2,1,60],["PST1102","Sintética PST1102",-2,0,-30],["PST1103","Sintética PST1103",3,0,45],["PST1104","Sintética PST1104",2,null,30],["PST1105","Sem fim;01/01/2026;;Semestral;2;0",null,null,null],["PST1106","Sintética PST1106",4,2,120]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — diferente: ["PST1101","PST1102","PST1103","PST1104","PST1105","PST1106"] ≠ ["PST1101","PST1103"]
+
+--- 8b. (1.8.3) misto só com créditos inválidos (sem problema de aspas): todas as válidas continuam oferecidas e gravadas
+Prévia: total 6 · novas [["PST1111","Sintética PST1111",2,1,60],["PST1112","Sintética PST1112",-2,0,-30],["PST1113","Sintética PST1113",3,0,45],["PST1114","Sintética PST1114",2,null,30],["PST1115","Sintética PST1115",1.5,0,22.5],["PST1116","Sintética PST1116",4,2,120]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — diferente: ["PST1111","PST1112","PST1113","PST1114","PST1115","PST1116"] ≠ ["PST1111","PST1113","PST1116"]
+
+--- 9. só linhas inválidas: nenhuma nova, inclusão recusada, aba inalterada (inclusive após reabrir)
+Prévia: total 4 · novas [["PST1201","Sintética PST1201",-1,0,-15],["PST1202","Sintética PST1202",null,0,0],["PST1203","aberta;;;;2;0",null,null,null]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 5: código \"XX12\" não reconhecido"]
+RESULTADO: FALHOU — diferente: [3,1] ≠ [0,3]
+
+--- 10. incluir direto o código de uma linha inválida (com a assinatura da prévia): não grava esse código
+RESULTADO: FALHOU — só a válida: 4 ≠ 1
+
+--- 11. código já na lista e código repetido no arquivo, com crédito inválido: aparecem como inválidos, não como "conhecida"/"repetida"
+Prévia: total 4 · novas [["PST1302","Sintética PST1302",2,0,30]] · conhecidas 1 · repetidas 2
+Linhas ignoradas: []
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST1302","Sintética PST1302",2,0,30]]
+
+--- 12a. importação válida normal
+RESULTADO: ok
+
+--- 12b. seleção parcial e reimportação: as não escolhidas continuam novas; as incluídas viram conhecidas
+RESULTADO: ok
+
+--- 13. código corrigido + CSV com o código antigo: registro novo PST0391-2, o corrigido intacto; com crédito inválido, nada
+RESULTADO: FALHOU — linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",-2,0,-30]]
+
+--- R2. (1.8.3) Retrato da reprodução PST0999 e de "3.000" (só registra; asserções em 14a e 15a)
+Prévia: total 4 · novas [["PST0803","Nome em várias linhas",null,null,null],["PST0999","Trecho do nome que parece registro",2,0,30],["PST0804","Disciplina real",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 4: código \"fim do nome;01/01/2026;;Semestral;2;0\" não reconhecido"]
+Inclusão direta de PST0803, PST0999 e PST0804: ok, 3 incluída(s)
+Gravado após reabrir (Identificador | Código | Nome | Créd.-aula | Créd.-trabalho | CH): [["PST0803","PST0803","Nome em várias linhas","","",""],["PST0999","PST0999","Trecho do nome que parece registro",2,0,30],["PST0804","PST0804","Disciplina real",2,0,30]]
+Prévia: total 1 · novas [["PST0901","Disciplina teste",3,0,45]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+
+--- 14a. reprodução exata: PST0999 (dentro do nome de PST0803) nunca é oferecida nem gravada, nem por chamada direta; PST0804 continua
+Prévia: total 4 · novas [["PST0803","Nome em várias linhas",null,null,null],["PST0999","Trecho do nome que parece registro",2,0,30],["PST0804","Disciplina real",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 4: código \"fim do nome;01/01/2026;;Semestral;2;0\" não reconhecido"]
+RESULTADO: FALHOU — PST0999 não pode ser oferecida
+
+--- 14b. continuação com VÁRIAS linhas parecidas com registros válidos: nenhuma é oferecida; o registro real seguinte é
+Prévia: total 5 · novas [["PST0811","Nome",null,null,null],["PST0812","Parece registro um",2,0,30],["PST0813","Parece registro dois",3,1,75],["PST0814","Real depois",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 5: código \"fim;01/01/2026;;Semestral;2;0\" não reconhecido"]
+RESULTADO: FALHOU — nenhum fragmento oferecido
+
+--- 14c. campo aberto até o FIM do arquivo, com linhas posteriores parecidas com registros: nada a partir da abertura é lido; as anteriores continuam
+Prévia: total 4 · novas [["PST0820","Válida antes",2,0,30],["PST0821","Nome aberto;01/01/2026;;Semestral;2;0",null,null,null],["PST0822","Parece registro",2,0,30],["PST0823","Parece registro 2",4,2,120]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — nenhum fragmento oferecido
+
+--- 14d. aspas escapadas ("") dentro do campo de várias linhas não fecham o campo (nenhum fechamento falso)
+Prévia: total 4 · novas [["PST0830","Nome com \"aspas\" e",null,null,null],["PST0831","Parece",2,0,30],["PST0832","Real depois",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 4: código \"continua aqui fim;01/01/2026;;Semestral;2;0\" não reconhecido"]
+RESULTADO: FALHOU — nenhum fragmento oferecido
+
+--- 14e. campo de várias linhas que fecha de forma inválida (texto depois das aspas): fim do registro ambíguo, nada a partir dele é lido; o anterior continua
+Prévia: total 4 · novas [["PST0839","Válida antes",2,0,30],["PST0840","Nome",null,null,null],["PST0841","Parece registro",2,0,30]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: ["Linha 4: código \"fimx;01/01/2026;;Semestral;2;0\" não reconhecido"]
+RESULTADO: FALHOU — nada depois da abertura
+
+--- 14f. cabeçalho com campo entre aspas que quebra a linha: arquivo recusado (PACOTE_INVALIDO), nada gravado
+RESULTADO: FALHOU — Este arquivo não parece ser a "Lista de disciplinas por unidade" do Júpiter: as colunas esperadas são Disciplina, Nome, Ativação, Desativação, Tipo, Créditos aula e Créditos trabalho. Confira o relatório escolhido (Júpiter › Estrutura Curricular › Relatórios › Lista de disciplinas por unidade).
+
+--- 15a. 3.000, 3,000, 0002.0000, 0.0000 e 9999.000 (aula e trabalho): aceitos como inteiros, CH certa, gravados e relidos
+Prévia: total 10 · novas [["PST1501","Sintética PST1501",3,0,45],["PST1502","Sintética PST1502",3,0,45],["PST1503","Sintética PST1503",2,1,60],["PST1504","Sintética PST1504",0,0,0],["PST1505","Sintética PST1505",9999,0,149985],["PST1506","Sintética PST1506",0,3,90],["PST1507","Sintética PST1507",1,3,105],["PST1508","Sintética PST1508",0,2,60],["PST1509","Sintética PST1509",0,9999,299970],["PST1510","Sintética PST1510",9999,0,149985]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: ok
+
+--- 15b. CSV separado por vírgula: "3,000" corretamente entre aspas = 3
+RESULTADO: ok
+
+--- 15c. frações reais continuam recusadas (3.001, 2,0001, muitos zeros e depois um dígito) e acima de 9999 também
+Prévia: total 6 · novas [["PST1531","Sintética PST1531",3.001,0,45.015],["PST1532","Sintética PST1532",0,2.0001,60.00300000000001],["PST1533","Sintética PST1533",1,0,15],["PST1534","Sintética PST1534",0,1e-23,3e-22],["PST1535","Sintética PST1535",10000,0,150000],["PST1536","Sintética PST1536",-3,0,-45]] · conhecidas 0 · repetidas 0
+Linhas ignoradas: []
+RESULTADO: FALHOU — diferente: [{"codigo":"PST1531","nome":"Sintética PST1531","departamento":"PST","creditosAula":3.001,"creditosTrabalho":0,"ch":45.015,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1532","nome":"Sintética PST1532","departamento":"PST","creditosAula":0,"creditosTrabalho":2.0001,"ch":60.00300000000001,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1533","nome":"Sintética PST1533","departamento":"PST","creditosAula":1,"creditosTrabalho":0,"ch":15,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1534","nome":"Sintética PST1534","departamento":"PST","creditosAula":0,"creditosTrabalho":1e-23,"ch":3e-22,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1535","nome":"Sintética PST1535","departamento":"PST","creditosAula":10000,"creditosTrabalho":0,"ch":150000,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1536","nome":"Sintética PST1536","departamento":"PST","creditosAula":-3,"creditosTrabalho":0,"ch":-45,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"}] ≠ []
+
+=== TOTAL: 8 ok, 23 falha(s) ===

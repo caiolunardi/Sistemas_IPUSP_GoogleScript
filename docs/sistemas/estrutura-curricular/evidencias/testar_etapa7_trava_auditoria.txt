@@ -1,0 +1,49 @@
+# suíte: testar_etapa7_trava_auditoria
+# comando: node testar_etapa7_trava_auditoria.js
+# data: 2026-10-07T21:25:51Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+
+== A. Envio com a auditoria anotada sob a trava do envio
+  ✓ A1. reprodução: envio 2027/1 (auditoria nova) — a trava continua do envio até a conferência das fórmulas e o flush; só o executor libera
+  ✓ A2. envio 2027/2 com auditoria do semestre anterior ("Grade encerrada" em 2027/1) e outra tentativa de separador nas fórmulas: tudo sob a trava do envio
+
+== B. Auditoria independente e proteção herdada
+  ✓ B1. entrada independente sem trava anterior: adquire, grava um bloco de 3 linhas, flush, libera; outra execução adquire depois
+  ✓ B2. com a trava do chamador: grava e devolve a trava AINDA adquirida (não libera a proteção herdada)
+  ✓ B3. rotina interna com objeto de trava NÃO adquirido (ou nenhum): recusa sem escrever
+
+== C. Trava ocupada por outra execução
+  ✓ C1. helper: com a trava de B, A não consegue no prazo — zero escritas, zero appendRow de reserva, B continua dono
+  ✓ C2. acionador real de edição (registrarEdicaoGrade) com a trava ocupada: nada gravado, falha registrada no log, B continua dono; abertura idem
+
+== D. Intercalação: escrita por posição × entrada sem trava
+  ✓ D1. reprodução da seção 2.2 com o helper: B (sem trava) não escreve enquanto A grava por posição; o novo pedido de B grava depois
+  ✓ D2. o mesmo com B = acionador real de edição
+
+== E. Exceções e liberação
+  ✓ E1. falha ANTES da escrita (ler a última linha): nada gravado, trava liberada
+  ✓ E2. falha na AMPLIAÇÃO da aba (insertRowsAfter): nada gravado, trava liberada
+  ✓ E3. falha em setValues: nada gravado, trava liberada
+  ✓ E4. falha no FLUSH depois da escrita: a linha FOI aplicada (não se afirma o contrário), o erro chega a quem chamou e a trava é liberada
+  ✓ E5. caminho do envio com falha na escrita da auditoria: a proteção do envio NÃO é liberada pela auditoria; conferência e flush finais com a trava; só o executor libera
+
+== F. Feedback do envio quando a anotação falha
+  ✓ F1. grade enviada e evento não gravado: sucesso com o aviso existente; grade, cópia e índice gravados; auditoria sem evento; nenhuma repetição; nada desfeito
+
+== G. Entradas e compatibilidade
+  ✓ G1. acionador de edição com a trava livre: grava (uma célula e colagem 2×2 com o mesmo ID), libera; eventos inválidos ignorados; leitura por contexto novo e pelo painel de auditoria
+  ✓ G2. acionador de abertura com a trava livre: linha em "Aberturas" sob a trava, liberada
+  ✓ G3. ativarAuditoriaGrade: sob a trava própria (índice, auditoria, evento), liberada; repetir não duplica acionadores; leitor recusado; trava ocupada → OCUPADO sem escrever
+
+== H. Operação posterior
+  ✓ H1. depois de um envio com erro (ENVIO_INCOMPLETO) e de um com sucesso, novas execuções adquirem e operam (envio e acionador)
+
+Executados: 19 · 19 ok · 0 falhas · 0 pulados
+
+# código de saída: 0  (duração: 1 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa7_trava_auditoria.txt
+# interpretação: aprovada

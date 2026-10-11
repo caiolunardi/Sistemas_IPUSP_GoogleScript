@@ -1,0 +1,80 @@
+# suíte: navegador_etapa6_fonte_1.8.8_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.8/src node testar_navegador_etapa6.js
+# data: 2026-10-07T21:32:00Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 1/13 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== 17. Interface: oferta ajustada depois de troca de currículo
+  ✗ 17a. carga: painel = servidor (semestre e oferta principal) para associada e a revisar; selo "Oferta a revisar" só em PST1002 
+      Error: PST1001: ["","2",[],0,0] ≠ ["2","2",["0:470120000271:OBRIGATORIA:4","100:470120100271:OPTATIVA_ELETIVA:6"],2,0]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:168:5
+  ✗ 17b. ficha de PST1001: aviso de associação, "Onde aparece" com tipo/período ajustados no 271, sem caixa de descarte 
+      Error: diferente: {"associada":false,"revisar":false,"caixa":false,"linhas":["470120000271::-","470120100271::-","470120200271::-"],"salvarTravado":true} ≠ {"associada":true,"revisar":false,"caixa":false,"linhas":["470120000271:OBRIGATORIA:4","470120100271:OPTATIVA_ELETIVA:6","470120200271::-"],"salvarTravado":true}
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:186:5
+  ✗ 17c. ficha de PST1002: aviso "Oferta a revisar" com o vínculo e o motivo; salvar SÓ o nome grava o nome e mantém o vínculo 
+      page.textContent: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('[data-oferta-a-revisar]')[22m
+  ✗ 17d. mudar o período sem marcar "Descartar": recusa OFERTA_A_REVISAR, rascunho mantido, nada gravado; marcar + cancelar confirmação: nada enviado; aceitar: grava e o aviso some 
+      page.fill: Timeout 30000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('tr[data-oferta-curriculo="470120000271"] [data-oferta="periodo"]')[22m
+  ✗ 17e. prévia da grade (2º semestre): PST1001 adicionada aparece com o período ajustado no Psicólogo; o servidor manda a mesma linha 
+      page.waitForSelector: Timeout 5000ms exceeded.
+      Call log:
+      [2m  - waiting for locator('#previaPaineis tbody tr[data-codigo="PST1001"]') to be visible[22m
+
+== 18. (1.8.10) "Voltar aos dados do Júpiter" com oferta associada igual à do Júpiter
+  ✗ 17f. (A) reprodução: Voltar + Salvar envia a intenção, remove o ajuste de oferta (e o de nome); reimportação 4 → 3 passa a valer (semestre "1") no painel e no servidor 
+      Error: ficha antes: ["Nome ajustado",false,["470120000271::-"]] ≠ ["Nome ajustado",true,["470120000271:OBRIGATORIA:4"]]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:251:5
+  ✗ 17g. (B) só ajuste de oferta: "Salvar" desabilitado ao abrir e habilitado pelo Voltar (valores visíveis iguais); a restauração salva remove o ajuste 
+      Error: diferente: [true,true,["470120000271::-"]] ≠ [true,true,["470120000271:OBRIGATORIA:4"]]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:277:5
+  ✗ 17h. (C) controle: salvar só o nome / só a observação sem Voltar, com oferta igual à do Júpiter — lista guardada intacta (associada e com vínculo a revisar) 
+      Error: nome: ["Alterações salvas.",null,"[]"] ≠ ["Alterações salvas.",null,"[{\"curriculo\":\"470120000262\",\"tipo\":\"OBRIGATORIA\",\"periodo\":4}]"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:295:5
+  ✗ 17i. (D) com vínculo a revisar e parte efetiva igual ao Júpiter: Voltar + Salvar é recusado (rascunho e intenção mantidos); caixa + cancelar não envia; caixa + confirmar restaura 
+      Error: Alterações salvas.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:21:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:314:5
+  ✓ 17j. (E) Voltar e depois mudar o período à mão: vale a escolha final (sem intenção de restauração no pedido)
+  ✗ 17k. (F) Voltar sem salvar e fechar: nada gravado; outra ficha e a mesma reaberta não herdam a intenção; depois de uma restauração concluída, salvar outro campo não a repete 
+      Error: diferente: undefined ≠ true
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:367:5
+  ✗ 17l. (G) restauração com falha na escrita da observação: salvamento pendente; "Concluir salvamento pendente" conclui; reaberta e reimportada, vale o Júpiter 
+      Error: diferente: undefined ≠ true
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:383:5
+  ✗ 17m. (H) [] intencional: só sai com Voltar + Salvar; oferta associada DIFERENTE do Júpiter: restaurada; disciplina sem ajuste: sem "Voltar" 
+      Error: diferente: [null,["0:470120000271:OBRIGATORIA:2"],"2"] ≠ [true,["0:470120000271:OBRIGATORIA:2"],"2"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:20:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa6.js:404:5
+
+Executados: 13 · 1 ok · 12 falhas
+Falharam:
+  - 17a. carga: painel = servidor (semestre e oferta principal) para associada e a revisar; selo "Oferta a revisar" só em PST1002
+  - 17b. ficha de PST1001: aviso de associação, "Onde aparece" com tipo/período ajustados no 271, sem caixa de descarte
+  - 17c. ficha de PST1002: aviso "Oferta a revisar" com o vínculo e o motivo; salvar SÓ o nome grava o nome e mantém o vínculo
+  - 17d. mudar o período sem marcar "Descartar": recusa OFERTA_A_REVISAR, rascunho mantido, nada gravado; marcar + cancelar confirmação: nada enviado; aceitar: grava e o aviso some
+  - 17e. prévia da grade (2º semestre): PST1001 adicionada aparece com o período ajustado no Psicólogo; o servidor manda a mesma linha
+  - 17f. (A) reprodução: Voltar + Salvar envia a intenção, remove o ajuste de oferta (e o de nome); reimportação 4 → 3 passa a valer (semestre "1") no painel e no servidor
+  - 17g. (B) só ajuste de oferta: "Salvar" desabilitado ao abrir e habilitado pelo Voltar (valores visíveis iguais); a restauração salva remove o ajuste
+  - 17h. (C) controle: salvar só o nome / só a observação sem Voltar, com oferta igual à do Júpiter — lista guardada intacta (associada e com vínculo a revisar)
+  - 17i. (D) com vínculo a revisar e parte efetiva igual ao Júpiter: Voltar + Salvar é recusado (rascunho e intenção mantidos); caixa + cancelar não envia; caixa + confirmar restaura
+  - 17k. (F) Voltar sem salvar e fechar: nada gravado; outra ficha e a mesma reaberta não herdam a intenção; depois de uma restauração concluída, salvar outro campo não a repete
+  - 17l. (G) restauração com falha na escrita da observação: salvamento pendente; "Concluir salvamento pendente" conclui; reaberta e reimportada, vale o Júpiter
+  - 17m. (H) [] intencional: só sai com Voltar + Salvar; oferta associada DIFERENTE do Júpiter: restaurada; disciplina sem ajuste: sem "Voltar"
+
+# código de saída: 1  (duração: 70 s)
+# resultado do processo: defeito demonstrado como previsto (1/13)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (1/13)

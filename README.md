@@ -51,7 +51,7 @@ Consulte `docs/README.md` para o mapa completo e `docs/SISTEMAS.md` para o catá
 Sistemas já incorporados:
 
 - [Painel de Solicitações dos alunos v1.2](sistemas/painel-solicitacoes/README.md) — fonte Apps Script versionada e documentação de homologação;
-- [Estrutura Curricular e Grade Horária 1.8.0](docs/sistemas/estrutura-curricular/README.md) — documentação técnica completa do fluxo Júpiter → preparação → secretarias → auditoria; código recebido e aguardando auditoria independente antes de promoção como baseline.
+- [Estrutura Curricular e Grade Horária 1.10.0](docs/sistemas/estrutura-curricular/README.md) — fonte sobre a baseline 1.9.3 auditada, sidebar padrão, alternância para abas, ícones e documentação de operação, implantação e manutenção; verificação local registrada, homologação no Google pendente.
 
 Cada sistema pode ter sua própria pasta conforme for incorporado ao repositório.
 

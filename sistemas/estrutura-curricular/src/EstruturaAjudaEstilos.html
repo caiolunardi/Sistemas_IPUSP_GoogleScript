@@ -1,0 +1,223 @@
+<style>
+/*=====================================================================
+  ESTRUTURA CURRICULAR — Central de Ajuda (1.9.0): aparência.
+  Incluído DEPOIS de GradipTema e PainelEstilos. Só tokens GRADIP
+  (--gradip-*): Claro, Escuro e Sistema mudam na hora, inclusive com a
+  Central aberta, sem lógica própria de tema. Prefixos próprios:
+  .centralAjuda (a Central), .ajudaCabecalho (botão do cabeçalho) e
+  .ajudaGatilho (botões "?" nas telas). Camadas: janelas do painel = 50;
+  Central = 70; "Carregando…" = 80 (continua bloqueando por cima); aviso
+  rápido = 90.
+=====================================================================*/
+
+/*---------------- Botão "Ajuda" do cabeçalho ----------------*/
+.ajudaCabecalho {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-width: 44px; min-height: 44px; padding: 0 14px;
+  border-radius: 22px; border: 1px solid var(--gradip-info-border);
+  background: var(--gradip-info-bg); color: var(--gradip-link);
+  font: inherit; font-size: 14px; font-weight: bold; cursor: pointer; white-space: nowrap;
+}
+.ajudaCabecalho:hover { background: var(--gradip-surface-2); border-color: var(--gradip-link); color: var(--gradip-link-hover); }
+.ajudaCabecalho__icone, .ajudaGatilho__icone {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid currentColor;
+  font-size: 12px; font-weight: bold; line-height: 1; text-decoration: none;
+}
+
+/*---------------- Gatilhos contextuais ("?") ----------------*/
+.ajudaGatilho {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 0 6px; margin: 0 -6px;
+  background: transparent; border: 0; border-radius: 6px;
+  color: var(--gradip-link); font: inherit; font-size: 14px; font-weight: bold; line-height: 1.3;
+  text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.ajudaGatilho:hover { color: var(--gradip-link-hover); }
+.ajudaGatilho__icone { width: 18px; height: 18px; border-width: 1.5px; font-size: 11px; }
+.ajudaLinha { display: flex; flex-wrap: wrap; gap: 0 18px; margin: 6px 0 0; }
+.ajudaLinha--topo { margin: 2px 0 0; }
+.filtros__acoes { flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.filtros__acoes .ajudaGatilho { margin: 0 auto 0 -6px; }
+.alerta .ajudaGatilho { font-size: 13px; }
+
+/*---------------- Central: janela ----------------*/
+.centralAjuda {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 16px; background: var(--gradip-overlay);
+}
+.centralAjuda[hidden] { display: none; }
+.centralAjuda__janela {
+  display: flex; flex-direction: column;
+  width: 100%; max-width: 1080px;
+  height: calc(100vh - 48px); height: calc(100dvh - 48px); max-height: 900px;
+  background: var(--gradip-surface-elevated); color: var(--gradip-text);
+  border: 1px solid var(--gradip-border); border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); /* mesma sombra das janelas do painel */
+  overflow: hidden;
+}
+.centralAjuda__janela:focus { outline: none; }
+
+.centralAjuda__topo {
+  flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 12px;
+  padding: 14px 20px 10px; border-bottom: 1px solid var(--gradip-border);
+}
+.centralAjuda__titulos { min-width: 0; }
+.centralAjuda__sobretitulo { margin: 0; font-size: 13px; color: var(--gradip-text-muted); }
+.centralAjuda__titulo { margin: 2px 0 0; font-size: 20px; line-height: 1.3; }
+.centralAjuda__acoesTopo { display: flex; flex-wrap: wrap; gap: 8px; }
+.centralAjuda__botao, .centralAjuda__fechar {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; min-width: 44px; padding: 0 14px;
+  border: 1px solid var(--gradip-border-strong); border-radius: 8px;
+  background: var(--gradip-surface); color: var(--gradip-text);
+  font: inherit; font-weight: bold; cursor: pointer; white-space: nowrap;
+}
+.centralAjuda__botao:hover, .centralAjuda__fechar:hover { background: var(--gradip-surface-2); }
+
+/*---------------- Busca ----------------*/
+.centralAjuda__busca { flex: 0 0 auto; padding: 10px 20px 8px; border-bottom: 1px solid var(--gradip-border); background: var(--gradip-surface-2); }
+.centralAjuda__rotulo { display: block; margin: 0 0 4px; font-size: 13px; font-weight: bold; }
+.centralAjuda__buscaLinha { display: flex; gap: 8px; }
+.centralAjuda__campoBusca {
+  flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 0 12px;
+  background: var(--gradip-input-bg); color: var(--gradip-input-text);
+  border: 1px solid var(--gradip-border-strong); border-radius: 8px; font: inherit;
+}
+.centralAjuda__campoBusca::placeholder { color: var(--gradip-input-placeholder); }
+.centralAjuda__dica { margin: 4px 0 0; font-size: 13px; color: var(--gradip-text-muted); }
+.centralAjuda__status { margin: 4px 0 0; font-size: 14px; font-weight: bold; color: var(--gradip-text); }
+.centralAjuda__status:empty { display: none; }
+
+/*---------------- Corpo: índice + conteúdo (cada um com rolagem própria) ----------------*/
+.centralAjuda__corpo { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 250px minmax(0, 1fr); }
+.centralAjuda__alternarIndice { display: none; }
+.centralAjuda__indice {
+  min-height: 0; overflow-y: auto; padding: 6px 10px 20px;
+  border-right: 1px solid var(--gradip-border); background: var(--gradip-surface-2);
+}
+.centralAjuda__indiceGrupo {
+  margin: 14px 8px 4px; font-size: 12px; font-weight: bold; letter-spacing: 0.03em;
+  text-transform: uppercase; color: var(--gradip-text-muted);
+}
+.centralAjuda__indice ul { list-style: none; margin: 0; padding: 0; }
+.centralAjuda__indice button {
+  display: block; width: 100%; min-height: 44px; padding: 8px 10px;
+  border: 0; border-radius: 6px; background: transparent; color: var(--gradip-text);
+  font: inherit; font-size: 14px; line-height: 1.3; text-align: left; cursor: pointer;
+}
+.centralAjuda__indice button:hover { background: var(--gradip-surface); color: var(--gradip-link); }
+.centralAjuda__indice button[aria-current="true"] {
+  background: var(--gradip-info-bg); color: var(--gradip-link); font-weight: bold;
+  box-shadow: inset 4px 0 0 var(--gradip-header-accent);
+}
+.centralAjuda__conteudo { min-height: 0; min-width: 0; overflow-y: auto; padding: 16px 24px 36px; }
+
+/*---------------- Conteúdo ----------------*/
+.centralAjuda__conteudo p, .centralAjuda__conteudo li, .centralAjuda__conteudo dd { line-height: 1.55; max-width: 78ch; overflow-wrap: anywhere; }
+.centralAjuda__conteudo ul, .centralAjuda__conteudo ol { padding-left: 22px; margin: 6px 0 8px; }
+.centralAjuda__conteudo li { margin: 4px 0; }
+.centralAjuda__conteudo li > ul { margin: 4px 0; }
+.centralAjuda__secaoTitulo { margin: 0 0 10px; font-size: 19px; line-height: 1.3; }
+.centralAjuda__secaoTitulo:focus, .centralAjuda__item h4:focus { outline-offset: 4px; }
+.centralAjuda__item { padding: 14px 0 10px; border-top: 1px solid var(--gradip-border); }
+.centralAjuda__item h4 { margin: 0 0 8px; font-size: 16px; line-height: 1.35; }
+.centralAjuda__item p { margin: 6px 0; }
+.centralAjuda__nota { margin: 10px 0; font-size: 14px; color: var(--gradip-text-muted); }
+.centralAjuda__nota--secao { margin-top: 0; }
+.centralAjuda__perfil {
+  display: inline-block; margin-left: 4px; padding: 1px 9px;
+  border: 1px solid var(--gradip-info-border); border-radius: 999px;
+  background: var(--gradip-info-bg); color: var(--gradip-text);
+  font-size: 12px; font-weight: bold; line-height: 1.6; vertical-align: middle; white-space: nowrap;
+}
+.centralAjuda__link {
+  display: inline; padding: 0; margin: 0; border: 0; background: none;
+  color: var(--gradip-link); font: inherit; text-align: left;
+  text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+}
+.centralAjuda__link:hover { color: var(--gradip-link-hover); }
+
+/* Início: atalhos por intenção */
+.centralAjuda__inicio > p { margin: 0 0 12px; }
+.centralAjuda__atalhos { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 14px 0 16px; }
+.centralAjuda__atalho {
+  display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px;
+  border: 1px solid var(--gradip-border-strong); border-radius: 10px;
+  background: var(--gradip-surface); color: var(--gradip-text);
+  font: inherit; font-weight: bold; text-align: left; cursor: pointer;
+}
+.centralAjuda__atalho:hover { background: var(--gradip-info-bg); border-color: var(--gradip-link); color: var(--gradip-link); }
+.centralAjuda__atalhoIcone {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 30px; height: 30px; border-radius: 8px; background: var(--gradip-info-bg); color: var(--gradip-link); font-size: 16px;
+}
+
+/* Problemas comuns: cartões sintoma → causas → o que fazer → quando encaminhar */
+.centralAjuda__card { margin: 12px 0; padding: 14px 16px; border: 1px solid var(--gradip-border); border-radius: 10px; background: var(--gradip-surface); }
+.centralAjuda__passos { margin: 0; }
+.centralAjuda__passos dt { margin: 8px 0 2px; font-weight: bold; font-size: 14px; color: var(--gradip-text); }
+.centralAjuda__passos dd { margin: 0; }
+
+/* FAQ */
+.centralAjuda__faqGrupoTitulo { margin: 20px 0 4px; font-size: 15px; color: var(--gradip-text-muted); }
+.centralAjuda__faq { padding: 2px 0; }
+.centralAjuda__faqPergunta { margin: 0; font-size: 15px; }
+.centralAjuda__faqBotao {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 44px; padding: 8px 6px;
+  border: 0; border-radius: 6px; background: transparent; color: var(--gradip-text);
+  font: inherit; font-weight: bold; line-height: 1.35; text-align: left; cursor: pointer;
+}
+.centralAjuda__faqBotao:hover { color: var(--gradip-link); background: var(--gradip-surface-2); }
+.centralAjuda__faqChevron { flex: 0 0 auto; font-size: 18px; transition: transform 0.15s ease; }
+.centralAjuda__faqBotao[aria-expanded="true"] .centralAjuda__faqChevron { transform: rotate(180deg); }
+.centralAjuda__faqResposta { padding: 0 6px 8px; }
+.centralAjuda__faqResposta p { margin: 4px 0; }
+.centralAjuda__faqDica { margin: 0 6px 6px; font-size: 13px; font-style: italic; color: var(--gradip-text-muted); }
+
+/* Nenhum resultado */
+.centralAjuda__semResultado {
+  margin: 12px 0; padding: 14px 16px; border: 1px solid var(--gradip-warning-border); border-radius: 10px;
+  background: var(--gradip-warning-bg); color: var(--gradip-text);
+}
+.centralAjuda__semResultadoTitulo { margin: 0 0 4px; }
+
+/*---------------- Telas estreitas ----------------*/
+@media (max-width: 768px) {
+  .centralAjuda { padding: 0; align-items: stretch; }
+  .centralAjuda__janela { max-width: none; height: 100vh; height: 100dvh; max-height: none; border: 0; border-radius: 0; }
+  .centralAjuda__topo { padding: 10px 14px 8px; }
+  .centralAjuda__busca { padding: 8px 14px; }
+  .centralAjuda__dica { display: none; }
+  /* Índice recolhível no alto; um só bloco rolável (índice + conteúdo). */
+  .centralAjuda__corpo { display: block; overflow-y: auto; }
+  .centralAjuda__alternarIndice {
+    display: flex; align-items: center; gap: 8px; width: calc(100% - 28px); min-height: 44px; margin: 10px 14px 0; padding: 0 14px;
+    border: 1px solid var(--gradip-border-strong); border-radius: 8px; background: var(--gradip-surface); color: var(--gradip-text);
+    font: inherit; font-weight: bold; cursor: pointer;
+  }
+  .centralAjuda__indice { overflow: visible; margin: 8px 14px 0; border: 1px solid var(--gradip-border); border-radius: 8px; }
+  .centralAjuda__indice:not([data-aberto]) { display: none; }
+  .centralAjuda__conteudo { overflow: visible; padding: 12px 14px 28px; }
+  .centralAjuda__atalhos { grid-template-columns: 1fr; }
+  .ajudaCabecalho { padding: 0 12px; }
+}
+@media (max-width: 420px) {
+  .centralAjuda__sobretitulo { display: none; }
+  .centralAjuda__titulo { font-size: 18px; }
+  /* Cabeçalho do painel: o "Ajuda" vira só o ícone, sem perder o nome acessível. */
+  .ajudaCabecalho { padding: 0; width: 44px; }
+  .ajudaCabecalho__texto { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .centralAjuda__faqChevron { transition: none; }
+}
+@media (forced-colors: active) {
+  .centralAjuda__indice button[aria-current="true"] { outline: 2px solid CanvasText; }
+}
+@media print {
+  .centralAjuda, .ajudaGatilho, .ajudaCabecalho { display: none !important; }
+}
+</style>

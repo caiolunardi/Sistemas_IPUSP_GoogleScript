@@ -1,0 +1,56 @@
+# suíte: testar_navegador_preparacao
+# comando: node testar_navegador_preparacao.js /caminho/grade_curricular.csv /caminho/disciplinas_unidade.csv /caminho/grade_curricular.pdf
+# data: 2026-10-07T21:39:17Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Etapas
+  ✓ administrador vê as 4 etapas com contagens, "Cadastrar nova grade" e "Carregar grade antiga" (desativado); a etapa 1 tem a coluna de caixas (0 s)
+
+== Ficha editável
+  ✓ ficha do administrador: campos editáveis, "Salvar" só com alteração; salva nome, créditos e Observações; ajuste guardado só com o que mudou (1 s)
+  ✓ o ajuste persiste: nova sessão do painel mostra o valor ajustado; filtro "Ajustadas no painel" (0 s)
+  ✓ alterações não salvas: "X" pergunta; "Cancelar" mantém a ficha; ESC e clique fora não fecham (0 s)
+  ✓ "Onde aparece" editável: mudar o tipo numa habilitação grava a oferta ajustada (1 s)
+
+== Exclusão
+  ✓ excluir em lote pelas caixas (com confirmação) e restaurar pelo filtro Situação › Excluídas (1 s)
+  ✓ excluir e restaurar pela ficha (1 s)
+
+== Etapa 2: disciplinas para outros cursos
+  ✓ lista por unidade: PDF recusado com explicação; ESC/clique fora não fecham; prévia só com as que não estão na lista (0 s)
+  ✓ incluir as escolhidas (desmarcando uma): entram na etapa 2 com o selo "Para outros cursos" (0 s)
+  ✓ cadastro manual: exige código e nome; código repetido é recusado; cadastro válido entra na lista (0 s)
+  ✓ excluir uma disciplina para outros cursos em lote (1 s)
+  ✓ "Disciplina de semestre" (semestre de oferecimento) na ficha de outros cursos: 1º, 2º ou 1º e 2º; grava, aparece na lista e no resumo; filtro "Não informado" (31 s)
+
+== Etapa 3: lista para a grade horária
+  ✓ "Disciplina de semestre" da estrutura vem pré-preenchida pelo período (1º); ajustar para "1º e 2º"; depois de salvar, "Adicionar à Grade Horária" na ficha (1 s)
+  ✓ filtros: Período ideal "Ímpares"/"Pares" = só pelo período ideal; "Semestre de oferecimento" = o que vale (ajuste, período, ou o informado em outros cursos) (0 s)
+  ✓ "Enviar para a Grade Horária": escolher é só na tela (nenhuma chamada); enviar = uma chamada; as sem semestre de oferecimento não entram e ficam listadas e marcadas (1 s)
+  ✓ ficha abre e edita também pela etapa 3 (disciplina para outros cursos) (0 s)
+
+== Etapa 4: prévia da grade horária
+  ✓ Prévia: semestre e ano da grade (padrão = próximo semestre); a prévia mostra só as do semestre escolhido (ou dos dois); "Enviar Grade para Preenchimento" ativo (1.5.0) (0 s)
+  ✓ Prévia: 6 abas (PSA, PSC, PSE, PST, Interdepartamentais, Outras Unidades) pelo prefixo do código; colunas Código, Nome, Semestre ideal (por habilitação) e Observações (0 s)
+  ✓ Prévia: "Selecionar todas" + "Remover da grade" (com confirmação); caixa individual; a disciplina volta a ficar livre na etapa 3 (1 s)
+  ✓ Prévia: a ficha abre ao clicar, é editável e tem "Remover da grade" (0 s)
+
+== Enviar Grade para Preenchimento (1.5.0)
+  ✓ "Enviar Grade para Preenchimento": confirmação com as contagens das abas e o nome novo (1.8.12: prévia do envio lida do servidor); "Cancelar" não envia; confirmar = UMA chamada de envio, cópia de segurança, planilha gravada e renomeada; resultado com a cópia (0 s)
+  ✓ grade mudou por trás da página DEPOIS da conferência: o servidor recusa (PREVIA_DESATUALIZADA) sem mexer em nada; "Conferir de novo" mostra o conteúdo atual (1.8.12) (0 s)
+
+== Leitor
+  ✓ leitor: sem etapas, sem caixas, ficha só leitura; vê os ajustes e não vê as excluídas (1 s)
+
+== Cadastrar nova grade
+  ✓ "Cadastrar nova grade": só com APAGAR; apaga tudo e o painel volta ao começo (importar o CSV) (0 s)
+  ✓ nenhum erro de JavaScript nas páginas do administrador (0 s)
+
+Executados: 25 (25 ok, 0 falha(s)); pulados: 0
+
+# código de saída: 0  (duração: 45 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada

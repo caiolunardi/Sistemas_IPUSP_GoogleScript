@@ -1,0 +1,24 @@
+✓ Sidebar padrão, IDs únicos, alvos ARIA e ícones decorativos em todas as opções fixas
+✓ Alternar 20 vezes conserva os mesmos nós, listeners, filtros, seleção e não chama servidor/storage
+✓ Etapas e consultas permanecem restritas à seção/painel original; prévia recebe ícones
+✓ Teclado vertical/horizontal, Home/End e foco continuam ativando os painéis corretos
+✓ Ficha aberta e rascunho preservados durante troca de apresentação
+✓ Leitor, base vazia e falha de carga mantêm as restrições e a Central de Ajuda
+✓ Tema Sistema acompanha SO; preferência explícita persiste; reload volta à sidebar
+✓ Hover, foco visível e movimento reduzido
+✓ Layout 360px / light: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 360px / dark: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 390px / light: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 390px / dark: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 480px / light: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 480px / dark: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 768px / light: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 768px / dark: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 1440px / light: sidebar, abas, alvos de toque e sem overflow global
+✓ Layout 1440px / dark: sidebar, abas, alvos de toque e sem overflow global
+✓ Menu móvel recolhe/expande sem overlay e se reabre na largura de desktop
+✓ Contraste do texto da navegação nos dois modos/temas (mínimo 4,5:1)
+✓ Pointer de toque não aplica elevação de hover
+
+21 ok, 0 falha(s).
+Alcance: Chromium local, backend em simulador, dados sintéticos; não homologa Google Workspace.

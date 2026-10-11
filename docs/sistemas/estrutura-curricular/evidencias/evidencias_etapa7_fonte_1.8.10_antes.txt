@@ -1,0 +1,204 @@
+=== Etapa 7 — trava do envio e das escritas da auditoria ===
+Fonte testada: DIR_SRC (fonte indicada na linha de comando)
+Versão declarada na fonte: 1.8.10
+
+--- A1. reprodução: envio 2027/1 (auditoria nova) — a trava continua do envio até a conferência das fórmulas e o flush; só o executor libera
+  resposta: total 1 · avisos ["O registro das edições e das aberturas da planilha das secre"]
+  Edições 2027/1: ["Envio da grade"]
+  sequência (envio 2027/1):
+    A adquirir — não tinha a trava [entrada/executor]
+    A setValues Edições — trava: A
+    A setValues Aberturas — trava: A
+    A flush — trava: A
+    A adquirir — já tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    A verificar fórmulas do Horário de Fim — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A liberar SEM propriedade (dono: null) [entrada/executor]
+RESULTADO: FALHOU — conferência das fórmulas com a trava do envio: ["A verificar fórmulas do Horário de Fim — trava: NINGUÉM"] ≠ []
+
+--- A2. envio 2027/2 com auditoria do semestre anterior ("Grade encerrada" em 2027/1) e outra tentativa de separador nas fórmulas: tudo sob a trava do envio
+  sequência (envio 2027/2):
+    A adquirir — não tinha a trava [entrada/executor]
+    A setValues Edições — trava: A
+    A setValues Aberturas — trava: A
+    A flush — trava: A
+    A adquirir — já tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    A adquirir — não tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    A verificar fórmulas do Horário de Fim — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A verificar fórmulas do Horário de Fim — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A liberar SEM propriedade (dono: null) [entrada/executor]
+RESULTADO: FALHOU — conferência das fórmulas com a trava do envio: ["A verificar fórmulas do Horário de Fim — trava: NINGUÉM","A verificar fórmulas do Horário de Fim — trava: NINGUÉM"] ≠ []
+
+--- B1. entrada independente sem trava anterior: adquire, grava um bloco de 3 linhas, flush, libera; outra execução adquire depois
+  sequência:
+    A adquirir — não tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+  Edições: ["Envio da grade","Ev 1","Ev 2","Ev 3"]
+RESULTADO: FALHOU — flush antes de liberar
+
+--- B2. com a trava do chamador: grava e devolve a trava AINDA adquirida (não libera a proteção herdada)
+  sequência:
+    A adquirir — não tinha a trava [entrada/executor]
+    A adquirir — já tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+RESULTADO: FALHOU — a trava continua do chamador: [null,false] ≠ ["A",true]
+
+--- B3. rotina interna com objeto de trava NÃO adquirido (ou nenhum): recusa sem escrever
+RESULTADO: FALHOU — rotina interna gravarNaAuditoriaSobTrava_ existe
+
+--- C1. helper: com a trava de B, A não consegue no prazo — zero escritas, zero appendRow de reserva, B continua dono
+  sequência:
+    B adquirir — não tinha a trava [entrada/executor]
+    A adquirir FALHOU — ocupada por B (espera de 45000 ms simulada) [auditoria]
+    A appendRow Edições — trava: B
+  erro: null
+  Edições: ["Envio da grade","Evento de A"]
+RESULTADO: FALHOU — nenhuma escrita na auditoria: ["A appendRow"] ≠ []
+
+--- C2. acionador real de edição (registrarEdicaoGrade) com a trava ocupada: nada gravado, falha registrada no log, B continua dono; abertura idem
+  sequência:
+    B adquirir — não tinha a trava [entrada/executor]
+    T adquirir FALHOU — ocupada por B (espera de 45000 ms simulada) [auditoria]
+    T appendRow Edições — trava: B
+    T appendRow Aberturas — trava: B
+  log de erro do acionador: []
+RESULTADO: FALHOU — nenhuma escrita (nem appendRow): ["T appendRow Edições","T appendRow Aberturas"] ≠ []
+
+--- D1. reprodução da seção 2.2 com o helper: B (sem trava) não escreve enquanto A grava por posição; o novo pedido de B grava depois
+  sequência:
+    A adquirir — não tinha a trava [auditoria]
+    A leu a última linha = 2 → B roda agora
+    B adquirir FALHOU — ocupada por A (espera de 45000 ms simulada) [auditoria]
+    B appendRow Edições — trava: A
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    B adquirir — não tinha a trava [auditoria]
+    B setValues Edições — trava: B
+    B liberar [auditoria]
+  escritas na auditoria: ["B appendRow (trava: A)","A setValues (trava: A)","B setValues (trava: B)"]
+  Edições depois da intercalação: ["Envio da grade","Evento A"] · depois do novo pedido de B: ["Envio da grade","Evento A","Evento B"]
+RESULTADO: FALHOU — nenhuma escrita sem a trava de quem escreve: ["B appendRow"] ≠ []
+
+--- D2. o mesmo com B = acionador real de edição
+  sequência:
+    A adquirir — não tinha a trava [auditoria]
+    A leu a última linha = 2 → B roda agora
+    B adquirir FALHOU — ocupada por A (espera de 45000 ms simulada) [auditoria]
+    B appendRow Edições — trava: A
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    B adquirir — não tinha a trava [auditoria]
+    B setValues Edições — trava: B
+    B liberar [auditoria]
+  escritas na auditoria: ["B appendRow (trava: A)","A setValues (trava: A)","B setValues (trava: B)"]
+  Edições depois da intercalação: ["Envio da grade","Evento A"] · depois do novo pedido de B: ["Envio da grade","Evento A","Evento B (acionador)"]
+RESULTADO: FALHOU — nenhuma escrita sem a trava de quem escreve: ["B appendRow"] ≠ []
+
+--- E1. falha ANTES da escrita (ler a última linha): nada gravado, trava liberada
+  antes: erro "FALHA INJETADA em getLastRow"
+    A adquirir — não tinha a trava [auditoria]
+    A liberar [auditoria]
+  Edições: ["Envio da grade"]
+RESULTADO: ok
+
+--- E2. falha na AMPLIAÇÃO da aba (insertRowsAfter): nada gravado, trava liberada
+  ampliação: erro "FALHA INJETADA em insertRowsAfter"
+    A adquirir — não tinha a trava [auditoria]
+    A liberar [auditoria]
+  Edições: ["Envio da grade"]
+RESULTADO: ok
+
+--- E3. falha em setValues: nada gravado, trava liberada
+  setValues: erro "FALHA INJETADA em setValues (Edições)"
+    A adquirir — não tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+  Edições: ["Envio da grade"]
+RESULTADO: ok
+
+--- E4. falha no FLUSH depois da escrita: a linha FOI aplicada (não se afirma o contrário), o erro chega a quem chamou e a trava é liberada
+  flush: erro null
+    A adquirir — não tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+  Edições: ["Envio da grade","Ev flush"]
+RESULTADO: FALHOU — o erro chega a quem chamou
+
+--- E5. caminho do envio com falha na escrita da auditoria: a proteção do envio NÃO é liberada pela auditoria; conferência e flush finais com a trava; só o executor libera
+  sequência (envio com falha na auditoria):
+    A adquirir — não tinha a trava [entrada/executor]
+    A setValues Edições — trava: A
+    A setValues Aberturas — trava: A
+    A flush — trava: A
+    A adquirir — já tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    A verificar fórmulas do Horário de Fim — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A liberar SEM propriedade (dono: null) [entrada/executor]
+RESULTADO: FALHOU — conferência das fórmulas com a trava do envio: ["A verificar fórmulas do Horário de Fim — trava: NINGUÉM"] ≠ []
+
+--- F1. grade enviada e evento não gravado: sucesso com o aviso existente; grade, cópia e índice gravados; auditoria sem evento; nenhuma repetição; nada desfeito
+  fatos: {"avisos":["O envio foi concluído, mas a linha do envio não pôde ser anotada na planilha de ","O registro das edições e das aberturas da planilha das secretarias não está comp"],"nome":"Grade Horária - 1º semestre de 2027","linhaPST":["PST1001","Obrigatória",1],"copias":1,"indice":[["2025/2","ID_COPIA_ANTIGA",""],["2026/1","ID_COPIA_1",""],["2027/1","","ID_NOVA_2"]],"edicoes":[],"tentativasDeEscrita":1}
+  sequência (F1):
+    A adquirir — não tinha a trava [entrada/executor]
+    A setValues Edições — trava: A
+    A setValues Aberturas — trava: A
+    A flush — trava: A
+    A adquirir — já tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    A verificar fórmulas do Horário de Fim — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A flush — trava: NINGUÉM
+    A liberar SEM propriedade (dono: null) [entrada/executor]
+RESULTADO: FALHOU — conferência das fórmulas com a trava do envio: ["A verificar fórmulas do Horário de Fim — trava: NINGUÉM"] ≠ []
+
+--- G1. acionador de edição com a trava livre: grava (uma célula e colagem 2×2 com o mesmo ID), libera; eventos inválidos ignorados; leitura por contexto novo e pelo painel de auditoria
+  sequência:
+    T adquirir — não tinha a trava [auditoria]
+    T setValues Edições — trava: T
+    T liberar [auditoria]
+    T adquirir — não tinha a trava [auditoria]
+    T setValues Edições — trava: T
+    T liberar [auditoria]
+  Edições: ["Envio da grade","Auditoria ativada","Preencheu","Colagem ou preenchimento","Colagem ou preenchimento","Colagem ou preenchimento","Colagem ou preenchimento"]
+  painel de auditoria (contexto novo): {"semestres":[{"semestre":"2027/1","atual":true}],"semestre":"2027/1","atual":true,"nomeGrade":"Grade Horária - 1º semestre de 2027","edicoes":[["07/10/2026 18:33:19","Secretaria","secretaria@unidade.example","PST","L6","Horário de Início","","","","","Colagem ou preenchimento","4","O Google não inf
+RESULTADO: ok
+
+--- G2. acionador de abertura com a trava livre: linha em "Aberturas" sob a trava, liberada
+  sequência:
+    T appendRow Aberturas — trava: NINGUÉM
+RESULTADO: FALHOU — appendRow DENTRO da trava: ["appendRow:null"] ≠ ["appendRow:T"]
+
+--- G3. ativarAuditoriaGrade: sob a trava própria (índice, auditoria, evento), liberada; repetir não duplica acionadores; leitor recusado; trava ocupada → OCUPADO sem escrever
+  sequência (duas ativações):
+    A setValues Edições — trava: NINGUÉM
+    A setValues Aberturas — trava: NINGUÉM
+    A adquirir — não tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+    A adquirir — não tinha a trava [auditoria]
+    A setValues Edições — trava: A
+    A liberar [auditoria]
+RESULTADO: FALHOU — escritas da ativação com a trava: ["setValues Edições","insertSheet Aberturas","setValues Aberturas","insertSheet Sobre","setValues Sobre","setValues Página1"] ≠ []
+
+--- H1. depois de um envio com erro (ENVIO_INCOMPLETO) e de um com sucesso, novas execuções adquirem e operam (envio e acionador)
+  envio com falha: {"ok":false,"codigo":"ENVIO_INCOMPLETO"}
+  Edições: ["Envio da grade","Preencheu"]
+RESULTADO: ok
+
+=== Resumo: 5 ok, 14 falhas, 0 pulados

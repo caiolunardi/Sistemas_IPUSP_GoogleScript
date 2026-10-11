@@ -1,0 +1,22 @@
+# suíte: testar_etapa9_auditoria_envio
+# comando: node testar_etapa9_auditoria_envio.js
+# data: 2026-10-07T21:26:06Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+  ✓ L1. envio 2027/1 que CRIA a auditoria: dados.auditoria = {nome, criada: true, registroAtivo: false} — sem url nem ID — no objeto serializado; aviso de ativação mantido
+  ✓ L2. reenvio de 2027/1 que REAPROVEITA a auditoria: criada = false, mesmo nome e situação, sem url nem ID; a MESMA planilha no índice
+  ✓ L3. registro ATIVO (ativarAuditoriaGrade antes): registroAtivo = true e sem o aviso de ativação; INATIVO (L1): false e com o aviso; nos dois, sem url
+  ✓ L7. cópia de segurança (controle, nas duas versões): dados.backup = {nome, url https, semestre 2026/1}; o endereço é o da cópia na pasta e o ID dela está na coluna B do índice
+  ✓ L8. auditoria interna intacta: ID na coluna C do índice, planilha na pasta das auditorias com o evento "Envio da grade" (2 depois do reenvio); obterAuditoriaGrade funciona para administrador e leitor
+  ✓ L8b. envio 2027/2: auditoria NOVA de 2027/2 (criada = true) e "Grade encerrada" anotada na de 2027/1; resposta sem url nem ID
+  ✓ L8c. recusa sem auditoria disponível (falha ao criar a planilha de auditoria): AUDITORIA_FALHOU, cópia feita, grade intacta — o caminho de erro continua igual
+  ✓ L9. (complementar, só leitura do código) EnvioGrade.gs não monta o endereço da auditoria na resposta e PainelPreparacao.html não usa auditoria.url
+
+Executados: 8 · 8 ok · 0 falhas · 0 pulados
+
+# código de saída: 0  (duração: 0 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa9_auditoria_envio.txt
+# interpretação: aprovada

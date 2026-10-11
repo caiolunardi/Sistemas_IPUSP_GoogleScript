@@ -1,0 +1,194 @@
+=== Etapa 4 — salvamento individual (estrutura: ajustes + observação + grade) ===
+Fonte testada: ../src (fonte deste pacote)
+Versão declarada na fonte: 1.9.2
+
+--- R. Reprodução: PST1001, nome "Nome ajustado" + observação "Observação nova", falha no setValue da observação (sempre)
+Salvar — resposta: {"ok":false,"codigo":"SALVAMENTO_PENDENTE","resultado":"pendente","erro":"O salvamento de PST1001 não terminou: os dados da ficha já estão gravados; a observação ainda não. O painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir salvamento pendente\". Até lá, outras gravações ficam bloqueadas.","salvamento":{"estado":"pendente","id":"f0426325-b69c-4cc2-8080-e1920237a5df","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":false,"podeDescartar":false}}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"","pendente":true}
+Depois de reabrir (contexto novo, sem falhas): nome no painel = "Nome ajustado" · observação = "Observação nova" · salvamentoPendente = {"estado":"concluido","id":"f0426325-b69c-4cc2-8080-e1920237a5df","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":true,"podeDescartar":false,"mensagem":""}
+Persistido depois da reabertura: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+
+--- 1a. campos e observação juntos: concluído, gravados, resposta com o que foi lido, releitura igual
+RESULTADO: ok
+
+--- 1b–1f. só campos; só observação; limpar observação; omitir observação; voltar ao Júpiter (linha removida)
+RESULTADO: ok
+
+--- 2. sem ajuste anterior cria a linha; com ajustes anteriores, campos não enviados, marca de grade, exclusão e coluna extra sobrevivem
+RESULTADO: ok
+
+--- 3a. validação recusada: nada muda (resposta, persistência, releitura)
+RESULTADO: ok
+
+--- 3b. falha na PRIMEIRA escrita (antes de aplicar): "não concluído", estado anterior confirmado, nada pendente
+3b — resposta: {"ok":false,"codigo":"NAO_SALVO","resultado":"nao_concluido","erro":"Nada foi salvo em PST1001: a planilha não aceitou a gravação. As alterações continuam na ficha; tente de novo em alguns instantes.","salvamento":null}
+  persistido: {"nome":"Antes","creditosAula":"","naGrade":"","obs":"obs antes","pendente":false}
+RESULTADO: ok
+
+--- 3c. falha na escrita da OBSERVAÇÃO (uma vez): nova tentativa na mesma chamada conclui; nada parcial
+3c — resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"salvamento":null}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+RESULTADO: ok
+
+--- 3d. REPRODUÇÃO: falha persistente na observação depois dos ajustes: nada de parcial silencioso — pendência explícita com o que já foi gravado; reabertura conclui
+3d — resposta: {"ok":false,"codigo":"SALVAMENTO_PENDENTE","resultado":"pendente","erro":"O salvamento de PST1001 não terminou: os dados da ficha já estão gravados; a observação ainda não. O painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir salvamento pendente\". Até lá, outras gravações ficam bloqueadas.","salvamento":{"estado":"pendente","id":"4d678b75-7455-4a3c-8ead-dd511234b7a5","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":false,"podeDescartar":false}}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"","pendente":true}
+RESULTADO: ok
+
+--- 4. observação (setValue aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+4 observação (setValue aplicado e erro) — resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"salvamento":null}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+  persistido no instante do erro: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":true}
+RESULTADO: ok
+
+--- 4. ajustes (setValues aplicado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+4 ajustes (setValues aplicado e erro) — resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"salvamento":null}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+  persistido no instante do erro: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"","pendente":true}
+RESULTADO: ok
+
+--- 4. primeira escrita do fluxo — registro do pedido (gravado e erro): a escrita aconteceu antes do erro; o resultado vem da planilha (concluído)
+4 primeira escrita do fluxo — registro do pedido (gravado e erro) — resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"salvamento":null}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+  persistido no instante do erro: {"nome":"(sem linha)","creditosAula":"(sem linha)","naGrade":"(sem linha)","obs":"","pendente":true}
+RESULTADO: ok
+
+--- 5a. recuperação falha de novo (reabertura com a escrita ainda falhando): pendência continua; depois, "Concluir" conclui
+RESULTADO: ok
+
+--- 5b. falha ao remover o registro depois de tudo gravado: pendente com "já gravado"; a próxima ação confirma sem reescrever
+5b — resposta: {"ok":false,"codigo":"SALVAMENTO_PENDENTE","resultado":"pendente","erro":"O salvamento de PST1001 não terminou: as alterações já estão gravadas, falta só confirmar o salvamento. O painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir salvamento pendente\". Até lá, outras gravações ficam bloqueadas.","salvamento":{"estado":"pendente","id":"0c8e0a93-acfb-4e5b-bbcd-2e376ce081f1","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":true,"podeDescartar":false}}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":true}
+RESULTADO: ok
+
+--- 6a. encerrada logo depois do registro do pedido (antes de qualquer dado): a reabertura reconhece e conclui o pedido
+  persistido no instante do encerramento: {"nome":"(sem linha)","creditosAula":"(sem linha)","naGrade":"(sem linha)","obs":"","pendente":true}
+  salvamentoPendente na reabertura: {"estado":"concluido","id":"c13fccf6-8754-4571-9b02-d980dbd387b2","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":true,"podeDescartar":false,"mensagem":""}
+RESULTADO: ok
+
+--- 6b. encerrada ENTRE as escritas (ajustes gravados, observação não): a reabertura reconhece e conclui o pedido
+  persistido no instante do encerramento: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"","pendente":true}
+  salvamentoPendente na reabertura: {"estado":"concluido","id":"d76925dc-0223-416a-b087-66911e01d360","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":true,"podeDescartar":false,"mensagem":""}
+RESULTADO: ok
+
+--- 7. encerrada depois das escritas principais, antes de concluir/responder: a reabertura reconhece e conclui o pedido
+  persistido no instante do encerramento: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":true}
+  salvamentoPendente na reabertura: {"estado":"concluido","id":"af986a92-4db2-4340-947a-604f286d4bda","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":true,"podeDescartar":false,"mensagem":""}
+RESULTADO: ok
+
+--- 6c. encerrada entre as escritas e reaberta por um LEITOR: dados como estão + aviso de salvamento em andamento; nada é escrito
+RESULTADO: ok
+
+--- 8. falha no flush depois das escritas (uma vez): conferência e nova tentativa concluem (o simulador não reproduz os buffers reais do Google)
+8 — resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"salvamento":null}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+RESULTADO: ok
+
+--- 9a. recuperação repetida (duas reaberturas) não duplica linha nem perde ajustes anteriores
+RESULTADO: ok
+
+--- 9b. pendência que não conclui bloqueia novo salvamento da MESMA disciplina; liberada a escrita, o pedido antigo é concluído ANTES e o novo vale por último
+RESULTADO: ok
+
+--- 10a. sucesso: marca de grade e observação gravadas juntas
+RESULTADO: ok
+
+--- 10b. sem semestre de oferecimento: salva e informa; excluída: salva sem marcar
+RESULTADO: ok
+
+--- 10c. falha entre as escritas: a marca de grade segue o mesmo pedido (pendente, depois concluída), não fica esquecida
+RESULTADO: ok
+
+--- 11. código efetivo alterado: observação e recuperação ficam na chave original; código numérico; observação parecida com fórmula continua texto
+RESULTADO: ok
+
+--- 12. outras disciplinas e colunas extras intactas; aba Disciplinas EM USO (depois de reimportar); reimportação preserva a observação
+  aba nominal "Disciplinas" é a em uso? true
+RESULTADO: ok
+
+--- 13a. com a pendência sem concluir: outra disciplina, ação em lote, importação e recomeço são recusados com a mensagem da pendência; nada muda
+RESULTADO: ok
+
+--- 13b. base mudou (registro de outra aba Disciplinas): não reaplica; "Descartar" só nesse caso
+RESULTADO: ok
+
+--- 15. salvar disciplina para outros cursos com campos e observação (uma linha), cadastro e lista por unidade continuam
+RESULTADO: ok
+
+--- 16a. REPRODUÇÃO A→B→A: A pendente, B salva (conclui A), A reaberta depois e salva só o nome — a observação recuperada não se perde (planilha, dados do painel, ficha, contexto novo)
+  depois de A: persistido {"nome":"A corrigida","creditosAula":"","naGrade":"","obs":"","pendente":true} · cliente obs A = ""
+  resposta de B: {"ok":true,"codigo":null,"resultado":"concluido","observacao":{"chave":"PST1002","texto":"Observação de B"},"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}}
+  dados do painel depois de B (obs A, obs B): ["Observação recuperada de A","Observação de B"]
+  ficha de A reaberta: nome "Outra correção em A" · observação pré-preenchida "Observação recuperada de A"
+  novo salvamento de A: {"ok":true,"codigo":null,"resultado":"concluido","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"recuperado":null}
+  persistido depois do novo salvamento de A: {"nome":"Outra correção em A","creditosAula":"","naGrade":"","obs":"Observação recuperada de A","pendente":false}
+  contexto novo: nome A "Outra correção em A" · obs A "Observação recuperada de A"
+RESULTADO: ok
+
+--- 16b. recuperação antes de OUTRAS operações (grade em lote, exclusão, outros cursos, lista por unidade): a observação de A vem em "recuperado" e o painel a aplica
+  adicionarAGrade: {"ok":true,"codigo":null,"resultado":"concluido","observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}}
+  excluirDisciplinas: {"ok":true,"codigo":null,"resultado":"concluido","observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}}
+  cadastrarDisciplinaOutros: {"ok":true,"codigo":null,"resultado":null,"observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}}
+  salvarDisciplina (outros cursos): {"ok":true,"codigo":null,"resultado":"concluido","observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}}
+RESULTADO: ok
+
+--- 16c. recuperação concluída e o NOVO pedido recusado ou com falha (validação, escrita, erro inesperado, leitura, importação): "recuperado" vem na recusa e o painel aplica
+  recusa de validação: {"ok":false,"codigo":"CODIGO_REPETIDO","resultado":null,"observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":true}}
+  B com falha: {"ok":false,"codigo":"SALVAMENTO_PENDENTE","resultado":"pendente","observacao":{"chave":"PST1002","texto":""},"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}} · salvamento {"estado":"pendente","id":"def81e6b-b42b-43ee-9bb8-fb6a1f8708c7","chave":"PST1002","codigo":"PST1002","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":false,"podeDescartar":false}
+  erro inesperado no cadastro de outros cursos: {"ok":false,"codigo":"INESPERADO","resultado":null,"observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":true}} · mensagem "Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema."
+  leitura falhando depois da conclusão: {"ok":false,"codigo":"INESPERADO","resultado":null,"observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}} · leituraFalhou true
+  importação recusada: {"ok":false,"codigo":"PREVIA_DESATUALIZADA","resultado":null,"observacao":null,"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":true}}
+RESULTADO: ok
+
+--- 16d. ordem dos valores: novo pedido de A que MUDA a observação vence o valor recuperado; recuperação SEM mudança de observação não apaga o texto existente
+  A de novo, outra observação: {"ok":true,"codigo":null,"resultado":"concluido","observacao":{"chave":"PST1001","texto":"Observação mais recente de A"},"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação recuperada de A"},"comPreparacao":false}}
+  recuperação sem observação: {"ok":true,"codigo":null,"resultado":"concluido","observacao":{"chave":"PST1002","texto":"obs B"},"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":null,"comPreparacao":false}}
+RESULTADO: ok
+
+--- 17a. remoção aplicada e exceção (metadadoRemoverDepois): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica
+17a. remoção aplicada e exceção (metadadoRemoverDepois) — resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"salvamento":null}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+  registro no instante do erro: null · id do pedido "4653f31f-1116-4720-a266-c49d76aa73ed"
+RESULTADO: ok
+
+--- 17b. falha no SEGUNDO flush (depois da remoção; o 8 cobre o primeiro): resposta "concluído" com o lido (observação inclusive), nada de pendente inexistente; repetir não duplica
+17b. falha no SEGUNDO flush (depois da remoção; o 8 cobre o primeiro) — resposta: {"ok":true,"codigo":null,"resultado":"concluido","erro":null,"salvamento":null}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+  registro no instante do erro: null · id do pedido "b78ef774-e47c-4183-baf3-7024c865fb6d"
+RESULTADO: ok
+
+--- 17c. falha ANTES da remoção (registro presente): pendente identificado, com "já gravado"; conclusão sem reescrever
+17c — resposta: {"ok":false,"codigo":"SALVAMENTO_PENDENTE","resultado":"pendente","erro":"O salvamento de PST1001 não terminou: as alterações já estão gravadas, falta só confirmar o salvamento. O painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir salvamento pendente\". Até lá, outras gravações ficam bloqueadas.","salvamento":{"estado":"pendente","id":"09672ebc-020f-4894-9e42-87321c84095d","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":true,"observacaoGravada":true,"podeDescartar":false}}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":true}
+RESULTADO: ok
+
+--- 17d. remoção feita + falha de LEITURA na conferência: não declara sucesso nem "nada gravado"; SALVAMENTO_INCERTO identificado, rascunho preservável; contexto novo e repetição corretos
+17d — resposta: {"ok":false,"codigo":"SALVAMENTO_INCERTO","resultado":"incerto","erro":"Não foi possível confirmar o salvamento de PST1001: o registro do salvamento já foi encerrado na planilha, mas não foi possível ler a planilha para conferir o que foi gravado. Recarregue o painel e confira a disciplina; se faltar algo, salve de novo (o que você digitou continua na ficha).","salvamento":{"estado":"incerto","id":"8c8a3dd9-1ede-4dbe-b738-b35c2d2a7537","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":null,"observacaoGravada":null,"podeDescartar":false,"mensagem":"Não foi possível confirmar o salvamento de PST1001: o registro do salvamento já foi encerrado na planilha, mas não foi possível ler a planilha para conferir o que foi gravado. Recarregue o painel e confira a disciplina; se faltar algo, salve de novo (o que você digitou continua na ficha)."}}
+  persistido: {"nome":"Nome ajustado","creditosAula":"","naGrade":"","obs":"Observação nova","pendente":false}
+  leituras recusadas: 2 · mensagem: Não foi possível confirmar o salvamento de PST1001: o registro do salvamento já foi encerrado na planilha, mas não foi possível ler a planilha para conferir o que foi gravado. Recarregue o painel e confira a disciplina; se faltar algo, salve de novo (o que você digitou continua na ficha).
+RESULTADO: ok
+
+--- 17e. "Concluir salvamento pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído (nada de pendente inexistente)
+  explícito: {"ok":true,"codigo":null,"resultado":"concluido","observacao":{"chave":"PST1001","texto":"Observação nova"}}
+  automático: {"ok":true,"codigo":null,"resultado":"concluido","observacao":{"chave":"PST1002","texto":"obs B"},"recuperado":{"chave":"PST1001","codigo":"PST1001","observacao":{"chave":"PST1001","texto":"Observação nova"},"comPreparacao":false}}
+RESULTADO: ok
+
+--- 18a. REPRODUÇÃO: data em coluna extra continua DATA (mesmo getTime) depois da retomada; texto parecido com ISO, número, booleano e vazio intactos; outra disciplina intacta
+  antes  PST1001: {"Data livre":{"tipo":"Date","getTime":1790856000000,"iso":"2026-10-01T12:00:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2026-10-01"},"Número":{"tipo":"number","valor":42},"Booleano":{"tipo":"boolean","valor":true},"Vazio":{"tipo":"string","valor":""}}
+  antes  PST1002: {"Data livre":{"tipo":"Date","getTime":1746433800000,"iso":"2025-05-05T08:30:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2025-05-05T08:30:00.000Z"},"Número":{"tipo":"number","valor":0},"Booleano":{"tipo":"boolean","valor":false},"Vazio":{"tipo":"string","valor":""}}
+18a — resposta: {"ok":false,"codigo":"SALVAMENTO_PENDENTE","resultado":"pendente","erro":"O salvamento de PST1001 não terminou: nada do pedido está gravado ainda. O painel vai concluí-lo na próxima gravação ou quando for aberto de novo; você também pode clicar em \"Concluir salvamento pendente\". Até lá, outras gravações ficam bloqueadas.","salvamento":{"estado":"pendente","id":"c08e9de0-129b-4f14-904f-ab8704d6c9b9","chave":"PST1001","codigo":"PST1001","em":"07/10/2026 18:25","ajusteGravado":false,"observacaoGravada":false,"podeDescartar":false}}
+  persistido: {"nome":"Antes","creditosAula":"","naGrade":"","obs":"","pendente":true}
+  registro (ajuste) tem _extras? false
+  depois PST1001: {"Data livre":{"tipo":"Date","getTime":1790856000000,"iso":"2026-10-01T12:00:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2026-10-01"},"Número":{"tipo":"number","valor":42},"Booleano":{"tipo":"boolean","valor":true},"Vazio":{"tipo":"string","valor":""}}
+  depois PST1002: {"Data livre":{"tipo":"Date","getTime":1746433800000,"iso":"2025-05-05T08:30:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2025-05-05T08:30:00.000Z"},"Número":{"tipo":"number","valor":0},"Booleano":{"tipo":"boolean","valor":false},"Vazio":{"tipo":"string","valor":""}}
+RESULTADO: ok
+
+--- 18b. registro no formato da 1.8.5 (ajuste com _extras e datas viradas texto ISO pelo JSON) é concluído sem converter a data em texto
+  registro no formato 1.8.5: ajuste._extras = {"Data livre":"2026-10-01T12:00:00.000Z","Texto ISO":"2026-10-01","Número":42,"Booleano":true,"Vazio":""}
+  depois PST1001: {"Data livre":{"tipo":"Date","getTime":1790856000000,"iso":"2026-10-01T12:00:00.000Z"},"Texto ISO":{"tipo":"string","valor":"2026-10-01"},"Número":{"tipo":"number","valor":42},"Booleano":{"tipo":"boolean","valor":true},"Vazio":{"tipo":"string","valor":""}}
+RESULTADO: ok
+
+--- 18c. extra alterado na planilha DEPOIS do pedido pendente não é sobrescrito pelo registro (vale a linha atual)
+RESULTADO: ok
+
+=== TOTAL: 39 ok, 0 falha(s) ===

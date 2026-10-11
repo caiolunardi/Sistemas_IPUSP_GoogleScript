@@ -1,0 +1,36 @@
+# suíte: testar_painel_auditoria
+# comando: node testar_painel_auditoria.js /caminho/grade_curricular.csv /caminho/disciplinas_unidade.csv
+# data: 2026-10-07T21:24:54Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Servidor: obterAuditoriaGrade
+  ✓ leitor (Comissão de Graduação) lê a auditoria: grade em preenchimento, edições da mais recente para a mais antiga, situação das 6 abas; sem IDs e sem link da planilha
+  ✓ (1.8.0) nem o administrador recebe link da planilha de auditoria
+  ✓ (1.8.0) auditoria sem a aba Aberturas (criada antes da 1.8.0): aberturas = null, o resto funciona
+  ✓ fora da aba de permissões → SEM_ACESSO; só leitura: nada muda nas planilhas
+  ✓ semestre que não tem auditoria → SEMESTRE_INVALIDO
+  ✓ muitas edições: só as mais recentes vão ao navegador, com o total
+  ✓ depois do envio da 2027/2: lista as duas grades; a 2027/1 aparece encerrada (sem situação das abas, com "Grade encerrada")
+  ✓ registros sem e-mails
+
+== Interface (Chromium)
+  ✓ leitor vê as seções "Estrutura curricular" e "Auditoria da grade"; a auditoria só é pedida ao servidor quando aberta
+  ✓ cartões por aba com as contagens; tabela da aba escolhida com a situação e a última edição
+  ✓ (1.8.0) "Não serão oferecidas": PSE "NÃO" com "Aguardando Justificativa" (cartão, tabela da aba e lista com quem marcou)
+  ✓ (1.8.0) gráficos "Quem mais abre a planilha" e "Quem mais edita": barras do maior para o menor, valores em texto; "ver edições" filtra a lista
+  ✓ edições: busca sem acento, filtros, "Mostrar mais" de 50 em 50, limpar filtros
+  ✓ histórico da disciplina: janela com todas as edições dela; fecha só pelo botão e devolve o foco
+  ✓ "Atualizar" busca de novo e mantém a aba e os filtros; teclado alterna as seções; voltar à estrutura
+  ✓ nenhum erro de JavaScript; sem link da planilha para o leitor
+  ✓ 360, 768 e 1280 px, claro e escuro: sem rolagem horizontal (também com o histórico aberto) e contraste ≥ 4,5:1 nos textos da seção
+  ✓ administrador: mesma seção, (1.8.0) sem link da planilha de auditoria; etapas continuam na estrutura
+  ✓ erro do servidor: mensagem e "Tentar de novo"
+
+Executados: 19 (19 ok, 0 falha(s)); pulados: 0  — evidências em saida/evidencias_painel_auditoria.txt
+
+# código de saída: 0  (duração: 8 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_painel_auditoria.txt
+# interpretação: aprovada

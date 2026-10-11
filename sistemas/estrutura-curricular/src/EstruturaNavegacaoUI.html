@@ -1,0 +1,128 @@
+<script>
+/* 1.10.0 — adaptador de apresentação. Não lê/grava dados de negócio.
+   Move os tablists originais, conserva listeners/IDs e acompanha hidden.
+   Carregado por último, depois dos controladores existentes. */
+(function () {
+  'use strict';
+  var layout = document.getElementById('estruturaLayout');
+  if (!layout || window.EstruturaNavegacao) return;
+  var sidebar = document.getElementById('estruturaSidebar');
+  var conteudo = document.getElementById('estruturaConteudo');
+  var menu = document.getElementById('estruturaSidebarConteudo');
+  var menuBotao = document.getElementById('estruturaMenuMovel');
+  var modeloIcones = document.getElementById('estruturaIcones');
+  var movel = window.matchMedia('(max-width: 900px)');
+  var modo = 'sidebar';
+  var temporizador;
+  var configs = [
+    { id: 'visoes', slot: 'estruturaSlotVisoes', grupo: 'estruturaGrupoVisoes', donos: [] },
+    { id: 'etapas', slot: 'estruturaSlotEtapas', grupo: 'estruturaGrupoEtapas', donos: ['visaoEstrutura'] },
+    { id: 'abasEstrutura', slot: 'estruturaSlotAbas', grupo: 'estruturaGrupoAbas', donos: ['visaoEstrutura', 'areaDados', 'etapaPainel-1'] }
+  ];
+  function icone(botao, nome) {
+    if (!botao || botao.querySelector('.estruturaIcone') || !modeloIcones) return;
+    var svg = modeloIcones.content.querySelector('[data-estrutura-icone="' + nome + '"]');
+    if (!svg) return;
+    var span = document.createElement('span');
+    span.className = 'estruturaIcone';
+    span.setAttribute('aria-hidden', 'true');
+    span.appendChild(svg.cloneNode(true));
+    botao.insertBefore(span, botao.firstChild);
+  }
+  var icones = {
+    'estruturaModoSidebar': 'panel-left', 'estruturaModoAbas': 'panels-top-left',
+    'visao-estrutura': 'graduation-cap', 'visao-auditoria': 'clipboard-check',
+    'etapa-1': 'library-big', 'etapa-2': 'users-round',
+    'etapa-3': 'list-checks', 'etapa-4': 'calendar-days',
+    'aba-disciplinas': 'book-open', 'aba-curriculos': 'network', 'aba-historico': 'history'
+  };
+  Object.keys(icones).forEach(function (id) { icone(document.getElementById(id), icones[id]); });
+  var previa = document.getElementById('previaAbas');
+  function iconesPrevia() {
+    if (!previa) return;
+    previa.querySelectorAll('[role="tab"]').forEach(function (botao) { icone(botao, 'table-2'); });
+  }
+  iconesPrevia();
+  if (previa) new MutationObserver(iconesPrevia).observe(previa, { childList: true });
+
+  configs.forEach(function (c) {
+    c.nav = document.getElementById(c.id);
+    c.destino = document.getElementById(c.slot);
+    c.secao = document.getElementById(c.grupo);
+    c.donos = c.donos.map(function (id) { return document.getElementById(id); });
+    c.orientacao = c.nav.getAttribute('aria-orientation');
+    c.marcador = document.createComment('Posição original de ' + c.id);
+    c.nav.parentNode.insertBefore(c.marcador, c.nav);
+    // As setas horizontais continuam sob o controlador original. No menu
+    // vertical, as setas cima/baixo encaminham à mesma rotina de seleção.
+    c.nav.addEventListener('keydown', function (e) {
+      if (modo !== 'sidebar' || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+      var botao = e.target.closest('[role="tab"]');
+      if (!botao || !c.nav.contains(botao)) return;
+      e.preventDefault();
+      botao.dispatchEvent(new KeyboardEvent('keydown', {
+        key: e.key === 'ArrowDown' ? 'ArrowRight' : 'ArrowLeft', bubbles: true, cancelable: true
+      }));
+    });
+  });
+  function sincronizar() {
+    configs.forEach(function (c) {
+      c.secao.hidden = modo !== 'sidebar' || c.nav.hidden || c.donos.some(function (d) { return d.hidden; });
+    });
+  }
+  var observador = new MutationObserver(sincronizar);
+  configs.forEach(function (c) {
+    [c.nav].concat(c.donos).forEach(function (el) {
+      observador.observe(el, { attributes: true, attributeFilter: ['hidden'] });
+    });
+  });
+  function transicao() {
+    clearTimeout(temporizador);
+    conteudo.classList.remove('estruturaConteudo--transicao');
+    // Recomeça apenas a animação de apresentação, sem reconstruir painéis.
+    void conteudo.offsetWidth;
+    conteudo.classList.add('estruturaConteudo--transicao');
+    temporizador = setTimeout(function () { conteudo.classList.remove('estruturaConteudo--transicao'); }, 200);
+  }
+  function expandirMenu(expandir) {
+    menu.hidden = !expandir;
+    menuBotao.setAttribute('aria-expanded', String(expandir));
+    menuBotao.textContent = expandir ? 'Recolher menu' : 'Mostrar menu';
+  }
+  function setModo(novoModo, anunciar) {
+    if (novoModo !== 'sidebar' && novoModo !== 'abas') return;
+    var foco = document.activeElement;
+    var mudou = modo !== novoModo;
+    modo = novoModo;
+    layout.setAttribute('data-navegacao', modo);
+    sidebar.hidden = modo !== 'sidebar';
+    configs.forEach(function (c) {
+      if (modo === 'sidebar') {
+        c.destino.appendChild(c.nav);
+        c.nav.setAttribute('aria-orientation', 'vertical');
+      } else {
+        c.marcador.parentNode.insertBefore(c.nav, c.marcador.nextSibling);
+        if (c.orientacao === null) c.nav.removeAttribute('aria-orientation');
+        else c.nav.setAttribute('aria-orientation', c.orientacao);
+      }
+    });
+    document.querySelectorAll('[data-estrutura-modo]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-estrutura-modo') === modo));
+    });
+    expandirMenu(true);
+    sincronizar();
+    if (foco && foco.isConnected && foco !== document.body && foco.getClientRects().length) foco.focus({ preventScroll: true });
+    if (mudou) transicao();
+    if (anunciar) document.getElementById('estruturaModoStatus').textContent = modo === 'sidebar' ? 'Menu lateral ativado.' : 'Navegação por abas ativada.';
+  }
+  document.querySelectorAll('[data-estrutura-modo]').forEach(function (b) {
+    b.addEventListener('click', function () { setModo(b.getAttribute('data-estrutura-modo'), true); });
+  });
+  menuBotao.addEventListener('click', function () { expandirMenu(menu.hidden); });
+  function ajustarLargura() { if (!movel.matches) expandirMenu(true); }
+  if (movel.addEventListener) movel.addEventListener('change', ajustarLargura);
+  else if (movel.addListener) movel.addListener(ajustarLargura);
+  setModo('sidebar', false); // Sempre abre no menu lateral; modo não é persistido.
+  window.EstruturaNavegacao = Object.freeze({ getModo: function () { return modo; }, setModo: function (m) { setModo(m, true); } });
+})();
+</script>

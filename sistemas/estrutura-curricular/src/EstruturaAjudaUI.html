@@ -1,0 +1,326 @@
+<script>
+/*=====================================================================
+  ESTRUTURA CURRICULAR — Central de Ajuda (1.9.0): comportamento.
+
+  Só no navegador: nenhuma chamada a google.script.run, nenhuma leitura
+  de planilha, nenhum armazenamento (localStorage etc.), nenhum recurso
+  remoto. O conteúdo está pronto em EstruturaAjuda.html; aqui só se
+  alternam hidden, aria-expanded e aria-current e se move o foco.
+
+  JANELA: a Central é uma janela da pilha Painel.Modal (PainelApp.html),
+  como a ficha, a importação e o envio — não há um segundo controle de
+  foco. Ela usa as opções que só ela pede ao Painel.Modal (1.9.0):
+    aoEsc        Esc fecha a Central (as janelas operacionais continuam
+                 sem fechar por Esc nem por clique no fundo);
+    guardarFoco  enquanto ela está no topo, um foco levado para trás dela
+                 (por exemplo, uma resposta atrasada que foca a ficha) volta
+                 para dentro dela, e o destino pedido fica guardado;
+    retornoSeguro ao fechar, o foco volta ao gatilho, se ele ainda existe e
+                 está visível; senão, ao lugar que a página pediu enquanto a
+                 Central estava aberta; senão, à janela que ficou no topo;
+                 por fim, ao conteúdo principal.
+  O bloqueio de rolagem é o do Painel.Modal (classe modalAberto no body):
+  a Central não mexe em body.style.overflow.
+
+  NAVEGAÇÃO: três vistas — início (abertura global), uma seção (atalhos,
+  índice, links e gatilhos contextuais) e resultados da busca. Abrir por
+  contexto limpa a busca, mostra a seção do destino, rola até ele e foca
+  o título. A Central só explica: não seleciona, não salva, não envia,
+  não conclui pendências nem recarrega nada.
+
+  BUSCA: local, sem acentos e sem diferença de maiúsculas. Corpus de cada
+  unidade (procedimento, cartão ou pergunta) = data-search + todo o texto
+  da unidade, inclusive a resposta recolhida da FAQ (nunca "um OU o
+  outro"). Várias palavras: aparecem as unidades que têm TODAS. Contagem
+  = unidades encontradas (cada uma conta uma vez). O texto digitado só é
+  usado como texto (textContent), nunca como HTML.
+=====================================================================*/
+(function () {
+  'use strict';
+  if (window.EstruturaAjuda) return;   // inicialização única: sem listeners duplicados
+  var raiz = document.getElementById('centralAjuda');
+  if (!raiz) return;
+
+  var P = window.Painel;
+  var Modal = P && P.Modal;
+  var campoBusca = raiz.querySelector('[data-gradip-help-search]');
+  var statusBusca = raiz.querySelector('[data-gradip-help-search-status]');
+  var semResultado = raiz.querySelector('[data-gradip-help-no-results]');
+  var conteudo = document.getElementById('centralAjudaConteudo');
+  var corpo = document.getElementById('centralAjudaCorpo');
+  var inicio = document.getElementById('ajuda-inicio');
+  var tituloInicio = document.getElementById('ajuda-inicio-titulo');
+  var indice = document.getElementById('centralAjudaIndice');
+  var botaoIndice = document.getElementById('centralAjudaAlternarIndice');
+  var secoes = Array.prototype.slice.call(raiz.querySelectorAll('[data-gradip-help-section]'));
+  var grupos = Array.prototype.slice.call(raiz.querySelectorAll('[data-centralajuda-grupo]'));
+  var botoesLimpar = Array.prototype.slice.call(raiz.querySelectorAll('[data-centralajuda-limpar]'));
+  var botoesIndice = Array.prototype.slice.call(indice ? indice.querySelectorAll('[data-gradip-help-target]') : []);
+
+  // Vista atual: { modo: 'inicio' | 'secao' | 'busca', secao, antes (vista de antes da busca) }
+  var vista = { modo: 'inicio', secao: null, antes: null };
+  var esperaBusca = null;
+
+  /** Minúsculas, sem acentos e com espaços simples (só para comparar). */
+  function normalizar(s) {
+    var t = String(s == null ? '' : s).toLowerCase();
+    if (typeof t.normalize === 'function') t = t.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return t.replace(/\s+/g, ' ').trim();
+  }
+
+  // Unidades de busca, com o corpus pronto (o conteúdo é estático).
+  var itens = [];
+  secoes.forEach(function (secao) {
+    Array.prototype.forEach.call(secao.querySelectorAll('[data-gradip-help-search-item]'), function (el) {
+      var meta = el.getAttribute('data-search') || '';
+      var botao = el.querySelector('[data-gradip-help-faq-toggle]');
+      var item = { el: el, secao: secao, faq: null };
+      if (botao) {
+        var painel = document.getElementById(botao.getAttribute('aria-controls'));
+        item.faq = { botao: botao, painel: painel, dica: el.querySelector('.centralAjuda__faqDica') };
+        item.pergunta = normalizar(botao.textContent);
+        item.resposta = normalizar(painel ? painel.textContent : '');
+        item.corpus = normalizar(meta + ' ' + botao.textContent + ' ' + (painel ? painel.textContent : ''));
+      } else {
+        item.corpus = normalizar(meta + ' ' + el.textContent);
+      }
+      itens.push(item);
+    });
+  });
+
+  /*----------------------------------------------------------------
+    Vistas
+  ----------------------------------------------------------------*/
+  function mostrarTudoDasSecoes() {
+    itens.forEach(function (it) { it.el.hidden = false; if (it.faq && it.faq.dica) it.faq.dica.hidden = true; });
+    grupos.forEach(function (g) { g.hidden = false; });
+  }
+  function marcarIndice(id) {
+    botoesIndice.forEach(function (b) {
+      if (id && b.getAttribute('data-gradip-help-target') === id) b.setAttribute('aria-current', 'true');
+      else b.removeAttribute('aria-current');
+    });
+  }
+  function mostrarInicio() {
+    mostrarTudoDasSecoes();
+    secoes.forEach(function (s) { s.hidden = true; });
+    inicio.hidden = false;
+    semResultado.hidden = true;
+    marcarIndice(null);
+    vista = { modo: 'inicio', secao: null, antes: null };
+  }
+  function mostrarSecao(secao) {
+    mostrarTudoDasSecoes();
+    inicio.hidden = true;
+    secoes.forEach(function (s) { s.hidden = s !== secao; });
+    semResultado.hidden = true;
+    marcarIndice(secao.id);
+    vista = { modo: 'secao', secao: secao, antes: null };
+  }
+  function voltarAoTopo() {
+    if (conteudo) conteudo.scrollTop = 0;
+    if (corpo) corpo.scrollTop = 0;
+  }
+
+  /** Título focável de um destino (seção, unidade ou elemento dentro dela). */
+  function tituloDe(alvo) {
+    if (alvo === inicio) return tituloInicio;
+    if (alvo.hasAttribute('data-gradip-help-section')) return alvo.querySelector('.centralAjuda__secaoTitulo');
+    var item = alvo.closest('[data-gradip-help-search-item]') || alvo;
+    if (item.querySelector('[data-gradip-help-faq-toggle]')) return item.querySelector('[data-gradip-help-faq-toggle]');
+    return item.querySelector('h4[tabindex], h5[tabindex], [tabindex="-1"]') || item.closest('[data-gradip-help-section]').querySelector('.centralAjuda__secaoTitulo');
+  }
+
+  /**
+   * Prepara a vista para o destino id ("" ou "ajuda-inicio" = início).
+   * Limpa a busca (que poderia esconder o destino). Devolve { alvo, foco }.
+   */
+  function prepararDestino(id) {
+    limparCampoBusca();
+    var alvo = id && id !== 'ajuda-inicio' ? document.getElementById(id) : null;
+    if (!alvo || !raiz.contains(alvo) || alvo === raiz) { mostrarInicio(); return { alvo: inicio, foco: tituloInicio }; }
+    var secao = alvo.closest('[data-gradip-help-section]');
+    if (!secao) { mostrarInicio(); return { alvo: inicio, foco: tituloInicio }; }
+    mostrarSecao(secao);
+    return { alvo: alvo, foco: tituloDe(alvo) };
+  }
+
+  /** Rola a Central até o destino (já visível) e foca o título, sem rolar de novo. */
+  function posicionar(d) {
+    voltarAoTopo();
+    if (d.alvo !== inicio && !d.alvo.hasAttribute('data-gradip-help-section') && typeof d.alvo.scrollIntoView === 'function') {
+      d.alvo.scrollIntoView({ block: 'start' });
+    }
+    if (d.foco && typeof d.foco.focus === 'function') {
+      try { d.foco.focus({ preventScroll: true }); } catch (e) { d.foco.focus(); }
+    }
+  }
+
+  /*----------------------------------------------------------------
+    Abrir e fechar
+  ----------------------------------------------------------------*/
+  /** A Central está aberta? */
+  function aberta() { return Modal ? Modal.aberto(raiz) : !raiz.hidden; }
+
+  /**
+   * Abre a Central no destino (id de seção ou de unidade; vazio = início).
+   * gatilho = elemento que pediu (o foco volta para ele ao fechar). Se ela
+   * já está aberta, só navega: a pilha de janelas não ganha outra entrada.
+   */
+  function abrir(destino, gatilho) {
+    fecharIndice();
+    var d = prepararDestino(destino);
+    if (!aberta()) {
+      if (Modal) Modal.abrir(raiz, { foco: d.foco, retorno: gatilho || undefined, aoEsc: fechar, guardarFoco: true, retornoSeguro: true });
+      else abrirSemPainel(gatilho);
+    }
+    posicionar(d);
+  }
+
+  /** Fecha a Central (só ela: a janela que estava atrás continua como estava). */
+  function fechar() {
+    if (!aberta()) return;
+    clearTimeout(esperaBusca);
+    if (Modal) Modal.fechar(raiz);
+    else fecharSemPainel();
+  }
+
+  // Reserva para o caso de o Painel não existir (erro grave de carregamento
+  // do script principal): mostra e esconde a Central, sem controle de foco.
+  var retornoSemPainel = null;
+  function abrirSemPainel(gatilho) { retornoSemPainel = gatilho || document.activeElement; raiz.hidden = false; }
+  function fecharSemPainel() {
+    raiz.hidden = true;
+    if (retornoSemPainel && document.body.contains(retornoSemPainel) && typeof retornoSemPainel.focus === 'function') retornoSemPainel.focus();
+    retornoSemPainel = null;
+  }
+
+  /** Navega dentro da Central aberta. */
+  function irPara(id) {
+    fecharIndice();
+    posicionar(prepararDestino(id));
+  }
+
+  /*----------------------------------------------------------------
+    Busca
+  ----------------------------------------------------------------*/
+  function limparCampoBusca() {
+    clearTimeout(esperaBusca);
+    campoBusca.value = '';
+    statusBusca.textContent = '';
+    botoesLimpar.forEach(function (b) { if (!semResultado.contains(b)) b.hidden = true; });
+  }
+
+  function plural(n, um, varios) { return n + ' ' + (n === 1 ? um : varios); }
+
+  /** Aplica a busca do campo. Vazia: volta à vista de antes da busca. */
+  function aplicarBusca() {
+    clearTimeout(esperaBusca);
+    var bruto = campoBusca.value;
+    var termos = normalizar(bruto).split(' ').filter(Boolean);
+    botoesLimpar.forEach(function (b) { if (!semResultado.contains(b)) b.hidden = !bruto.length; });
+    if (!termos.length) {
+      var antes = vista.modo === 'busca' ? vista.antes : null;
+      statusBusca.textContent = '';
+      if (vista.modo !== 'busca') return;
+      if (antes && antes.secao) mostrarSecao(antes.secao); else mostrarInicio();
+      voltarAoTopo();
+      return;
+    }
+    if (vista.modo !== 'busca') vista = { modo: 'busca', secao: null, antes: { secao: vista.secao } };
+    inicio.hidden = true;
+    var total = 0, secoesComResultado = 0;
+    secoes.forEach(function (secao) {
+      var n = 0;
+      itens.forEach(function (it) {
+        if (it.secao !== secao) return;
+        var bate = termos.every(function (t) { return it.corpus.indexOf(t) >= 0; });
+        it.el.hidden = !bate;
+        if (it.faq && it.faq.dica) {
+          // O termo está na resposta recolhida, e não (todo) na pergunta: diz que é preciso abrir.
+          var naPergunta = termos.every(function (t) { return it.pergunta.indexOf(t) >= 0; });
+          var naResposta = termos.some(function (t) { return it.resposta.indexOf(t) >= 0; });
+          it.faq.dica.hidden = !(bate && !naPergunta && naResposta && it.faq.botao.getAttribute('aria-expanded') !== 'true');
+        }
+        if (bate) n++;
+      });
+      secao.hidden = n === 0;
+      if (n) { total += n; secoesComResultado++; }
+    });
+    grupos.forEach(function (g) { g.hidden = !g.querySelector('[data-gradip-help-search-item]:not([hidden])'); });
+    semResultado.hidden = total > 0;
+    marcarIndice(null);
+    var mostrado = bruto.trim().length > 60 ? bruto.trim().slice(0, 60) + '…' : bruto.trim();
+    statusBusca.textContent = total
+      ? plural(total, 'resultado', 'resultados') + ' em ' + plural(secoesComResultado, 'seção', 'seções') + ' para “' + mostrado + '”.'
+      : 'Nenhum resultado para “' + mostrado + '”.';
+    voltarAoTopo();
+  }
+
+  /*----------------------------------------------------------------
+    FAQ e índice das seções (telas estreitas)
+  ----------------------------------------------------------------*/
+  function alternarFaq(botao) {
+    var painel = document.getElementById(botao.getAttribute('aria-controls'));
+    if (!painel) return;
+    var abrirAgora = botao.getAttribute('aria-expanded') !== 'true';
+    botao.setAttribute('aria-expanded', abrirAgora ? 'true' : 'false');
+    painel.hidden = !abrirAgora;
+    var item = botao.closest('[data-gradip-help-search-item]');
+    var dica = item && item.querySelector('.centralAjuda__faqDica');
+    if (dica && abrirAgora) dica.hidden = true;
+  }
+  function fecharIndice() {
+    if (!indice || !botaoIndice) return;
+    indice.removeAttribute('data-aberto');
+    botaoIndice.setAttribute('aria-expanded', 'false');
+  }
+  function alternarIndice() {
+    var abrirAgora = botaoIndice.getAttribute('aria-expanded') !== 'true';
+    if (abrirAgora) indice.setAttribute('data-aberto', ''); else indice.removeAttribute('data-aberto');
+    botaoIndice.setAttribute('aria-expanded', abrirAgora ? 'true' : 'false');
+    if (abrirAgora && botoesIndice[0]) botoesIndice[0].focus();
+  }
+
+  /*----------------------------------------------------------------
+    Eventos (delegação: vale também para gatilhos criados depois)
+  ----------------------------------------------------------------*/
+  // Gatilhos fora da Central: cabeçalho e botões "?" das telas, inclusive
+  // os que são desenhados de novo (ficha, prévia, auditoria, avisos).
+  document.addEventListener('click', function (ev) {
+    var gatilho = ev.target && ev.target.closest ? ev.target.closest('[data-gradip-help-open]') : null;
+    if (!gatilho || raiz.contains(gatilho)) return;
+    ev.preventDefault();
+    abrir(gatilho.getAttribute('data-gradip-help-open') || '', gatilho);
+  });
+
+  raiz.addEventListener('click', function (ev) {
+    if (ev.target === raiz) { fechar(); return; }   // clique no fundo: fecha só a Central
+    var el = ev.target.closest ? ev.target.closest('[data-gradip-help-close], [data-gradip-help-target], [data-gradip-help-faq-toggle], [data-centralajuda-limpar], #centralAjudaAlternarIndice') : null;
+    if (!el) return;
+    ev.preventDefault();
+    if (el.hasAttribute('data-gradip-help-close')) { fechar(); return; }
+    if (el.hasAttribute('data-gradip-help-faq-toggle')) { alternarFaq(el); return; }
+    if (el.hasAttribute('data-centralajuda-limpar')) { campoBusca.value = ''; aplicarBusca(); campoBusca.focus(); return; }
+    if (el === botaoIndice) { alternarIndice(); return; }
+    irPara(el.getAttribute('data-gradip-help-target'));
+  });
+
+  campoBusca.addEventListener('input', function () {
+    clearTimeout(esperaBusca);
+    esperaBusca = setTimeout(aplicarBusca, 150);
+  });
+  campoBusca.addEventListener('search', aplicarBusca);   // "x" do campo de busca
+  campoBusca.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') { ev.preventDefault(); aplicarBusca(); }
+  });
+
+  raiz.setAttribute('data-centralajuda-pronta', '');
+  window.EstruturaAjuda = Object.freeze({
+    abrir: abrir,
+    fechar: fechar,
+    aberta: aberta,
+    limparBusca: function () { campoBusca.value = ''; aplicarBusca(); }
+  });
+})();
+</script>

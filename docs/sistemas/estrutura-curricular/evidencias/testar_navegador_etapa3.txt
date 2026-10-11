@@ -1,0 +1,39 @@
+# suíte: testar_navegador_etapa3
+# comando: node testar_navegador_etapa3.js /caminho/grade_curricular.csv
+# data: 2026-10-07T21:25:07Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+
+== R. Reprodução A → B (só registra)
+
+== Testes
+  ✓ 1. salvar A normalmente: pedido certo, ficha redesenhada com o gravado, mensagem, botões e foco
+  ✓ 2. salvar A, passar para B e responder com SUCESSO: B e seu rascunho intactos; A atualizada nos dados confirmados
+  ✓ 3. mesmo cenário com resposta de ERRO: B intacta e utilizável, nenhum erro de JavaScript
+  ✓ 4. salvar A e FECHAR antes da resposta (sucesso): a janela não reaparece, sem foco indevido nem erro
+  ✓ 4. salvar A e FECHAR antes da resposta (erro): a janela não reaparece, sem foco indevido nem erro
+  ✓ 4. salvar A e FECHAR antes da resposta (falha de rede): a janela não reaparece, sem foco indevido nem erro
+  ✓ 5. salvar A, fechar e REABRIR A com nova edição: a resposta antiga não substitui a nova instância (mesmo id)
+  ✓ 6. editar DURANTE a espera (sucesso): a edição posterior não se perde (política: campos travados durante a gravação e liberados no fim)
+  ✓ 6. editar DURANTE a espera (erro): a edição posterior não se perde (política: campos travados durante a gravação e liberados no fim)
+  ✓ 7. dois pedidos rápidos da mesma ficha: uma gravação só; controles liberados no fim
+  ✓ 8. cadastro manual pendente, com fechamento e troca para B: disciplina criada, B e o rascunho preservados, mensagem do cadastro
+  ✓ 8b. cadastro pendente com a janela ainda aberta: a resposta mostra a disciplina criada (chave do servidor)
+  ✓ 9. salvar com adicionarAGrade: pedido e retorno certos; trocar para B antes da resposta não apaga B
+  ✓ 9b. salvar com adicionarAGrade, com a ficha aberta: retorno aplicado à própria ficha
+  ✓ 10. navegação por requisito e "Voltar" durante a gravação: a resposta não muda a ficha atual nem a pilha
+  ✓ 11. operações sobrepostas: com A pendente, "Salvar" de B não envia nada (aviso); depois da resposta de A, B salva normalmente
+  ✓ 12a. "Adicionar à Grade" da ficha pendente e troca para B (sucesso): B intacta; A marcada só no sucesso
+  ✓ 12a. "Adicionar à Grade" da ficha pendente e troca para B (erro): B intacta; A marcada só no sucesso
+  ✓ 12b. "Adicionar à Grade" com a ficha aberta: campos travados durante a espera e ficha atualizada no fim
+  ✓ 12c. excluir pela ficha (sucesso): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto
+  ✓ 12c. excluir pela ficha (erro): tela de espera bloqueia o painel; segundo clique não repete o pedido; fim correto
+
+21 ok, 0 falha(s)
+
+# código de saída: 0  (duração: 10 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa3_ficha.txt
+# interpretação: aprovada

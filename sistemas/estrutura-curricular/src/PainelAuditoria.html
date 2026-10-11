@@ -1,0 +1,454 @@
+<script>
+/*=====================================================================
+  PAINEL — Auditoria da grade horária (1.7.0)
+
+  Seção só de leitura, para administradores e leitores (Comissão de
+  Graduação). Os dados vêm de obterAuditoriaGrade (AuditoriaPainel.gs)
+  na primeira vez que a seção é aberta, ao trocar a grade e no botão
+  "Atualizar". Nada é gravado.
+
+    Preenchimento   cartão por aba da planilha das secretarias com
+                    quantas disciplinas já têm "Será oferecida",
+                    docente e dia/horário; tabela da aba escolhida.
+    Não oferecidas  (1.8.0) disciplinas com "Será oferecida" = NÃO, como
+                    "Aguardando Justificativa" (a justificativa chega à
+                    Comissão de Graduação fora da planilha).
+    Gráficos        (1.8.0) quem mais abre a planilha das secretarias e
+                    quem mais edita (no lugar da tabela "Quem editou").
+    Edições         linha do tempo com busca e filtros.
+    Histórico       janela com todas as edições de uma disciplina.
+=====================================================================*/
+var Auditoria = (function () {
+  'use strict';
+  var P = window.Painel;
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = P.esc;
+  var gatilho = P.gatilhoAjuda;   // (1.9.0) botões "?" da Central de Ajuda (delegação: sobrevivem ao redesenho)
+  var POR_PAGINA = 50;
+  // Colunas vindas do servidor
+  var E = { data: 0, origem: 1, email: 2, aba: 3, celula: 4, campo: 5, codigo: 6, disciplina: 7, antes: 8, depois: 9, tipo: 10, celulas: 11, obs: 12, evento: 13 };
+  var D = { codigo: 0, nome: 1, tipo: 2, modalidade: 3, oferecida: 4, docente: 5, semestreIdeal: 6, creditos: 7, dia: 8, inicio: 9, fim: 10 };
+
+  var est = {
+    visao: 'estrutura',
+    dados: null,
+    carregando: false,
+    aba: null,
+    filtros: { busca: '', aba: '', pessoa: '', origem: '' },
+    limite: POR_PAGINA
+  };
+
+  /*----------------------------------------------------------------
+    Seções: Estrutura curricular / Auditoria da grade
+  ----------------------------------------------------------------*/
+  function aoCarregarPainel() {
+    $('visoes').hidden = false;
+    if (est.visao === 'auditoria' && est.dados) carregar(est.dados.semestre);
+  }
+
+  function ativarVisao(nome, focar) {
+    est.visao = nome;
+    ['estrutura', 'auditoria'].forEach(function (v) {
+      var botao = $('visao-' + v), ativa = v === nome;
+      botao.setAttribute('aria-selected', ativa ? 'true' : 'false');
+      botao.tabIndex = ativa ? 0 : -1;
+      if (ativa && focar) botao.focus();
+    });
+    $('visaoEstrutura').hidden = nome !== 'estrutura';
+    $('visaoAuditoria').hidden = nome !== 'auditoria';
+    if (nome === 'auditoria' && !est.dados && !est.carregando) carregar();
+  }
+
+  /*----------------------------------------------------------------
+    Carga
+  ----------------------------------------------------------------*/
+  function carregar(semestre) {
+    est.carregando = true;
+    $('auditoriaSemestre').disabled = true;
+    $('auditoriaAtualizar').disabled = true;
+    $('auditoriaSituacao').textContent = 'Carregando a auditoria…';
+    if (!est.dados) $('auditoriaConteudo').innerHTML = '<div class="cartao vazio">Carregando a auditoria…</div>';
+    return P.chamarServidor('obterAuditoriaGrade', semestre ? { semestre: semestre } : {}).then(function (dados) {
+      var mesmoSemestre = est.dados && est.dados.semestre === dados.semestre;
+      est.dados = dados;
+      est.carregando = false;
+      if (!mesmoSemestre) {
+        est.filtros = { busca: '', aba: '', pessoa: '', origem: '' };
+        est.limite = POR_PAGINA;
+        est.aba = null;
+      }
+      if (dados.andamento && (!est.aba || !dados.andamento.some(function (a) { return a.aba === est.aba; }))) {
+        var primeira = dados.andamento.filter(function (a) { return a.disciplinas.length; })[0];
+        est.aba = primeira ? primeira.aba : dados.andamento[0].aba;
+      }
+      preencherSemestres();
+      $('auditoriaSituacao').textContent = 'Atualizado às ' + dados.geradoEm.split(' ')[1] + ' de ' + dados.geradoEm.split(' ')[0] + '.';
+      $('auditoriaAtualizar').disabled = false;
+      renderizar();
+    }, function (erro) {
+      est.carregando = false;
+      $('auditoriaAtualizar').disabled = false;
+      $('auditoriaSemestre').disabled = !est.dados;
+      $('auditoriaSituacao').textContent = '';
+      $('auditoriaConteudo').innerHTML =
+        '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">Não foi possível abrir a auditoria</div><p>' + esc(erro.mensagem) + '</p>' + gatilho('ajuda-problema-auditoria', 'O que fazer') + '</div>' +
+        '<p><button type="button" class="botao botao--secundario" data-aud-tentar>Tentar de novo</button></p>';
+    });
+  }
+
+  function preencherSemestres() {
+    var sel = $('auditoriaSemestre');
+    sel.innerHTML = est.dados.semestres.map(function (s) {
+      return '<option value="' + esc(s.semestre) + '"' + (s.semestre === est.dados.semestre ? ' selected' : '') + '>' +
+        esc(rotuloSemestre(s.semestre)) + (s.atual ? ' — em preenchimento' : '') + '</option>';
+    }).join('');
+    sel.disabled = est.dados.semestres.length < 2;
+  }
+
+  function rotuloSemestre(s) {
+    var p = String(s).split('/');
+    return p.length === 2 ? p[1] + 'º semestre de ' + p[0] : s;
+  }
+
+  /*----------------------------------------------------------------
+    Desenho
+  ----------------------------------------------------------------*/
+  function renderizar() {
+    var d = est.dados;
+    var html = '';
+    // 1.8.0: sem link para a planilha de auditoria (o painel é a forma de consulta)
+    // Não oferecidas primeiro: é o que pede ação da Comissão de Graduação
+    html += d.andamento ? htmlNaoOferecidas() + htmlPreenchimento() :
+      '<div class="alerta alerta--info"><div class="alerta__titulo">Grade encerrada</div><p>A grade de ' + esc(rotuloSemestre(d.semestre)) +
+      ' não está mais em preenchimento: a situação final dela está na cópia de segurança feita no envio da grade seguinte. Abaixo, todas as edições registradas.</p>' + gatilho('ajuda-auditoria-anteriores', 'Sobre as grades anteriores') + '</div>';
+    html += htmlGraficos();
+    html += htmlEdicoes();
+    $('auditoriaConteudo').innerHTML = html;
+    sincronizarFiltros();
+  }
+
+  /** Última edição de secretaria por código de disciplina: { codigo: linha }. */
+  function ultimasPorDisciplina() {
+    var m = {};
+    est.dados.edicoes.forEach(function (l) {
+      if (l[E.origem] === 'Secretaria' && l[E.codigo] && !m[l[E.codigo]]) m[l[E.codigo]] = l;
+    });
+    return m;
+  }
+
+  function preenchido(v) { return String(v || '').trim() !== ''; }
+
+  /** (1.8.0) "Será oferecida" = NÃO (com ou sem acento, maiúsculas ou não). */
+  function naoOferecida(x) { return normalizar(x[D.oferecida]) === 'nao'; }
+
+  var SELO_JUSTIFICATIVA = '<span class="selo selo--aviso seloJustificativa">Aguardando Justificativa</span>';
+
+  function contarAba(a) {
+    var n = a.disciplinas.length, c = { total: n, oferecida: 0, docente: 0, horario: 0, nao: 0 };
+    a.disciplinas.forEach(function (x) {
+      if (preenchido(x[D.oferecida])) c.oferecida++;
+      if (naoOferecida(x)) c.nao++;
+      if (preenchido(x[D.docente])) c.docente++;
+      if (preenchido(x[D.dia]) && preenchido(x[D.inicio])) c.horario++;
+    });
+    return c;
+  }
+
+  function medida(rotulo, valor, total) {
+    var pct = total ? Math.round(valor / total * 100) : 0;
+    return '<span class="medida"><span class="medida__topo"><span class="medida__rotulo">' + esc(rotulo) + '</span><span class="medida__valor">' + valor + ' de ' + total + '</span></span>' +
+      '<span class="barraProgresso" aria-hidden="true"><span class="barraProgresso__valor" style="width:' + pct + '%"></span></span></span>';
+  }
+
+  function htmlPreenchimento() {
+    var d = est.dados;
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audPreenchimentoTitulo">' +
+      '<h3 class="secaoAuditoria__titulo" id="audPreenchimentoTitulo">Preenchimento — ' + esc(rotuloSemestre(d.semestre)) + '</h3>' +
+      '<p class="pequeno texto-suave">Situação atual da planilha das secretarias: quantas disciplinas de cada aba já têm cada informação. Escolha uma aba para ver as disciplinas.</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-preenchimento', 'Como ler as contagens') + '</div>' +
+      '<div class="auditoriaAbas" role="group" aria-label="Abas da planilha das secretarias">';
+    d.andamento.forEach(function (a) {
+      var c = contarAba(a), ativa = a.aba === est.aba;
+      html += '<button type="button" class="auditoriaAba" data-aud-aba="' + esc(a.aba) + '" aria-pressed="' + ativa + '">' +
+        '<span class="auditoriaAba__topo"><span class="auditoriaAba__nome">' + esc(a.aba) + '</span><span class="auditoriaAba__total">' + c.total + (c.total === 1 ? ' disciplina' : ' disciplinas') + '</span></span>' +
+        (c.total ? medida('Será oferecida', c.oferecida, c.total) + medida('Docente', c.docente, c.total) + medida('Dia e horário', c.horario, c.total) : '<span class="pequeno texto-suave">Nenhuma disciplina nesta aba.</span>') +
+        (c.nao ? '<span class="auditoriaAba__nao">' + c.nao + (c.nao === 1 ? ' não será oferecida' : ' não serão oferecidas') + ' — aguardando justificativa</span>' : '') +
+        '</button>';
+    });
+    html += '</div>' + htmlTabelaAba() + '</section>';
+    return html;
+  }
+
+  function htmlTabelaAba() {
+    var a = est.dados.andamento.filter(function (x) { return x.aba === est.aba; })[0];
+    if (!a) return '';
+    if (!a.disciplinas.length) return '<div class="vazio">A aba ' + esc(a.aba) + ' não tem disciplinas nesta grade.</div>';
+    var ult = ultimasPorDisciplina();
+    var naoInf = '<span class="texto-suave">não informado</span>';
+    var linhas = a.disciplinas.map(function (x) {
+      var horario = preenchido(x[D.dia]) || preenchido(x[D.inicio])
+        ? esc(x[D.dia] || '—') + (preenchido(x[D.inicio]) ? '<br><span class="pequeno">' + esc(x[D.inicio]) + (preenchido(x[D.fim]) && x[D.fim] !== x[D.inicio] ? ' – ' + esc(x[D.fim]) : '') + '</span>' : '')
+        : naoInf;
+      var u = ult[x[D.codigo]];
+      var ultima = u ? '<span class="pequeno">' + esc(u[E.data]) + '<br>' + esc(u[E.email]) + '</span>' : '<span class="pequeno texto-suave">nenhuma edição</span>';
+      var detalhe = [x[D.tipo], preenchido(x[D.semestreIdeal]) ? x[D.semestreIdeal] + 'º sem. ideal' : '', x[D.modalidade]].filter(preenchido).join(' · ');
+      return '<tr><td><span class="mono">' + esc(x[D.codigo]) + '</span> ' + esc(x[D.nome]) + (detalhe ? '<br><span class="pequeno texto-suave">' + esc(detalhe) + '</span>' : '') + '</td>' +
+        '<td data-rotulo="Será oferecida">' + (preenchido(x[D.oferecida]) ? esc(x[D.oferecida]) + (naoOferecida(x) ? '<br>' + SELO_JUSTIFICATIVA : '') : naoInf) + '</td>' +
+        '<td data-rotulo="Docente">' + (preenchido(x[D.docente]) ? esc(x[D.docente]) : naoInf) + '</td>' +
+        '<td data-rotulo="Dia e horário">' + horario + '</td>' +
+        '<td data-rotulo="Última edição">' + ultima + '</td>' +
+        '<td><button type="button" class="botao botao--texto" data-aud-historico="' + esc(x[D.codigo]) + '" aria-label="Histórico de ' + esc(x[D.codigo]) + '">Histórico</button></td></tr>';
+    }).join('');
+    return '<div class="tabelaScroll"><table class="tabela tabelaAuditoria" id="audTabelaAba"><caption class="somenteLeitor">Disciplinas da aba ' + esc(a.aba) + '</caption>' +
+      '<thead><tr><th scope="col">Disciplina</th><th scope="col">Será oferecida</th><th scope="col">Docente</th><th scope="col">Dia e horário</th><th scope="col">Última edição</th><th scope="col"><span class="somenteLeitor">Ações</span></th></tr></thead>' +
+      '<tbody>' + linhas + '</tbody></table></div>';
+  }
+
+  /** (1.8.0) Quem marcou "NÃO" e quando: a edição mais recente de "Será oferecida" com NÃO para o código. */
+  function marcacaoNao(codigo) {
+    var achada = null;
+    est.dados.edicoes.some(function (l) {
+      if (l[E.codigo] === codigo && normalizar(l[E.campo]) === 'sera oferecida' && normalizar(l[E.depois]) === 'nao') { achada = l; return true; }
+      return false;
+    });
+    return achada;
+  }
+
+  /** (1.8.0) Disciplinas que não serão oferecidas: todas as abas, "Aguardando Justificativa". */
+  function htmlNaoOferecidas() {
+    var lista = [];
+    est.dados.andamento.forEach(function (a) { a.disciplinas.forEach(function (x) { if (naoOferecida(x)) lista.push({ aba: a.aba, x: x }); }); });
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audNaoTitulo"><h3 class="secaoAuditoria__titulo" id="audNaoTitulo">Não serão oferecidas' +
+      (lista.length ? ' <span class="contagemTitulo">(' + lista.length + ')</span>' : '') + '</h3>' +
+      '<p class="pequeno texto-suave">Disciplinas marcadas com "NÃO" em "Será oferecida". O departamento deve informar à Comissão de Graduação o motivo de não oferecê-las neste semestre.</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-justificativas', 'O que "Aguardando Justificativa" quer dizer') + '</div>';
+    if (!lista.length) return html + '<p class="texto-suave">Nenhuma disciplina marcada como não oferecida até agora.</p></section>';
+    html += '<div class="tabelaScroll"><table class="tabela tabelaAuditoria"><caption class="somenteLeitor">Disciplinas que não serão oferecidas</caption>' +
+      '<thead><tr><th scope="col">Disciplina</th><th scope="col">Aba</th><th scope="col">Marcada por</th><th scope="col">Situação</th><th scope="col"><span class="somenteLeitor">Ações</span></th></tr></thead><tbody>';
+    lista.forEach(function (item) {
+      var x = item.x, m = marcacaoNao(x[D.codigo]);
+      html += '<tr><td><span class="mono">' + esc(x[D.codigo]) + '</span> ' + esc(x[D.nome]) + (preenchido(x[D.tipo]) ? '<br><span class="pequeno texto-suave">' + esc(x[D.tipo]) + '</span>' : '') + '</td>' +
+        '<td data-rotulo="Aba">' + esc(item.aba) + '</td>' +
+        '<td data-rotulo="Marcada por">' + (m ? '<span class="pequeno">' + esc(m[E.email]) + '<br>' + esc(m[E.data]) + '</span>' : '<span class="pequeno texto-suave">sem registro na auditoria</span>') + '</td>' +
+        '<td data-rotulo="Situação">' + SELO_JUSTIFICATIVA + '</td>' +
+        '<td><button type="button" class="botao botao--texto" data-aud-historico="' + esc(x[D.codigo]) + '" aria-label="Histórico de ' + esc(x[D.codigo]) + '">Histórico</button></td></tr>';
+    });
+    return html + '</tbody></table></div></section>';
+  }
+
+  /**
+   * (1.8.0) Gráfico de barras horizontais de uma série (ranking de
+   * pessoas): uma cor (a primária do tema), rótulo e valor em texto, as
+   * 10 primeiras; o resto vira "e mais N pessoas". itens: [{email, n,
+   * ultima}]. acao(email) = HTML extra por linha (ex.: "ver edições").
+   */
+  function graficoBarras(id, titulo, unidade, itens, total, vazio, acao) {
+    var html = '<figure class="graficoBarras" aria-labelledby="' + id + 'Titulo"><figcaption class="graficoBarras__titulo" id="' + id + 'Titulo">' + esc(titulo) +
+      (total ? ' <span class="graficoBarras__total">' + total.toLocaleString('pt-BR') + ' ' + unidade(total) + '</span>' : '') + '</figcaption>';
+    if (!itens || !itens.length) return html + '<p class="pequeno texto-suave graficoBarras__vazio">' + esc(vazio) + '</p></figure>';
+    var max = itens[0].n || 1, mostrar = itens.slice(0, 10);
+    html += '<ol class="graficoBarras__lista" id="' + id + '">';
+    mostrar.forEach(function (it) {
+      var pct = Math.max(2, Math.round(it.n / max * 100));
+      html += '<li class="graficoBarras__item" title="' + esc(it.email + ': ' + it.n + ' ' + unidade(it.n) + ' · última: ' + it.ultima) + '">' +
+        '<span class="graficoBarras__rotulo"><span class="graficoBarras__nome">' + esc(it.email) + '</span><span class="graficoBarras__detalhe">última: ' + esc(it.ultima) + (acao ? ' ' + acao(it.email) : '') + '</span></span>' +
+        '<span class="graficoBarras__linha"><span class="graficoBarras__trilho" aria-hidden="true"><span class="graficoBarras__barra" style="width:' + pct + '%"></span></span>' +
+        '<span class="graficoBarras__valor">' + it.n.toLocaleString('pt-BR') + '<span class="somenteLeitor"> ' + unidade(it.n) + '</span></span></span></li>';
+    });
+    html += '</ol>';
+    if (itens.length > mostrar.length) html += '<p class="pequeno texto-suave">e mais ' + (itens.length - mostrar.length) + (itens.length - mostrar.length === 1 ? ' pessoa' : ' pessoas') + '.</p>';
+    return html + '</figure>';
+  }
+
+  function htmlGraficos() {
+    var d = est.dados;
+    var ab = d.aberturas ? d.aberturas.map(function (p) { return { email: p.email, n: p.aberturas, ultima: p.ultima }; }) : null;
+    var ed = (d.pessoas || []).map(function (p) { return { email: p.email, n: p.edicoes, ultima: p.ultima }; });
+    var totalEd = ed.reduce(function (s, p) { return s + p.n; }, 0);
+    return '<section class="cartao secaoAuditoria" aria-labelledby="audPessoasTitulo"><h3 class="secaoAuditoria__titulo" id="audPessoasTitulo">Quem mais abre e quem mais edita</h3>' +
+      '<p class="pequeno texto-suave">Aberturas da planilha das secretarias no navegador (o aplicativo do celular não é registrado) e edições feitas nela, por pessoa.</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-graficos', 'O que os gráficos mostram') + '</div>' +
+      '<div class="graficosAuditoria">' +
+      graficoBarras('audGrafAberturas', 'Quem mais abre a planilha', function (n) { return n === 1 ? 'abertura' : 'aberturas'; }, ab, d.totalAberturas,
+        ab ? 'Nenhuma abertura registrada ainda.' : 'As aberturas passam a ser registradas quando o Serviço de Graduação ativar esse registro.') +
+      graficoBarras('audGrafEdicoes', 'Quem mais edita', function (n) { return n === 1 ? 'edição' : 'edições'; }, ed, totalEd, 'Nenhuma edição das secretarias registrada ainda.',
+        function (email) { return '· <button type="button" class="botao botao--texto graficoBarras__acao" data-aud-pessoa="' + esc(email) + '">ver edições</button>'; }) +
+      '</div></section>';
+  }
+
+  function opcoes(valores, atual, rotuloTodos) {
+    return '<option value="">' + esc(rotuloTodos) + '</option>' + valores.map(function (v) {
+      return '<option value="' + esc(v) + '"' + (v === atual ? ' selected' : '') + '>' + esc(v) + '</option>';
+    }).join('');
+  }
+
+  function htmlEdicoes() {
+    var ed = est.dados.edicoes;
+    var abas = [], pessoas = [];
+    ed.forEach(function (l) {
+      if (l[E.aba] && abas.indexOf(l[E.aba]) < 0) abas.push(l[E.aba]);
+      if (l[E.origem] === 'Secretaria' && l[E.email] && pessoas.indexOf(l[E.email]) < 0) pessoas.push(l[E.email]);
+    });
+    abas.sort(); pessoas.sort();
+    var f = est.filtros;
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audEdicoesTitulo"><h3 class="secaoAuditoria__titulo" id="audEdicoesTitulo">Edições</h3>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-edicoes', 'Busca, origem e limite de edições') + '</div>' +
+      '<div class="filtrosAuditoria">' +
+        '<div class="campo campo--busca"><label class="campo__rotulo" for="audBusca">Buscar</label><input type="search" id="audBusca" autocomplete="off" placeholder="Código, disciplina, docente, campo, e-mail…" value="' + esc(f.busca) + '"></div>' +
+        '<div class="campo"><label class="campo__rotulo" for="audFiltroAba">Aba</label><select id="audFiltroAba" data-aud-filtro="aba">' + opcoes(abas, f.aba, 'Todas') + '</select></div>' +
+        '<div class="campo"><label class="campo__rotulo" for="audFiltroPessoa">Pessoa</label><select id="audFiltroPessoa" data-aud-filtro="pessoa">' + opcoes(pessoas, f.pessoa, 'Todas') + '</select></div>' +
+        '<div class="campo"><label class="campo__rotulo" for="audFiltroOrigem">Origem</label><select id="audFiltroOrigem" data-aud-filtro="origem">' +
+          '<option value="">Todas</option><option value="Secretaria"' + (f.origem === 'Secretaria' ? ' selected' : '') + '>Secretarias</option><option value="Sistema"' + (f.origem === 'Sistema' ? ' selected' : '') + '>Sistema</option></select></div>' +
+        '<button type="button" class="botao botao--texto" data-aud-limpar>Limpar filtros</button>' +
+      '</div>' +
+      '<p class="pequeno" id="audContagem" role="status"></p>' +
+      '<div id="audListaEdicoes"></div></section>';
+    return html;
+  }
+
+  function filtradas() {
+    var f = est.filtros, termo = normalizar(f.busca);
+    return est.dados.edicoes.filter(function (l) {
+      if (f.aba && l[E.aba] !== f.aba) return false;
+      if (f.pessoa && l[E.email] !== f.pessoa) return false;
+      if (f.origem && l[E.origem] !== f.origem) return false;
+      if (termo) {
+        var t = normalizar([l[E.email], l[E.aba], l[E.celula], l[E.campo], l[E.codigo], l[E.disciplina], l[E.antes], l[E.depois], l[E.tipo], l[E.obs]].join(' '));
+        if (t.indexOf(termo) < 0) return false;
+      }
+      return true;
+    });
+  }
+
+  function normalizar(t) { return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
+
+  function htmlMudanca(l) {
+    if (l[E.origem] === 'Sistema') return '<span class="pequeno">' + esc(l[E.obs]) + '</span>';
+    var antes = l[E.antes], depois = l[E.depois];
+    var html = '';
+    if (preenchido(antes)) html += '<span class="mudanca__antes"><span class="somenteLeitor">antes: </span>' + esc(antes) + '</span> <span aria-hidden="true">→</span> ';
+    html += preenchido(depois) ? '<span class="mudanca__depois"><span class="somenteLeitor">depois: </span>' + esc(depois) + '</span>' : '<span class="texto-suave">(apagado)</span>';
+    return html;
+  }
+
+  function linhaEdicao(l, comDisciplina) {
+    var onde = l[E.aba] ? esc(l[E.aba]) + (l[E.celula] ? ' · <span class="mono">' + esc(l[E.celula]) + '</span>' : '') : '—';
+    var disc = l[E.codigo] ? '<button type="button" class="linkDisciplina" data-aud-historico="' + esc(l[E.codigo]) + '"><span class="mono">' + esc(l[E.codigo]) + '</span></button> ' + esc(l[E.disciplina]) : '<span class="texto-suave">—</span>';
+    return '<tr><td class="auditoriaData">' + esc(l[E.data]) + '</td>' +
+      '<td data-rotulo="Quem">' + esc(l[E.origem] === 'Sistema' ? 'Sistema' : l[E.email]) + '</td>' +
+      '<td class="auditoriaOnde" data-rotulo="Onde">' + onde + '</td>' +
+      (comDisciplina ? '<td data-rotulo="Disciplina">' + disc + '</td>' : '') +
+      '<td data-rotulo="Campo">' + esc(l[E.campo] || l[E.tipo]) + (l[E.origem] === 'Secretaria' && l[E.campo] ? '<br><span class="pequeno texto-suave">' + esc(l[E.tipo]) + '</span>' : '') + '</td>' +
+      '<td data-rotulo="Mudança">' + htmlMudanca(l) + '</td></tr>';
+  }
+
+  function cabecalhoEdicoes(comDisciplina) {
+    return '<thead><tr><th scope="col">Quando</th><th scope="col">Quem</th><th scope="col">Onde</th>' + (comDisciplina ? '<th scope="col">Disciplina</th>' : '') +
+      '<th scope="col">Campo</th><th scope="col">Mudança</th></tr></thead>';
+  }
+
+  function renderizarEdicoes() {
+    var alvo = $('audListaEdicoes');
+    if (!alvo) return;
+    var lista = filtradas(), d = est.dados;
+    var total = d.edicoes.length;
+    $('audContagem').textContent = (lista.length === total ? total + (total === 1 ? ' edição' : ' edições') : lista.length + ' de ' + total + ' edições') +
+      (d.limitadas ? ' (as ' + total.toLocaleString('pt-BR') + ' mais recentes de ' + d.totalEdicoes.toLocaleString('pt-BR') + ')' : '') + '.';
+    if (!lista.length) { alvo.innerHTML = '<div class="vazio">' + (total ? 'Nenhuma edição com esses filtros.' : 'Nenhuma edição registrada nesta grade.') + '</div>'; return; }
+    var mostrar = lista.slice(0, est.limite);
+    alvo.innerHTML = '<div class="tabelaScroll"><table class="tabela tabelaAuditoria"><caption class="somenteLeitor">Edições da grade, da mais recente para a mais antiga</caption>' +
+      cabecalhoEdicoes(true) + '<tbody>' + mostrar.map(function (l) { return linhaEdicao(l, true); }).join('') + '</tbody></table></div>' +
+      (lista.length > mostrar.length ? '<p class="auditoriaMais"><button type="button" class="botao botao--secundario" data-aud-mais>Mostrar mais ' + Math.min(POR_PAGINA, lista.length - mostrar.length) + ' (de ' + (lista.length - mostrar.length) + ' restantes)</button></p>' : '');
+  }
+
+  function sincronizarFiltros() { renderizarEdicoes(); }
+
+  /*----------------------------------------------------------------
+    Histórico de uma disciplina
+  ----------------------------------------------------------------*/
+  function abrirHistorico(codigo) {
+    var lista = est.dados.edicoes.filter(function (l) { return l[E.codigo] === codigo; });
+    var nome = lista.length ? lista[0][E.disciplina] : '';
+    if (!nome && est.dados.andamento) est.dados.andamento.forEach(function (a) { a.disciplinas.forEach(function (x) { if (x[D.codigo] === codigo) nome = x[D.nome]; }); });
+    $('historicoAuditoriaTitulo').textContent = 'Histórico — ' + codigo;
+    $('historicoAuditoriaSubtitulo').textContent = nome + ' · ' + rotuloSemestre(est.dados.semestre);
+    $('historicoAuditoriaCorpo').innerHTML = lista.length
+      ? '<p class="pequeno">' + lista.length + (lista.length === 1 ? ' edição' : ' edições') + ', da mais recente para a mais antiga.</p><div class="tabelaScroll"><table class="tabela tabelaAuditoria"><caption class="somenteLeitor">Edições da disciplina ' + esc(codigo) + '</caption>' +
+        cabecalhoEdicoes(false) + '<tbody>' + lista.map(function (l) { return linhaEdicao(l, false); }).join('') + '</tbody></table></div>'
+      : '<div class="vazio">Nenhuma edição registrada para esta disciplina.</div>';
+    P.Modal.abrir($('modalHistoricoAuditoria'));
+  }
+
+  /*----------------------------------------------------------------
+    Eventos
+  ----------------------------------------------------------------*/
+  function ligar() {
+    var nomes = ['estrutura', 'auditoria'];
+    nomes.forEach(function (v, i) {
+      var b = $('visao-' + v);
+      b.addEventListener('click', function () { ativarVisao(v); });
+      b.addEventListener('keydown', function (ev) {
+        var j = null;
+        if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') j = 1 - i;
+        if (ev.key === 'Home') j = 0;
+        if (ev.key === 'End') j = 1;
+        if (j !== null) { ev.preventDefault(); ativarVisao(nomes[j], true); }
+      });
+    });
+    $('auditoriaAtualizar').addEventListener('click', function () { carregar(est.dados ? est.dados.semestre : undefined); });
+    $('auditoriaSemestre').addEventListener('change', function (ev) { carregar(ev.target.value); });
+
+    var raiz = $('visaoAuditoria');
+    raiz.addEventListener('click', function (ev) {
+      var alvo = ev.target.closest('button');
+      if (!alvo) return;
+      if (alvo.hasAttribute('data-aud-tentar')) { carregar(est.dados ? est.dados.semestre : undefined); return; }
+      if (alvo.hasAttribute('data-aud-aba')) {
+        est.aba = alvo.getAttribute('data-aud-aba');
+        var foco = est.aba;
+        renderizar();
+        var b = raiz.querySelector('[data-aud-aba="' + foco.replace(/"/g, '') + '"]');
+        if (b) b.focus();
+        return;
+      }
+      if (alvo.hasAttribute('data-aud-historico')) { abrirHistorico(alvo.getAttribute('data-aud-historico')); return; }
+      if (alvo.hasAttribute('data-aud-pessoa')) {
+        est.filtros = { busca: '', aba: '', pessoa: alvo.getAttribute('data-aud-pessoa'), origem: '' };
+        est.limite = POR_PAGINA;
+        renderizar();
+        var t = $('audEdicoesTitulo');
+        if (t) { t.setAttribute('tabindex', '-1'); t.focus(); }
+        return;
+      }
+      if (alvo.hasAttribute('data-aud-limpar')) {
+        est.filtros = { busca: '', aba: '', pessoa: '', origem: '' };
+        est.limite = POR_PAGINA;
+        renderizar();
+        if ($('audBusca')) $('audBusca').focus();
+        return;
+      }
+      if (alvo.hasAttribute('data-aud-mais')) {
+        var antes = est.limite;
+        est.limite += POR_PAGINA;
+        renderizarEdicoes();
+        var linhas = raiz.querySelectorAll('#audListaEdicoes tbody tr');
+        var proxima = linhas[antes] && linhas[antes].querySelector('td');
+        if (proxima) { proxima.setAttribute('tabindex', '-1'); proxima.focus(); }
+      }
+    });
+    raiz.addEventListener('input', function (ev) {
+      if (ev.target.id === 'audBusca') { est.filtros.busca = ev.target.value; est.limite = POR_PAGINA; renderizarEdicoes(); }
+    });
+    raiz.addEventListener('change', function (ev) {
+      var f = ev.target.getAttribute('data-aud-filtro');
+      if (f) { est.filtros[f] = ev.target.value; est.limite = POR_PAGINA; renderizarEdicoes(); }
+    });
+    document.addEventListener('click', function (ev) {
+      if (ev.target.closest('[data-fechar-historico-auditoria]')) P.Modal.fechar($('modalHistoricoAuditoria'));
+    });
+  }
+
+  ligar();
+  return { aoCarregarPainel: aoCarregarPainel, ativarVisao: ativarVisao, carregar: carregar, estado: est };
+})();
+</script>

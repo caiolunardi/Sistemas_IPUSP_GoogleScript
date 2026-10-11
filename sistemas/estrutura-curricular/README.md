@@ -1,19 +1,18 @@
-# Estrutura Curricular e Grade Horária — snapshot 1.8.0
+# Estrutura Curricular e Grade Horária — 1.10.0
 
-O pacote completo de código **1.8.0** foi recebido em 04/10/2026 junto com a documentação técnica.
+Web App interno do Serviço de Graduação do IPUSP. Importa a estrutura do Júpiter, mantém ajustes operacionais, prepara a grade e acompanha o preenchimento pelas secretarias.
 
-Nesta primeira etapa, o repositório central incorpora a documentação em `docs/sistemas/estrutura-curricular/`. O código-fonte, `Validacoes.gs` da planilha das secretarias e as suítes locais serão promovidos para esta pasta **depois da auditoria independente solicitada pelo responsável funcional**.
+A fonte desta pasta parte do pacote **1.9.3 auditado**, com a camada visual **1.10.0**. Abre com menu lateral e permite alternar para abas, com ícones Lucide, brilho discreto e elevação no hover. Os controladores de negócio e as regras do servidor permanecem iguais à baseline; `Codigo.gs` muda apenas a versão.
 
-Isso evita transformar um pacote ainda não auditado neste repositório em baseline canônica apenas por ter sido recebido.
+**Estado:** código e verificações locais versionados. Implantação e homologação desta versão no Google Workspace ainda pendentes. Código publicado no Git não atualiza automaticamente o `/exec`.
 
-Estrutura prevista após aprovação:
+| Pasta/arquivo | Conteúdo |
+|---|---|
+| [`src/`](src/) | 34 arquivos para a raiz do projeto Apps Script do Web App |
+| [`planilha-grade/`](planilha-grade/README.md) | `Validacoes.gs`, para o projeto vinculado à planilha das secretarias; implantação separada |
+| [`testes/`](testes/README.md) | simulador de Apps Script, testes de servidor e Chromium com dados sintéticos |
+| [`LICENCA_ICONES.txt`](LICENCA_ICONES.txt) | licença do catálogo Lucide Static 1.55.0 |
 
-```text
-sistemas/estrutura-curricular/
-  README.md
-  src/
-  planilha-grade/
-  testes/
-```
+Comece pelo [índice completo da documentação](../../docs/sistemas/estrutura-curricular/README.md). Para atualizar um projeto existente, siga [Instalação e atualização](../../docs/sistemas/estrutura-curricular/INSTALACAO_E_ATUALIZACAO.md). Para retomar o trabalho em outra conversa, leia [Manutenção e continuidade](../../docs/sistemas/estrutura-curricular/MANUTENCAO_E_CONTINUIDADE.md).
 
-Documentação: [`docs/sistemas/estrutura-curricular/`](../../docs/sistemas/estrutura-curricular/README.md).
+Os IDs operacionais são configurados fora do Git, por `ID_INDEX_SPREADSHEET_ID` e pelas chaves do índice. Este pacote não inclui `.clasp.json`, credenciais ou planilhas de produção.

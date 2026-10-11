@@ -1,0 +1,30 @@
+[envio 2027/1] grade "Grade Horária - 1º Semestre de 2026" → cópia "Grade Horária - 1º Semestre de 2026 (cópia de 01/10/2026 15:30)" na pasta de backup, índice: 2026/1 + ID da cópia; arquivo renomeado "Grade Horária - 1º semestre de 2027"; contagens {"PSA":21,"PSC":13,"PSE":18,"PST":22,"INTER":7,"OUTRAS":13}
+[envio 2027/1] linhas iguais ao esperado calculado do CSV em todas as abas: PSA 21, PSC 13, PSE 18, PST 22, Interdepartamentais 7, Outras Unidades 13; PSA1505 → "Avaliação da Inteligência – Para o Curso de enfermagem"
+[regra Psicólogo] 4701784 → Eletiva 9 (do Psicólogo, não Obrigatória 7 do Bacharelado); FSL0118 → Obrigatória 1
+[preservado] práticas (U–W), linhas 1–3, linha 1000, abas Informações/Disciplinas(oculta)/DataBase; B4:S999 vazio fora das linhas gravadas nas 6 abas
+[envio 2027/2] cópia do arquivo "Grade Horária - 1º semestre de 2027" registrada como 2027/1; 4705291 → Eletiva 8 (Psicólogo)
+[ajustes] nome/créditos ajustados (PSA1302), código ajustado (PSC1322 → PSC9322), oferta ajustada muda o tipo (PSA1301 → Livre), excluída (PSA1200) e 2º semestre ajustado (PSA1709) fora
+[recusa PREVIA_DESATUALIZADA] contagens diferentes das da prévia (grade mudou) — "A grade mudou depois da prévia que você conferiu (disciplinas, nomes, observações, tipos, semestres ideais ou créditos). Confira a prévia de novo e envie. A grade não foi enviada."
+[recusa PREVIA_INVALIDA] sem "esperado" e sem a identificação da prévia — "Antes de enviar, confira a prévia do envio: feche esta janela e clique de novo em "Enviar Grade para Preenchimento". A grade não foi enviada."
+[recusa PREVIA_INVALIDA] (1.8.12) chamada antiga só com as contagens certas, sem a identificação da prévia — "Antes de enviar, confira a prévia do envio: feche esta janela e clique de novo em "Enviar Grade para Preenchimento". A grade não foi enviada."
+[recusa DADOS_INVALIDOS] semestre ou ano inválidos — "Escolha o semestre e o ano da grade."
+[recusa NOME_SEM_SEMESTRE] nome atual sem semestre ("Grade Horária - Preenchimento") — "O nome atual da planilha da grade ("Grade Horária - Preenchimento") não diz de que semestre ela é, e a cópia de segurança precisa disso. Renomeie no Drive para o formato "Grade Horária - 1º semestre de AAAA" e envie de novo. Nada foi alterado."
+[recusa PLANILHA_GRADE_FORA_DO_PADRAO] aba "PST" não existe na planilha das secretarias — "A planilha da grade horária não está no formato esperado (aba "PST" não encontrada). Nada foi alterado."
+[recusa PLANILHA_GRADE_FORA_DO_PADRAO] cabeçalho diferente (PSC, coluna I3) — "A planilha da grade horária não está no formato esperado (aba "PSC", coluna I3: esperado "Semestre Ideal"). Nada foi alterado."
+[recusa CONFIGURACAO] chave GRADE_HORARIA_PREENCHIMENTO ausente no ID_INDEX — "A chave GRADE_HORARIA_PREENCHIMENTO não foi encontrada na planilha ID_INDEX."
+[recusa CONFIGURACAO] chave INDEX_GRADE_HORARIA_VERSOES_ANTERIORES ausente no ID_INDEX — "A chave INDEX_GRADE_HORARIA_VERSOES_ANTERIORES não foi encontrada na planilha ID_INDEX."
+[recusa CONFIGURACAO] chave BACKUP_GRADES_ANTERIORES ausente no ID_INDEX — "A chave BACKUP_GRADES_ANTERIORES não foi encontrada na planilha ID_INDEX."
+[recusa AUTORIZACAO_DRIVE] (1.5.1) projeto sem a autorização do Google Drive: AUTORIZACAO_DRIVE explica o que fazer (diagnosticarEnvioGrade no editor) — "O sistema ainda não tem a autorização do Google Drive, que a cópia de segurança exige. Quem implantou o sistema deve abrir o editor do Apps Script, escolher a função diagnosticarEnvioGrade, clicar em Executar e aceitar a permissão do Google Drive. Depois é só enviar de novo. Nada foi alterado."
+[recusa CONFIGURACAO] (1.5.1) pasta que a conta do sistema não enxerga: CONFIGURACAO pede para compartilhar com a conta que implantou — "Não foi possível abrir a pasta das cópias de segurança (chave BACKUP_GRADES_ANTERIORES na planilha ID_INDEX). O ID pode estar certo e a conta que executa o sistema (a que implantou o Web App) não ter acesso: compartilhe com ela, como Editor. Nada foi alterado."
+[recusa GRADE_VAZIA] grade vazia no semestre — "Não há disciplinas na grade do 1º semestre. Nada foi alterado."
+[recusa SO_ADMIN] leitor (não administrador) — "Só a equipe responsável pela estrutura curricular pode importar arquivos e alterar a estrutura."
+[recusa OCUPADO] trava ocupada — "Outra gravação está em andamento. Aguarde alguns segundos e tente de novo."
+[recusa BACKUP_FALHOU] falha ao copiar o arquivo: nada apagado nem gravado — "Não foi possível fazer a cópia de segurança da planilha da grade. Nada foi apagado nem gravado. Confira se a conta que executa o sistema pode editar a pasta das cópias e tente de novo."
+[recusa BACKUP_FALHOU] falha ao registrar no índice: a cópia fica na pasta, a grade não muda — "A cópia de segurança foi feita ("Grade Horária - 1º Semestre de 2026 (cópia de 01/10/2026 15:30)", na pasta das cópias), mas não foi possível registrá-la na planilha-índice das grades anteriores. Nada foi apagado nem gravado na planilha da grade. Tente de novo (uma nova cópia será feita)."
+[fim 1.6.2] fórmula avaliada: "08:00"+4 → 12:00; hora 08:00 (fração)+2 → 10:00; "-- : --" repetido; vazio sem início/créditos
+[fim 1.6.2] fórmula com #ERROR! → envio concluído + aviso "A coluna Horário de Fim (M) mostra erro em 94 linha(s) (PSA linha 4, PSA linha 5, PSA linh…"
+[separador 1.6.3] pt_BR → ";" de primeira, sem #ERROR!; com "," → #ERROR! (o erro real da 1.6.2)
+[envio incompleto] falha no setValues da aba PSE → ENVIO_INCOMPLETO citando a cópia; arquivo não renomeado; novo envio completa, com uma segunda cópia
+
+=== RESULTADO ===
+Executados: 32 (32 ok, 0 falha(s)); pulados: 0

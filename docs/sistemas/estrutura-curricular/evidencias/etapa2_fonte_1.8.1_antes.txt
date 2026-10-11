@@ -1,0 +1,172 @@
+# suíte: etapa2_fonte_1.8.1_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.1/src node testar_etapa2_csv_unidade.js --evidencias saida/evidencias_etapa2_fonte_1.8.1_antes.txt
+# data: 2026-10-07T21:27:10Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 8/31 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== R. Retrato das três falhas confirmadas (só registra; asserções em 1–13)
+  (retrato gravado nas evidências)
+
+== 1. Créditos negativos
+  ✗ 1a. créditos-aula negativo (-2; 0): linha recusada com motivo, nada gravado (nem com chamada direta) 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",-2,0,-30]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+  ✗ 1b. créditos-trabalho negativo (2; -1): linha recusada com motivo, nada gravado 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",2,-1,0]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+  ✗ 1c. os dois negativos: um motivo para cada campo 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",-2,-3,-120]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+
+== 2. Texto, conversão parcial, fração, NaN e Infinity
+  ✗ 2. "abc", "2abc", "2 créditos", "1/2", "1,5", "1.5", "NaN", "Infinity", "+2", "1e1": todas recusadas com o valor no motivo 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0510","Sintética PST0510",2,null,30],["PST0511","Sintética PST0511",2,null,30],["PST0512","Sintética PST0512",2,null,30],["PST0513","Sintética PST0513",2,null,30],["PST0514","Sintética PST0514",2,1.5,75],["PST0515","Sintética PST0515",2,1.5,75],["PST0516","Sintética PST0516",2,null,30],["PST0517","Sintética PST0517",2,null,30],["PST0518","Sintética PST0518",2,null,30],["PST0519","Sintética PST0519",2,null,30],["PST0599","Sintética PST0599",null,0,0]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+
+== 3. Zero e inteiros válidos
+  ✓ 3. 0/0, 2/1, 4/0, 0/2, "02" e "3,0": aceitos, CH = 15 × aula + 30 × trabalho, gravados e lidos iguais
+
+== 4. Ausências legítimas (comportamento anterior preservado)
+  ✓ 4. aula vazia, trabalho vazio, ambos vazios, só espaços e colunas finais ausentes: aceitos como antes
+
+== 5. Aspas não encerradas
+  ✗ 5a. aspas não encerradas no nome: recusada (não engole os campos seguintes), nada gravado 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0801","Nome sem fim;01/01/2026;;Semestral;2;0",null,null,null]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+  ✗ 5b. aspas não encerradas em campo numérico: recusada, nada gravado 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0802","Nome",null,null,null]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+  ✗ 5c. campo entre aspas que continua na linha seguinte (quebra de linha dentro de aspas): as duas linhas recusadas, nenhum fragmento vira disciplina 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = ["Linha 3: código \"duas linhas;01/01/2026;;Semestral;2;0\" não reconhecido"]; novas = [["PST0803","Nome em",null,null,null],["PST0804","Sintética PST0804",2,0,30]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+  ✗ 5d. aspas no meio de um campo sem aspas e texto depois das aspas de fechamento: recusadas (interpretação ambígua) 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0805","Nome apelido; x",2,0,30],["PST0806","Nomeresto",2,0,30]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+  ✗ 5e. mais colunas preenchidas que o cabeçalho (ex.: "1,5" num arquivo separado por vírgula): recusada 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0807","Nome",1,5,165],["PST0808","Nome com coluna final vazia",2,0,30]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+  ✗ 5f. cabeçalho com aspas não encerradas: erro amigável (PACOTE_INVALIDO), sem prévia 
+      Error: diferente: [true,null] ≠ [false,"PACOTE_INVALIDO"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:36:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:246:3
+
+== 6. Aspas válidas
+  ✓ 6. nome entre aspas com separador e com aspas escapadas (""): aceitos e gravados certos
+
+== 7. Separadores, BOM, LF/CRLF e linhas vazias
+  ✓ 7. ";", "," e tabulação; BOM; LF e CRLF; linhas vazias: mesma prévia
+
+== 8. Arquivo misto
+  ✗ 8. misto: motivos de todas as inválidas, só as válidas selecionáveis, inclusão só das válidas, registros anteriores intactos 
+      Error: diferente: ["PST1101","PST1102","PST1103","PST1104","PST1105","PST1106"] ≠ ["PST1101","PST1103"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:36:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:297:3
+  ✗ 8b. (1.8.3) misto só com créditos inválidos (sem problema de aspas): todas as válidas continuam oferecidas e gravadas 
+      Error: diferente: ["PST1111","PST1112","PST1113","PST1114","PST1115","PST1116"] ≠ ["PST1111","PST1113","PST1116"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:36:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:314:3
+
+== 9. Arquivo totalmente inválido
+  ✗ 9. só linhas inválidas: nenhuma nova, inclusão recusada, aba inalterada (inclusive após reabrir) 
+      Error: diferente: [3,1] ≠ [0,3]
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:36:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:333:3
+
+== 10. Chamada direta à inclusão
+  ✗ 10. incluir direto o código de uma linha inválida (com a assinatura da prévia): não grava esse código 
+      Error: só a válida: 4 ≠ 1
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:36:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:348:3
+
+== 11. Conhecidas e repetidas com conteúdo inválido
+  ✗ 11. código já na lista e código repetido no arquivo, com crédito inválido: aparecem como inválidos, não como "conhecida"/"repetida" 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST1302","Sintética PST1302",2,0,30]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+
+== 12. Fluxos válidos
+  ✓ 12a. importação válida normal
+  ✓ 12b. seleção parcial e reimportação: as não escolhidas continuam novas; as incluídas viram conhecidas
+
+== 13. Regressão da etapa 1 (amostra; a suíte completa da etapa 1 roda à parte)
+  ✗ 13. código corrigido + CSV com o código antigo: registro novo PST0391-2, o corrigido intacto; com crédito inválido, nada 
+      Error: linha 2 deveria estar entre as ignoradas; ignoradas = []; novas = [["PST0391","Sintética PST0391",-2,0,-30]]
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at recusada (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:84:3)
+
+== 14. (1.8.3) Campo entre aspas com várias linhas: nenhum fragmento vira disciplina
+  (retrato R2 gravado nas evidências)
+  ✗ 14a. reprodução exata: PST0999 (dentro do nome de PST0803) nunca é oferecida nem gravada, nem por chamada direta; PST0804 continua 
+      Error: PST0999 não pode ser oferecida
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:443:3
+  ✗ 14b. continuação com VÁRIAS linhas parecidas com registros válidos: nenhuma é oferecida; o registro real seguinte é 
+      Error: nenhum fragmento oferecido
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:463:3
+  ✗ 14c. campo aberto até o FIM do arquivo, com linhas posteriores parecidas com registros: nada a partir da abertura é lido; as anteriores continuam 
+      Error: nenhum fragmento oferecido
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:478:3
+  ✗ 14d. aspas escapadas ("") dentro do campo de várias linhas não fecham o campo (nenhum fechamento falso) 
+      Error: nenhum fragmento oferecido
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:492:3
+  ✗ 14e. campo de várias linhas que fecha de forma inválida (texto depois das aspas): fim do registro ambíguo, nada a partir dele é lido; o anterior continua 
+      Error: nada depois da abertura
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:502:3
+  ✗ 14f. cabeçalho com campo entre aspas que quebra a linha: arquivo recusado (PACOTE_INVALIDO), nada gravado 
+      Error: Este arquivo não parece ser a "Lista de disciplinas por unidade" do Júpiter: as colunas esperadas são Disciplina, Nome, Ativação, Desativação, Tipo, Créditos aula e Créditos trabalho. Confira o relatório escolhido (Júpiter › Estrutura Curricular › Relatórios › Lista de disciplinas por unidade).
+          at verdade (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:37:42)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:513:3
+
+== 15. (1.8.3) Inteiro com zeros decimais
+  ✓ 15a. 3.000, 3,000, 0002.0000, 0.0000 e 9999.000 (aula e trabalho): aceitos como inteiros, CH certa, gravados e relidos
+  ✓ 15b. CSV separado por vírgula: "3,000" corretamente entre aspas = 3
+  ✗ 15c. frações reais continuam recusadas (3.001, 2,0001, muitos zeros e depois um dígito) e acima de 9999 também 
+      Error: diferente: [{"codigo":"PST1531","nome":"Sintética PST1531","departamento":"PST","creditosAula":3.001,"creditosTrabalho":0,"ch":45.015,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1532","nome":"Sintética PST1532","departamento":"PST","creditosAula":0,"creditosTrabalho":2.0001,"ch":60.00300000000001,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1533","nome":"Sintética PST1533","departamento":"PST","creditosAula":1,"creditosTrabalho":0,"ch":15,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1534","nome":"Sintética PST1534","departamento":"PST","creditosAula":0,"creditosTrabalho":1e-23,"ch":3e-22,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1535","nome":"Sintética PST1535","departamento":"PST","creditosAula":10000,"creditosTrabalho":0,"ch":150000,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"},{"codigo":"PST1536","nome":"Sintética PST1536","departamento":"PST","creditosAula":-3,"creditosTrabalho":0,"ch":-45,"ativacao":"01/01/2026","desativacao":null,"tipo":"Semestral"}] ≠ []
+          at igual (/caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:36:80)
+          at /caminho/fonte-1.9.2/testes/testar_etapa2_csv_unidade.js:543:3
+
+8 ok, 23 falha(s)
+Falharam:
+  - 1a. créditos-aula negativo (-2; 0): linha recusada com motivo, nada gravado (nem com chamada direta)
+  - 1b. créditos-trabalho negativo (2; -1): linha recusada com motivo, nada gravado
+  - 1c. os dois negativos: um motivo para cada campo
+  - 2. "abc", "2abc", "2 créditos", "1/2", "1,5", "1.5", "NaN", "Infinity", "+2", "1e1": todas recusadas com o valor no motivo
+  - 5a. aspas não encerradas no nome: recusada (não engole os campos seguintes), nada gravado
+  - 5b. aspas não encerradas em campo numérico: recusada, nada gravado
+  - 5c. campo entre aspas que continua na linha seguinte (quebra de linha dentro de aspas): as duas linhas recusadas, nenhum fragmento vira disciplina
+  - 5d. aspas no meio de um campo sem aspas e texto depois das aspas de fechamento: recusadas (interpretação ambígua)
+  - 5e. mais colunas preenchidas que o cabeçalho (ex.: "1,5" num arquivo separado por vírgula): recusada
+  - 5f. cabeçalho com aspas não encerradas: erro amigável (PACOTE_INVALIDO), sem prévia
+  - 8. misto: motivos de todas as inválidas, só as válidas selecionáveis, inclusão só das válidas, registros anteriores intactos
+  - 8b. (1.8.3) misto só com créditos inválidos (sem problema de aspas): todas as válidas continuam oferecidas e gravadas
+  - 9. só linhas inválidas: nenhuma nova, inclusão recusada, aba inalterada (inclusive após reabrir)
+  - 10. incluir direto o código de uma linha inválida (com a assinatura da prévia): não grava esse código
+  - 11. código já na lista e código repetido no arquivo, com crédito inválido: aparecem como inválidos, não como "conhecida"/"repetida"
+  - 13. código corrigido + CSV com o código antigo: registro novo PST0391-2, o corrigido intacto; com crédito inválido, nada
+  - 14a. reprodução exata: PST0999 (dentro do nome de PST0803) nunca é oferecida nem gravada, nem por chamada direta; PST0804 continua
+  - 14b. continuação com VÁRIAS linhas parecidas com registros válidos: nenhuma é oferecida; o registro real seguinte é
+  - 14c. campo aberto até o FIM do arquivo, com linhas posteriores parecidas com registros: nada a partir da abertura é lido; as anteriores continuam
+  - 14d. aspas escapadas ("") dentro do campo de várias linhas não fecham o campo (nenhum fechamento falso)
+  - 14e. campo de várias linhas que fecha de forma inválida (texto depois das aspas): fim do registro ambíguo, nada a partir dele é lido; o anterior continua
+  - 14f. cabeçalho com campo entre aspas que quebra a linha: arquivo recusado (PACOTE_INVALIDO), nada gravado
+  - 15c. frações reais continuam recusadas (3.001, 2,0001, muitos zeros e depois um dígito) e acima de 9999 também
+
+# código de saída: 1  (duração: 1 s)
+# resultado do processo: defeito demonstrado como previsto (8/31)
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa2_fonte_1.8.1_antes.txt
+# interpretação: defeito demonstrado como previsto (8/31)

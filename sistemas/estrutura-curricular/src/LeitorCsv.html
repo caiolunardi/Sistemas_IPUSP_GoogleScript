@@ -1,0 +1,495 @@
+<script>
+/*
+ * =====================================================================
+ *  ESTRUTURA CURRICULAR — leitor do CSV "grade_curricular" do Júpiter
+ * =====================================================================
+ *
+ *  ORIGEM DO ARQUIVO
+ *  JupiterWeb › Estrutura Curricular › Relatórios, com o currículo
+ *  vigente, "Complemento" em branco (traz todas as habilitações), tipo
+ *  "Ativo", as três obrigatoriedades marcadas e formato CSV/Excel.
+ *
+ *  COMO O ARQUIVO VEM (conferido no arquivo real de 26/09/2026)
+ *  - Codificação Windows-1252/ISO-8859-1 (acentos em 1 byte), sem BOM.
+ *    Também aceitamos UTF-8, caso alguém salve de novo o arquivo.
+ *  - Separador ";". Quebra de linha LF. 18 colunas, com cabeçalho.
+ *  - A coluna R também se chama "Nome": por isso as colunas são lidas
+ *    pela POSIÇÃO, e o cabeçalho só é conferido.
+ *  - Currículo (C) vem como texto de 12 dígitos (470120100262). A
+ *    "notação científica" (4,7012E+11) é só a forma como o Excel MOSTRA
+ *    o número. Se o arquivo for aberto e SALVO no Excel, os dígitos se
+ *    perdem de verdade: nesse caso a importação é recusada com uma
+ *    mensagem explicando que é preciso baixar o CSV de novo.
+ *  - Uma disciplina com N requisitos ocupa N linhas seguidas, iguais
+ *    em tudo menos nas colunas O–R. Ela é contada UMA vez; as linhas
+ *    extras só acrescentam requisitos.
+ *  - A coluna AAC ("60 (1.45%)") NÃO é da disciplina: é a carga de
+ *    Atividades Acadêmicas Complementares exigida pelo CURRÍCULO,
+ *    repetida em todas as linhas. É gravada no currículo.
+ *  - A coluna "Versão" (Q) é a versão da disciplina REQUISITO (fica
+ *    vazia quando não há requisito). A versão da própria disciplina só
+ *    aparece no PDF; quando ela é requisito de outra, a versão é
+ *    aproveitada daqui.
+ *  - O CSV não informa se vários requisitos valem juntos ("e") ou em
+ *    alternativa ("ou"). O PDF informa.
+ *
+ *  USO
+ *    var pacote = LeitorCsvJupiter.lerBytes(uint8Array, "arquivo.csv");
+ *    if (EstruturaComum.temErro(pacote)) { ...mostrar erros... }
+ * =====================================================================
+ */
+var LeitorCsvJupiter = (function (C) {
+  'use strict';
+
+  // Cabeçalho esperado, na ordem das colunas A–R.
+  var CABECALHO = [
+    'Curso', 'Complemento', 'Currículo', 'Disciplina', 'Nome',
+    'Créditos aula', 'Créditos trabalho', 'AAC', 'CH', 'CE', 'CP', 'AACC',
+    'Tipo', 'Período ideal', 'Tipo de requisito', 'Disciplina requisito',
+    'Versão', 'Nome'
+  ];
+
+  // Posição de cada coluna (A = 0).
+  var COL = {
+    curso: 0, complemento: 1, curriculo: 2, disciplina: 3, nome: 4,
+    creditosAula: 5, creditosTrabalho: 6, aac: 7, ch: 8, ce: 9, cp: 10,
+    aacc: 11, tipo: 12, periodo: 13, tipoRequisito: 14, requisito: 15,
+    versaoRequisito: 16, nomeRequisito: 17
+  };
+
+  // Limite de mensagens repetidas do mesmo tipo (evita listas enormes).
+  var MAX_EXEMPLOS = 8;
+
+  /**
+   * Converte os bytes do arquivo em texto. Tenta UTF-8 "estrito"; se
+   * houver byte inválido para UTF-8, o arquivo é Windows-1252 (o padrão
+   * do Júpiter). Remove o BOM, se houver.
+   */
+  function decodificarBytes(bytes) {
+    var texto, codificacao;
+    try {
+      texto = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      codificacao = 'UTF-8';
+    } catch (e) {
+      texto = new TextDecoder('windows-1252').decode(bytes);
+      codificacao = 'Windows-1252';
+    }
+    if (texto.charCodeAt(0) === 0xFEFF) texto = texto.slice(1);
+    return { texto: texto, codificacao: codificacao };
+  }
+
+  /** Separador mais frequente na primeira linha, fora de aspas. */
+  function detectarSeparador(texto) {
+    var primeira = texto.split(/\r?\n/, 1)[0] || '';
+    var semAspas = primeira.replace(/"[^"]*"/g, '');
+    var candidatos = [';', ',', '\t'];
+    var melhor = ';', max = -1;
+    candidatos.forEach(function (s) {
+      var n = semAspas.split(s).length - 1;
+      if (n > max) { max = n; melhor = s; }
+    });
+    return melhor;
+  }
+
+  /**
+   * Divide o texto em linhas e campos seguindo o padrão CSV (RFC 4180):
+   * campos entre aspas podem conter o separador, quebras de linha e
+   * aspas duplicadas ("").
+   */
+  function dividirCsv(texto, sep) {
+    var linhas = [], campo = '', linha = [], i = 0, dentro = false, ch;
+    while (i < texto.length) {
+      ch = texto[i];
+      if (dentro) {
+        if (ch === '"') {
+          if (texto[i + 1] === '"') { campo += '"'; i += 2; continue; }
+          dentro = false; i++; continue;
+        }
+        campo += ch; i++; continue;
+      }
+      if (ch === '"' && campo === '') { dentro = true; i++; continue; }
+      if (ch === sep) { linha.push(campo); campo = ''; i++; continue; }
+      if (ch === '\r') { i++; continue; }
+      if (ch === '\n') { linha.push(campo); linhas.push(linha); linha = []; campo = ''; i++; continue; }
+      campo += ch; i++;
+    }
+    if (campo !== '' || linha.length) { linha.push(campo); linhas.push(linha); }
+    // Descarta linhas totalmente vazias (ex.: linha em branco no fim).
+    return linhas.filter(function (l) { return l.some(function (c) { return String(c).trim() !== ''; }); });
+  }
+
+  /** Título de coluna comparável: sem acento, minúsculo e com espaços únicos. */
+  function normalizarCabecalho(texto) {
+    return C.semAcento(texto).toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  /**
+   * Inteiro não negativo. "" → valorVazio. Aceita "3,0"/"3.0" (arquivo
+   * resalvo por planilha). Qualquer outra coisa → NaN (vira erro).
+   */
+  function lerInteiro(texto, valorVazio) {
+    var t = String(texto == null ? '' : texto).trim();
+    if (t === '') return valorVazio;
+    if (/^\d+$/.test(t)) return parseInt(t, 10);
+    if (/^\d+[.,]0+$/.test(t)) return parseInt(t, 10);
+    return NaN;
+  }
+
+  /**
+   * Código de disciplina. Devolve { codigo, corrigido } ou null.
+   * Um código numérico com 6 dígitos quase sempre é um código de 7
+   * dígitos que perdeu o zero à esquerda numa planilha: é completado,
+   * com aviso.
+   */
+  function lerCodigo(texto) {
+    var t = String(texto == null ? '' : texto).trim().toUpperCase();
+    if (C.RE_CODIGO_DISCIPLINA.test(t)) return { codigo: t, corrigido: false };
+    if (/^\d{6}$/.test(t)) return { codigo: '0' + t, corrigido: true };
+    return null;
+  }
+
+  /** "60 (1.45%)" → { horas: 60, percentual: 1.45 }. */
+  function lerAac(texto) {
+    var t = String(texto == null ? '' : texto).trim();
+    if (t === '') return { horas: null, percentual: null };
+    var m = /^(\d+(?:[.,]\d+)?)\s*(?:\(\s*(\d+(?:[.,]\d+)?)\s*%\s*\))?$/.exec(t);
+    if (!m) return null;
+    return {
+      horas: parseFloat(m[1].replace(',', '.')),
+      percentual: m[2] != null ? parseFloat(m[2].replace(',', '.')) : null
+    };
+  }
+
+  /** "100 - Psicologia - Bacharelado" → { codigo: "100", nome: "Psicologia - Bacharelado" }. */
+  function lerCodigoNome(texto) {
+    var t = C.normalizarEspacos(texto);
+    var m = /^(\d+)\s*-\s*(.+)$/.exec(t);
+    if (!m) return null;
+    return { codigo: String(parseInt(m[1], 10)), nome: m[2].trim() };
+  }
+
+  /** Guarda um exemplo por tipo de problema, sem repetir demais. */
+  function registrarProblema(mapa, chave, exemplo) {
+    if (!mapa[chave]) mapa[chave] = { total: 0, exemplos: [] };
+    mapa[chave].total++;
+    if (mapa[chave].exemplos.length < MAX_EXEMPLOS) mapa[chave].exemplos.push(exemplo);
+  }
+
+  /** Exemplos guardados de um tipo de problema, em uma linha ("…; … e mais 12"). */
+  function descreverExemplos(p) {
+    var txt = p.exemplos.join('; ');
+    if (p.total > p.exemplos.length) txt += ' … e mais ' + (p.total - p.exemplos.length);
+    return txt;
+  }
+
+  /**
+   * Lê o CSV já convertido em texto e devolve o pacote de importação.
+   * info = { arquivo, tamanhoBytes, codificacao }
+   */
+  function lerTexto(texto, info) {
+    info = info || {};
+    var pacote = C.novoPacote({
+      formato: 'csv',
+      leitura: 'csv',
+      arquivo: info.arquivo || '',
+      tamanhoBytes: info.tamanhoBytes || null,
+      codificacao: info.codificacao || null,
+      geradoEm: null
+    });
+
+    var sep = detectarSeparador(texto);
+    var linhas = dividirCsv(texto, sep);
+    if (!linhas.length) {
+      C.avisar(pacote, 'erro', 'CSV_VAZIO', 'O arquivo está vazio.');
+      return pacote;
+    }
+
+    // ---------- 1. Cabeçalho ----------
+    var cab = linhas[0].map(normalizarCabecalho);
+    var esperado = CABECALHO.map(normalizarCabecalho);
+    if (cab.length < CABECALHO.length) {
+      C.avisar(pacote, 'erro', 'CSV_COLUNAS',
+        'Este arquivo não parece ser o CSV "Grade Curricular" do Júpiter: ele tem ' + cab.length +
+        ' colunas e o relatório tem ' + CABECALHO.length + '.',
+        'Cabeçalho encontrado: ' + linhas[0].join(' | '));
+      return pacote;
+    }
+    var diferentes = [];
+    esperado.forEach(function (nome, i) { if (cab[i] !== nome) diferentes.push(String.fromCharCode(65 + i) + ' ("' + linhas[0][i] + '", esperado "' + CABECALHO[i] + '")'); });
+    if (diferentes.length > 3) {
+      C.avisar(pacote, 'erro', 'CSV_CABECALHO',
+        'O cabeçalho não corresponde ao CSV "Grade Curricular" do Júpiter.',
+        'Colunas diferentes: ' + diferentes.join('; '));
+      return pacote;
+    }
+    if (diferentes.length) {
+      C.avisar(pacote, 'aviso', 'CSV_CABECALHO_PARCIAL',
+        'Alguns nomes de coluna estão diferentes do esperado. A leitura seguiu a posição das colunas.',
+        diferentes.join('; '));
+    }
+
+    // ---------- 2. Linhas ----------
+    var problemas = {};           // tipo → { total, exemplos }
+    var curso = null;
+    var cursosVistos = {};
+    var curriculos = {};          // código → objeto do pacote
+    var aacPorCurriculo = {};     // código → { "60|1.45": n }
+    var disciplinas = {};         // código → objeto do pacote
+    var assinaturaDisciplina = {}; // código → texto com os atributos (conferência)
+    var vinculos = {};            // curriculo|disciplina → vínculo
+    var assinaturaVinculo = {};
+    var requisitosVistos = {};    // curriculo|disciplina|requisito
+    var versoesPorRequisito = {}; // código → { versão: n }
+    var ordem = [];               // ordem de chegada dos vínculos
+    var linhasLidas = 0, linhasDeRequisitoExtra = 0;
+
+    for (var n = 1; n < linhas.length; n++) {
+      var L = linhas[n];
+      var numLinha = n + 1; // número da linha como aparece numa planilha
+      linhasLidas++;
+      while (L.length < CABECALHO.length) L.push('');
+      // Texto de uma coluna desta linha, pela posição (COL), com espaços normalizados.
+      var campo = function (nome) { return C.normalizarEspacos(L[COL[nome]]); };
+
+      // Curso (A)
+      var cursoLido = lerCodigoNome(campo('curso'));
+      if (!cursoLido) { registrarProblema(problemas, 'curso', 'linha ' + numLinha + ': "' + campo('curso') + '"'); continue; }
+      cursosVistos[cursoLido.codigo] = cursoLido.nome;
+      if (!curso) curso = cursoLido;
+
+      // Currículo (C)
+      var curTexto = campo('curriculo');
+      if (/^\d+(?:[.,]\d+)?[eE][+]?\d+$/.test(curTexto)) {
+        registrarProblema(problemas, 'curriculoCientifico', 'linha ' + numLinha + ': "' + curTexto + '"');
+        continue;
+      }
+      var cur = C.decomporCurriculo(curTexto);
+      if (!cur) { registrarProblema(problemas, 'curriculo', 'linha ' + numLinha + ': "' + curTexto + '"'); continue; }
+      if (cur.curso !== cursoLido.codigo) {
+        registrarProblema(problemas, 'curriculoCurso', 'linha ' + numLinha + ': currículo ' + cur.codigo + ', curso ' + cursoLido.codigo);
+      }
+
+      // Complemento (B) — conferido com os dígitos 6–9 do currículo.
+      var comp = lerCodigoNome(campo('complemento'));
+      if (comp && comp.codigo !== cur.habilitacao) {
+        registrarProblema(problemas, 'complemento', 'linha ' + numLinha + ': complemento ' + comp.codigo + ', currículo ' + cur.codigo);
+      }
+      if (!curriculos[cur.codigo]) {
+        curriculos[cur.codigo] = {
+          codigo: cur.codigo,
+          habilitacao: cur.habilitacao,
+          habilitacaoNome: comp && comp.codigo === cur.habilitacao ? comp.nome : null,
+          ano: cur.ano,
+          semestre: cur.semestre,
+          situacao: null,
+          aacHoras: null,
+          aacPercentual: null,
+          info: null
+        };
+        aacPorCurriculo[cur.codigo] = {};
+      }
+
+      // AAC (H) — do currículo.
+      var aac = lerAac(campo('aac'));
+      if (!aac) registrarProblema(problemas, 'aac', 'linha ' + numLinha + ': "' + campo('aac') + '"');
+      else if (aac.horas != null) {
+        var chaveAac = aac.horas + '|' + (aac.percentual == null ? '' : aac.percentual);
+        aacPorCurriculo[cur.codigo][chaveAac] = (aacPorCurriculo[cur.codigo][chaveAac] || 0) + 1;
+      }
+
+      // Disciplina (D) e nome (E)
+      var cod = lerCodigo(campo('disciplina'));
+      if (!cod) { registrarProblema(problemas, 'codigo', 'linha ' + numLinha + ': "' + campo('disciplina') + '"'); continue; }
+      if (cod.corrigido) registrarProblema(problemas, 'codigoZero', 'linha ' + numLinha + ': ' + campo('disciplina') + ' → ' + cod.codigo);
+      var nome = campo('nome');
+      if (!nome) registrarProblema(problemas, 'nome', 'linha ' + numLinha + ' (' + cod.codigo + ')');
+
+      // Números (F, G, I, J, K, L) e período (N)
+      var num = {
+        creditosAula: lerInteiro(L[COL.creditosAula], NaN),
+        creditosTrabalho: lerInteiro(L[COL.creditosTrabalho], NaN),
+        ch: lerInteiro(L[COL.ch], NaN),
+        ce: lerInteiro(L[COL.ce], 0),
+        cp: lerInteiro(L[COL.cp], 0),
+        atpa: lerInteiro(L[COL.aacc], 0),
+        periodoIdeal: lerInteiro(L[COL.periodo], NaN)
+      };
+      var invalidos = Object.keys(num).filter(function (k) { return isNaN(num[k]); });
+      if (invalidos.length) {
+        registrarProblema(problemas, 'numero', 'linha ' + numLinha + ' (' + cod.codigo + '): ' + invalidos.join(', '));
+        continue;
+      }
+      if (num.periodoIdeal < 1 || num.periodoIdeal > 20) {
+        registrarProblema(problemas, 'periodo', 'linha ' + numLinha + ' (' + cod.codigo + '): ' + num.periodoIdeal);
+        continue;
+      }
+      // Tipo (M)
+      var tipo = C.tipoDeTexto(campo('tipo'));
+      if (!tipo) { registrarProblema(problemas, 'tipo', 'linha ' + numLinha + ' (' + cod.codigo + '): "' + campo('tipo') + '"'); continue; }
+
+      // ----- Disciplina (catálogo único por código) -----
+      var assin = [nome, num.creditosAula, num.creditosTrabalho, num.ch, num.ce, num.cp, num.atpa].join('|');
+      if (!disciplinas[cod.codigo]) {
+        disciplinas[cod.codigo] = {
+          codigo: cod.codigo, nome: nome, versao: null, versaoOrigem: null,
+          creditosAula: num.creditosAula, creditosTrabalho: num.creditosTrabalho,
+          ch: num.ch, ce: num.ce, cp: num.cp, ext: null, atpa: num.atpa
+        };
+        assinaturaDisciplina[cod.codigo] = assin;
+        // Regra USP: 1 crédito-aula = 15 h; 1 crédito-trabalho = 30 h.
+        if (num.ch !== 15 * num.creditosAula + 30 * num.creditosTrabalho) {
+          registrarProblema(problemas, 'cargaHoraria', cod.codigo + ': CH ' + num.ch + ' h; créditos ' + num.creditosAula + ' aula + ' + num.creditosTrabalho + ' trabalho');
+        }
+      } else if (assinaturaDisciplina[cod.codigo] !== assin) {
+        registrarProblema(problemas, 'disciplinaDivergente', cod.codigo + ' (linha ' + numLinha + ')');
+      }
+
+      // ----- Vínculo (disciplina no currículo) -----
+      var chaveV = cur.codigo + '|' + cod.codigo;
+      var assinV = tipo + '|' + num.periodoIdeal + '|' + assin;
+      if (!vinculos[chaveV]) {
+        vinculos[chaveV] = { curriculo: cur.codigo, disciplina: cod.codigo, tipo: tipo, periodoIdeal: num.periodoIdeal };
+        assinaturaVinculo[chaveV] = assinV;
+        ordem.push(chaveV);
+      } else {
+        linhasDeRequisitoExtra++;
+        if (assinaturaVinculo[chaveV] !== assinV) {
+          registrarProblema(problemas, 'linhaRepetidaDivergente', cod.codigo + ' no currículo ' + cur.codigo + ' (linha ' + numLinha + ')');
+        }
+      }
+
+      // ----- Requisito (O–R) -----
+      var tipoReq = campo('tipoRequisito');
+      var codReqTexto = campo('requisito');
+      if (codReqTexto) {
+        var codReq = lerCodigo(codReqTexto);
+        if (!codReq) { registrarProblema(problemas, 'codigoRequisito', 'linha ' + numLinha + ': "' + codReqTexto + '"'); continue; }
+        var chaveR = chaveV + '|' + codReq.codigo;
+        if (requisitosVistos[chaveR]) {
+          registrarProblema(problemas, 'requisitoRepetido', cod.codigo + ' → ' + codReq.codigo + ' (linha ' + numLinha + ')');
+          continue;
+        }
+        var versaoReq = lerInteiro(L[COL.versaoRequisito], null);
+        if (isNaN(versaoReq)) versaoReq = null;
+        requisitosVistos[chaveR] = {
+          curriculo: cur.codigo,
+          disciplina: cod.codigo,
+          requisito: codReq.codigo,
+          versaoRequisito: versaoReq,
+          nomeRequisito: campo('nomeRequisito') || null,
+          tipoRequisito: tipoReq || 'Requisito',
+          grupo: null
+        };
+        if (versaoReq != null) {
+          versoesPorRequisito[codReq.codigo] = versoesPorRequisito[codReq.codigo] || {};
+          versoesPorRequisito[codReq.codigo][versaoReq] = (versoesPorRequisito[codReq.codigo][versaoReq] || 0) + 1;
+        }
+      } else if (tipoReq) {
+        registrarProblema(problemas, 'requisitoSemCodigo', 'linha ' + numLinha + ' (' + cod.codigo + ')');
+      }
+    }
+
+    // ---------- 3. Mensagens (agrupadas por tipo de problema) ----------
+    var MENSAGENS = {
+      curriculoCientifico: ['erro', 'O número do currículo está em notação científica (ex.: 4,7012E+11). Isso acontece quando o arquivo é aberto e salvo no Excel, e os dígitos se perdem. Baixe o CSV de novo no Júpiter e importe o arquivo original, sem abrir e salvar em planilha.'],
+      curriculo: ['erro', 'O número do currículo precisa ter 12 dígitos (ex.: 470120100262).'],
+      curriculoCurso: ['aviso', 'O currículo não começa com o código do curso.'],
+      complemento: ['aviso', 'O complemento (habilitação) não bate com os dígitos 6 a 9 do currículo. Foi usada a habilitação do número do currículo.'],
+      curso: ['erro', 'Não foi possível ler o curso (coluna A).'],
+      aac: ['aviso', 'Não foi possível ler a coluna AAC.'],
+      codigo: ['erro', 'Código de disciplina inválido (coluna D).'],
+      codigoZero: ['aviso', 'Código numérico com 6 dígitos: foi completado com o zero à esquerda (a planilha costuma apagá-lo).'],
+      nome: ['aviso', 'Disciplina sem nome.'],
+      numero: ['erro', 'Número inválido em créditos, carga horária ou período.'],
+      periodo: ['erro', 'Período ideal fora do intervalo 1–20.'],
+      cargaHoraria: ['aviso', 'Carga horária diferente de 15 h por crédito-aula + 30 h por crédito-trabalho. Confira no Júpiter.'],
+      tipo: ['erro', 'Tipo desconhecido (esperado: Obrigatórias, Optativas Eletivas ou Optativas Livres).'],
+      disciplinaDivergente: ['erro', 'A mesma disciplina aparece com dados diferentes (nome, créditos ou cargas) em linhas diferentes.'],
+      linhaRepetidaDivergente: ['erro', 'Linhas repetidas da mesma disciplina no mesmo currículo têm tipo ou período diferentes.'],
+      codigoRequisito: ['erro', 'Código de disciplina requisito inválido (coluna P).'],
+      requisitoRepetido: ['aviso', 'Requisito repetido na mesma disciplina: considerado uma vez.'],
+      requisitoSemCodigo: ['aviso', '"Tipo de requisito" preenchido sem o código do requisito.']
+    };
+    Object.keys(problemas).forEach(function (k) {
+      var m = MENSAGENS[k] || ['aviso', 'Problema na leitura: ' + k];
+      C.avisar(pacote, m[0], 'CSV_' + k.toUpperCase(), m[1] + (problemas[k].total > 1 ? ' (' + problemas[k].total + ' ocorrências)' : ''), descreverExemplos(problemas[k]));
+    });
+
+    var codigosCurso = Object.keys(cursosVistos);
+    if (codigosCurso.length > 1) {
+      C.avisar(pacote, 'erro', 'CSV_VARIOS_CURSOS', 'O arquivo tem mais de um curso (' + codigosCurso.join(', ') + '). Exporte um curso por vez.');
+    }
+
+    // ---------- 4. Montagem do pacote ----------
+    pacote.curso = curso;
+    Object.keys(curriculos).sort().forEach(function (codigo) {
+      var c = curriculos[codigo];
+      // AAC do currículo: o valor mais frequente (deve ser um só).
+      var contagem = aacPorCurriculo[codigo], chaves = Object.keys(contagem);
+      if (chaves.length) {
+        chaves.sort(function (a, b) { return contagem[b] - contagem[a]; });
+        var partes = chaves[0].split('|');
+        c.aacHoras = parseFloat(partes[0]);
+        c.aacPercentual = partes[1] === '' ? null : parseFloat(partes[1]);
+        if (chaves.length > 1) {
+          C.avisar(pacote, 'aviso', 'CSV_AAC_VARIAVEL', 'A coluna AAC tem valores diferentes dentro do currículo ' + codigo + '. Foi usado o mais frequente (' + chaves[0].replace('|', ' h, ') + '%).');
+        }
+      }
+      pacote.curriculos.push(c);
+    });
+
+    // Versão da disciplina aproveitada de onde ela aparece como requisito.
+    Object.keys(disciplinas).forEach(function (codigo) {
+      var v = versoesPorRequisito[codigo];
+      if (!v) return;
+      var versoes = Object.keys(v);
+      if (versoes.length === 1) {
+        disciplinas[codigo].versao = parseInt(versoes[0], 10);
+        disciplinas[codigo].versaoOrigem = 'csv-requisito';
+      }
+    });
+
+    pacote.disciplinas = Object.keys(disciplinas).sort().map(function (k) { return disciplinas[k]; });
+    pacote.vinculos = ordem.map(function (k) { return vinculos[k]; });
+    pacote.requisitos = Object.keys(requisitosVistos).map(function (k) { return requisitosVistos[k]; });
+
+    // Requisitos que não estão na própria estrutura (informativo).
+    var fora = {};
+    pacote.requisitos.forEach(function (r) { if (!disciplinas[r.requisito]) fora[r.requisito] = r.nomeRequisito || ''; });
+    var listaFora = Object.keys(fora);
+    if (listaFora.length) {
+      C.avisar(pacote, 'info', 'CSV_REQUISITO_FORA',
+        listaFora.length === 1 ? 'Um requisito não faz parte desta estrutura curricular.' : listaFora.length + ' requisitos não fazem parte desta estrutura curricular.',
+        listaFora.map(function (k) { return k + (fora[k] ? ' — ' + fora[k] : ''); }).join('; '));
+    }
+
+    if (!pacote.vinculos.length && !C.temErro(pacote)) {
+      C.avisar(pacote, 'erro', 'CSV_SEM_DISCIPLINAS', 'Nenhuma disciplina foi encontrada no arquivo.');
+    }
+
+    pacote.resumoLeitura = C.resumir(pacote);
+    pacote.resumoLeitura.linhasLidas = linhasLidas;
+    pacote.resumoLeitura.linhasDeRequisito = linhasDeRequisitoExtra;
+    pacote.resumoLeitura.separador = sep === '\t' ? 'tabulação' : sep;
+    return pacote;
+  }
+
+  /** Lê os bytes (Uint8Array/ArrayBuffer) do arquivo escolhido. */
+  function lerBytes(bytes, nomeArquivo) {
+    var dados = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    var dec = decodificarBytes(dados);
+    return lerTexto(dec.texto, { arquivo: nomeArquivo, tamanhoBytes: dados.length, codificacao: dec.codificacao });
+  }
+
+  return {
+    CABECALHO: CABECALHO,
+    lerBytes: lerBytes,
+    lerTexto: lerTexto,
+    // expostos para testes
+    _decodificarBytes: decodificarBytes,
+    _dividirCsv: dividirCsv,
+    _lerAac: lerAac,
+    _lerCodigo: lerCodigo
+  };
+})(EstruturaComum);
+</script>

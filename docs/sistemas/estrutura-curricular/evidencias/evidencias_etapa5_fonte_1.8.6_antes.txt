@@ -1,0 +1,191 @@
+=== Etapa 5 — ações em lote mistas (estrutura + outros cursos) ===
+Fonte testada: DIR_SRC (fonte indicada na linha de comando)
+Versão declarada na fonte: 1.8.6
+
+--- R-excluir (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} · painel {"estrutura:PST1001":"E","outros:PST2001":"G"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} ≠ {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false}
+
+--- R-excluir (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} · painel {"estrutura:PST1001":"E","outros:PST2001":"G"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} ≠ {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false}
+
+--- R-restaurar (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"E"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false} ≠ {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false}
+
+--- R-restaurar (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"E"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"-","outros:PST2001":"E","pendente":false} ≠ {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false}
+
+--- R-adicionar (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false} · painel {"estrutura:PST1001":"G","outros:PST2001":"-"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false} ≠ {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false}
+
+--- R-adicionar (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false} · painel {"estrutura:PST1001":"G","outros:PST2001":"-"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"G","outros:PST2001":"-","pendente":false} ≠ {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false}
+
+--- R-remover (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"G"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false} ≠ {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false}
+
+--- R-remover (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  antes: {"estrutura:PST1001":"G","outros:PST2001":"G","pendente":false} · Ajustes gravado (instante): {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false}
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+  persistido depois da chamada: {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false}
+  contexto novo + obterDadosPainel: persistido {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false} · painel {"estrutura:PST1001":"-","outros:PST2001":"G"} · lotePendente "(campo inexistente)"
+RESULTADO: FALHOU — persistido depois da reabertura: {"estrutura:PST1001":"-","outros:PST2001":"G","pendente":false} ≠ {"estrutura:PST1001":"-","outros:PST2001":"-","pendente":false}
+
+--- 1a. misto com 2+2 itens: excluir, restaurar, adicionar, remover — contagens, persistência, sem registro, contexto novo igual
+RESULTADO: FALHOU — diferente: [null,4,0,0,[]] ≠ ["concluido",4,0,0,[]]
+
+--- 1b. homogêneo (só estrutura, só outros) e um item (ficha): as quatro ações
+RESULTADO: ok
+
+--- 2a. registro do pedido recusado (partes): NAO_SALVO, nada alterado, nada pendente, nenhuma parte solta
+  resposta: {"ok":true,"codigo":null,"resultado":null,"erro":null,"lote":null}
+RESULTADO: FALHOU — falha disparada: undefined ≠ 1
+
+--- 2b. cabeçalho do registro recusado (antes de aplicar): NAO_SALVO; partes limpas
+RESULTADO: FALHOU — diferente: undefined ≠ 1
+
+--- 2c. falha (persistente) ANTES da primeira escrita de dados: pendente "nenhuma gravada ainda", pedido registrado; contexto novo conclui
+  resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'lote')
+
+--- 2d. falha (persistente) antes da escrita SEGUINTE, 2+2 itens: grupos identificam cada item (estrutura confirmados, outros faltam)
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'lote')
+
+--- 3a. escrita de Ajustes aplicada e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} · resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+RESULTADO: FALHOU — diferente: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} ≠ {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false}
+
+--- 3b. ÚLTIMA escrita (outros cursos) aplicada e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'resultado')
+
+--- 3c. cabeçalho do registro gravado e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: null · resposta: {"ok":true,"codigo":null,"resultado":null,"erro":null,"lote":null}
+RESULTADO: FALHOU — falha disparada: undefined ≠ 1
+
+--- 3d. flush depois das escritas: conferência na planilha; nova tentativa só do que falta; concluído
+  persistido no instante do erro: {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false} · resposta: {"ok":false,"codigo":"INESPERADO","resultado":null,"erro":"Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.","lote":null}
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'resultado')
+
+--- 4a. encerrada logo depois da escrita de Ajustes: a foto tem o parcial + o registro; a abertura do painel conclui
+  na foto: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} · depois da abertura: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} · lotePendente undefined
+RESULTADO: FALHOU — parcial registrado: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} ≠ {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":true}
+
+--- 4b. encerrada entre as escritas e reaberta por OUTRA gravação: o lote é concluído antes e vem em recuperadoLote (separado das contagens do novo pedido)
+  resposta: {"adicionadas":1}
+RESULTADO: FALHOU — diferente: {"estrutura:PST1001":"E","outros:PST2001":"G","estrutura:PST1002":"G","pendente":false} ≠ {"estrutura:PST1001":"E","outros:PST2001":"E","estrutura:PST1002":"G","pendente":false}
+
+--- 4c. encerrada logo depois do registro (antes de qualquer dado): contexto novo conclui o pedido inteiro
+RESULTADO: FALHOU — Cannot set properties of null (setting 'chaves')
+
+--- 5. recuperação que falha de novo: pendência identificada (mesmo id), sem falsa confirmação; "Concluir" depois conclui
+RESULTADO: FALHOU — Cannot read properties of null (reading 'id')
+
+--- 6a. repetir o pedido já concluído: sem linhas nem identidades duplicadas; inclusão repetida = jaEstavam
+RESULTADO: ok
+
+--- 6b. conclusão repetida (duas reaberturas): a segunda não escreve nada
+RESULTADO: FALHOU — diferente: [0,{"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false}] ≠ [0,{"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false}]
+
+--- 6c. ação posterior OPOSTA: o pedido antigo é concluído antes e o novo vale por último; reabrir não reaplica o antigo
+RESULTADO: FALHOU — diferente: "INESPERADO" ≠ "LOTE_PENDENTE"
+
+--- 7. excluir itens na grade tira da grade; restaurar não reinclui (também depois de uma retomada)
+RESULTADO: FALHOU — diferente: {"estrutura:PST1001":"E","outros:PST2001":"G","pendente":false} ≠ {"estrutura:PST1001":"E","outros:PST2001":"E","pendente":false}
+
+--- 8. inclusão com elegíveis, excluída, já incluída e sem semestre: contagens e listas; iguais depois de uma pendência e da recuperação
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'lote')
+
+--- 9. lista vazia, origem inválida, itens repetidos e alvo inexistente no FIM: validações atuais; nada gravado nem registrado
+RESULTADO: ok
+
+--- 10. código efetivo alterado (estrutura e outros) + código antigo reaparecendo como registro novo: retomada pela chave original, o outro registro intacto
+RESULTADO: FALHOU — Cannot read properties of null (reading 'acao')
+
+--- 11. campos fora da ação, observações, outras linhas e colunas extras (Date, texto ISO, número, booleano, vazio) intactos depois de retomar; linha de ajuste que fica vazia segue a regra (removida)
+  extras antes  (Ajustes PST1001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+  extras depois (Ajustes PST1001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+  extras antes  (outros PST2001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+  extras depois (outros PST2001): {"Data livre":{"Date":1790856000000},"Texto ISO":{"string":"2026-10-01"},"Número":{"number":42},"Booleano":{"boolean":true},"Vazio":{"string":""}}
+RESULTADO: FALHOU — diferente: {"estrutura:PST1001":"E","outros:PST2001":"-","estrutura:PSE1005":"E","pendente":false} ≠ {"estrutura:PST1001":"E","outros:PST2001":"E","estrutura:PSE1005":"E","pendente":false}
+
+--- 12a. salvamento individual pendente: o lote é recusado enquanto ele não conclui; depois, ele é concluído ANTES do lote (recuperado com a observação)
+RESULTADO: ok
+
+--- 12b. lote pendente: salvamento CONFLITANTE (mesma disciplina) recusado com a ação pendente identificada; depois, lote concluído antes e o salvamento por último
+RESULTADO: FALHOU — diferente: "INESPERADO" ≠ "LOTE_PENDENTE"
+
+--- 12c. os dois registros ao mesmo tempo (montado no teste): um não apaga nem esconde o outro; o individual conclui e vem em "recuperado" mesmo com o lote recusado
+RESULTADO: FALHOU — diferente: "INESPERADO" ≠ "LOTE_PENDENTE"
+
+--- 12d. ordem dos dados no painel: lote recuperado aplicado ANTES do pedido mais recente (adicionar pendente, depois remover)
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'acao')
+
+--- 13. outro pedido aceito: recuperadoLote sem preparação (a resposta traz); outro pedido recusado: recuperadoLote com a preparação lida
+RESULTADO: FALHOU — diferente: [false,false,true] ≠ [true,false,true]
+
+--- 14a. falha ANTES da remoção do registro (persistente): pendente "todas já como pedido"; contexto novo conclui SEM reescrever
+  resposta: {"ok":true,"codigo":null,"resultado":null,"erro":null,"lote":null}
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'confirmados')
+
+--- 14b. remoção aplicada e exceção: conferido → concluído (nunca pendente inexistente); repetir não duplica
+  registro no instante do erro: undefined · resposta: {"ok":true,"codigo":null,"resultado":null,"erro":null,"lote":null}
+RESULTADO: FALHOU — exceção com o registro já removido: [null,null] ≠ [1,null]
+
+--- 14c. flush DEPOIS da remoção: conferido → concluído (nunca pendente inexistente); repetir não duplica
+  registro no instante do erro: undefined · resposta: {"ok":true,"codigo":null,"resultado":null,"erro":null,"lote":null}
+RESULTADO: FALHOU — exceção com o registro já removido: [null,null] ≠ [1,null]
+
+--- 14d. remoção feita + leitura falhando na conferência: LOTE_INCERTO identificado (sem confirmar, sem "nada gravado", sem recriar o registro); contexto novo e repetição corretos
+  resposta: {"ok":true,"codigo":null,"resultado":null,"erro":null,"lote":null} · leituras recusadas: undefined
+RESULTADO: FALHOU — falha de leitura disparada
+
+--- 14e. "Concluir ação pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído
+RESULTADO: FALHOU — a.ctx.resolverLotePendente is not a function
+
+--- 14f. registro ilegível (parte faltando): não é tratado como inexistente nem aplicado; recusa identificada
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'estado')
+
+--- 15a. com o lote pendente (sem concluir): importação, recomeço, envio da grade, salvar, outros cursos e lista por unidade recusados com a pendência; nada muda
+  códigos: ["importacao=undefined","recomeco=undefined","envio=PREVIA_DESATUALIZADA","salvar=DISCIPLINA_NAO_ENCONTRADA","outros=INESPERADO","unidade=PREVIA_DESATUALIZADA"]
+RESULTADO: FALHOU — importacao: [true,null] ≠ [false,"LOTE_PENDENTE"]
+
+--- 15b. leitor: não grava (ações em lote recusadas), vê só que há algo pendente; o registro fica para o administrador, que conclui
+RESULTADO: FALHOU — leitor.ctx.resolverLotePendente is not a function
+
+--- 15c. base mudou (outra importação ativa) depois do registro: não aplica; "Descartar" só nesse caso e com o id; descartar NÃO desfaz o já gravado
+RESULTADO: FALHOU — Cannot read properties of undefined (reading 'mensagem')
+
+--- 17. lote misto de 6.000 itens válidos (3.000 da estrutura + 3.000 de outros cursos com chave de 20 caracteres): registro em partes ≤ 9 KB nas Propriedades; retomada conclui; 6.001 itens recusados como antes
+  6.000 itens: 0 partes, maior -Infinity bytes, Propriedades no total 37 bytes; tempo da chamada 666 ms (simulador)
+  fotografia entre as escritas: 3000 excluídas (só a estrutura); depois da abertura do painel: 3000
+RESULTADO: FALHOU — retomada de 6.000 itens a partir da fotografia: [3000,3000,false] ≠ [3000,6000,false]
+
+=== TOTAL: 4 ok, 41 falha(s); pulados: 0 ===

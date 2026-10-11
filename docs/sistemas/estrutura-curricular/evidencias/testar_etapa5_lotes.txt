@@ -1,0 +1,91 @@
+# suíte: testar_etapa5_lotes
+# comando: node testar_etapa5_lotes.js /caminho/grade_curricular.csv
+# data: 2026-10-07T21:25:30Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+Fonte testada: ../src
+
+== R. Reprodução da revisão: lote PST1001 + PST2001, falha no setValues de outros cursos depois da escrita de Ajustes manuais
+  ✓ R-excluir (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  ✓ R-excluir (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  ✓ R-restaurar (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  ✓ R-restaurar (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  ✓ R-adicionar (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  ✓ R-adicionar (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  ✓ R-remover (falha uma vez): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+  ✓ R-remover (falha persistente nesta execução): nada de parcial silencioso; contexto novo com as duas disciplinas no alvo
+
+== 1. Sucesso: misto, homogêneo e um item
+  ✓ 1a. misto com 2+2 itens: excluir, restaurar, adicionar, remover — contagens, persistência, sem registro, contexto novo igual
+  ✓ 1b. homogêneo (só estrutura, só outros) e um item (ficha): as quatro ações
+
+== 2. Falha antes da primeira escrita e antes da escrita seguinte
+  ✓ 2a. registro do pedido recusado (partes): NAO_SALVO, nada alterado, nada pendente, nenhuma parte solta
+  ✓ 2b. cabeçalho do registro recusado (antes de aplicar): NAO_SALVO; partes limpas
+  ✓ 2c. falha (persistente) ANTES da primeira escrita de dados: pendente "nenhuma gravada ainda", pedido registrado; contexto novo conclui
+  ✓ 2d. falha (persistente) antes da escrita SEGUINTE, 2+2 itens: grupos identificam cada item (estrutura confirmados, outros faltam)
+
+== 3. Falha depois de valores aplicados
+  ✓ 3a. escrita de Ajustes aplicada e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  ✓ 3b. ÚLTIMA escrita (outros cursos) aplicada e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  ✓ 3c. cabeçalho do registro gravado e exceção: conferência na planilha; nova tentativa só do que falta; concluído
+  ✓ 3d. flush depois das escritas: conferência na planilha; nova tentativa só do que falta; concluído
+
+== 4. Execução encerrada entre as escritas (fotografia) e reabertura
+  ✓ 4a. encerrada logo depois da escrita de Ajustes: a foto tem o parcial + o registro; a abertura do painel conclui
+  ✓ 4b. encerrada entre as escritas e reaberta por OUTRA gravação: o lote é concluído antes e vem em recuperadoLote (separado das contagens do novo pedido)
+  ✓ 4c. encerrada logo depois do registro (antes de qualquer dado): contexto novo conclui o pedido inteiro
+
+== 5. Falha repetida durante a recuperação
+  ✓ 5. recuperação que falha de novo: pendência identificada (mesmo id), sem falsa confirmação; "Concluir" depois conclui
+
+== 6. Repetição, conclusão repetida e ação posterior oposta
+  ✓ 6a. repetir o pedido já concluído: sem linhas nem identidades duplicadas; inclusão repetida = jaEstavam
+  ✓ 6b. conclusão repetida (duas reaberturas): a segunda não escreve nada
+  ✓ 6c. ação posterior OPOSTA: o pedido antigo é concluído antes e o novo vale por último; reabrir não reaplica o antigo
+
+== 7–8. Regras: exclusão tira da grade; restauração não devolve; inclusão com combinação de casos
+  ✓ 7. excluir itens na grade tira da grade; restaurar não reinclui (também depois de uma retomada)
+  ✓ 8. inclusão com elegíveis, excluída, já incluída e sem semestre: contagens e listas; iguais depois de uma pendência e da recuperação
+
+== 9. Validações (nada do novo lote é gravado)
+  ✓ 9. lista vazia, origem inválida, itens repetidos e alvo inexistente no FIM: validações atuais; nada gravado nem registrado
+
+== 10. Identidade
+  ✓ 10. código efetivo alterado (estrutura e outros) + código antigo reaparecendo como registro novo: retomada pela chave original, o outro registro intacto
+
+== 11. Preservação dos dados depois de uma retomada
+  ✓ 11. campos fora da ação, observações, outras linhas e colunas extras (Date, texto ISO, número, booleano, vazio) intactos depois de retomar; linha de ajuste que fica vazia segue a regra (removida)
+
+== 12. Coexistência com o salvamento individual (etapa 4)
+  ✓ 12a. salvamento individual pendente: o lote é recusado enquanto ele não conclui; depois, ele é concluído ANTES do lote (recuperado com a observação)
+  ✓ 12b. lote pendente: salvamento CONFLITANTE (mesma disciplina) recusado com a ação pendente identificada; depois, lote concluído antes e o salvamento por último
+  ✓ 12c. os dois registros ao mesmo tempo (montado no teste): um não apaga nem esconde o outro; o individual conclui e vem em "recuperado" mesmo com o lote recusado
+  ✓ 12d. ordem dos dados no painel: lote recuperado aplicado ANTES do pedido mais recente (adicionar pendente, depois remover)
+
+== 13. Recuperação de lote durante outro pedido (aceito ou recusado)
+  ✓ 13. outro pedido aceito: recuperadoLote sem preparação (a resposta traz); outro pedido recusado: recuperadoLote com a preparação lida
+
+== 14. Registro: remoção, flush depois dela, leitura falhando
+  ✓ 14a. falha ANTES da remoção do registro (persistente): pendente "todas já como pedido"; contexto novo conclui SEM reescrever
+  ✓ 14b. remoção aplicada e exceção: conferido → concluído (nunca pendente inexistente); repetir não duplica
+  ✓ 14c. flush DEPOIS da remoção: conferido → concluído (nunca pendente inexistente); repetir não duplica
+  ✓ 14d. remoção feita + leitura falhando na conferência: LOTE_INCERTO identificado (sem confirmar, sem "nada gravado", sem recriar o registro); contexto novo e repetição corretos
+  ✓ 14e. "Concluir ação pendente", recuperação automática e abertura do painel com exceção depois da remoção: concluído
+  ✓ 14f. registro ilegível (parte faltando): não é tratado como inexistente nem aplicado; recusa identificada
+
+== 15. Proteções: importação, recomeço e demais gravações; leitor; base mudou
+  ✓ 15a. com o lote pendente (sem concluir): importação, recomeço, envio da grade, salvar, outros cursos e lista por unidade recusados com a pendência; nada muda
+  ✓ 15b. leitor: não grava (ações em lote recusadas), vê só que há algo pendente; o registro fica para o administrador, que conclui
+  ✓ 15c. base mudou (outra importação ativa) depois do registro: não aplica; "Descartar" só nesse caso e com o id; descartar NÃO desfaz o já gravado
+
+== 17. Capacidade do registro (limite de 6.000 itens por lote)
+  ✓ 17. lote misto de 6.000 itens válidos (3.000 da estrutura + 3.000 de outros cursos com chave de 20 caracteres): registro em partes ≤ 9 KB nas Propriedades; retomada conclui; 6.001 itens recusados como antes
+
+45 ok, 0 falha(s)
+
+# código de saída: 0  (duração: 5 s)
+# resultado do processo: aprovada
+# evidência: gravada nesta rodada e copiada para saida/logs/evidencias_etapa5_lotes.txt
+# interpretação: aprovada

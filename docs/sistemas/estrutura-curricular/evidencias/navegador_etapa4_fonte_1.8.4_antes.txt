@@ -1,0 +1,60 @@
+# suíte: navegador_etapa4_fonte_1.8.4_antes
+# comando: env DIR_SRC=/caminho/fonte-1.8.4/src node testar_navegador_etapa4.js /caminho/grade_curricular.csv
+# data: 2026-10-07T21:31:25Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: reprodução de defeito: código 1 e resumo da suíte com 2/10 aprovados
+
+Fonte testada: DIR_SRC (externa)
+
+== 14. Interface
+  ✓ 14a. concluído: "Alterações salvas.", ficha com o gravado, sem aviso de pendência
+  ✗ 14b. não concluído (planilha recusou o registro): "Nada foi salvo", rascunho preservado, controles liberados, nada gravado 
+      Error: Alterações salvas.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:27:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:119:5
+  ✗ 14c. pendente (observação não grava): mensagem do que falta, aviso fixo com "Concluir", rascunho preservado, lista com o que está gravado; "Concluir" conclui e atualiza a ficha 
+      Error: Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:27:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:132:5
+  ✗ 14d. pendente com B aberta (resposta atrasada): B e o rascunho intactos; aviso cita PST1001; salvar B depois conclui A antes e grava B 
+      Error: Não foi possível salvar PST1001: Ocorreu um erro inesperado. Tente de novo em alguns instantes; se continuar, avise quem mantém o sistema.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:27:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:163:5
+  ✗ 14e. pendente depois de fechar e REABRIR A (nova instância): o formulário novo não é tocado; aviso fixo aparece 
+      Error: aviso fixo
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:27:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:204:5
+  ✗ 14f. pendência ao abrir o painel (execução anterior interrompida): concluída na abertura, com aviso 
+      Error: esperado verdadeiro
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:27:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:220:5
+     retrato: A pendente → painel {"pendenteVisivel":false,"listaObs":""} | depois de B → planilha A {"nome":"A corrigida","obs":"","pendente":false}, painel {"listaObsA":"","obsB":"Observação de B"} | A reaberta → ficha {"nome":"A corrigida","obs":"","indice":""} | depois de salvar A → planilha {"nome":"Outra correção em A","obs":"","pendente":false}, painel {"obs":"","listaObs":""} | contexto novo obs A ""
+  ✗ 14g. (1.8.6) REPRODUÇÃO A→B→A na interface: A pendente; B salva com A já fechada; A reaberta depois de tudo mostra e mantém a observação recuperada 
+      Error: A pendente; dados confirmados ainda sem a observação: [false,""] ≠ [true,""]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:26:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:258:5
+  ✗ 14h. (1.8.6) recuperação feita por OUTRA operação (botão da grade na ficha de B): observação de A aplicada nos dados do painel e aviso fixo some 
+      Error: dados de A atualizados: ["PST1002",false,"Nome ajustado",""] ≠ ["PST1002",false,"Nome ajustado","Observação nova"]
+          at igual (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:26:80)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:279:5
+  ✓ 14i. (1.8.6) exceção depois de remover o registro: "Alterações salvas." com a observação; sem aviso de pendência
+  ✗ 14j. (1.8.6) remoção feita e leitura falhando: "Não foi possível confirmar", rascunho preservado, aviso fixo sem botão 
+      Error: Alterações salvas.
+          at verdade (/caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:27:42)
+          at /caminho/fonte-1.9.2/testes/testar_navegador_etapa4.js:306:5
+
+2 ok, 8 falha(s)
+Falharam:
+  - 14b. não concluído (planilha recusou o registro): "Nada foi salvo", rascunho preservado, controles liberados, nada gravado
+  - 14c. pendente (observação não grava): mensagem do que falta, aviso fixo com "Concluir", rascunho preservado, lista com o que está gravado; "Concluir" conclui e atualiza a ficha
+  - 14d. pendente com B aberta (resposta atrasada): B e o rascunho intactos; aviso cita PST1001; salvar B depois conclui A antes e grava B
+  - 14e. pendente depois de fechar e REABRIR A (nova instância): o formulário novo não é tocado; aviso fixo aparece
+  - 14f. pendência ao abrir o painel (execução anterior interrompida): concluída na abertura, com aviso
+  - 14g. (1.8.6) REPRODUÇÃO A→B→A na interface: A pendente; B salva com A já fechada; A reaberta depois de tudo mostra e mantém a observação recuperada
+  - 14h. (1.8.6) recuperação feita por OUTRA operação (botão da grade na ficha de B): observação de A aplicada nos dados do painel e aviso fixo some
+  - 14j. (1.8.6) remoção feita e leitura falhando: "Não foi possível confirmar", rascunho preservado, aviso fixo sem botão
+
+# código de saída: 1  (duração: 9 s)
+# resultado do processo: defeito demonstrado como previsto (2/10)
+# evidência: não exigida
+# interpretação: defeito demonstrado como previsto (2/10)

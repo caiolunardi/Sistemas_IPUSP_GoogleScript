@@ -1,0 +1,89 @@
+# testar_ajuda.js da 1.9.2 rodado contra a FONTE 1.9.1 intacta (falha ESPERADA: H4, texto antigo; H5 passa porque o envio não mudou)
+# comando: DIR_SRC=/caminho/fonte-1.9.1/src node testar_ajuda.js
+# data: 2026-10-07 18:43–18:44 (-03); testar_ajuda.js SHA-256 9ae9ddd03587947c… (o mesmo da entrega); fonte = src/ da 1.9.1 recebida (ZIP 3620de41…a81b)
+# código de saída do processo: 1
+# (cabeçalho acrescentado na montagem da entrega; o restante é a saída do processo)
+
+Fonte testada: DIR_SRC (externa)
+Ambiente: Chromium real (Playwright); servidor real no simulador de Apps Script; transporte google.script.run simulado; dados sintéticos.
+
+== A. Abertura, destinos e independência do servidor (itens 1, 2, 17)
+  ✓ A1. [1] botão "Ajuda" do cabeçalho: diálogo modal rotulado, início com busca e os 7 atalhos, foco no título, Central no topo da pilha
+     fatos [A2]: {"destinos":49,"secoes":26,"unidadesDeBusca":192,"perguntasFaq":50}
+  ✓ A2. [1] TODOS os destinos usados nos gatilhos da fonte existem na Central; abrir cada um mostra só a seção dele, rola até o destino e foca o título; IDs únicos na página e aria-controls/alvos internos sem referência quebrada
+  ✓ A3. [1, 8] gatilhos REAIS das telas (cliques): busca, semestre de oferecimento, Currículos, Importações, etapas 2–4, envio, ficha (topo, requisitos, ajustes), importação, lista da unidade, nova grade e auditoria abrem o assunto certo
+  ✓ A4. [2] abrir, navegar, buscar, abrir FAQ e fechar a Central não chama o servidor nem faz pedidos de rede; não grava nada no armazenamento do navegador
+  ✓ A5. [2, 14] carga dos dados FALHANDO (transporte indisponível): o cartão de erro tem o gatilho "Problemas para abrir o painel" e a Central abre pelo cabeçalho e pelo gatilho (em Conta e permissões)
+  ✓ A6. [17] fonte da Central sem dados privados, endereços, IDs, e-mails, placeholders, rede, armazenamento ou google.script.run; sem segundo <main>
+
+== B. Busca, contagem, navegação e FAQ (itens 3, 4, 5)
+  ✓ B1. [3, 4] busca sem acento = com acento; maiúsculas indiferentes; contagem = unidades visíveis (cada uma uma vez), com o título da seção como contexto
+  ✓ B2. [3] termo só nos METADADOS (data-search) é encontrado; termo só na RESPOSTA recolhida da FAQ é encontrado, com a indicação de abrir a pergunta; abrir a pergunta mostra a resposta
+  ✓ B3. [3, 4] várias palavras = TODAS (não "ou"); vazio restaura a vista anterior; nenhum resultado: orientação + "Limpar busca"; navegar com filtro ativo remove o filtro
+  ✓ B4. [3] texto com HTML digitado na busca não vira HTML executável (status por textContent)
+  ✓ B5. [5] FAQ por clique, Enter e Espaço: aria-expanded, hidden e o ícone acompanham; resposta oculta fora da ordem de foco; todas as perguntas têm aria-controls para um painel existente
+
+== C. Foco, teclado, fundo e rolagem (itens 6, 12, 13)
+  ✓ C1. [6] Tab e Shift+Tab ficam na Central; ESC fecha e devolve o foco ao botão; clique no fundo fecha; overflow inline do body preservado e classe de bloqueio removida no fim
+  ✓ C2. [12, 13] abrir duas vezes não duplica a pilha (um ESC fecha); reexecutar o script da Central não duplica listeners; janelas operacionais continuam sem fechar por ESC nem por clique no fundo
+
+== D. Ajuda sobre janelas em uso (itens 7, 8, 9, 10, 11, 13)
+  ✓ D1. [7, 13] ajuda sobre a ficha com rascunho: Central no topo, Tab só nela; ESC fecha só a ajuda; rascunho, instância e nós da ficha preservados; foco volta ao gatilho; ESC/fundo seguem sem fechar a ficha; "Salvar" vale para a mesma ficha
+  ✓ D2. [8] ajuda sobre a importação de PDF (OCR) com revisão paginada: arquivo lido, prévia, página atual e páginas abertas preservadas; nenhuma chamada nova; depois, revisão completa e gravação
+  ✓ D3. [9] ajuda sobre a conferência do envio: botão de envio continua habilitado e intocado, sem nova prévia nem envio durante a ajuda; depois, o envio usa a MESMA conferência e é aceito
+  ✓ D4. [10, 11] resposta ATRASADA do "Salvar" com a ajuda aberta: a ficha é redesenhada (o gatilho some) e o foco que a ficha pediria não sai da Central; ao fechar, o foco vai ao título da ficha (retorno seguro)
+  ✓ D5. [10] prévia do envio ATRASADA com a ajuda aberta: chega, habilita o envio e não puxa o foco; ao fechar, o foco volta ao gatilho do topo da janela
+  ✓ D6. [11] gatilho removido da página enquanto a ajuda estava aberta (sem janela por trás): ao fechar, o foco vai ao conteúdo principal; com a ficha fechada por uma resposta atrasada, o foco vai ao ponto pedido pela página
+
+== E. Perfis, avisos fixos e resultado do envio (itens 14, 15, 16)
+  ✓ E1. [14] Leitor: Central completa (procedimentos de administrador rotulados), sem gatilhos de controles que ele não tem; abrir a ajuda não mostra etapas nem "Importar arquivo"; nenhuma chamada nova
+  ✓ E2. [14] conta sem acesso: o erro do servidor aparece com o gatilho de ajuda e a Central abre em "Conta e permissões"
+  ✓ E3. [15] ação em lote PENDENTE (falha real injetada): o aviso fixo tem "Concluir" e o gatilho; abrir e fechar a ajuda não conclui, não descarta, não chama o servidor e não muda o aviso
+  ✓ E4. [15] ação concluída com leituraFalhou (resposta controlada): aviso "Gravação concluída — Recarregue a página" com o gatilho; a ajuda não o limpa nem recarrega
+  ✓ E5. [16] resultado REAL do envio: auditoria só como texto (sem link, sem endereço), link https da cópia; gatilhos "Como as secretarias preenchem" e "A cópia e a auditoria" funcionam no resultado
+
+== F. Larguras, zoom, temas e contraste (item 18)
+  ✓ F1. [18] 360 px, tema claro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 390 px, tema claro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 480 px, tema claro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 768 px, tema claro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 1280 px, tema claro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 360 px, tema escuro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 390 px, tema escuro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 480 px, tema escuro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 768 px, tema escuro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F1. [18] 1280 px, tema escuro: sem rolagem horizontal; janela na tela; "Fechar" e busca alcançáveis; contraste ≥ 4,5:1 (texto) e ≥ 3:1 (bordas de controle); cabeçalho do painel sem transbordar
+  ✓ F2. [18] zoom de 200% (viewport CSS de 640 × 450 a partir de 1280 × 900): Central utilizável, sem rolagem horizontal, busca e "Fechar" visíveis
+  ✓ F3. [18] troca de tema COM A CENTRAL ABERTA: Escuro e Claro pela API do tema; em "Sistema", a troca do sistema operacional muda a Central na hora; contraste mantido
+  ✓ F4. [18] prefers-reduced-motion: o ícone da FAQ não anima
+
+== G. Teclado: Tab e Shift+Tab a partir de títulos e circulação (1.9.1; T01–T07)
+  ✓ G1. [T01] ajuda-glossario-semestre: o título focado ao abrir; Tab REAL sai do título para o próximo controle (ou circula) e segue andando; Shift+Tab idem; o foco nunca sai da Central nem fica parado
+  ✓ G1. [T01] ajuda-curriculos-anteriores: o título focado ao abrir; Tab REAL sai do título para o próximo controle (ou circula) e segue andando; Shift+Tab idem; o foco nunca sai da Central nem fica parado
+  ✓ G1. [T01] ajuda-ajustes-gravando: o título focado ao abrir; Tab REAL sai do título para o próximo controle (ou circula) e segue andando; Shift+Tab idem; o foco nunca sai da Central nem fica parado
+  ✓ G2. [T02, T04] título COM controles depois dele (ajuda-lista-grade-ficha): Tab vai ao link seguinte do próprio artigo; Shift+Tab ao controle anterior; diálogo focado por programa: Shift+Tab circula para o último controle e Tab para o primeiro
+  ✓ G3. [T03, T05] título SEM controles depois dele: Tab circula para o primeiro controle ("Início"); primeiro e último controles circulam nas duas direções
+  ✓ G4. [T06] busca (só resultados visíveis), limpeza, FAQ recolhida/aberta (desktop) e índice recolhido/aberto no celular (390 px): nenhum controle oculto recebe foco
+     fatos [G5]: {"destinos":49,"parados":0}
+  ✓ G5. [T07] TODOS os destinos usados nos gatilhos: abrir põe o foco no título do destino, visível na área de leitura; Tab e Shift+Tab REAIS vão ao controle esperado (sem estacionar nem sair)
+  ✓ G6. [T08–T10] com janelas por trás: ficha com rascunho (Tab só na Central, nada da ficha muda); resposta atrasada do "Salvar" (Tab continua andando; retorno seguro); janela aberta e fechada por callback SIMULADO (setTimeout) abaixo da Central: Central no topo, foco nela
+
+== H. Fatos por trás das orientações corrigidas (1.9.1; A1–A3) e texto
+     fatos [H1]: {"resposta":"SALVAMENTO_PENDENTE","persistido":{"nome":"Interdepartamental renomeada","naGrade":"Sim","obs":"","pendente":true}}
+  ✓ H1. [A1] "Adicionar à Grade Horária" com nome e observação novos e a escrita da observação falhando: SALVAMENTO_PENDENTE com o nome ajustado e a marca da grade JÁ gravados e a observação faltando; uma recusa antes de gravar não aplica nada
+     fatos [H2]: {"recuperado":{"codigo":"PST1003","observacao":{"chave":"PST1003","texto":"Observação que faltava"}},"persistido":{"nome":"Eletiva renomeada","naGrade":"Sim","obs":"Observação que faltava","pendente":false}}
+  ✓ H2. [A2] "conferir o envio" (previaEnvioGrade) com um salvamento pendente e a falha já liberada: a conferência grava a observação que faltava, remove a pendência e devolve "recuperado"; um leitor abrindo o painel não conclui nada
+     fatos [H3]: {"arquivo":"Grade Horária - 1º semestre de 2027","nomeDaConferencia":"Grade Horária - 1º semestre de 2027","contagensConferencia":{"PSA":1,"PSC":0,"PSE":0,"PST":2,"INTER":0,"OUTRAS":0},"contagensPlanilha":{"PSA":1,"PSC":0,"PSE":0,"PST":2,"INTER":0,"OUTRAS":0},"conferido":{"codigo":"PST1001","nome":"Disciplina teste revisada – Turma única","tipo":"Obrigatória","semestreIdeal":1,"creditosAula":4},"naPlanilha":{"codigo":"PST1001","nome":"Disciplina teste","creditosAula":2},"assinaturasIguais":false}
+  ✓ H3. [A3] reenvio do MESMO semestre sem resposta: depois de um envio concluído e de mudar nome/observação/créditos, a nova conferência tem os mesmos códigos e quantidades; sem executar a 2ª tentativa, a planilha tem o nome certo, os mesmos códigos e quantidades — e o conteúdo ANTERIOR
+  ✗ H4. [A1–A3; 1.9.2] texto: as afirmações antigas não aparecem mais (HTML e AJUDA.md, fora das tabelas de correções) — inclusive "a tentativa foi concluída" deduzida só da comparação; as novas estão nos dois; no artigo do resultado do envio, "dados presentes ≠ todas as etapas", não confirmado, auditoria, reenvio e Serviço de Graduação; a busca da Central encontra os estados novos 
+      Error: HTML ainda diz: a tentativa foi concluída: não reenvie
+          at verdade (/caminho/fonte-1.9.2/testes/testar_ajuda.js:49:42)
+          at /caminho/fonte-1.9.2/testes/testar_ajuda.js:1276:30
+          at Array.forEach (<anonymous>)
+     fatos [H5]: {"ok":false,"codigo":"ENVIO_INCOMPLETO","arquivo":"Grade Horária - 1º semestre de 2027","nomeEsperado":"Grade Horária - 1º semestre de 2027","todasSeisAbasCorrespondem":true,"contagens":"PSA 1, PSC 0, PSE 0, PST 1, INTER 0, OUTRAS 0","formulas":["PSA:PSA1005=VAZIA","PST:PST1001=VAZIA"],"copiaFeita":true}
+     fatos [H5 controle]: {"ok":true,"formulas":["PSA:PSA1005=fórmula","PST:PST1001=fórmula"]}
+  ✓ H5. [A3; 1.9.2] envio INTERROMPIDO depois de gravar os dados conferidos: com a falha na gravação das fórmulas de Horário de Fim no reenvio do mesmo semestre, o servidor responde ENVIO_INCOMPLETO, mas as seis abas têm EXATAMENTE a lista conferida (código, nome com observação, tipo, semestre ideal, créditos-aula; ordem, quantidades, grupos vazios, remoção) e o nome do arquivo é o certo — e falta a fórmula; controle: sem a falha, o envio conclui e grava as fórmulas
+
+49 ok, 1 falha(s)
+Falharam:
+  - H4. [A1–A3; 1.9.2] texto: as afirmações antigas não aparecem mais (HTML e AJUDA.md, fora das tabelas de correções) — inclusive "a tentativa foi concluída" deduzida só da comparação; as novas estão nos dois; no artigo do resultado do envio, "dados presentes ≠ todas as etapas", não confirmado, auditoria, reenvio e Serviço de Graduação; a busca da Central encontra os estados novos

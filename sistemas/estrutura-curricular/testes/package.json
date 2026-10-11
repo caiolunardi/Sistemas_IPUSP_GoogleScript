@@ -1,0 +1,21 @@
+{
+  "name": "estrutura-curricular-testes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Testes locais do sistema Estrutura Curricular (simulador de Apps Script + Chromium real). Ver README.md.",
+  "scripts": {
+    "backend": "node testar_backend.js",
+    "navegador": "node testar_navegador.js",
+    "visual": "node testar_visual.js",
+    "pdf-texto": "node testar_pdf_texto.js",
+    "paginas-ocr": "node gerar_paginas_ocr.js"
+  },
+  "dependencies": {
+    "pdfjs-dist": "3.11.174",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "7.0.0"
+  },
+  "devDependencies": {
+    "playwright": "1.56.0"
+  }
+}

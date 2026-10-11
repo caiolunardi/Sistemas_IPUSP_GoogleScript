@@ -1,0 +1,57 @@
+# suíte: testar_visual
+# comando: node testar_visual.js /caminho/grade_curricular.csv saida/paginas_ocr_navegador.json /caminho/disciplinas_unidade.csv
+# data: 2026-10-07T21:40:02Z
+# conjunto de fontes e testes (sha256 de fontes.sha256): 6606f1153ca645e8
+# esperado: código 0 (suíte atual ou roteiro descritivo)
+
+
+== Tema claro (preferência Sistema, SO em light)
+  ✓ 360px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 390px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 480px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 768px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 1280px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ prévia do PDF (conferência, informações e revisão) em 360 e 1280 px, sem rolagem horizontal
+  ✓ marca correta no tema e contraste das combinações principais
+
+== Tema escuro (preferência Sistema, SO em dark)
+  ✓ 360px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 390px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 480px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 768px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ 1280px: sem rolagem horizontal na lista, ficha, filtros, currículos e importação
+  ✓ prévia do PDF (conferência, informações e revisão) em 360 e 1280 px, sem rolagem horizontal
+  ✓ marca correta no tema e contraste das combinações principais
+
+== Preparação da grade (etapas, ficha editável, lista por unidade, lista final)
+  ✓ claro 360px: etapas, lote, ficha editável, lista da unidade e lista final sem rolagem horizontal; contraste dos selos e avisos novos
+  ✓ claro 768px: etapas, lote, ficha editável, lista da unidade e lista final sem rolagem horizontal; contraste dos selos e avisos novos
+  ✓ claro 1280px: etapas, lote, ficha editável, lista da unidade e lista final sem rolagem horizontal; contraste dos selos e avisos novos
+  ✓ escuro 360px: etapas, lote, ficha editável, lista da unidade e lista final sem rolagem horizontal; contraste dos selos e avisos novos
+  ✓ escuro 768px: etapas, lote, ficha editável, lista da unidade e lista final sem rolagem horizontal; contraste dos selos e avisos novos
+  ✓ escuro 1280px: etapas, lote, ficha editável, lista da unidade e lista final sem rolagem horizontal; contraste dos selos e avisos novos
+
+== Preferência de tema
+  ✓ alerta "planilha desatualizada" e paginação da revisão em 360 px, claro e escuro: sem rolagem horizontal, contraste do alerta ≥ 4,5:1
+  ✓ Sistema acompanha o SO com a página aberta; manual persiste e não acompanha
+  ✓ localStorage indisponível não quebra a página (fica em Sistema)
+
+== Teclado e foco
+  ✓ foco visível e ordem de tabulação até a lista
+
+Contraste (menor razão por tema):
+   light título do aviso do envio 4.71:1 (mín. 4.5)
+   light borda da etapa inativa 3.15:1 (mín. 3)
+   light contagem da etapa 5.01:1 (mín. 4.5)
+   light aviso de CH 5.02:1 (mín. 4.5)
+   dark botão primário 5.1:1 (mín. 4.5)
+   dark botão Salvar 5.1:1 (mín. 4.5)
+   dark botão Enviar para a Grade Horária 5.1:1 (mín. 4.5)
+   dark botão Fazer a cópia e enviar 5.1:1 (mín. 4.5)
+
+Executados: 24 (24 ok, 0 falha(s)); pulados: 0
+
+# código de saída: 0  (duração: 61 s)
+# resultado do processo: aprovada
+# evidência: não exigida
+# interpretação: aprovada
