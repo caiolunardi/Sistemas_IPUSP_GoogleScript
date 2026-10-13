@@ -1,0 +1,3136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+
+<!-- GRADIP UI — tema Sistema/Claro/Escuro (docs/THEME_IMPLEMENTATION.md).
+     Incluído antes de qualquer estilo que use var(--gradip-...) e antes de
+     google.script.run: o tema é 100% client-side e não depende dos dados. -->
+<?!= include_('GradipTema') ?>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+/* CSS */
+body{
+
+    margin:0;
+
+    font-family:Arial, Helvetica, sans-serif;
+
+    background:var(--gradip-bg);
+
+    color:var(--gradip-text);
+
+}
+
+#headerSistema{
+
+    height:72px;
+
+    background:var(--gradip-header-bg);
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 22px;
+
+    border-bottom:1px solid var(--gradip-border);
+
+    box-sizing:border-box;
+
+    gap:12px;
+
+}
+
+.logoEsquerda{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.logoEsquerda img,
+.logoEsquerda .marcaIpuspSvg{
+
+    height:56px;
+
+    flex:0 0 auto;
+
+}
+
+.logoUSP{
+
+    height:48px;
+
+    width:auto;
+
+    flex:0 0 auto;
+
+}
+
+.tituloSistema{
+
+    font-size:28px;
+
+    font-weight:300;
+
+    color:var(--gradip-text);
+
+}
+
+.subtituloSistema{
+
+    margin-top:4px;
+
+    font-size:14px;
+
+    color:var(--gradip-text-muted);
+
+}
+
+/* barra azul */
+#barraAzul{
+
+    height:24px;
+
+    background:var(--gradip-header-accent);
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    align-items:center;
+
+    padding:0 18px;
+
+    box-sizing:border-box;
+
+}
+
+#usuarioBarra{
+
+    color:var(--gradip-on-primary);
+
+    font-size:12px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+}
+
+/* barra que envolve o menu de semestres e o botão de exportar */
+#barraFerramentas{
+
+    background:var(--gradip-surface);
+
+    border-bottom:1px solid var(--gradip-border);
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding-right:18px;
+
+}
+
+/* menu de semestres */
+#menuSemestres{
+
+    padding:12px 18px;
+
+    display:flex;
+
+    gap:6px;
+
+    align-items:flex-end;
+
+}
+
+#btnExportar{
+
+    padding:10px 18px;
+
+    background:var(--gradip-primary);
+
+    color:var(--gradip-on-primary);
+
+    border:none;
+
+    border-radius:4px;
+
+    cursor:pointer;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
+
+    transition:.15s;
+
+    min-height:44px;
+
+}
+
+#btnExportar:hover{
+
+    background:var(--gradip-primary-hover);
+
+}
+
+#btnExportar:disabled{
+
+    background:var(--gradip-disabled-bg);
+
+    cursor:default;
+
+    color:var(--gradip-disabled-text);
+
+}
+
+.botaoSemestre{
+
+    padding:11px 18px;
+
+    background:var(--gradip-surface);
+
+    border:1px solid var(--gradip-border-strong);
+
+    border-bottom:3px solid transparent;
+
+    cursor:pointer;
+
+    font-size:14px;
+
+    transition:.15s;
+
+    color:var(--gradip-text);
+
+    min-height:44px;
+
+    box-sizing:border-box;
+
+}
+
+.botaoSemestre:hover{
+
+    background:var(--gradip-surface-2);
+
+}
+
+.botaoSemestre.ativo{
+
+    border-bottom:3px solid var(--gradip-link);
+
+    color:var(--gradip-link);
+
+    font-weight:bold;
+
+}
+
+/*==========================
+    CONTAINER DA GRADE
+==========================*/
+
+#containerGrade{
+
+    padding:20px;
+
+    background:var(--gradip-bg);
+
+    position:relative;
+
+}
+
+#grade{
+
+    position:relative;
+
+    display:grid;
+
+    grid-template-columns:
+
+        130px
+        repeat(5,1fr);
+
+    background:var(--gradip-surface);
+
+    border:1px solid var(--gradip-border);
+
+}
+
+/*==========================
+      CABEÇALHO
+==========================*/
+
+.cabecalho{
+
+    height:42px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:bold;
+
+    background:var(--gradip-surface-2);
+
+    border-right:1px solid var(--gradip-border);
+
+    border-bottom:1px solid var(--gradip-border);
+
+    color:var(--gradip-text);
+
+}
+
+/*==========================
+        HORAS
+==========================*/
+
+.hora{
+
+    height:42px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-right:1px solid var(--gradip-border);
+
+    border-bottom:1px solid var(--gradip-border);
+
+    font-weight:bold;
+
+}
+
+/*==========================
+        CÉLULAS
+==========================*/
+
+.celula{
+
+    height:42px;
+
+    border-right:1px solid var(--gradip-border);
+
+    border-bottom:1px solid var(--gradip-border);
+
+}
+
+/*==========================
+     INTERVALO ALMOÇO
+==========================*/
+
+.intervaloHora{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-right:1px solid var(--gradip-border);
+
+    background:var(--gradip-surface-2);
+
+    font-weight:bold;
+
+    color:var(--gradip-text-muted);
+
+}
+
+.intervalo{
+
+    grid-column:2 / span 5;
+
+    height:80px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    color:var(--gradip-text-muted);
+
+    font-size:12px;
+
+    background:var(--gradip-surface-2);
+
+    border-top:1px solid var(--gradip-border);
+
+    border-bottom:1px solid var(--gradip-border);
+
+}
+
+.intervalo::before{
+
+    content:"";
+
+    flex:1;
+
+    border-top:1px solid var(--gradip-border-strong);
+
+    margin-right:12px;
+
+}
+
+.intervalo::after{
+
+    content:"";
+
+    flex:1;
+
+    border-top:1px solid var(--gradip-border-strong);
+
+    margin-left:12px;
+
+}
+
+.primeiraTarde{
+
+    border-top:1px solid var(--gradip-border);
+
+}
+
+/*==========================
+         RODAPÉ
+==========================*/
+
+#rodapeSistema{
+
+    height:42px;
+
+    background:var(--gradip-surface);
+
+    border-top:1px solid var(--gradip-border);
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 18px;
+
+    box-sizing:border-box;
+
+    font-size:12px;
+
+    color:var(--gradip-text-muted);
+
+}
+
+#rodapeSistema a{
+
+    color:var(--gradip-link);
+
+    text-decoration:none;
+
+}
+
+#rodapeSistema a:hover{
+
+    text-decoration:underline;
+
+}
+    
+/*==========================
+    CAMADA DOS POST-ITS
+==========================*/
+
+#camadaDisciplinas{
+
+    position:absolute;
+
+    inset:0;
+
+    pointer-events:auto;
+
+}
+
+
+/*==========================
+        POST-IT
+==========================*/
+
+
+
+/*==========================
+          POST-ITS
+==========================*/
+
+.postit{
+
+    position:absolute;
+
+    width:150px;
+
+    border-radius:6px;
+
+    padding:10px;
+
+    box-sizing:border-box;
+
+    color:white;
+
+    font-size:13px;
+
+    box-shadow:0 2px 6px rgba(0,0,0,.18);
+
+    cursor:pointer;
+
+    overflow:hidden;
+
+    transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    filter .18s ease;
+
+    cursor:pointer;
+
+}
+
+.postit:hover{
+
+    transform:scale(1.02);
+
+    box-shadow:0 6px 12px rgba(0,0,0,.25);
+
+}
+
+.postitCodigo{
+
+    font-weight:bold;
+
+    font-size:16px;
+
+    margin-bottom:6px;
+
+}
+
+.postitNome{
+
+    font-weight:bold;
+
+    line-height:18px;
+
+}
+
+.postitHorario{
+
+    margin-top:12px;
+
+    text-align:center;
+
+    font-size:13px;
+
+}
+
+/*-----------------------------------
+  Modo compacto (exportação: várias
+  disciplinas dividindo o mesmo espaço)
+-----------------------------------*/
+
+.postit.compacto{
+
+    padding:6px;
+
+}
+
+.postit.compacto .postitCodigo{
+
+    font-size:10px;
+
+    margin-bottom:2px;
+
+}
+
+.postit.compacto .postitNome{
+
+    font-size:9px;
+
+    line-height:11px;
+
+}
+
+.postit.compacto .postitHorario{
+
+    font-size:8px;
+
+    margin-top:3px;
+
+}
+
+
+
+/*-----------------------------------
+  Hover do Post-it
+-----------------------------------*/
+
+.postit-hover{
+
+    transform:
+        translateY(-6px)
+        scale(1.03);
+
+    box-shadow:
+        0 14px 28px rgba(0,0,0,.35);
+
+    filter:
+        brightness(1.08)
+        saturate(1.10);
+
+    z-index:9999;
+
+}
+
+
+
+/*=========================================
+            OVERLAY DO POPUP
+=========================================*/
+
+#overlayPopup{
+
+    position:fixed;
+    backdrop-filter:blur(3px);
+    inset:0;
+
+    background:var(--gradip-overlay);
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:20000;
+    box-shadow: 0 30px 70px rgba(0,0,0,.28);
+    
+
+}
+
+
+
+
+
+/*=========================================
+            FICHA DA DISCIPLINA
+=========================================*/
+
+#popupDisciplina{
+
+    width:520px;
+
+    max-width:calc(100vw - 32px);
+
+    box-sizing:border-box;
+
+    background:var(--gradip-surface-elevated);
+
+    color:var(--gradip-text);
+
+    border:1px solid var(--gradip-border);
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    box-shadow:
+
+        0 30px 60px rgba(0,0,0,.35);
+
+}
+
+
+/*=========================================
+                CABEÇALHO
+=========================================*/
+
+#popupCabecalho{
+
+    position:relative;
+
+    overflow:hidden;
+
+    background:var(--gradip-brand-blue);
+
+    color:white;
+
+    padding:22px;
+
+}
+
+
+#popupCabecalho::after{
+
+    content:"";
+
+    position:absolute;
+
+    top:0;
+
+    left:-60%;
+
+    width:40%;
+
+    height:100%;
+
+    background:linear-gradient(
+
+        90deg,
+
+        transparent,
+
+        rgba(255,255,255,.12),
+
+        transparent
+
+    );
+
+    pointer-events:none;
+
+}
+
+
+
+@keyframes brilhoCabecalho{
+
+    from{
+
+        left:-60%;
+
+    }
+
+    to{
+
+        left:130%;
+
+    }
+
+}
+
+
+#popupDisciplina:hover #popupCabecalho::after{
+
+    animation:brilhoCabecalho 1.2s;
+
+}
+
+
+#popupCodigo{
+
+    font-size:30px;
+
+    font-weight:bold;
+
+}
+
+
+#popupDepartamento{
+
+    margin-top:8px;
+
+    font-size:13px;
+
+    color:rgba(255,255,255,.85);
+
+    line-height:18px;
+
+}
+
+
+
+.popup-obrigatoria{
+
+    background:#2E7D32 !important;
+
+}
+
+.popup-eletiva{
+
+    background:#1565C0 !important;
+
+}
+
+.popup-livre{
+
+    background:#C2185B !important;
+
+}
+
+/*==================================
+    Linhas da ficha
+==================================*/
+
+.popupLinha{
+
+    display:flex;
+
+    gap:40px;
+
+    margin-bottom:28px;
+
+}
+
+.popupCampo.metade{
+
+    flex:1;
+
+}
+
+/*=========================================
+                CONTEÚDO
+=========================================*/
+
+#popupConteudo{
+
+    padding:28px;
+
+}
+
+
+.popupTitulo{
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    margin-bottom:28px;
+
+    color:var(--gradip-text);
+
+}
+
+
+.popupCampo{
+
+    margin-bottom:18px;
+
+}
+
+
+.popupRotulo{
+
+    font-size:11px;
+
+    font-weight:bold;
+
+    letter-spacing:1px;
+
+    color:var(--gradip-text-muted);
+
+    text-transform:uppercase;
+
+    margin-bottom:4px;
+
+}
+
+
+.popupCampo div:last-child{
+
+    font-size:17px;
+
+    color:var(--gradip-text);
+
+}
+
+
+/*=========================================
+                BOTÃO
+=========================================*/
+
+#popupBotoes{
+
+    margin-top:35px;
+
+    text-align:right;
+
+}
+
+
+#botaoFechar{
+
+    background:var(--gradip-primary);
+
+    color:var(--gradip-on-primary);
+
+    border:none;
+
+    padding:10px 22px;
+
+    border-radius:6px;
+
+    cursor:pointer;
+
+    font-size:14px;
+
+    transition:.15s;
+
+}
+
+
+#botaoFechar:hover{
+
+    background:var(--gradip-primary-hover);
+
+}
+
+
+
+#popupDisciplina{
+
+    animation:popupEntrada .22s cubic-bezier(.18,.89,.32,1.28);
+
+}
+
+@keyframes popupEntrada{
+
+    from{
+
+        opacity:0;
+        transform:translateY(12px) scale(.94);
+
+    }
+
+    to{
+
+        opacity:1;
+        transform:translateY(0) scale(1);
+
+    }
+
+}
+
+
+#loadingOverlay{
+
+    position:fixed;
+
+    inset:0;
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:var(--gradip-overlay);
+
+    backdrop-filter:blur(4px);
+
+    z-index:999999;
+
+}
+
+#loadingBox{
+
+    width:320px;
+
+    padding:40px;
+
+    border-radius:20px;
+
+    background:var(--gradip-surface-elevated);
+
+    text-align:center;
+
+    box-shadow:var(--gradip-shadow);
+
+    border:1px solid var(--gradip-border);
+
+    max-width:calc(100vw - 112px);
+
+}
+
+
+#loadingLogo{
+
+    width:90px;
+
+    animation:respirar 1.8s ease-in-out infinite;
+
+    margin:0 auto;
+
+}
+
+
+@keyframes respirar{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.05);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+
+
+#loadingTitulo{
+
+    margin-top:18px;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    color:var(--gradip-link);
+
+}
+
+#loadingTexto{
+
+    margin-top:14px;
+
+    font-size:16px;
+
+    color:var(--gradip-text-muted);
+
+}
+
+#loadingPontos{
+
+    display:inline-block;
+
+    width:26px;
+
+    text-align:left;
+
+}
+
+
+
+/*==========================================================
+    TEMA GRADIP — complementos (rodada tema claro/escuro)
+==========================================================*/
+
+.textoHeaderEsquerda{
+    min-width:0;
+}
+
+.headerDireita{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+}
+
+.logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+}
+
+#loadingLogo .marcaIpuspSvg{
+    display:block;
+    width:100%;
+    height:auto;
+}
+
+.botaoSemestre:focus-visible,
+#btnExportar:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+/* Exportação em PDF: o clone da grade usa SEMPRE a paleta clara, mesmo
+   com a tela em modo escuro (UX_COMPONENT_RECIPES §14 — impressão não
+   segue o Dark Mode). Valores copiados da paleta clara de
+   GradipTema.html; se ela mudar, atualizar aqui também. */
+.gradeExportacaoClara{
+    --gradip-bg:#f5f6f7;
+    --gradip-surface:#ffffff;
+    --gradip-surface-2:#f8fafc;
+    --gradip-surface-elevated:#ffffff;
+    --gradip-text:#1f2933;
+    --gradip-text-muted:#5f6b76;
+    --gradip-border:#d8dee4;
+    --gradip-border-strong:#848c93;
+    color:var(--gradip-text);
+    color-scheme:light;
+}
+
+/*==========================================================
+    v2.0 — seletor de grades, ajuda, faixa da grade exibida
+==========================================================*/
+
+/* "Consultar Grades Anteriores": mesmo desenho do controle Aparência. */
+.seletorGrade{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:var(--gradip-text-muted);
+    font-size:13px;
+    min-width:0;
+}
+
+.seletorGrade__rotulo{
+    font-weight:600;
+    white-space:nowrap;
+}
+
+.seletorGrade__select{
+    min-height:44px;
+    box-sizing:border-box;
+    padding:0 34px 0 10px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+    font:inherit;
+    cursor:pointer;
+    max-width:260px;
+}
+
+.seletorGrade__select:hover{
+    border-color:var(--gradip-link);
+}
+
+.seletorGrade__select:disabled{
+    cursor:default;
+    opacity:.7;
+}
+
+.seletorGrade__select:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+}
+
+.botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+}
+
+.botaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+/* Faixa com a grade exibida, a legenda e o atalho da ajuda */
+#infoGrade{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px 16px;
+    padding:12px 20px 0;
+}
+
+#tituloGradeExibida{
+    font-size:16px;
+    font-weight:bold;
+    color:var(--gradip-text);
+}
+
+#tituloGradeExibida .detalheGrade{
+    font-weight:normal;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+}
+
+.etiquetaGrade{
+    display:inline-block;
+    margin-left:8px;
+    padding:2px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:bold;
+    vertical-align:middle;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+}
+
+.etiquetaGrade.anterior{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+    color:var(--gradip-warning);
+}
+
+.infoGradeDireita{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px 16px;
+}
+
+#legendaTipos{
+    display:flex;
+    gap:12px;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+}
+
+.legendaItem{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.legendaCor{
+    width:14px;
+    height:14px;
+    border-radius:3px;
+}
+
+/* Mesmas cores dos post-its */
+.legenda-obrigatoria{ background:#2E7D32; }
+.legenda-eletiva{ background:#1976D2; }
+.legenda-livre{ background:#C2185B; }
+
+.linkAjudaContextual{
+    background:none;
+    border:none;
+    padding:0 4px;
+    min-height:44px;
+    font:inherit;
+    font-size:13px;
+    color:var(--gradip-link);
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+.linkAjudaContextual:hover{
+    text-decoration-thickness:2px;
+}
+
+.linkAjudaContextual:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+    border-radius:4px;
+}
+
+/* Link interno usado dentro de um texto da Central de Ajuda (GradeAjuda.html).
+   Fica aqui para GradeAjudaEstilos.html continuar idêntico ao compartilhado. */
+.linkAjudaInterno{
+    background:none;
+    border:none;
+    padding:0;
+    font:inherit;
+    color:var(--gradip-link);
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+.linkAjudaInterno:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+#avisoGrade{
+    margin:12px 20px 0;
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:14px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-text);
+}
+
+#avisoGrade.erro{
+    background:var(--gradip-danger-bg);
+    border-color:var(--gradip-danger-border);
+}
+
+#avisoGrade[hidden]{
+    display:none;
+}
+
+/* Botão × da ficha da disciplina */
+#popupFechar{
+    position:absolute;
+    top:10px;
+    right:10px;
+    z-index:1;
+    width:44px;
+    height:44px;
+    border:none;
+    border-radius:50%;
+    background:rgba(255,255,255,.16);
+    color:white;
+    font-size:26px;
+    line-height:1;
+    cursor:pointer;
+}
+
+#popupFechar:hover{
+    background:rgba(255,255,255,.28);
+}
+
+#popupFechar:focus-visible{
+    outline:3px solid white;
+    outline-offset:2px;
+}
+
+#popupCodigo{
+    padding-right:48px;
+}
+
+.postit:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+    z-index:9999 !important;
+}
+
+/* Cabeçalho com o seletor de grades: quebra em duas faixas antes de apertar */
+@media (max-width:1180px){
+
+    #headerSistema{
+        height:auto;
+        flex-wrap:wrap;
+        padding:10px 22px;
+    }
+
+    .headerDireita{
+        flex:1 1 auto;
+        min-width:0;
+        max-width:100%;
+        flex-wrap:wrap;
+        justify-content:flex-end;
+        margin-left:auto;
+    }
+
+}
+
+/* A grade tem 5 dias lado a lado: em telas estreitas ela rola na
+   horizontal dentro do próprio quadro, sem rolar a página inteira.
+   900px = coluna de horário + 5 colunas da largura de um post-it. */
+#containerGrade{
+    overflow-x:auto;
+}
+
+#grade{
+    min-width:900px;
+}
+
+@media (max-width:768px){
+
+    #barraFerramentas{
+        flex-wrap:wrap;
+        padding:0 12px 12px 0;
+    }
+
+    #menuSemestres{
+        flex-wrap:wrap;
+        padding:12px 12px 8px;
+    }
+
+    #btnExportar{
+        margin-left:12px;
+    }
+
+    #containerGrade{
+        padding:12px;
+    }
+
+    #infoGrade{
+        padding:12px 12px 0;
+    }
+
+    #rodapeSistema{
+        height:auto;
+        flex-wrap:wrap;
+        gap:4px 12px;
+        padding:10px 12px;
+    }
+
+}
+
+@media (max-width:480px){
+
+    #headerSistema{
+        height:auto;
+        flex-wrap:wrap;
+        padding:10px 12px;
+        gap:8px;
+    }
+
+    .logoEsquerda{
+        gap:8px;
+        flex:1 1 100%;
+        min-width:0;
+    }
+
+    .logoEsquerda img,
+    .logoEsquerda .marcaIpuspSvg{
+        height:40px;
+    }
+
+    .tituloSistema{
+        font-size:22px;
+    }
+
+    .subtituloSistema{
+        font-size:12px;
+    }
+
+    .headerDireita{
+        flex:1 1 100%;
+        justify-content:space-between;
+        gap:8px;
+    }
+
+    .logoUSP{
+        height:34px;
+    }
+
+    /* o controle compartilhado já esconde o rótulo "Aparência" aqui */
+    .gradip-theme-control{
+        gap:0;
+    }
+
+    .gradip-theme-control__select{
+        padding:0 26px 0 8px;
+        font-size:12px;
+    }
+
+    #barraAzul{
+        padding:0 12px;
+    }
+
+    .botaoSemestre{
+        padding:10px 12px;
+        font-size:13px;
+    }
+
+    .seletorGrade{
+        flex:1 1 100%;
+        flex-wrap:wrap;
+        gap:4px;
+    }
+
+    .seletorGrade__select{
+        flex:1 1 100%;
+        max-width:none;
+    }
+
+    .botaoAjuda .textoAjuda{
+        display:none;
+    }
+
+    .botaoAjuda{
+        padding:8px;
+        border-radius:50%;
+    }
+
+    #infoGrade,
+    #avisoGrade{
+        padding-left:12px;
+        padding-right:12px;
+    }
+
+    #avisoGrade{
+        margin-left:12px;
+        margin-right:12px;
+    }
+
+    #popupConteudo{
+        padding:20px;
+    }
+
+    .popupLinha{
+        gap:16px;
+    }
+
+    #popupCodigo{
+        font-size:24px;
+    }
+
+}
+
+</style>
+
+<?!= include_('GradeAjudaEstilos') ?>
+
+</head>
+
+<body>
+
+    <!-- CABEÇALHO -->
+    <header id="headerSistema">
+
+    <div class="logoEsquerda">
+
+        <?!= include_('GradipMarcaIPUSP') ?>
+
+        <div class="textoHeaderEsquerda">
+
+            <div class="tituloSistema">
+                Grade Horária
+            </div>
+
+            <div class="subtituloSistema">
+                Instituto de Psicologia
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="headerDireita">
+
+        <label class="seletorGrade" for="seletorGrade">
+
+            <span class="seletorGrade__rotulo">Consultar Grades Anteriores</span>
+
+            <select id="seletorGrade" class="seletorGrade__select" disabled>
+                <option value="">Grade atual</option>
+            </select>
+
+        </label>
+
+        <?!= include_('GradipTemaControle') ?>
+
+        <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
+            <span aria-hidden="true">❓</span>
+            <span class="textoAjuda">Ajuda</span>
+        </button>
+
+        <span class="logoUSPWrap">
+            <?!= include_('GradipMarcaUSP') ?>
+        </span>
+
+    </div>
+
+</header>
+
+    <!-- BARRA AZUL -->
+    <div id="barraAzul">
+
+    <div id="usuarioBarra">
+
+        👤 Serviço de Graduação
+
+    </div>
+
+</div>
+
+    <!-- MENU SEMESTRES + EXPORTAR -->
+    <div id="barraFerramentas">
+
+        <div id="menuSemestres"></div>
+
+        <button type="button" id="btnExportar" onclick="exportarPDF()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px;">
+                <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="white" stroke="#c62828" stroke-width="1"/>
+                <path d="M15 2v5h5" fill="none" stroke="#c62828" stroke-width="1"/>
+                <rect x="3.5" y="12.5" width="14" height="7" rx="1.3" fill="#c62828"/>
+                <text x="10.5" y="17.8" font-size="6" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial, sans-serif">PDF</text>
+            </svg> Exportar PDF
+        </button>
+
+    </div>
+
+   <!-- QUAL GRADE ESTÁ NA TELA + AVISOS -->
+<div id="infoGrade">
+
+    <div id="tituloGradeExibida" aria-live="polite">Carregando a grade…</div>
+
+    <div class="infoGradeDireita">
+
+        <span id="legendaTipos" aria-label="Legenda das cores">
+            <span class="legendaItem"><span class="legendaCor legenda-obrigatoria" aria-hidden="true"></span>Obrigatória</span>
+            <span class="legendaItem"><span class="legendaCor legenda-eletiva" aria-hidden="true"></span>Eletiva</span>
+            <span class="legendaItem"><span class="legendaCor legenda-livre" aria-hidden="true"></span>Livre</span>
+        </span>
+
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-ler-grade">Como ler a grade?</button>
+
+    </div>
+
+</div>
+
+<div id="avisoGrade" role="status" hidden></div>
+
+   <!-- CONTAINER DA GRADE -->
+<div id="containerGrade">
+
+    <div id="grade">
+
+        <div id="camadaDisciplinas"></div>
+
+    </div>
+
+</div>
+
+<!-- RODAPÉ -->
+
+<footer id="rodapeSistema">
+
+    <div>
+
+        Sistema de Grade Horária • Instituto de Psicologia • USP
+
+    </div>
+
+    <div>
+
+        versão 2.0
+
+    </div>
+
+</footer>
+
+<!-- MODAL -->
+
+<!--=================================
+        LOADING
+==================================-->
+
+<div id="loadingOverlay">
+
+    <div id="loadingBox">
+
+        <div id="loadingLogo"><?!= include_('GradipMarcaIPUSP') ?></div>
+
+        <div id="loadingTitulo">
+
+            Grade Horária
+
+        </div>
+
+        <div id="loadingTexto">
+
+            <span id="loadingMensagem">Organizando disciplinas</span>
+
+            <span id="loadingPontos">
+
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!--=================================
+        POPUP DA DISCIPLINA
+==================================-->
+
+<div id="overlayPopup">
+
+    <div id="popupDisciplina" role="dialog" aria-modal="true" aria-labelledby="popupCodigo popupTituloDisciplina" tabindex="-1">
+
+        <div id="popupCabecalho">
+
+            <button type="button" id="popupFechar" aria-label="Fechar ficha da disciplina"><span aria-hidden="true">×</span></button>
+
+            <div id="popupCodigo">
+
+                PSA0000
+
+            </div>
+
+            <div id="popupDepartamento">
+
+                Departamento de Psicologia
+
+            </div>
+
+        </div>
+
+        <div id="popupConteudo">
+
+            <div class="popupTitulo" id="popupTituloDisciplina">
+
+                Nome da disciplina
+
+            </div>
+
+            <!--==========================
+                    TIPO / CRÉDITOS
+            ===========================-->
+
+            <div class="popupLinha">
+
+                <div class="popupCampo metade">
+
+                    <div class="popupRotulo">
+
+                        Tipo
+
+                    </div>
+
+                    <div id="popupTipo">
+
+                        Obrigatória
+
+                    </div>
+
+                </div>
+
+                <div class="popupCampo metade">
+
+                    <div class="popupRotulo">
+
+                        Créditos
+
+                    </div>
+
+                    <div id="popupCreditos">
+
+                        -
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!--==========================
+                    DIA / HORÁRIO
+            ===========================-->
+
+            <div class="popupLinha">
+
+                <div class="popupCampo metade">
+
+                    <div class="popupRotulo">
+
+                        Dia
+
+                    </div>
+
+                    <div id="popupDia">
+
+                        -
+
+                    </div>
+
+                </div>
+
+                <div class="popupCampo metade">
+
+                    <div class="popupRotulo">
+
+                        Horário
+
+                    </div>
+
+                    <div id="popupHorario">
+
+                        -
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!--==========================
+                    DOCENTES
+            ===========================-->
+
+            <div class="popupCampo">
+
+                <div class="popupRotulo">
+
+                    Docentes
+
+                </div>
+
+                <div id="popupDocente">
+
+                    -
+
+                </div>
+
+            </div>
+
+            <div class="popupCampo">
+
+                <div class="popupRotulo">
+
+                    Sala
+
+                </div>
+
+                <div id="popupSala">
+
+                    -
+
+                </div>
+
+            </div>
+
+            
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+<script>
+
+//===================================================
+// ESTADO
+//===================================================
+
+let configuracao = { atual: {}, anteriores: [] };
+let gradeCarregada = null;      // resposta de obterGrade (todas as disciplinas)
+let disciplinas = [];           // disciplinas do semestre ideal na tela
+let semestreAtual = null;       // semestre ideal (1 a 10) na tela
+let semestreGradeSelecionado = ""; // "" = grade atual; "AAAA/S" = anterior
+let pedidoGrade = 0;            // descarta respostas atrasadas
+let ocupacao = {};
+let mapaGrade = {};
+let loadingTimer;
+let modoExportacao = false;
+let mapaColunasExportacao = new Map();
+let ultimoFocoAntesDoPopup = null;
+
+const DEPARTAMENTOS = {
+
+    470: "Instituto de Psicologia - Disciplinas Interdepartamentais",
+
+    BIO: "Instituto de Biociências - Departamento de Genética e Biologia Evolutiva",
+
+    EDA: "Faculdade de Educação - Departamento de Administração Escolar e Economia da Educação",
+
+    EDF: "Faculdade de Educação - Departamento de Filosofia da Educação e Ciências da Educação",
+
+    FLA: "Faculdade de Filosofia, Letras e Ciências Humanas - Departamento de Antropologia",
+
+    FLF: "Faculdade de Filosofia, Letras e Ciências Humanas - Departamento de Filosofia",
+
+    FSL: "Faculdade de Saúde Pública - Departamento de Sociologia",
+
+    MAE: "Instituto de Matemática e Estatística - Departamento de Estatística",
+
+    MFT: "Faculdade de Medicina - Departamento de Fisioterapia, Fonoaudiologia e Terapia Ocupacional",
+
+    PSA: "Instituto de Psicologia - Departamento de Psicologia da Aprendizagem, do Desenvolvimento e da Personalidade",
+
+    PSC: "Instituto de Psicologia - Departamento de Psicologia Clínica",
+
+    PSE: "Instituto de Psicologia - Departamento de Psicologia Experimental",
+
+    PST: "Instituto de Psicologia - Departamento de Psicologia Social e do Trabalho"
+
+};
+
+// Cores dos post-its e da ficha (convenção combinada com as secretarias)
+const CORES_TIPO = {
+    "Obrigatória": "#2E7D32",
+    "Eletiva":     "#1976D2",
+    "Livre":       "#C2185B"
+};
+
+const CLASSE_POPUP_TIPO = {
+    "Obrigatória": "popup-obrigatoria",
+    "Eletiva":     "popup-eletiva",
+    "Livre":       "popup-livre"
+};
+
+function escaparHtml(texto){
+
+    return String(texto == null ? "" : texto)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+
+}
+
+function mensagemDeErro(erro){
+
+    return (erro && erro.message) ? erro.message : String(erro || "Erro desconhecido.");
+
+}
+
+//===================================================
+// MENU DE SEMESTRES IDEAIS (filtra no navegador)
+//===================================================
+
+function montarMenuSemestres(lista, semestreAtivo){
+
+    const menu =
+        document.getElementById("menuSemestres");
+
+    menu.innerHTML = "";
+
+    lista.forEach(s=>{
+
+        const botao =
+            document.createElement("button");
+
+        botao.type = "button";
+
+        botao.className = "botaoSemestre";
+
+        botao.setAttribute("aria-pressed", s==semestreAtivo ? "true" : "false");
+
+        if(s==semestreAtivo){
+
+            botao.classList.add("ativo");
+
+        }
+
+        botao.innerText =
+            s + "º Semestre";
+
+        botao.onclick = function(){
+
+            semestreAtual = s;
+
+            document
+                .querySelectorAll(".botaoSemestre")
+                .forEach(b=>{
+                    b.classList.remove("ativo");
+                    b.setAttribute("aria-pressed","false");
+                });
+
+            botao.classList.add("ativo");
+            botao.setAttribute("aria-pressed","true");
+
+            mostrarSemestre(semestreAtual);
+
+        };
+
+        menu.appendChild(botao);
+
+    });
+
+}
+
+//===================================================
+// COMUNICAÇÃO COM O APPS SCRIPT
+//===================================================
+
+function carregarConfiguracao(){
+
+    google.script.run
+
+        .withSuccessHandler(receberConfiguracao)
+
+        .withFailureHandler(erro=>{
+
+            // Sem a lista, a grade atual ainda pode abrir.
+            configuracao = { atual:{}, anteriores:[], avisoAnteriores:"Não foi possível carregar a lista de grades anteriores agora." };
+            montarSeletorGrade();
+
+        })
+
+        .obterConfiguracaoGrade();
+
+}
+
+function receberConfiguracao(cfg){
+
+    configuracao = cfg || { atual:{}, anteriores:[] };
+
+    montarSeletorGrade();
+
+}
+
+function montarSeletorGrade(){
+
+    const seletor = document.getElementById("seletorGrade");
+
+    seletor.innerHTML = "";
+
+    const opcaoAtual = document.createElement("option");
+    opcaoAtual.value = "";
+    opcaoAtual.textContent =
+        configuracao.atual && configuracao.atual.rotulo
+            ? "Grade atual (" + configuracao.atual.rotulo + ")"
+            : "Grade atual";
+    seletor.appendChild(opcaoAtual);
+
+    (configuracao.anteriores || []).forEach(g=>{
+
+        const opcao = document.createElement("option");
+        opcao.value = g.semestre;
+        opcao.textContent = g.rotulo;
+        seletor.appendChild(opcao);
+
+    });
+
+    seletor.value = semestreGradeSelecionado;
+
+    seletor.disabled = !(configuracao.anteriores || []).length;
+
+    seletor.title = seletor.disabled
+        ? (configuracao.avisoAnteriores || "Ainda não há grades anteriores salvas.")
+        : "";
+
+}
+
+function carregarGrade(semestreGrade){
+
+    const pedido = ++pedidoGrade;
+
+    semestreGradeSelecionado = semestreGrade || "";
+
+    mostrarLoading();
+
+    esconderAviso();
+
+    google.script.run
+
+        .withSuccessHandler(grade=>{
+
+            if(pedido !== pedidoGrade) return;
+
+            receberGrade(grade);
+
+            esconderLoading();
+
+        })
+
+        .withFailureHandler(erro=>{
+
+            if(pedido !== pedidoGrade) return;
+
+            esconderLoading();
+
+            falhaAoCarregarGrade(erro);
+
+        })
+
+        .obterGrade(semestreGradeSelecionado);
+
+}
+
+function receberGrade(grade){
+
+    gradeCarregada = grade;
+
+    atualizarTituloGrade();
+
+    const lista = grade.semestresIdeais || [];
+
+    // Mantém o semestre ideal escolhido ao trocar de grade, se ele existir.
+    if(!lista.includes(semestreAtual)){
+
+        semestreAtual = lista.length ? lista[0] : null;
+
+    }
+
+    montarMenuSemestres(lista, semestreAtual);
+
+    document.getElementById("btnExportar").disabled = !lista.length;
+
+    if(!lista.length){
+
+        disciplinas = [];
+        desenharTodasDisciplinas();
+        mostrarAviso("Esta grade ainda não tem disciplinas com dia e horário definidos.");
+        return;
+
+    }
+
+    mostrarSemestre(semestreAtual);
+
+}
+
+function falhaAoCarregarGrade(erro){
+
+    const seletor = document.getElementById("seletorGrade");
+
+    document.getElementById("tituloGradeExibida").textContent =
+        "Não foi possível carregar a grade";
+
+    mostrarAviso(
+        "Não foi possível carregar a grade: " + mensagemDeErro(erro) +
+        (gradeCarregada ? " A tela continua mostrando a grade anterior." : ""),
+        true
+    );
+
+    // Volta o seletor para a grade que continua na tela.
+    if(gradeCarregada){
+
+        semestreGradeSelecionado = gradeCarregada.atual ? "" : gradeCarregada.semestre;
+        seletor.value = semestreGradeSelecionado;
+        atualizarTituloGrade();
+
+    }
+
+}
+
+function atualizarTituloGrade(){
+
+    const g = gradeCarregada;
+
+    const titulo = document.getElementById("tituloGradeExibida");
+
+    if(!g){ titulo.textContent = ""; return; }
+
+    const nome = g.rotulo ? g.rotulo : "Semestre não identificado";
+
+    titulo.innerHTML =
+        escaparHtml(nome) +
+        (g.atual
+            ? '<span class="etiquetaGrade">Grade atual</span>'
+            : '<span class="etiquetaGrade anterior">Grade anterior</span>') +
+        (g.lidaEm
+            ? ' <span class="detalheGrade">· dados de ' + escaparHtml(g.lidaEm) + '</span>'
+            : "");
+
+}
+
+function mostrarSemestre(semestre){
+
+    disciplinas = disciplinasDoSemestre(semestre);
+
+    desenharTodasDisciplinas();
+
+    const fora = disciplinas.filter(d=>!celulaDe(d)).length;
+
+    if(!disciplinas.length){
+
+        mostrarAviso("Nenhuma disciplina com dia e horário definidos no " + semestre + "º semestre desta grade.");
+
+    }else if(fora){
+
+        mostrarAviso(fora + (fora === 1 ? " disciplina deste semestre começa" : " disciplinas deste semestre começam") +
+            " fora dos horários da grade (08:00 às 12:00 e 13:30 às 18:00) e não aparece" + (fora === 1 ? "" : "m") + " no quadro.");
+
+    }else{
+
+        esconderAviso();
+
+    }
+
+}
+
+function disciplinasDoSemestre(semestre){
+
+    return ((gradeCarregada && gradeCarregada.disciplinas) || [])
+        .filter(d=>Number(d.semestre) === Number(semestre));
+
+}
+
+function mostrarAviso(texto, erro){
+
+    const aviso = document.getElementById("avisoGrade");
+
+    aviso.textContent = texto;
+
+    aviso.classList.toggle("erro", !!erro);
+
+    aviso.setAttribute("role", erro ? "alert" : "status");
+
+    aviso.hidden = false;
+
+}
+
+function esconderAviso(){
+
+    document.getElementById("avisoGrade").hidden = true;
+
+}
+
+//-----------------------------------
+// Criar Grade
+//-----------------------------------
+function criarGrade(){
+
+    const grade =
+        document.getElementById("grade");
+
+    grade.innerHTML = "";
+
+    //---------------------
+    // Dias da semana
+    //---------------------
+
+    const dias = [
+
+        "Segunda-Feira",
+        "Terça-Feira",
+        "Quarta-Feira",
+        "Quinta-Feira",
+        "Sexta-Feira"
+
+    ];
+
+    //---------------------
+    // Cabeçalho
+    //---------------------
+
+    grade.innerHTML +=
+        `<div class="cabecalho">Horário</div>`;
+
+    dias.forEach(dia=>{
+
+        grade.innerHTML +=
+        `<div class="cabecalho">
+            ${dia.substring(0,3)}
+        </div>`;
+
+    });
+
+    //---------------------
+    // Intervalos da manhã
+    //---------------------
+
+    const manha = [
+
+        ["08:00","08:30"],
+        ["08:30","09:00"],
+        ["09:00","09:30"],
+        ["09:30","10:00"],
+        ["10:00","10:30"],
+        ["10:30","11:00"],
+        ["11:00","11:30"],
+        ["11:30","12:00"]
+
+    ];
+
+    manha.forEach(intervalo=>{
+
+        const inicio = intervalo[0];
+        const fim    = intervalo[1];
+
+        grade.innerHTML +=
+        `<div class="hora">
+            ${inicio} - ${fim}
+        </div>`;
+
+        dias.forEach(dia=>{
+
+            grade.innerHTML +=
+            `<div
+                class="celula"
+                data-dia="${dia}"
+                data-hora="${inicio}">
+            </div>`;
+
+        });
+
+    });
+
+    //---------------------
+    // Intervalo de almoço
+    //---------------------
+
+    grade.innerHTML +=
+        `<div class="intervaloHora"></div>`;
+
+    grade.innerHTML +=
+        `<div class="intervalo">
+            Intervalo
+        </div>`;
+
+    //---------------------
+    // Intervalos da tarde
+    //---------------------
+
+    const tarde = [
+
+        ["13:30","14:00"],
+        ["14:00","14:30"],
+        ["14:30","15:00"],
+        ["15:00","15:30"],
+        ["15:30","16:00"],
+        ["16:00","16:30"],
+        ["16:30","17:00"],
+        ["17:00","17:30"],
+        ["17:30","18:00"]
+
+    ];
+
+    tarde.forEach((intervalo,index)=>{
+
+        const inicio = intervalo[0];
+        const fim    = intervalo[1];
+
+        const classeHora =
+            index==0
+                ? "hora primeiraTarde"
+                : "hora";
+
+        grade.innerHTML +=
+        `<div class="${classeHora}">
+            ${inicio} - ${fim}
+        </div>`;
+
+        dias.forEach(dia=>{
+
+            const classeCelula =
+                index==0
+                    ? "celula primeiraTarde"
+                    : "celula";
+
+            grade.innerHTML +=
+            `<div
+                class="${classeCelula}"
+                data-dia="${dia}"
+                data-hora="${inicio}">
+            </div>`;
+
+        });
+
+    });
+
+    //---------------------
+    // Monta o mapa da grade
+    //---------------------
+
+    mapaGrade = {};
+
+    document
+        .querySelectorAll(".celula")
+        .forEach(celula=>{
+
+            const chave =
+                celula.dataset.dia +
+                "_" +
+                celula.dataset.hora;
+
+            mapaGrade[chave] = celula;
+
+        });
+
+    //---------------------
+    // Camada dos Post-its
+    //---------------------
+
+    const camada =
+        document.createElement("div");
+
+    camada.id = "camadaDisciplinas";
+
+    grade.appendChild(camada);
+
+}
+
+//-----------------------------------
+// Post-it
+//-----------------------------------
+
+function desenharPostIt(d, containerGrade){
+
+    const postit =
+        document.createElement("div");
+
+    postit.className = "postit";
+
+    // Teclado: Tab chega ao post-it e Enter/Espaço abre a ficha.
+    postit.tabIndex = 0;
+    postit.setAttribute("role","button");
+    postit.setAttribute("aria-label",
+        `${d.codigo} ${d.nome}, ${d.dia}, ${d.inicio} às ${d.fim}`);
+
+    postit.addEventListener("mouseenter", () => {
+
+        postit.style.zIndex = 9999;
+
+        postit.classList.add("postit-hover");
+
+    });
+
+    postit.addEventListener("mouseleave", () => {
+
+        postit.classList.remove("postit-hover");
+
+        postit.style.zIndex = 1;
+
+    });
+
+    postit.addEventListener("click", () => {
+
+        abrirPopup(d, postit);
+
+    });
+
+    postit.addEventListener("keydown", e => {
+
+        if(e.key === "Enter" || e.key === " "){
+
+            e.preventDefault();
+
+            abrirPopup(d, postit);
+
+        }
+
+    });
+
+    //-----------------------
+    // Cor
+    //-----------------------
+
+    postit.style.background =
+        CORES_TIPO[d.tipo] || "#666";
+
+    //-----------------------
+    // Conteúdo
+    //-----------------------
+
+    postit.innerHTML =
+
+        `<div class="postitCodigo">
+
+            ${escaparHtml(d.codigo)}
+
+        </div>
+
+        <div class="postitNome">
+
+            ${escaparHtml(d.nome)}
+
+        </div>
+
+        <div class="postitHorario">
+
+            ${escaparHtml(d.inicio)} às ${escaparHtml(d.fim)}
+
+        </div>`;
+
+    posicionarPostIt(postit,d,containerGrade);
+    return postit;
+
+}
+
+//-----------------------------------
+// Posiciona um Post-it
+//-----------------------------------
+
+function posicionarPostIt(postit, d, containerGrade){
+
+    const pos =
+        calcularPosicao(d, containerGrade);
+
+    //-----------------------------------
+    // Modo exportação: lado a lado
+    //-----------------------------------
+
+    if(modoExportacao){
+
+        const celula = celulaDe(d, containerGrade);
+
+        const larguraCelula =
+            celula ? celula.offsetWidth : 150;
+
+        const info =
+            mapaColunasExportacao.get(d) || { col:0, totalCols:1 };
+
+        const gap = 3;
+        const larguraColuna = larguraCelula / info.totalCols;
+
+        postit.style.left =
+            (pos.left + info.col * larguraColuna + gap/2) + "px";
+
+        postit.style.top =
+            pos.top + "px";
+
+        postit.style.width =
+            (larguraColuna - gap) + "px";
+
+        postit.style.height =
+            calcularAlturaPostIt(d, containerGrade) + "px";
+
+        postit.style.zIndex = 1;
+
+        if(info.totalCols >= 2){
+            postit.classList.add("compacto");
+        }
+
+        return;
+
+    }
+
+    //-----------------------------------
+    // Deslocamento por conflito
+    //-----------------------------------
+
+    const deslocamento =
+        calcularDeslocamento(d);
+
+    postit.style.left =
+        (pos.left + deslocamento.x) + "px";
+
+    postit.style.top =
+        (pos.top + deslocamento.y) + "px";
+
+    postit.style.height =
+        calcularAlturaPostIt(d, containerGrade) + "px";
+
+    postit.style.zIndex =
+        pos.z;
+
+}
+
+//-----------------------------------
+// Agrupa disciplinas conflitantes do
+// mesmo dia em clusters e distribui
+// colunas lado a lado (só exportação)
+//-----------------------------------
+
+function calcularClustersEColunas(lista){
+
+    const porDia = {};
+
+    lista.forEach(d => {
+        if(!porDia[d.dia]) porDia[d.dia] = [];
+        porDia[d.dia].push(d);
+    });
+
+    const resultado = new Map();
+
+    Object.keys(porDia).forEach(dia => {
+
+        const itens = porDia[dia]
+            .slice()
+            .sort((a,b) => a.inicio.localeCompare(b.inicio));
+
+        let clusterAtual = [];
+        let fimClusterAtual = null;
+
+        function fecharCluster(){
+
+            if(clusterAtual.length === 0) return;
+
+            const colunas = [];
+
+            clusterAtual.forEach(d => {
+
+                const inicio = converterHoraParaMinutos(d.inicio);
+                const fim    = converterHoraParaMinutos(d.fim);
+
+                let colEncontrada = -1;
+
+                for(let i = 0; i < colunas.length; i++){
+                    if(colunas[i] <= inicio){
+                        colEncontrada = i;
+                        break;
+                    }
+                }
+
+                if(colEncontrada === -1){
+                    colEncontrada = colunas.length;
+                    colunas.push(fim);
+                }else{
+                    colunas[colEncontrada] = fim;
+                }
+
+                resultado.set(d, { col: colEncontrada, totalCols: 0 });
+
+            });
+
+            const totalCols = colunas.length;
+
+            clusterAtual.forEach(d => {
+                resultado.get(d).totalCols = totalCols;
+            });
+
+            clusterAtual = [];
+            fimClusterAtual = null;
+
+        }
+
+        itens.forEach(d => {
+
+            const inicio = converterHoraParaMinutos(d.inicio);
+            const fim    = converterHoraParaMinutos(d.fim);
+
+            if(clusterAtual.length === 0){
+                clusterAtual.push(d);
+                fimClusterAtual = fim;
+            }else if(inicio < fimClusterAtual){
+                clusterAtual.push(d);
+                fimClusterAtual = Math.max(fimClusterAtual, fim);
+            }else{
+                fecharCluster();
+                clusterAtual.push(d);
+                fimClusterAtual = fim;
+            }
+
+        });
+
+        fecharCluster();
+
+    });
+
+    return resultado;
+
+}
+
+//-------------------------------------
+// Converte "08:30" em minutos
+//-------------------------------------
+function converterHoraParaMinutos(hora){
+
+    const partes = hora.split(":");
+
+    return Number(partes[0]) * 60 +
+           Number(partes[1]);
+
+}
+
+// Célula do dia e horário de início da disciplina (null = fora da grade)
+function celulaDe(d, containerGrade){
+
+    const escopo = containerGrade || document;
+
+    return escopo.querySelector(
+        `.celula[data-dia="${d.dia}"][data-hora="${d.inicio}"]`
+    );
+
+}
+
+//-----------------------------------
+// Calcula a posição do Post-it
+//-----------------------------------
+function calcularPosicao(d, containerGrade){
+
+    const celula = celulaDe(d, containerGrade);
+
+    if(!celula){
+
+        return{ left:0, top:0, z:1 };
+
+    }
+
+    return{
+
+        left: celula.offsetLeft,
+        top : celula.offsetTop,
+        z   : 1
+
+    };
+
+}
+
+//-----------------------------------
+// Calcula a altura do Post-it
+// (cada linha da grade = 30 minutos)
+//-----------------------------------
+
+function calcularAlturaPostIt(d, containerGrade){
+
+    const escopoAltura = containerGrade || document;
+
+    const duracao =
+        converterHoraParaMinutos(d.fim) - converterHoraParaMinutos(d.inicio);
+
+    const blocos =
+        duracao / 30;
+
+    const alturaCelula =
+        escopoAltura.querySelector(".celula").offsetHeight;
+
+    return blocos * alturaCelula;
+
+}
+
+//-----------------------------------
+// Deslocamento do Post-it considerando
+// TODOS os intervalos ocupados pela
+// disciplina (conflitos em cascata).
+//-----------------------------------
+
+function calcularDeslocamento(d){
+
+    let inicio =
+        converterHoraParaMinutos(d.inicio);
+
+    const fim =
+        converterHoraParaMinutos(d.fim);
+
+    let maiorNivel = 0;
+
+    while(inicio < fim){
+
+        const hora =
+            String(Math.floor(inicio / 60)).padStart(2,"0") +
+            ":" +
+            String(inicio % 60).padStart(2,"0");
+
+        const chave =
+            d.dia + "_" + hora;
+
+        if(ocupacao[chave] != null){
+
+            maiorNivel =
+                Math.max(maiorNivel, ocupacao[chave]);
+
+        }
+
+        inicio += 30;
+
+    }
+
+    inicio =
+        converterHoraParaMinutos(d.inicio);
+
+    while(inicio < fim){
+
+        const hora =
+            String(Math.floor(inicio / 60)).padStart(2,"0") +
+            ":" +
+            String(inicio % 60).padStart(2,"0");
+
+        const chave =
+            d.dia + "_" + hora;
+
+        ocupacao[chave] =
+            maiorNivel + 1;
+
+        inicio += 30;
+
+    }
+
+    const DESLOCAMENTO_X = 10;
+    const DESLOCAMENTO_Y = 28;
+
+    return {
+
+        x: maiorNivel * DESLOCAMENTO_X,
+
+        y: maiorNivel * DESLOCAMENTO_Y
+
+    };
+
+}
+
+//-----------------------------------
+// Desenha todas as disciplinas
+//-----------------------------------
+
+function desenharTodasDisciplinas(listaParam, containerGrade, containerCamada){
+
+    ocupacao = {};
+
+    // Tela normal usa a global "disciplinas"; a exportação passa a sua lista.
+    let lista = listaParam || disciplinas;
+
+    const camada =
+        containerCamada || document.getElementById("camadaDisciplinas");
+
+    camada.innerHTML = "";
+
+    const ordemDias = {
+        "Segunda-Feira": 1,
+        "Terça-Feira":   2,
+        "Quarta-Feira":  3,
+        "Quinta-Feira":  4,
+        "Sexta-Feira":   5
+    };
+
+    function duracao(d){
+
+        return converterHoraParaMinutos(d.fim) - converterHoraParaMinutos(d.inicio);
+
+    }
+
+    // Dia da semana → início → maior duração primeiro → código
+    lista = lista.slice().sort((a, b) =>
+        (ordemDias[a.dia] - ordemDias[b.dia]) ||
+        a.inicio.localeCompare(b.inicio) ||
+        (duracao(b) - duracao(a)) ||
+        String(a.codigo).localeCompare(String(b.codigo))
+    );
+
+    // Só o que cabe no quadro (início num horário da grade)
+    lista = lista.filter(d => celulaDe(d, containerGrade));
+
+    if(!containerGrade){
+        disciplinas = lista.concat(disciplinas.filter(d => !celulaDe(d)));
+    }
+
+    if(modoExportacao){
+        mapaColunasExportacao = calcularClustersEColunas(lista);
+    }
+
+    lista.forEach(d => {
+
+        camada.appendChild(desenharPostIt(d, containerGrade));
+
+    });
+
+}
+
+//-----------------------------------
+// Popup da Disciplina
+//-----------------------------------
+
+function abrirPopup(d, origem){
+
+    preencherPopup(d);
+
+    ultimoFocoAntesDoPopup = origem || document.activeElement;
+
+    document
+        .getElementById("overlayPopup")
+        .style.display = "flex";
+
+    document.getElementById("popupFechar").focus();
+
+}
+
+function popupAberto(){
+
+    return document.getElementById("overlayPopup").style.display === "flex";
+
+}
+
+function preencherPopup(d){
+
+    const cabecalho =
+        document.getElementById("popupCabecalho");
+
+    cabecalho.classList.remove(
+        "popup-obrigatoria",
+        "popup-eletiva",
+        "popup-livre"
+    );
+
+    if(CLASSE_POPUP_TIPO[d.tipo]){
+
+        cabecalho.classList.add(CLASSE_POPUP_TIPO[d.tipo]);
+
+    }
+
+    document.getElementById("popupCodigo")
+        .textContent = d.codigo;
+
+    document.querySelector(".popupTitulo")
+        .textContent = d.nome;
+
+    document
+        .getElementById("popupTipo")
+        .textContent = d.tipo || "-";
+
+    // Um docente por linha (vírgula ou quebra de linha na planilha)
+    const docentes = String(d.docentes || "")
+        .split(/[,\n;]/)
+        .map(t => t.trim())
+        .filter(Boolean);
+
+    document
+        .getElementById("popupDocente")
+        .innerHTML = docentes.length
+            ? docentes.map(escaparHtml).join("<br>")
+            : "A definir";
+
+    document
+        .getElementById("popupSala")
+        .textContent =
+            d.sala && d.sala.trim() !== "" ? d.sala : "A definir";
+
+    document.getElementById("popupDia")
+        .textContent = d.dia || "-";
+
+    document.getElementById("popupHorario")
+        .textContent = `${d.inicio} às ${d.fim}`;
+
+    document.getElementById("popupCreditos")
+        .textContent = d.creditos || "-";
+
+    const prefixo = String(d.codigo).substring(0, 3);
+
+    document.getElementById("popupDepartamento").textContent =
+        DEPARTAMENTOS[prefixo] || "Outra Unidade da USP";
+
+}
+
+function fecharPopup(){
+
+    if(!popupAberto()) return;
+
+    document
+        .getElementById("overlayPopup")
+        .style.display = "none";
+
+    if(ultimoFocoAntesDoPopup && document.body.contains(ultimoFocoAntesDoPopup)){
+
+        ultimoFocoAntesDoPopup.focus();
+
+    }
+
+}
+
+//-----------------------------------
+// Exportar PDF (todos os semestres da
+// grade selecionada)
+//-----------------------------------
+
+async function exportarPDF(){
+
+    if(!gradeCarregada) return;
+
+    fecharPopup();
+
+    const btn = document.getElementById("btnExportar");
+    const loadingMensagem = document.getElementById("loadingMensagem");
+    btn.disabled = true;
+    mostrarLoading();
+    loadingMensagem.textContent = "Exportando Grade Horária..";
+
+    modoExportacao = true;
+
+    const listaSemestres = gradeCarregada.semestresIdeais || [];
+    const rotuloGrade = gradeCarregada.rotulo || "";
+
+    // Cópia da grade fora da tela: a grade visível nunca é tocada.
+    const gradeOriginal =
+        document.getElementById("grade");
+
+    const hostOculto =
+        document.createElement("div");
+
+    hostOculto.style.position = "fixed";
+    hostOculto.style.top = "0";
+    hostOculto.style.left = "-99999px";
+    hostOculto.style.pointerEvents = "none";
+    hostOculto.className = "gradeExportacaoClara"; // PDF sempre no tema claro
+
+    const gradeClone =
+        gradeOriginal.cloneNode(true);
+
+    // Mantém os IDs no clone: o CSS de grid depende deles. Como o clone
+    // vem DEPOIS do original no body, getElementById acha o original.
+    gradeClone.style.width =
+        gradeOriginal.offsetWidth + "px";
+
+    const camadaClone =
+        gradeClone.querySelector("#camadaDisciplinas");
+
+    hostOculto.appendChild(gradeClone);
+    document.body.appendChild(hostOculto);
+
+    try{
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4"
+        });
+
+        for (let i = 0; i < listaSemestres.length; i++){
+
+            const semestre = listaSemestres[i];
+
+            loadingMensagem.textContent =
+                `Exportando Grade Horária.. (${i + 1}/${listaSemestres.length})`;
+
+            desenharTodasDisciplinas(disciplinasDoSemestre(semestre), gradeClone, camadaClone);
+
+            // Aguarda o navegador terminar de posicionar os post-its
+            await new Promise(r => setTimeout(r, 400));
+
+            const canvas = await html2canvas(gradeClone, {
+                scale: 2,
+                backgroundColor: "#ffffff",
+                useCORS: true
+            });
+
+            const imgData = canvas.toDataURL("image/png");
+
+            if (i > 0) pdf.addPage();
+
+            const pageWidth  = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            const margem = 30;
+            const espacoTitulo = 40;
+            const areaLargura = pageWidth - margem * 2;
+            const areaAltura  = pageHeight - margem * 2 - espacoTitulo;
+
+            const escala = Math.min(
+                areaLargura / canvas.width,
+                areaAltura / canvas.height
+            );
+
+            const imgLargura = canvas.width  * escala;
+            const imgAltura  = canvas.height * escala;
+
+            const x = (pageWidth - imgLargura) / 2;
+            const y = margem + espacoTitulo;
+
+            pdf.setFontSize(16);
+            pdf.setFont(undefined, "bold");
+            pdf.text(
+                `${semestre}º Semestre — Grade Horária` + (rotuloGrade ? ` — ${rotuloGrade}` : ""),
+                margem,
+                margem + 12
+            );
+
+            pdf.addImage(imgData, "PNG", x, y, imgLargura, imgAltura);
+
+        }
+
+        const sufixo = gradeCarregada.semestre ? "_" + gradeCarregada.semestre.replace("/", "-") : "";
+
+        pdf.save("Grade_Horaria" + sufixo + ".pdf");
+
+    }catch(erro){
+
+        mostrarAviso("Não foi possível gerar o PDF: " + mensagemDeErro(erro), true);
+
+    }finally{
+
+        document.body.removeChild(hostOculto);
+        modoExportacao = false;
+
+        esconderLoading();
+        loadingMensagem.textContent = "Organizando disciplinas";
+        btn.disabled = false;
+
+    }
+
+}
+
+//-----------------------------------
+// Início
+//-----------------------------------
+
+function iniciarSistema(){
+
+    criarGrade();
+
+    carregarConfiguracao();
+
+    carregarGrade("");
+
+    document
+        .getElementById("seletorGrade")
+        .addEventListener("change", e => carregarGrade(e.target.value));
+
+    // Clique no fundo escurecido fecha a ficha; clicar na ficha não.
+    document
+        .getElementById("overlayPopup")
+        .addEventListener("click", fecharPopup);
+
+    document
+        .getElementById("popupDisciplina")
+        .addEventListener("click", function(e){
+
+            e.stopPropagation();
+
+        });
+
+    document
+        .getElementById("popupFechar")
+        .addEventListener("click", fecharPopup);
+
+    // ESC fecha a ficha; Tab fica dentro dela enquanto aberta.
+    document.addEventListener("keydown", e => {
+
+        if(!popupAberto()) return;
+
+        const ajuda = document.querySelector("[data-gradip-help-overlay]");
+        if(ajuda && !ajuda.hidden) return;
+
+        if(e.key === "Escape"){
+
+            e.preventDefault();
+            fecharPopup();
+
+        }else if(e.key === "Tab"){
+
+            // Único controle da ficha: o ×.
+            e.preventDefault();
+            document.getElementById("popupFechar").focus();
+
+        }
+
+    });
+
+}
+
+function esconderLoading(){
+
+    clearInterval(loadingTimer);
+
+    document
+        .getElementById("loadingOverlay")
+        .style
+        .display="none";
+
+}
+
+function mostrarLoading(){
+
+    clearInterval(loadingTimer);
+
+    document
+        .getElementById("loadingOverlay")
+        .style
+        .display="flex";
+
+    let pontos=0;
+
+    loadingTimer=setInterval(()=>{
+
+        pontos=(pontos+1)%4;
+
+        document
+            .getElementById("loadingPontos")
+            .textContent=".".repeat(pontos);
+
+    },350);
+
+}
+
+window.onload = iniciarSistema;
+</script>
+
+
+
+<?!= include_('GradeAjuda') ?>
+
+<?!= include_('GradeAjudaUI') ?>
+
+</body>
+</html>

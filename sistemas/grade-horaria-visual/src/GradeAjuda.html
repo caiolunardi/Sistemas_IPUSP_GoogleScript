@@ -1,0 +1,279 @@
+<!--
+  GRADE HORÁRIA VISUAL — Central de Ajuda (conteúdo estático).
+
+  Estrutura de shared/ajuda/GradipAjudaTemplate.html, com o conteúdo
+  real deste app. O comportamento (abrir/fechar, ESC, focus trap, busca
+  sem acento, FAQ, navegação) fica em GradeAjudaUI.html; os estilos em
+  GradeAjudaEstilos.html. Nenhuma chamada google.script.run.
+
+  Público: alunos, docentes e secretarias. Explica o que fazer e o que
+  esperar; não cita planilhas, IDs, funções nem detalhes de
+  implementação (docs/ajuda/HELP_SECURITY_PRIVACY.md).
+
+  Texto-fonte revisado: docs/sistemas/grade-horaria-visual/AJUDA.md. Ao
+  mudar um texto aqui, mude também lá. Os IDs de seção (ajuda-...) são
+  usados pelos gatilhos de GradeGrid.html — não renomear sem ajustá-los.
+-->
+<div class="gradip-help-overlay" data-gradip-help-overlay hidden>
+  <section class="gradip-help-dialog" data-gradip-help-dialog role="dialog" aria-modal="true" aria-labelledby="gradip-help-title" tabindex="-1">
+    <header class="gradip-help-header">
+      <div><p class="gradip-help-eyebrow">Grade Horária — Instituto de Psicologia</p><h2 id="gradip-help-title">Central de Ajuda</h2></div>
+      <button type="button" class="gradip-help-close" data-gradip-help-close aria-label="Fechar ajuda"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="gradip-help-search-wrap">
+      <label for="gradip-help-search">Buscar na ajuda</label>
+      <input id="gradip-help-search" type="search" placeholder="Ex.: sala, grade anterior, PDF, cores" autocomplete="off" data-gradip-help-search>
+      <p class="gradip-help-search-status" data-gradip-help-search-status aria-live="polite"></p>
+    </div>
+    <div class="gradip-help-layout">
+      <nav class="gradip-help-nav" aria-label="Seções da ajuda">
+        <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
+        <button type="button" data-gradip-help-target="ajuda-ler-grade">Como ler a grade</button>
+        <button type="button" data-gradip-help-target="ajuda-semestres">Semestres do curso</button>
+        <button type="button" data-gradip-help-target="ajuda-ficha">Ficha da disciplina</button>
+        <button type="button" data-gradip-help-target="ajuda-anteriores">Grades anteriores</button>
+        <button type="button" data-gradip-help-target="ajuda-exportar">Exportar PDF</button>
+        <button type="button" data-gradip-help-target="ajuda-o-que-aparece">O que aparece na grade</button>
+        <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
+        <button type="button" data-gradip-help-target="ajuda-aparencia">Aparência</button>
+        <button type="button" data-gradip-help-target="ajuda-faq">Perguntas frequentes</button>
+      </nav>
+      <main class="gradip-help-main" data-gradip-help-main>
+
+        <!-- ================= COMECE AQUI ================= -->
+        <section id="ajuda-inicio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Comece aqui</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="inicio comecar para que serve objetivo horario aulas curso psicologia">
+            <h4>Para que serve</h4>
+            <p>Esta página mostra a grade horária das disciplinas do curso de Psicologia, semestre a semestre do curso: em que dia e horário cada disciplina acontece, quem ministra e, quando já definida, a sala.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="rapido resumo passo como usar escolher semestre clicar">
+            <h4>Em três passos</h4>
+            <p>1. A página abre na <strong>grade atual</strong>.<br>2. Escolha o semestre do curso nos botões acima do quadro (por exemplo, <strong>3º Semestre</strong>).<br>3. Clique numa disciplina para ver a ficha completa.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="o que mais da para fazer anteriores pdf exportar outros semestres">
+            <h4>O que mais dá para fazer</h4>
+            <p>Em <strong>Consultar Grades Anteriores</strong>, no topo, você abre a grade de um semestre que já passou (<button type="button" class="linkAjudaInterno" data-gradip-help-target="ajuda-anteriores">como funciona</button>). O botão <strong>Exportar PDF</strong> gera um arquivo com todos os semestres do curso da grade que está na tela (<button type="button" class="linkAjudaInterno" data-gradip-help-target="ajuda-exportar">detalhes</button>).</p>
+          </article>
+        </section>
+
+        <!-- ================= COMO LER A GRADE ================= -->
+        <section id="ajuda-ler-grade" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Como ler a grade</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="quadro colunas dias semana linhas horarios meia hora segunda sexta">
+            <h4>O quadro</h4>
+            <p>As colunas são os dias da semana, de segunda a sexta. As linhas são intervalos de meia hora, das 08:00 às 12:00 e das 13:30 às 18:00, com o intervalo de almoço entre os dois períodos.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="cartao bloco post-it disciplina codigo nome horario altura duracao">
+            <h4>Cada bloco é uma disciplina</h4>
+            <p>O bloco mostra o código, o nome e o horário de início e fim. Ele começa na linha do horário de início, e a altura dele corresponde à duração da aula.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="cores verde azul rosa obrigatoria eletiva livre legenda tipo optativa">
+            <h4>As cores</h4>
+            <p><strong>Verde</strong>: obrigatória. <strong>Azul</strong>: optativa eletiva. <strong>Rosa</strong>: optativa livre. A legenda fica acima do quadro, e o tipo também aparece escrito na ficha da disciplina.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sobreposto empilhado mesmo horario conflito escada deslocado varias disciplinas">
+            <h4>Blocos sobrepostos</h4>
+            <p>Quando duas ou mais disciplinas acontecem no mesmo dia e horário, os blocos ficam levemente deslocados, um sobre o outro, em escada. Passe o mouse sobre um bloco para trazê-lo à frente, ou clique para abrir a ficha.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="titulo faixa grade atual anterior etiqueta dados de horario leitura">
+            <h4>Qual grade está na tela</h4>
+            <p>Acima do quadro aparecem o ano e o semestre da grade, com a etiqueta <strong>Grade atual</strong> ou <strong>Grade anterior</strong>, e o horário em que os dados foram lidos.</p>
+          </article>
+        </section>
+
+        <!-- ================= SEMESTRES DO CURSO ================= -->
+        <section id="ajuda-semestres" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Semestres do curso</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="botoes semestre 1 3 5 7 9 2 4 6 8 10 impar par periodo ideal">
+            <h4>Por que aparecem só alguns semestres</h4>
+            <p>Os botões mostram os semestres do curso oferecidos naquela grade. Na grade do 1º semestre do ano aparecem os semestres ímpares do curso (1º, 3º, 5º, 7º e 9º); na do 2º semestre do ano, os pares (2º, 4º, 6º, 8º e 10º).</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="botao extra semestre a mais 4 semestre impar diferente oferecida dois semestres">
+            <h4>Um botão a mais</h4>
+            <p>Se uma disciplina de outro semestre do curso também for oferecida naquela grade (por exemplo, uma do 4º semestre na grade do 1º semestre do ano), aparece um botão para esse semestre também.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="trocar semestre clicar botao destacado sublinhado ativo">
+            <h4>Trocar de semestre</h4>
+            <p>Clique no botão do semestre desejado. O botão escolhido fica destacado, e o quadro mostra só as disciplinas desse semestre do curso.</p>
+          </article>
+        </section>
+
+        <!-- ================= FICHA DA DISCIPLINA ================= -->
+        <section id="ajuda-ficha" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Ficha da disciplina</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="abrir ficha clicar detalhes informacoes teclado enter">
+            <h4>Abrir a ficha</h4>
+            <p>Clique no bloco da disciplina. Pelo teclado, use Tab até o bloco e aperte Enter.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="docente professor sala creditos tipo departamento unidade dia horario">
+            <h4>O que a ficha mostra</h4>
+            <p>Código, nome, departamento ou unidade responsável, tipo (obrigatória, eletiva ou livre), créditos-aula, dia, horário, docentes e sala.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sala a definir sem sala ainda nao definida reserva">
+            <h4>Sala "A definir"</h4>
+            <p>A sala ainda não foi informada. Ela costuma ser definida depois da matrícula, conforme o número de matriculados. Volte a consultar mais perto do início das aulas.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="fechar ficha sair esc x clicar fora">
+            <h4>Fechar a ficha</h4>
+            <p>Use o <strong>×</strong> no canto, a tecla Esc ou clique fora da ficha.</p>
+          </article>
+        </section>
+
+        <!-- ================= GRADES ANTERIORES ================= -->
+        <section id="ajuda-anteriores" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Consultar grades anteriores</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="grade anterior antiga semestre passado consultar lista seletor historico">
+            <h4>Abrir a grade de um semestre que já passou</h4>
+            <p>No topo da página, em <strong>Consultar Grades Anteriores</strong>, escolha o semestre na lista. Os semestres aparecem como "2026 - 1º Semestre", do mais recente para o mais antigo. O quadro passa a mostrar a grade escolhida, com a etiqueta <strong>Grade anterior</strong>.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="voltar grade atual retornar padrao abrir pagina">
+            <h4>Voltar para a grade atual</h4>
+            <p>Escolha a primeira opção da lista, <strong>Grade atual</strong>. Ao abrir a página de novo, ela sempre começa na grade atual.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="lista desativada cinza nao abre nenhuma grade anterior vazia">
+            <h4>A lista está desativada</h4>
+            <p>Ainda não há grades anteriores guardadas, ou a lista não pôde ser carregada naquele momento. A grade atual continua funcionando; recarregue a página mais tarde para tentar de novo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="semestre faltando grade antiga nao aparece lista">
+            <h4>Um semestre não está na lista</h4>
+            <p>A lista mostra os semestres cuja grade foi guardada pelo Serviço de Graduação. Se faltar um semestre de que você precisa, fale com o Serviço de Graduação.</p>
+          </article>
+        </section>
+
+        <!-- ================= EXPORTAR PDF ================= -->
+        <section id="ajuda-exportar" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Exportar PDF</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="pdf exportar baixar imprimir arquivo download todos semestres">
+            <h4>O que vai no arquivo</h4>
+            <p>Uma página para cada semestre do curso da grade que está na tela, com o título do semestre e o ano. Se você estiver vendo uma grade anterior, o PDF é dessa grade.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="pdf claro tema escuro branco impressao lado a lado conflito compacto">
+            <h4>Diferenças em relação à tela</h4>
+            <p>O PDF sai sempre com fundo claro, mesmo com a página no modo escuro. Disciplinas no mesmo horário ficam lado a lado, em vez de sobrepostas, e por isso podem aparecer com letra menor.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="demora espera exportando aguarde tempo">
+            <h4>Durante a exportação</h4>
+            <p>Aparece "Exportando Grade Horária.." com o andamento (por exemplo, 2/5). Espere terminar; o arquivo é baixado sozinho.</p>
+          </article>
+        </section>
+
+        <!-- ================= O QUE APARECE ================= -->
+        <section id="ajuda-o-que-aparece" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">O que aparece na grade</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="quais disciplinas aparecem oferecida dia horario definido">
+            <h4>Disciplinas que aparecem</h4>
+            <p>As disciplinas do curso de Psicologia que serão oferecidas no semestre e já têm dia e horário definidos, inclusive as de outras unidades da USP ministradas para o IP (por exemplo, Estatística).</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao aparece pratica horario variavel estagio atendimento">
+            <h4>Disciplinas práticas</h4>
+            <p>Disciplinas práticas têm horário variável, combinado com cada turma, e por isso não aparecem no quadro.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="outros cursos outras unidades fea disciplina do ip para fora nao aparece">
+            <h4>Disciplinas do IP para outros cursos</h4>
+            <p>Disciplinas que o IP oferece a outros cursos da USP não fazem parte desta grade, que é a dos alunos do IP.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="fora do horario noite antes das 8 aviso nao aparecem no quadro">
+            <h4>Aviso "fora dos horários da grade"</h4>
+            <p>O quadro vai das 08:00 às 12:00 e das 13:30 às 18:00. Uma disciplina que comece em outro horário não cabe no quadro; o aviso acima dele diz quantas estão nessa situação naquele semestre.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="grade atual em preenchimento incompleta mudando atualizacao provisoria">
+            <h4>A grade atual pode mudar</h4>
+            <p>A grade atual é montada pelos departamentos e pode ser completada ou corrigida até o início do semestre. As mudanças aparecem aqui alguns minutos depois. Recarregue a página para ver a versão mais recente.</p>
+          </article>
+        </section>
+
+        <!-- ================= PROBLEMAS COMUNS ================= -->
+        <section id="ajuda-problemas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Problemas comuns</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="carregando organizando disciplinas demora travou parado">
+            <h4>A página fica em "Organizando disciplinas..."</h4>
+            <p>A grade está sendo lida. Isso costuma levar alguns segundos. Se passar de um minuto, recarregue a página.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="erro nao foi possivel carregar a grade mensagem vermelha falha">
+            <h4>Apareceu "Não foi possível carregar a grade"</h4>
+            <p>Recarregue a página e tente de novo. Se você estava trocando para uma grade anterior, a tela continua mostrando a grade de antes. Se o erro persistir, avise o Serviço de Graduação dizendo qual grade tentou abrir.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="semestre vazio nenhuma disciplina sem disciplinas quadro vazio">
+            <h4>O semestre aparece vazio</h4>
+            <p>Ainda não há disciplinas daquele semestre do curso com dia e horário definidos nessa grade. Na grade atual, isso costuma mudar conforme os departamentos completam o preenchimento.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="disciplina sumiu nao encontro faltando onde esta">
+            <h4>Não encontro uma disciplina</h4>
+            <p>Confira o semestre do curso escolhido nos botões e veja <button type="button" class="linkAjudaInterno" data-gradip-help-target="ajuda-o-que-aparece">o que aparece na grade</button>: práticas, disciplinas sem horário definido e disciplinas para outros cursos não aparecem. Se a dúvida continuar, procure o departamento responsável ou o Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="pdf nao baixou download bloqueado navegador">
+            <h4>O PDF não baixou</h4>
+            <p>Confira se o navegador bloqueou o download (geralmente aparece um aviso na barra de endereço) e tente de novo. Em celulares, o arquivo vai para a pasta de downloads do aparelho.</p>
+          </article>
+        </section>
+
+        <!-- ================= APARÊNCIA ================= -->
+        <section id="ajuda-aparencia" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Aparência</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="tema escuro claro sistema aparencia noite modo">
+            <h4>Sistema, Claro ou Escuro</h4>
+            <p>Em <strong>Aparência</strong>, no topo, <strong>Sistema</strong> acompanha o modo claro/escuro do seu aparelho; <strong>Claro</strong> e <strong>Escuro</strong> fixam um dos dois. A escolha fica guardada neste navegador. O PDF sai sempre claro.</p>
+          </article>
+        </section>
+
+        <!-- ================= FAQ ================= -->
+        <section id="ajuda-faq" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Perguntas frequentes</h3>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="oficial vale matricula jupiter confirmar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="grade-faq-oficial">
+              <span>Esta grade substitui o Júpiter?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="grade-faq-oficial" class="gradip-help-faq-panel" hidden><p>Não. Ela ajuda a visualizar os horários. Para matrícula, turmas e vagas, vale o que estiver no Júpiter.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="atualiza quando mudou demora minutos recarregar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="grade-faq-atualizacao">
+              <span>Um horário mudou e a grade ainda mostra o antigo. Por quê?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="grade-faq-atualizacao" class="gradip-help-faq-panel" hidden><p>A grade atual leva alguns minutos para refletir uma mudança. Espere um pouco e recarregue a página. O horário em que os dados foram lidos aparece acima do quadro.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="grade anterior mudou editar corrigir antiga">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="grade-faq-anterior">
+              <span>As grades anteriores podem mudar?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="grade-faq-anterior" class="gradip-help-faq-panel" hidden><p>Não. Cada grade anterior é uma cópia guardada pelo Serviço de Graduação antes de começar a montagem da grade seguinte, e fica como estava naquele momento.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="erro horario errado docente errado corrigir quem avisar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="grade-faq-erro">
+              <span>Encontrei uma informação errada. A quem aviso?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="grade-faq-erro" class="gradip-help-faq-panel" hidden><p>À secretaria do departamento responsável pela disciplina (o departamento aparece na ficha) ou ao Serviço de Graduação. Esta página só mostra a grade; não é possível corrigir nada por aqui.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="celular telefone tablet mobile rolar lado arrastar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="grade-faq-celular">
+              <span>Funciona no celular?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="grade-faq-celular" class="gradip-help-faq-panel" hidden><p>Sim. Em telas estreitas, o quadro com os cinco dias rola para o lado: arraste-o com o dedo para ver quinta e sexta-feira. Com o celular deitado, cabe mais coisa na tela.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="mesmo horario duas disciplinas escolher conflito optativa obrigatoria">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="grade-faq-conflito">
+              <span>Duas disciplinas estão no mesmo horário. Posso cursar as duas?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="grade-faq-conflito" class="gradip-help-faq-panel" hidden><p>Não ao mesmo tempo. Os blocos sobrepostos mostram opções no mesmo horário; escolha uma. Na dúvida sobre o seu percurso, fale com o Serviço de Graduação.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="tema escuro mudou sozinho noite claro">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="grade-faq-tema">
+              <span>A página ficou escura (ou clara) sozinha. É normal?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="grade-faq-tema" class="gradip-help-faq-panel" hidden><p>Sim, se a <strong>Aparência</strong> estiver em <strong>Sistema</strong>: a página acompanha o modo claro/escuro do seu aparelho. Para fixar um dos dois, escolha <strong>Claro</strong> ou <strong>Escuro</strong>.</p></div>
+          </article>
+
+        </section>
+
+        <div class="gradip-help-no-results" data-gradip-help-no-results hidden><strong>Nenhum resultado encontrado.</strong><p>Tente outra palavra ou limpe a busca.</p></div>
+      </main>
+    </div>
+  </section>
+</div>
