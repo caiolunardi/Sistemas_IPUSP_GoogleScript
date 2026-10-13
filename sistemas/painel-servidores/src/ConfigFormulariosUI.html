@@ -1,0 +1,849 @@
+<!-- ⚙️ CONFIGURAÇÕES → FORMULÁRIOS
+     Comportamento idêntico ao que já existia antes da modularização
+     (Instruções.txt item 32) — só a navegação de "Voltar" mudou, pra
+     devolver à landing de Configurações em vez de ir direto pro
+     dashboard. -->
+
+<style>
+
+.segmentado{
+    display:flex;
+    border:1.5px solid #005AA9;
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:20px;
+}
+
+.segmentado button{
+    flex:1;
+    padding:11px;
+    border:none;
+    background:white;
+    color:#005AA9;
+    font-weight:bold;
+    font-size:13px;
+    cursor:pointer;
+}
+
+.segmentado button.ativo{
+    background:#005AA9;
+    color:white;
+}
+
+.blocoSemestre{
+    border:1px solid #e3e8ec;
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:14px;
+    background:#fafbfc;
+    transition:.15s;
+}
+
+.blocoSemestre.desabilitado{
+    opacity:.5;
+    pointer-events:none;
+}
+
+.blocoSemestre h4{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:#666;
+    margin:0 0 12px 0;
+}
+
+.badgeTipoFormulario{
+    font-size:11px;
+    font-weight:bold;
+    padding:4px 10px;
+    border-radius:12px;
+    white-space:nowrap;
+    flex:0 0 auto;
+}
+
+.badgeTipoFormulario.sazonal{
+    background:#fff4e5;
+    color:#b5690a;
+}
+
+.badgeTipoFormulario.continuo{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.campoEditavelColacao{
+    margin-top:4px;
+    margin-bottom:14px;
+}
+
+.campoTextoColacao{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid #ccc;
+    border-radius:4px;
+    font-size:13px;
+    box-sizing:border-box;
+}
+
+</style>
+
+<div id="configFormularios" class="subTelaConfig">
+
+    <div class="cabecalhoTelaConfig">
+        <div class="cardResumo" style="margin-bottom:0; flex:1;">
+            <h1>Configurar Formulários</h1>
+            <p>Defina se cada formulário fica sempre aberto ou só em determinados períodos</p>
+        </div>
+    </div>
+
+    <div style="margin-bottom:18px;">
+        <button class="botaoVoltar" onclick="abrirSubTelaConfig('configHome')">← Voltar</button>
+    </div>
+
+    <div id="listaFormulariosConfig" class="listaSistemas"></div>
+
+    <div class="rodape">IPUSP — Assistência Acadêmica</div>
+
+</div>
+
+<!-- MODAL: CONFIGURAR UM FORMULÁRIO (genérico Sazonal/Contínuo) -->
+<div id="modalConfigFormulario" class="modalFundo">
+    <div class="modalCaixaConfig">
+
+        <div class="modalCabecalhoConfig">
+            <h2 id="tituloModalConfig">—</h2>
+            <span class="fechar" onclick="fecharModalConfigFormulario()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div class="segmentado">
+                <button type="button" id="botaoTipoSazonal" onclick="selecionarTipoFormulario('sazonal')">Sazonal</button>
+                <button type="button" id="botaoTipoContinuo" onclick="selecionarTipoFormulario('continuo')">Contínuo</button>
+            </div>
+
+            <div id="blocoSemestre1" class="blocoSemestre">
+                <h4>1º Semestre</h4>
+
+                <div class="linhaSubcampo">Abertura</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem1AberturaData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="sem1AberturaDataOculto" onchange="aplicarDataDoPicker('sem1AberturaData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem1AberturaDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem1AberturaHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="sem1AberturaHoraOculto" onchange="aplicarHoraDoPicker('sem1AberturaHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem1AberturaHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+                <div class="linhaSubcampo">Encerramento</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem1FechamentoData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="sem1FechamentoDataOculto" onchange="aplicarDataDoPicker('sem1FechamentoData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem1FechamentoDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem1FechamentoHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="sem1FechamentoHoraOculto" onchange="aplicarHoraDoPicker('sem1FechamentoHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem1FechamentoHoraOculto')">🕒</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="blocoSemestre2" class="blocoSemestre">
+                <h4>2º Semestre</h4>
+
+                <div class="linhaSubcampo">Abertura</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem2AberturaData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="sem2AberturaDataOculto" onchange="aplicarDataDoPicker('sem2AberturaData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem2AberturaDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem2AberturaHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="sem2AberturaHoraOculto" onchange="aplicarHoraDoPicker('sem2AberturaHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem2AberturaHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+                <div class="linhaSubcampo">Encerramento</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem2FechamentoData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="sem2FechamentoDataOculto" onchange="aplicarDataDoPicker('sem2FechamentoData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem2FechamentoDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="sem2FechamentoHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="sem2FechamentoHoraOculto" onchange="aplicarHoraDoPicker('sem2FechamentoHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('sem2FechamentoHoraOculto')">🕒</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="avisoValidacaoConfig" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig">
+            <button class="botaoDesativarConfig" onclick="desativarFormularioAtual('avisoValidacaoConfig', fecharModalConfigFormulario)">🚫 Desativar Formulário</button>
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalConfigFormulario()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="salvarConfigFormulario()">💾 Salvar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: CONFIGURAR "PEDIDO DE COLAÇÃO DE GRAU" -->
+<div id="modalConfigColacao" class="modalFundo">
+    <div class="modalCaixaConfig">
+
+        <div class="modalCabecalhoConfig">
+            <h2>Pedido de Colação de Grau</h2>
+            <span class="fechar" onclick="fecharModalColacao()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div class="blocoSemestre">
+
+                <div class="linhaSubcampo">Abertura</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="colacaoAberturaData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="colacaoAberturaDataOculto" onchange="aplicarDataDoPicker('colacaoAberturaData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('colacaoAberturaDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="colacaoAberturaHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="colacaoAberturaHoraOculto" onchange="aplicarHoraDoPicker('colacaoAberturaHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('colacaoAberturaHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+                <div class="linhaSubcampo">Encerramento</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="colacaoEncerramentoData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="colacaoEncerramentoDataOculto" onchange="aplicarDataDoPicker('colacaoEncerramentoData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('colacaoEncerramentoDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="colacaoEncerramentoHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="colacaoEncerramentoHoraOculto" onchange="aplicarHoraDoPicker('colacaoEncerramentoHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('colacaoEncerramentoHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Semestre da colação de grau</div>
+                <input type="text" id="colacaoSemestre" class="campoTextoColacao" placeholder="aaaa/s — ex: 2026/2" maxlength="6">
+            </div>
+
+            <div id="avisoValidacaoColacao" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig">
+            <button class="botaoDesativarConfig" onclick="desativarFormularioAtual('avisoValidacaoColacao', fecharModalColacao)">🚫 Desativar Formulário</button>
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalColacao()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="salvarConfigColacao()">💾 Salvar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: CONFIGURAR "FORMULÁRIO DE EXCLUSÃO DE DISCIPLINAS" -->
+<div id="modalConfigExclusao" class="modalFundo">
+    <div class="modalCaixaConfig">
+
+        <div class="modalCabecalhoConfig">
+            <h2>Formulário de Exclusão de Disciplinas</h2>
+            <span class="fechar" onclick="fecharModalExclusaoDisciplinas()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div id="blocoExclusaoSem1" class="blocoSemestre">
+                <h4>1º Semestre</h4>
+
+                <div class="linhaSubcampo">Abertura</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem1AberturaData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem1AberturaDataOculto" onchange="aplicarDataDoPicker('exclusaoSem1AberturaData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem1AberturaDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem1AberturaHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="exclusaoSem1AberturaHoraOculto" onchange="aplicarHoraDoPicker('exclusaoSem1AberturaHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem1AberturaHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+                <div class="linhaSubcampo">Encerramento</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem1FechamentoData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem1FechamentoDataOculto" onchange="aplicarDataDoPicker('exclusaoSem1FechamentoData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem1FechamentoDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem1FechamentoHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="exclusaoSem1FechamentoHoraOculto" onchange="aplicarHoraDoPicker('exclusaoSem1FechamentoHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem1FechamentoHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+                <div class="linhaSubcampo">Retificação (Calendário Escolar)</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem1RetifInicio" placeholder="Início dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem1RetifInicioOculto" onchange="aplicarDataDoPicker('exclusaoSem1RetifInicio', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem1RetifInicioOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem1RetifFim" placeholder="Fim dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem1RetifFimOculto" onchange="aplicarDataDoPicker('exclusaoSem1RetifFim', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem1RetifFimOculto')">📅</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="blocoExclusaoSem2" class="blocoSemestre">
+                <h4>2º Semestre</h4>
+
+                <div class="linhaSubcampo">Abertura</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem2AberturaData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem2AberturaDataOculto" onchange="aplicarDataDoPicker('exclusaoSem2AberturaData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem2AberturaDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem2AberturaHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="exclusaoSem2AberturaHoraOculto" onchange="aplicarHoraDoPicker('exclusaoSem2AberturaHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem2AberturaHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+                <div class="linhaSubcampo">Encerramento</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem2FechamentoData" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem2FechamentoDataOculto" onchange="aplicarDataDoPicker('exclusaoSem2FechamentoData', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem2FechamentoDataOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem2FechamentoHora" placeholder="hh:mm" maxlength="5" oninput="aplicarMascaraHora(this)">
+                        <input type="time" id="exclusaoSem2FechamentoHoraOculto" onchange="aplicarHoraDoPicker('exclusaoSem2FechamentoHora', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem2FechamentoHoraOculto')">🕒</button>
+                    </div>
+                </div>
+
+                <div class="linhaSubcampo">Retificação (Calendário Escolar)</div>
+                <div class="linhaCampoDuplo">
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem2RetifInicio" placeholder="Início dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem2RetifInicioOculto" onchange="aplicarDataDoPicker('exclusaoSem2RetifInicio', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem2RetifInicioOculto')">📅</button>
+                    </div>
+                    <div class="grupoCampoIcone">
+                        <input type="text" id="exclusaoSem2RetifFim" placeholder="Fim dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this)">
+                        <input type="date" id="exclusaoSem2RetifFimOculto" onchange="aplicarDataDoPicker('exclusaoSem2RetifFim', this.value)">
+                        <button type="button" class="botaoIconeCampo" onclick="abrirSeletor('exclusaoSem2RetifFimOculto')">📅</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="avisoValidacaoExclusao" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig">
+            <button class="botaoDesativarConfig" onclick="desativarFormularioAtual('avisoValidacaoExclusao', fecharModalExclusaoDisciplinas)">🚫 Desativar Formulário</button>
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalExclusaoDisciplinas()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="salvarConfigExclusaoDisciplinas()">💾 Salvar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+// "Pedido de Colação de Grau" e "Formulário de Exclusão de
+// Disciplinas" (identificados pelo texto exato na coluna A da
+// planilha de Períodos) usam telas de configuração próprias — ver
+// abrirModalConfigFormulario logo abaixo.
+const INDICADOR_COLACAO_GRAU = "Pedido de Colação de Grau";
+const INDICADOR_EXCLUSAO_DISCIPLINAS = "Formulário de Exclusão de Disciplinas";
+
+let formulariosConfig = [];
+let formularioEmEdicao = null; // guarda o objeto do formulário aberto no modal
+let tipoSelecionadoConfig = "sazonal";
+
+function carregarFormulariosConfig() {
+
+    const lista = document.getElementById("listaFormulariosConfig");
+    lista.innerHTML = "";
+    const carregando = document.createElement("div");
+    carregando.className = "vazio";
+    carregando.textContent = "Carregando formulários...";
+    lista.appendChild(carregando);
+
+    google.script.run
+        .withSuccessHandler(formularios => {
+            formulariosConfig = formularios || [];
+            renderizarFormulariosConfig();
+        })
+        .withFailureHandler(erro => {
+            lista.innerHTML = "";
+            const erroEl = document.createElement("div");
+            erroEl.className = "vazio";
+            erroEl.textContent = "Não consegui carregar os formulários: " + extrairMensagemErro_(erro);
+            lista.appendChild(erroEl);
+        })
+        .obterFormulariosConfig();
+
+}
+
+// Mesma ideia visual dos cards de sistema — nome do formulário +
+// badge indicando o tipo atual (Sazonal/Contínuo), tudo montado via
+// createElement/textContent (o conteúdo vem da planilha de Períodos,
+// que qualquer pessoa da equipe pode editar diretamente, então não é
+// tratado como HTML confiável).
+function renderizarFormulariosConfig() {
+
+    const lista = document.getElementById("listaFormulariosConfig");
+    lista.innerHTML = "";
+
+    if (formulariosConfig.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum formulário encontrado na planilha de Períodos.";
+        lista.appendChild(vazio);
+        return;
+    }
+
+    formulariosConfig.forEach((formulario, indice) => {
+
+        const card = document.createElement("div");
+        card.className = "cardSistema";
+
+        const icone = document.createElement("div");
+        icone.className = "iconeSistema";
+        icone.textContent = "📝";
+
+        const info = document.createElement("div");
+        info.className = "infoSistema";
+
+        const nomeEl = document.createElement("strong");
+        nomeEl.textContent = formulario.indicador;
+        info.appendChild(nomeEl);
+
+        const descEl = document.createElement("div");
+        descEl.textContent = formulario.tipo === "continuo" ? "Sempre aberto" : "Aberto por período definido";
+        info.appendChild(descEl);
+
+        const badge = document.createElement("div");
+        badge.className = "badgeTipoFormulario " + (formulario.tipo === "continuo" ? "continuo" : "sazonal");
+        badge.textContent = formulario.tipo === "continuo" ? "Contínuo" : "Sazonal";
+
+        const seta = document.createElement("div");
+        seta.className = "setaSistema";
+        seta.textContent = "→";
+
+        card.appendChild(icone);
+        card.appendChild(info);
+        card.appendChild(badge);
+        card.appendChild(seta);
+
+        card.onclick = () => abrirModalConfigFormulario(indice);
+
+        lista.appendChild(card);
+
+    });
+
+}
+
+/*=====================================================
+  MODAL DE CONFIGURAÇÃO DE UM FORMULÁRIO
+=====================================================*/
+
+function abrirModalConfigFormulario(indice) {
+
+    formularioEmEdicao = formulariosConfig[indice];
+
+    if (formularioEmEdicao.indicador === INDICADOR_COLACAO_GRAU) {
+        abrirModalColacao();
+        return;
+    }
+
+    if (formularioEmEdicao.indicador === INDICADOR_EXCLUSAO_DISCIPLINAS) {
+        abrirModalExclusaoDisciplinas();
+        return;
+    }
+
+    document.getElementById("tituloModalConfig").textContent = formularioEmEdicao.indicador;
+    esconderAvisoModal_("avisoValidacaoConfig");
+
+    document.getElementById("sem1AberturaData").value = formularioEmEdicao.sem1AberturaData || "";
+    document.getElementById("sem1AberturaHora").value = formularioEmEdicao.sem1AberturaHora || "";
+    document.getElementById("sem1FechamentoData").value = formularioEmEdicao.sem1FechamentoData || "";
+    document.getElementById("sem1FechamentoHora").value = formularioEmEdicao.sem1FechamentoHora || "";
+
+    document.getElementById("sem2AberturaData").value = formularioEmEdicao.sem2AberturaData || "";
+    document.getElementById("sem2AberturaHora").value = formularioEmEdicao.sem2AberturaHora || "";
+    document.getElementById("sem2FechamentoData").value = formularioEmEdicao.sem2FechamentoData || "";
+    document.getElementById("sem2FechamentoHora").value = formularioEmEdicao.sem2FechamentoHora || "";
+
+    selecionarTipoFormulario(formularioEmEdicao.tipo === "continuo" ? "continuo" : "sazonal");
+
+    document.getElementById("modalConfigFormulario").style.display = "flex";
+
+}
+
+function fecharModalConfigFormulario() {
+    document.getElementById("modalConfigFormulario").style.display = "none";
+    formularioEmEdicao = null;
+}
+
+// Contínuo desabilita (visualmente e pra interação) os dois blocos de
+// semestre — não zera o que a pessoa já digitou, só ignora esses
+// campos na hora de salvar (ver salvarConfigFormulario).
+function selecionarTipoFormulario(tipo) {
+
+    tipoSelecionadoConfig = tipo;
+
+    document.getElementById("botaoTipoSazonal").classList.toggle("ativo", tipo === "sazonal");
+    document.getElementById("botaoTipoContinuo").classList.toggle("ativo", tipo === "continuo");
+
+    const desabilitar = tipo === "continuo";
+    document.getElementById("blocoSemestre1").classList.toggle("desabilitado", desabilitar);
+    document.getElementById("blocoSemestre2").classList.toggle("desabilitado", desabilitar);
+
+}
+
+/*=====================================================
+  SALVAR (formulário genérico)
+=====================================================*/
+
+function lerSemestre(prefixo) {
+    return {
+        aberturaData: document.getElementById(prefixo + "AberturaData").value.trim(),
+        aberturaHora: document.getElementById(prefixo + "AberturaHora").value.trim(),
+        fechamentoData: document.getElementById(prefixo + "FechamentoData").value.trim(),
+        fechamentoHora: document.getElementById(prefixo + "FechamentoHora").value.trim()
+    };
+}
+
+function semestreEstaVazio(s) {
+    return !s.aberturaData && !s.aberturaHora && !s.fechamentoData && !s.fechamentoHora;
+}
+
+function semestreEstaCompleto(s) {
+    return !!(s.aberturaData && s.aberturaHora && s.fechamentoData && s.fechamentoHora);
+}
+
+function salvarConfigFormulario() {
+
+    if (!formularioEmEdicao) return;
+
+    esconderAvisoModal_("avisoValidacaoConfig");
+
+    const sem1 = lerSemestre("sem1");
+    const sem2 = lerSemestre("sem2");
+
+    if (tipoSelecionadoConfig === "sazonal") {
+
+        // Cada semestre só pode estar completamente vazio ou
+        // completamente preenchido (abertura + encerramento, data e
+        // hora) — preenchimento parcial não é aceito.
+        if (!semestreEstaVazio(sem1) && !semestreEstaCompleto(sem1)) {
+            mostrarAvisoModal_("avisoValidacaoConfig", "Preencha data e horário de abertura e de encerramento do 1º semestre, ou deixe os quatro campos em branco.");
+            return;
+        }
+
+        if (!semestreEstaVazio(sem2) && !semestreEstaCompleto(sem2)) {
+            mostrarAvisoModal_("avisoValidacaoConfig", "Preencha data e horário de abertura e de encerramento do 2º semestre, ou deixe os quatro campos em branco.");
+            return;
+        }
+
+        if (!semestreEstaCompleto(sem1) && !semestreEstaCompleto(sem2)) {
+            mostrarAvisoModal_("avisoValidacaoConfig", "Formulário Sazonal precisa ter pelo menos um semestre (1º ou 2º) com abertura e encerramento preenchidos. Se este formulário não tem período definido, selecione \"Contínuo\".");
+            return;
+        }
+
+    }
+
+    const dados = {
+        linha: formularioEmEdicao.linha,
+        indicador: formularioEmEdicao.indicador,
+        tipo: tipoSelecionadoConfig,
+        sem1: sem1,
+        sem2: sem2
+    };
+
+    const restaurarBotao = travarBotao_(document.querySelector("#modalConfigFormulario .botaoPrimarioConfig"), "Salvando...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurarBotao();
+            fecharModalConfigFormulario();
+            carregarFormulariosConfig();
+        })
+        .withFailureHandler(erro => {
+            restaurarBotao();
+            mostrarAvisoModal_("avisoValidacaoConfig", extrairMensagemErro_(erro));
+        })
+        .salvarConfigFormulario(dados);
+
+}
+
+/*=====================================================
+  MODAL DE CONFIGURAÇÃO — PEDIDO DE COLAÇÃO DE GRAU
+=====================================================*/
+
+function abrirModalColacao() {
+
+    esconderAvisoModal_("avisoValidacaoColacao");
+
+    document.getElementById("colacaoAberturaData").value = formularioEmEdicao.sem1AberturaData || "";
+    document.getElementById("colacaoAberturaHora").value = formularioEmEdicao.sem1AberturaHora || "";
+    document.getElementById("colacaoEncerramentoData").value = formularioEmEdicao.sem1FechamentoData || "";
+    document.getElementById("colacaoEncerramentoHora").value = formularioEmEdicao.sem1FechamentoHora || "";
+    document.getElementById("colacaoSemestre").value = formularioEmEdicao.semestreColacao || "";
+
+    document.getElementById("modalConfigColacao").style.display = "flex";
+
+}
+
+function fecharModalColacao() {
+    document.getElementById("modalConfigColacao").style.display = "none";
+    formularioEmEdicao = null;
+}
+
+// Mesma checagem que o backend faz (aaaas ou aaaa/s, semestre 1 ou
+// 2) — validar aqui só antecipa o erro pro usuário sem esperar a
+// viagem ao servidor; a validação de verdade continua no Code.gs.
+function normalizarSemestreColacaoCliente(valor) {
+    const texto = String(valor || "").trim();
+    const m = texto.match(/^(\d{4})\/?([12])$/);
+    return m ? `${m[1]}/${m[2]}` : null;
+}
+
+function salvarConfigColacao() {
+
+    if (!formularioEmEdicao) return;
+
+    esconderAvisoModal_("avisoValidacaoColacao");
+
+    const aberturaData = document.getElementById("colacaoAberturaData").value.trim();
+    const aberturaHora = document.getElementById("colacaoAberturaHora").value.trim();
+    const encerramentoData = document.getElementById("colacaoEncerramentoData").value.trim();
+    const encerramentoHora = document.getElementById("colacaoEncerramentoHora").value.trim();
+    const semestreDigitado = document.getElementById("colacaoSemestre").value.trim();
+
+    // Todos os campos são obrigatórios aqui — colação sempre precisa
+    // de um período e um semestre definidos, não existe "em branco".
+    if (!aberturaData || !aberturaHora || !encerramentoData || !encerramentoHora) {
+        mostrarAvisoModal_("avisoValidacaoColacao", "Preencha data e horário de abertura e de encerramento.");
+        return;
+    }
+
+    const semestreNormalizado = normalizarSemestreColacaoCliente(semestreDigitado);
+    if (!semestreNormalizado) {
+        mostrarAvisoModal_("avisoValidacaoColacao", 'Semestre inválido. Digite no formato aaaas ou aaaa/s (ex: "20262" ou "2026/2").');
+        return;
+    }
+
+    const dados = {
+        linha: formularioEmEdicao.linha,
+        indicador: formularioEmEdicao.indicador,
+        aberturaData: aberturaData,
+        aberturaHora: aberturaHora,
+        encerramentoData: encerramentoData,
+        encerramentoHora: encerramentoHora,
+        semestreColacao: semestreNormalizado
+    };
+
+    const restaurarBotao = travarBotao_(document.querySelector("#modalConfigColacao .botaoPrimarioConfig"), "Salvando...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurarBotao();
+            fecharModalColacao();
+            carregarFormulariosConfig();
+        })
+        .withFailureHandler(erro => {
+            restaurarBotao();
+            mostrarAvisoModal_("avisoValidacaoColacao", extrairMensagemErro_(erro));
+        })
+        .salvarConfigColacao(dados);
+
+}
+
+/*=====================================================
+  MODAL DE CONFIGURAÇÃO — FORMULÁRIO DE EXCLUSÃO DE
+  DISCIPLINAS
+=====================================================*/
+
+function abrirModalExclusaoDisciplinas() {
+
+    esconderAvisoModal_("avisoValidacaoExclusao");
+
+    document.getElementById("exclusaoSem1AberturaData").value = formularioEmEdicao.sem1AberturaData || "";
+    document.getElementById("exclusaoSem1AberturaHora").value = formularioEmEdicao.sem1AberturaHora || "";
+    document.getElementById("exclusaoSem1FechamentoData").value = formularioEmEdicao.sem1FechamentoData || "";
+    document.getElementById("exclusaoSem1FechamentoHora").value = formularioEmEdicao.sem1FechamentoHora || "";
+    document.getElementById("exclusaoSem1RetifInicio").value = formularioEmEdicao.sem1RetifInicio || "";
+    document.getElementById("exclusaoSem1RetifFim").value = formularioEmEdicao.sem1RetifFim || "";
+
+    document.getElementById("exclusaoSem2AberturaData").value = formularioEmEdicao.sem2AberturaData || "";
+    document.getElementById("exclusaoSem2AberturaHora").value = formularioEmEdicao.sem2AberturaHora || "";
+    document.getElementById("exclusaoSem2FechamentoData").value = formularioEmEdicao.sem2FechamentoData || "";
+    document.getElementById("exclusaoSem2FechamentoHora").value = formularioEmEdicao.sem2FechamentoHora || "";
+    document.getElementById("exclusaoSem2RetifInicio").value = formularioEmEdicao.sem2RetifInicio || "";
+    document.getElementById("exclusaoSem2RetifFim").value = formularioEmEdicao.sem2RetifFim || "";
+
+    document.getElementById("modalConfigExclusao").style.display = "flex";
+
+}
+
+function fecharModalExclusaoDisciplinas() {
+    document.getElementById("modalConfigExclusao").style.display = "none";
+    formularioEmEdicao = null;
+}
+
+function lerSemestreExclusao(prefixo) {
+    return {
+        aberturaData: document.getElementById(prefixo + "AberturaData").value.trim(),
+        aberturaHora: document.getElementById(prefixo + "AberturaHora").value.trim(),
+        fechamentoData: document.getElementById(prefixo + "FechamentoData").value.trim(),
+        fechamentoHora: document.getElementById(prefixo + "FechamentoHora").value.trim(),
+        retifInicio: document.getElementById(prefixo + "RetifInicio").value.trim(),
+        retifFim: document.getElementById(prefixo + "RetifFim").value.trim()
+    };
+}
+
+function salvarConfigExclusaoDisciplinas() {
+
+    if (!formularioEmEdicao) return;
+
+    esconderAvisoModal_("avisoValidacaoExclusao");
+
+    const sem1 = lerSemestreExclusao("exclusaoSem1");
+    const sem2 = lerSemestreExclusao("exclusaoSem2");
+
+    const sem1Completo = semestreEstaCompleto(sem1);
+    const sem2Completo = semestreEstaCompleto(sem2);
+
+    if (!semestreEstaVazio(sem1) && !sem1Completo) {
+        mostrarAvisoModal_("avisoValidacaoExclusao", "Preencha data e horário de abertura e de encerramento do 1º semestre, ou deixe os quatro campos em branco.");
+        return;
+    }
+
+    if (!semestreEstaVazio(sem2) && !sem2Completo) {
+        mostrarAvisoModal_("avisoValidacaoExclusao", "Preencha data e horário de abertura e de encerramento do 2º semestre, ou deixe os quatro campos em branco.");
+        return;
+    }
+
+    if (!sem1Completo && !sem2Completo) {
+        mostrarAvisoModal_("avisoValidacaoExclusao", "Precisa ter pelo menos um semestre (1º ou 2º) com abertura e encerramento preenchidos.");
+        return;
+    }
+
+    if (sem1Completo && (!sem1.retifInicio || !sem1.retifFim)) {
+        mostrarAvisoModal_("avisoValidacaoExclusao", "Informe também o início e o fim da retificação do 1º semestre.");
+        return;
+    }
+
+    if (sem2Completo && (!sem2.retifInicio || !sem2.retifFim)) {
+        mostrarAvisoModal_("avisoValidacaoExclusao", "Informe também o início e o fim da retificação do 2º semestre.");
+        return;
+    }
+
+    const dados = {
+        linha: formularioEmEdicao.linha,
+        indicador: formularioEmEdicao.indicador,
+        sem1: sem1,
+        sem2: sem2
+    };
+
+    const restaurarBotao = travarBotao_(document.querySelector("#modalConfigExclusao .botaoPrimarioConfig"), "Salvando...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurarBotao();
+            fecharModalExclusaoDisciplinas();
+            carregarFormulariosConfig();
+        })
+        .withFailureHandler(erro => {
+            restaurarBotao();
+            mostrarAvisoModal_("avisoValidacaoExclusao", extrairMensagemErro_(erro));
+        })
+        .salvarConfigExclusaoDisciplinas(dados);
+
+}
+
+/*=====================================================
+  DESATIVAR FORMULÁRIO (genérico — funciona pras três telas
+  de configuração acima)
+=====================================================*/
+
+// idAvisoEl: id da div de erro daquela tela específica.
+// funcaoFechar: a função de fechar daquela tela específica (chamada
+// no sucesso, pra já deixar tudo limpo — mesmo comportamento de
+// quando o formulário é salvo normalmente).
+function desativarFormularioAtual(idAvisoEl, funcaoFechar) {
+
+    if (!formularioEmEdicao) return;
+
+    const confirmar = window.confirm(
+        'Tem certeza que quer desativar "' + formularioEmEdicao.indicador + '"?\n\n' +
+        'O formulário fica fechado pros alunos até alguém configurar um novo período.'
+    );
+    if (!confirmar) return;
+
+    esconderAvisoModal_(idAvisoEl);
+
+    // Acha o botão dentro do mesmo modal do aviso, em vez de depender
+    // do "event" global (prática antiga, não confiável em todo browser).
+    const modalEl = document.getElementById(idAvisoEl).closest(".modalFundo");
+    const botaoDesativar = modalEl.querySelector(".botaoDesativarConfig");
+
+    const dados = {
+        linha: formularioEmEdicao.linha,
+        indicador: formularioEmEdicao.indicador
+    };
+
+    const restaurarBotao = travarBotao_(botaoDesativar, "Desativando...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurarBotao();
+            funcaoFechar();
+            carregarFormulariosConfig();
+        })
+        .withFailureHandler(erro => {
+            restaurarBotao();
+            mostrarAvisoModal_(idAvisoEl, extrairMensagemErro_(erro));
+        })
+        .desativarFormulario(dados);
+
+}
+
+</script>

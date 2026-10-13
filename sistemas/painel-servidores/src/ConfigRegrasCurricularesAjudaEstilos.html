@@ -1,0 +1,530 @@
+<style>
+
+/*=================================
+    ÍCONE DE AJUDA CONTEXTUAL
+    ("?" discreto ao lado de um rótulo de campo)
+==================================*/
+
+.iconeAjudaContextual{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    background:#eaf2fa;
+    color:#005AA9;
+    font-size:11px;
+    font-weight:bold;
+    cursor:pointer;
+    border:1px solid #cfe0f0;
+    margin-left:6px;
+    line-height:1;
+    vertical-align:middle;
+    flex:0 0 auto;
+}
+
+.iconeAjudaContextual:hover{
+    background:#005AA9;
+    color:white;
+}
+
+.botaoAjudaManual{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:9px 14px;
+    background:white;
+    border:1px solid #ccc;
+    color:#444;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+    white-space:nowrap;
+}
+
+.botaoAjudaManual:hover{
+    border-color:#005AA9;
+    color:#005AA9;
+    background:#eaf2fa;
+}
+
+/* explicação dinâmica de tipo de grupo (ONE_OF/MIN_COUNT/MIN_CREDITS)
+   dentro do modal de Novo Grupo */
+.explicacaoTipoGrupo{
+    font-size:12px;
+    color:#555;
+    background:#f5f9fc;
+    border:1px solid #e3e8ec;
+    border-radius:6px;
+    padding:8px 12px;
+    margin:-6px 0 14px 0;
+}
+
+/*=================================
+    TELA DE AJUDA — OVERLAY DE PÁGINA INTEIRA
+==================================*/
+
+.telaAjudaOverlay{
+    position:fixed;
+    inset:0;
+    z-index:10500;
+    background:#f5f5f5;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+.cabecalhoAjuda{
+    background:white;
+    border-bottom:1px solid #ddd;
+    padding:16px 26px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-shrink:0;
+}
+
+.cabecalhoAjuda h1{
+    margin:0;
+    font-size:18px;
+    color:#222;
+}
+
+.subtituloAjuda{
+    margin:4px 0 0 0;
+    font-size:13px;
+    color:#777;
+}
+
+.corpoAjuda{
+    flex:1;
+    overflow-y:auto;
+    padding:22px 26px 60px 26px;
+}
+
+.corpoAjudaConteudoInterno{
+    max-width:980px;
+    margin:0 auto;
+}
+
+.rodapeAjuda{
+    text-align:center;
+    color:#aaa;
+    font-size:12px;
+    padding:10px 0 18px 0;
+    flex-shrink:0;
+}
+
+/*=================================
+    BUSCA
+==================================*/
+
+.buscaAjudaContainer{
+    margin-bottom:18px;
+}
+
+.campoBuscaAjuda{
+    width:100%;
+    padding:13px 16px;
+    border:1.5px solid #005AA9;
+    border-radius:8px;
+    font-size:15px;
+    box-sizing:border-box;
+}
+
+.estadoBuscaVazia{
+    text-align:center;
+    color:#888;
+    padding:50px 20px;
+    font-size:14px;
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:6px;
+}
+
+/*=================================
+    AJUDA RÁPIDA (atalhos) + DECISÃO EM 10 SEGUNDOS
+==================================*/
+
+.blocoDestacadoAjuda{
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:8px;
+    padding:18px 20px;
+    margin-bottom:18px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+
+.blocoDestacadoAjuda h2{
+    margin:0 0 12px 0;
+    font-size:14px;
+    color:#005AA9;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+}
+
+.gradeAtalhosAjudaRapida{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+    gap:8px;
+}
+
+.atalhoAjudaRapida{
+    text-align:left;
+    padding:10px 14px;
+    background:#f5f9fc;
+    border:1px solid #e3e8ec;
+    border-radius:6px;
+    font-size:13px;
+    color:#333;
+    cursor:pointer;
+}
+
+.atalhoAjudaRapida:hover{
+    border-color:#005AA9;
+    background:#eaf2fa;
+}
+
+.cardDecisaoRapida{
+    background:#fffaf0;
+    border:1.5px solid #f0d9a8;
+    border-radius:8px;
+    padding:18px 20px;
+    margin-bottom:22px;
+}
+
+.cardDecisaoRapida h2{
+    margin:0 0 14px 0;
+    font-size:15px;
+    color:#8a5300;
+}
+
+.linhaDecisaoRapida{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px dashed #e8d7ae;
+    font-size:14px;
+}
+
+.linhaDecisaoRapida:last-child{
+    border-bottom:none;
+}
+
+.linhaDecisaoRapida .pergunta{
+    font-weight:bold;
+    color:#444;
+    flex:0 0 auto;
+}
+
+.linhaDecisaoRapida .resposta{
+    color:#005AA9;
+    font-weight:bold;
+}
+
+/*=================================
+    LAYOUT PRINCIPAL: ÍNDICE + CONTEÚDO
+==================================*/
+
+.layoutAjudaPrincipal{
+    display:flex;
+    gap:22px;
+    align-items:flex-start;
+}
+
+.indiceAjuda{
+    flex:0 0 220px;
+    position:sticky;
+    top:0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.itemIndiceAjuda{
+    text-align:left;
+    padding:9px 12px;
+    background:none;
+    border:none;
+    border-radius:6px;
+    font-size:13px;
+    color:#555;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.itemIndiceAjuda:hover{
+    background:#eaf2fa;
+    color:#005AA9;
+}
+
+.itemIndiceAjuda.ativo{
+    background:#005AA9;
+    color:white;
+    font-weight:bold;
+}
+
+.seletorIndiceAjudaMobile{
+    display:none;
+    width:100%;
+    padding:11px 14px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+    margin-bottom:16px;
+    box-sizing:border-box;
+}
+
+.conteudoAjudaCategorias{
+    flex:1;
+    min-width:0;
+}
+
+/*=================================
+    CATEGORIAS E ITENS (accordion via <details>)
+==================================*/
+
+.categoriaAjuda{
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:8px;
+    padding:18px 20px;
+    margin-bottom:18px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    scroll-margin-top:10px;
+}
+
+.categoriaAjuda.ocultaPorBusca{
+    display:none;
+}
+
+.tituloCategoriaAjuda{
+    margin:0 0 4px 0;
+    font-size:16px;
+    color:#222;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.contadorItensCategoria{
+    font-size:12px;
+    color:#999;
+    font-weight:normal;
+}
+
+.itemAjuda{
+    border-top:1px solid #eee;
+    padding:4px 0;
+}
+
+.itemAjuda.ocultoPorBusca{
+    display:none;
+}
+
+.itemAjuda summary{
+    padding:10px 4px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:bold;
+    color:#333;
+    list-style:none;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.itemAjuda summary::-webkit-details-marker{
+    display:none;
+}
+
+.itemAjuda summary::before{
+    content:"▸";
+    color:#005AA9;
+    flex:0 0 auto;
+    transition:transform .1s;
+}
+
+.itemAjuda[open] summary::before{
+    transform:rotate(90deg);
+}
+
+.itemAjuda summary:hover{
+    color:#005AA9;
+}
+
+.respostaItemAjuda{
+    padding:2px 4px 14px 22px;
+    font-size:13.5px;
+    color:#444;
+    line-height:1.6;
+}
+
+.respostaItemAjuda p{
+    margin:0 0 10px 0;
+}
+
+.respostaItemAjuda p:last-child{
+    margin-bottom:0;
+}
+
+.respostaItemAjuda ul, .respostaItemAjuda ol{
+    margin:0 0 10px 0;
+    padding-left:20px;
+}
+
+.respostaItemAjuda code{
+    background:#f0f0f0;
+    padding:1px 5px;
+    border-radius:3px;
+    font-size:12.5px;
+}
+
+.respostaItemAjuda strong{
+    color:#222;
+}
+
+.respostaItemAjuda blockquote{
+    margin:8px 0;
+    padding:8px 12px;
+    background:#f5f9fc;
+    border-left:3px solid #005AA9;
+    border-radius:0 4px 4px 0;
+}
+
+.itemAjuda.destacadoTemporario{
+    animation: pulseAjuda 1.6s ease-out 1;
+    border-radius:6px;
+}
+
+@keyframes pulseAjuda{
+    0%   { background:#fff4d6; }
+    100% { background:transparent; }
+}
+
+/*=================================
+    TABELA "AJUDA RÁPIDA POR SITUAÇÃO" e GLOSSÁRIO
+==================================*/
+
+.tabelaAjuda{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    margin:8px 0;
+}
+
+.tabelaAjuda th, .tabelaAjuda td{
+    text-align:left;
+    padding:8px 10px;
+    border-bottom:1px solid #eee;
+}
+
+.tabelaAjuda th{
+    color:#005AA9;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+}
+
+.listaGlossarioAjuda{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+    gap:12px;
+    margin-top:6px;
+}
+
+.termoGlossario{
+    background:#f5f9fc;
+    border:1px solid #e3e8ec;
+    border-radius:6px;
+    padding:10px 12px;
+}
+
+.termoGlossario strong{
+    display:block;
+    color:#005AA9;
+    font-size:13px;
+    margin-bottom:3px;
+}
+
+.termoGlossario span{
+    font-size:12.5px;
+    color:#555;
+}
+
+/*=================================
+    CHECKLISTS VISUAIS (não salvam estado)
+==================================*/
+
+.listaChecklistAjuda{
+    list-style:none;
+    margin:8px 0;
+    padding:0;
+}
+
+.listaChecklistAjuda li{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    padding:6px 0;
+    font-size:13.5px;
+    color:#444;
+}
+
+.listaChecklistAjuda input[type=checkbox]{
+    margin-top:2px;
+    flex:0 0 auto;
+}
+
+/*=================================
+    RESPONSIVIDADE
+==================================*/
+
+@media (max-width: 760px){
+
+    .cabecalhoAjuda{
+        padding:14px 16px;
+    }
+
+    .corpoAjuda{
+        padding:16px 14px 50px 14px;
+    }
+
+    .layoutAjudaPrincipal{
+        flex-direction:column;
+    }
+
+    .indiceAjuda{
+        display:none;
+    }
+
+    .seletorIndiceAjudaMobile{
+        display:block;
+    }
+
+    .gradeAtalhosAjudaRapida{
+        grid-template-columns:1fr;
+    }
+
+    .listaGlossarioAjuda{
+        grid-template-columns:1fr;
+    }
+
+    .campoBuscaAjuda{
+        font-size:14px;
+    }
+
+    .linhaDecisaoRapida{
+        flex-direction:column;
+        gap:2px;
+    }
+
+}
+
+</style>

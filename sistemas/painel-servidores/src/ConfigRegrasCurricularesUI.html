@@ -1,0 +1,2149 @@
+<!-- ⚙️ CONFIGURAÇÕES → REGRAS CURRICULARES
+     Painel administrativo da planilha de Regras Curriculares
+     (ver ConfigRegrasCurriculares*.gs). Não implementa ainda o motor
+     de análise de histórico — só cadastro/edição/ativação das regras
+     em si (Instruções.txt item 40). -->
+
+<div id="configRegrasCurriculares" class="subTelaConfig">
+
+    <!-- LISTA DE RULESETS -->
+    <div id="painelListaRulesets">
+
+        <div class="cabecalhoTelaConfig">
+            <div class="cardResumo" style="margin-bottom:0; flex:1;">
+                <h1>🎓 Regras Curriculares</h1>
+                <p>Critérios utilizados na conferência automática de históricos escolares</p>
+            </div>
+            <button class="botaoAjudaManual" style="margin-left:14px;" onclick="RegrasCurricularesAjuda.abrir()">❓ Manual e FAQ</button>
+        </div>
+
+        <div style="margin-bottom:18px;">
+            <button class="botaoVoltar" onclick="abrirSubTelaConfig('configHome')">← Voltar</button>
+        </div>
+
+        <div id="listaRulesetsCurriculares" class="listaSistemas"></div>
+
+        <div class="rodape">IPUSP — Assistência Acadêmica</div>
+
+    </div>
+
+    <!-- EDITOR DE UM RULESET -->
+    <div id="painelEditorRuleset" style="display:none;">
+
+        <div class="cabecalhoTelaConfig">
+            <div class="cardResumo" style="margin-bottom:0; flex:1;">
+                <h1 id="tituloEditorRuleset">—</h1>
+                <p id="subtituloEditorRuleset">—</p>
+            </div>
+            <div id="badgeStatusEditorRuleset" style="margin-left:14px;"></div>
+        </div>
+
+        <div style="margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <button class="botaoVoltar" onclick="voltarParaListaRulesets()">← Voltar para Regras Curriculares</button>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <button class="botaoAjudaManual" onclick="RegrasCurricularesAjuda.abrir()">❓ Manual e FAQ</button>
+                <div id="acoesEditorRuleset" class="grupoBotoesDireita"></div>
+            </div>
+        </div>
+
+        <div class="tabsRuleset">
+            <button class="botaoTabRuleset ativo" data-tab="geral" onclick="selecionarTabRuleset('geral')">Geral</button>
+            <button class="botaoTabRuleset" data-tab="requisitos" onclick="selecionarTabRuleset('requisitos')">Requisitos</button>
+            <button class="botaoTabRuleset" data-tab="disciplinas" onclick="selecionarTabRuleset('disciplinas')">Disciplinas</button>
+            <button class="botaoTabRuleset" data-tab="grupos" onclick="selecionarTabRuleset('grupos')">Grupos</button>
+        </div>
+
+        <div id="tabConteudoGeral" class="tabConteudoRuleset"></div>
+        <div id="tabConteudoRequisitos" class="tabConteudoRuleset" style="display:none;"></div>
+        <div id="tabConteudoDisciplinas" class="tabConteudoRuleset" style="display:none;"></div>
+        <div id="tabConteudoGrupos" class="tabConteudoRuleset" style="display:none;"></div>
+
+        <div class="rodape">IPUSP — Assistência Acadêmica</div>
+
+    </div>
+
+</div>
+
+<!-- MODAL: REQUISITO NUMÉRICO -->
+<div id="modalRequisito" class="modalFundo">
+    <div class="modalCaixaConfig larga">
+
+        <div class="modalCabecalhoConfig">
+            <h2 id="tituloModalRequisito">Requisito</h2>
+            <span class="fechar" onclick="fecharModalRequisito()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div id="campoCriterioRequisitoContainer"></div>
+            <div id="campoOperadorRequisitoContainer"></div>
+
+            <div class="linhaCampoDuplo">
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Valor</div>
+                    <input type="text" id="campoValorRequisito" class="campoTextoColacao" inputmode="decimal">
+                </div>
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Unidade</div>
+                    <input type="text" id="campoUnidadeRequisito" class="campoTextoColacao" placeholder="ex: horas, créditos">
+                </div>
+            </div>
+
+            <div id="campoObrigatorioRequisitoContainer"></div>
+            <div id="campoAtivoRequisitoContainer"></div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Descrição</div>
+                <input type="text" id="campoDescricaoRequisito" class="campoTextoColacao">
+            </div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Observação</div>
+                <textarea id="campoObservacaoRequisito" class="campoTextoColacao" rows="2"></textarea>
+            </div>
+
+            <div id="avisoModalRequisito" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig">
+            <button class="botaoDesativarConfig" id="botaoExcluirRequisito" onclick="excluirRequisitoAtual()">🗑️ Excluir</button>
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalRequisito()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="salvarRequisitoAtual()">💾 Salvar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: DISCIPLINA -->
+<div id="modalDisciplina" class="modalFundo">
+    <div class="modalCaixaConfig larga">
+
+        <div class="modalCabecalhoConfig">
+            <h2 id="tituloModalDisciplina">Disciplina</h2>
+            <span class="fechar" onclick="fecharModalDisciplina()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div class="linhaCampoDuplo">
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Sigla</div>
+                    <input type="text" id="campoSiglaDisciplina" class="campoTextoColacao">
+                </div>
+                <div style="flex:2;">
+                    <div class="linhaSubcampo">Nome</div>
+                    <input type="text" id="campoNomeDisciplina" class="campoTextoColacao">
+                </div>
+            </div>
+
+            <div id="campoTipoRegraDisciplinaContainer"></div>
+
+            <div id="blocoGrupoDisciplina" style="display:none;">
+                <div id="campoGrupoDisciplinaContainer"></div>
+            </div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Status aceitos no Jupiter (configuração explícita — usada futuramente pelo motor de análise) <span class="iconeAjudaContextual" role="button" tabindex="0" aria-label="Ajuda: Status aceitos no Júpiter" onclick="window.RegrasCurricularesAjuda && window.RegrasCurricularesAjuda.abrir('status-aceitos-jupiter')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}">?</span></div>
+                <input type="text" id="campoStatusAceitosDisciplina" class="campoTextoColacao" placeholder="ex: Aprovado, Aproveitamento">
+            </div>
+
+            <div id="campoAtivoDisciplinaContainer"></div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Observação</div>
+                <textarea id="campoObservacaoDisciplina" class="campoTextoColacao" rows="2"></textarea>
+            </div>
+
+            <div id="avisoModalDisciplina" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig">
+            <button class="botaoDesativarConfig" id="botaoExcluirDisciplina" onclick="excluirDisciplinaAtual()">🗑️ Excluir</button>
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalDisciplina()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="salvarDisciplinaAtual()">💾 Salvar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: GRUPO DE REGRAS -->
+<div id="modalGrupo" class="modalFundo">
+    <div class="modalCaixaConfig larga">
+
+        <div class="modalCabecalhoConfig">
+            <h2 id="tituloModalGrupo">Grupo</h2>
+            <span class="fechar" onclick="fecharModalGrupo()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Nome do grupo</div>
+                <input type="text" id="campoNomeGrupo" class="campoTextoColacao">
+            </div>
+
+            <div id="campoTipoRegraGrupoContainer"></div>
+            <div id="explicacaoTipoGrupo" class="explicacaoTipoGrupo" style="display:none;"></div>
+
+            <div class="linhaCampoDuplo">
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Valor mínimo</div>
+                    <input type="text" id="campoValorMinimoGrupo" class="campoTextoColacao" inputmode="decimal">
+                </div>
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Unidade</div>
+                    <input type="text" id="campoUnidadeGrupo" class="campoTextoColacao" placeholder="ex: disciplinas, créditos">
+                </div>
+            </div>
+
+            <div id="blocoCampoSomaGrupo" style="display:none;">
+                <div id="campoCampoSomaGrupoContainer"></div>
+            </div>
+
+            <div id="campoAtivoGrupoContainer"></div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Observação</div>
+                <textarea id="campoObservacaoGrupo" class="campoTextoColacao" rows="2"></textarea>
+            </div>
+
+            <div id="avisoModalGrupo" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig">
+            <button class="botaoDesativarConfig" id="botaoExcluirGrupo" onclick="excluirGrupoAtual()">🗑️ Excluir</button>
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalGrupo()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="salvarGrupoAtual()">💾 Salvar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: RESULTADO DE VALIDAÇÃO (botão "Validar regras", e também
+     usado como pré-checagem antes de mostrar a confirmação de
+     ativação — Instruções.txt itens 17 e 44) -->
+<div id="modalResultadoValidacao" class="modalFundo">
+    <div class="modalCaixaConfig">
+
+        <div class="modalCabecalhoConfig">
+            <h2 id="tituloModalResultadoValidacao">Validação</h2>
+            <span class="fechar" onclick="fecharModalResultadoValidacao()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+            <div id="corpoResultadoValidacao"></div>
+        </div>
+
+        <div class="modalRodapeConfig" style="justify-content:flex-end;">
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalResultadoValidacao()">Fechar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: CONFIRMAR ATIVAÇÃO (Instruções.txt item 18 — só aparece
+     depois que a validação completa já passou) -->
+<div id="modalConfirmarAtivacao" class="modalFundo">
+    <div class="modalCaixaConfig">
+
+        <div class="modalCabecalhoConfig">
+            <h2 id="tituloModalConfirmarAtivacao">Ativar ruleset?</h2>
+            <span class="fechar" onclick="fecharModalConfirmarAtivacao()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+            <div id="corpoConfirmarAtivacao"></div>
+            <div id="avisoModalConfirmarAtivacao" class="avisoValidacaoConfig"></div>
+        </div>
+
+        <div class="modalRodapeConfig" style="justify-content:flex-end;">
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalConfirmarAtivacao()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="confirmarAtivacaoRulesetAtual()">✅ Ativar ruleset</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: CORRIGIR RULESET ATIVO (entra no MODO DE CORREÇÃO — exige
+     motivo, nunca aplica nenhuma mutação por si só) -->
+<div id="modalCorrigirAtivo" class="modalFundo">
+    <div class="modalCaixaConfig">
+
+        <div class="modalCabecalhoConfig">
+            <h2>✏️ Corrigir ruleset ativo</h2>
+            <span class="fechar" onclick="fecharModalCorrigirAtivo()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div class="avisoInfoRuleset">
+                Isto abre um modo de correção interna sobre um ruleset ATIVO. Cada alteração confirmada aqui gera uma nova revisão auditada (com data, autor, motivo e o conteúdo antes/depois) — não é o mesmo que "Criar nova versão", que preserva a versão atual intacta.
+            </div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Motivo da correção (obrigatório)</div>
+                <textarea id="campoMotivoCorrecaoAtiva" class="campoTextoColacao" rows="3" placeholder="ex: valor mínimo de AAC estava cadastrado incorretamente (400h em vez de 360h)"></textarea>
+            </div>
+
+            <div id="avisoModalCorrigirAtivo" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig" style="justify-content:flex-end;">
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalCorrigirAtivo()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="confirmarEntrarModoCorrecao()">✏️ Entrar no modo de correção</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: CRIAR REGRAS PARA OUTRO CURRÍCULO (multi-currículo — clona
+     a estrutura do ruleset atual como PONTO DE PARTIDA pra um
+     curso_codigo diferente; resultado é sempre um RASCUNHO novo) -->
+<div id="modalOutroCurriculo" class="modalFundo">
+    <div class="modalCaixaConfig larga">
+
+        <div class="modalCabecalhoConfig">
+            <h2>🧬 Criar regras para outro currículo</h2>
+            <span class="fechar" onclick="fecharModalOutroCurriculo()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+
+            <div class="avisoInfoRuleset">
+                Clona os requisitos, disciplinas e grupos deste ruleset como PONTO DE PARTIDA para um código de curso diferente (ex: 47012 → 47011), mantendo a mesma habilitação. O resultado é sempre um RASCUNHO novo — nada é ativado automaticamente, e o ruleset de origem não é alterado. Revise todos os dados acadêmicos antes de ativar.
+            </div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Novo código do curso (obrigatório)</div>
+                <input type="text" id="campoNovoCursoCodigo" class="campoTextoColacao" placeholder="ex: 47011">
+            </div>
+
+            <div class="campoEditavelColacao">
+                <div class="linhaSubcampo">Estrutura curricular</div>
+                <input type="text" id="campoEstruturaOutroCurriculo" class="campoTextoColacao">
+            </div>
+
+            <div class="linhaCampoDuplo">
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Vigência — início</div>
+                    <input type="text" id="campoVigenciaInicioOutroCurriculo" class="campoTextoColacao" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this);">
+                </div>
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Vigência — fim</div>
+                    <input type="text" id="campoVigenciaFimOutroCurriculo" class="campoTextoColacao" placeholder="dd/mm/aaaa" maxlength="10" oninput="aplicarMascaraData(this);">
+                </div>
+            </div>
+
+            <div class="linhaCampoDuplo">
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Semestres mínimos</div>
+                    <input type="text" id="campoSemestresMinimosOutroCurriculo" class="campoTextoColacao">
+                </div>
+                <div style="flex:1;">
+                    <div class="linhaSubcampo">Semestres máximos</div>
+                    <input type="text" id="campoSemestresMaximosOutroCurriculo" class="campoTextoColacao">
+                </div>
+            </div>
+
+            <div id="campoExcedenteOutroCurriculoContainer"></div>
+
+            <div id="avisoModalOutroCurriculo" class="avisoValidacaoConfig"></div>
+
+        </div>
+
+        <div class="modalRodapeConfig" style="justify-content:flex-end;">
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalOutroCurriculo()">Cancelar</button>
+                <button class="botaoPrimarioConfig" onclick="confirmarCriarOutroCurriculo()">🧬 Criar RASCUNHO</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: HISTÓRICO DE REVISÕES (somente leitura — auditoria de
+     correções de ATIVO, ConfigRegrasCurricularesAuditoria.gs) -->
+<div id="modalHistoricoRevisoes" class="modalFundo">
+    <div class="modalCaixaConfig larga">
+
+        <div class="modalCabecalhoConfig">
+            <h2>📜 Histórico de revisões</h2>
+            <span class="fechar" onclick="fecharModalHistoricoRevisoes()">&times;</span>
+        </div>
+
+        <div class="modalCorpoConfig">
+            <div id="corpoHistoricoRevisoes"></div>
+        </div>
+
+        <div class="modalRodapeConfig" style="justify-content:flex-end;">
+            <div class="grupoBotoesDireita">
+                <button class="botaoSecundarioConfig" onclick="fecharModalHistoricoRevisoes()">Fechar</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+/*=====================================================
+  ESTADO
+=====================================================*/
+
+let rulesetsCurriculares = [];    // lista (tela inicial)
+let rulesetEmEdicao = null;       // bundle completo do editor: {ruleset, requisitos, disciplinas, grupos, resumo, jaUtilizado, analisesCount}
+let tabAtivaRuleset = "geral";
+let dicionarioRegrasCache = null; // cache em memória — recarrega a cada sessão de página, nunca fica desatualizado entre deploys
+
+let requisitoEmEdicao = null; // null = criando novo
+let disciplinaEmEdicao = null;
+let grupoEmEdicao = null;
+
+// MODO DE CORREÇÃO (revisão interna de ruleset ATIVO) — estado
+// puramente do CLIENTE: o servidor nunca recebe um "modo", só recebe
+// motivoCorrecaoAtiva junto de cada chamada de mutação (é o STATUS
+// real do ruleset, sempre lido de novo no servidor, que decide se
+// aquilo é uma correção auditada — ConfigRegrasCurricularesAuditoria.gs).
+// null = fora do modo de correção. {motivo} = dentro do modo: todo
+// campo que hoje é travado só por status==="ATIVO" passa a ficar
+// destravado, EXCETO os campos de identidade (ruleset_id, curso_codigo,
+// habilitacao_codigo, habilitacao_nome, versao, estrutura_curricular),
+// que o servidor recusa alterar mesmo em modo de correção — por isso a
+// UI também nunca os libera aqui.
+let modoCorrecaoAtiva = null;
+
+function dentroDoModoCorrecao_() {
+    return !!modoCorrecaoAtiva;
+}
+
+// Usado por TODAS as chamadas de mutação (dados gerais, requisito,
+// disciplina, grupo — inclusive exclusões) — undefined fora do modo de
+// correção, pra não mandar um campo estranho num fluxo de RASCUNHO normal.
+function motivoParaMutacaoAtual_() {
+    return dentroDoModoCorrecao_() ? modoCorrecaoAtiva.motivo : undefined;
+}
+
+/*=====================================================
+  HELPERS DE CAMPO — reaproveitados nas abas Geral e nos
+  3 modais (Requisito/Disciplina/Grupo). Tudo via
+  createElement/textContent, nunca innerHTML com dado
+  vindo da planilha (Instruções.txt item 25).
+=====================================================*/
+
+function normalizarSemAcentoCliente_(valor) {
+    return String(valor || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+
+function criarCampoSomenteLeitura_(rotulo, valor) {
+    const div = document.createElement("div");
+    div.className = "campoSomenteLeitura";
+    const label = document.createElement("div");
+    label.className = "linhaSubcampo";
+    label.textContent = rotulo;
+    const valorEl = document.createElement("div");
+    valorEl.className = "valorSomenteLeitura";
+    valorEl.textContent = (valor === null || valor === undefined || valor === "") ? "—" : String(valor);
+    div.appendChild(label);
+    div.appendChild(valorEl);
+    return div;
+}
+
+function criarCampoTexto_(id, rotulo, valorAtual, desabilitado, multilinha) {
+    const div = document.createElement("div");
+    div.className = "campoEditavelColacao";
+    const label = document.createElement("div");
+    label.className = "linhaSubcampo";
+    label.textContent = rotulo;
+    div.appendChild(label);
+    const input = document.createElement(multilinha ? "textarea" : "input");
+    if (!multilinha) input.type = "text"; else input.rows = 3;
+    input.id = id;
+    input.className = "campoTextoColacao";
+    input.value = valorAtual || "";
+    input.disabled = !!desabilitado;
+    div.appendChild(input);
+    return div;
+}
+
+// opcoes: [{valor, rotulo}]. Se valorAtual estiver vazio, entra uma
+// opção "Selecione..." desabilitada-por-convenção (não trava nada no
+// servidor — é só UX, a validação de verdade é sempre no backend).
+function criarCampoSelect_(id, rotulo, opcoes, valorAtual, desabilitado) {
+    const div = document.createElement("div");
+    div.className = "campoEditavelColacao";
+    const label = document.createElement("div");
+    label.className = "linhaSubcampo";
+    label.textContent = rotulo;
+    div.appendChild(label);
+    const select = document.createElement("select");
+    select.id = id;
+    select.className = "campoTextoColacao";
+    select.disabled = !!desabilitado;
+
+    if (!valorAtual) {
+        const optPlaceholder = document.createElement("option");
+        optPlaceholder.value = "";
+        optPlaceholder.textContent = "Selecione...";
+        select.appendChild(optPlaceholder);
+    }
+
+    (opcoes || []).forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.valor;
+        opt.textContent = o.rotulo || o.valor;
+        if (String(o.valor) === String(valorAtual)) opt.selected = true;
+        select.appendChild(opt);
+    });
+
+    div.appendChild(select);
+    return div;
+}
+
+function criarCampoSimNao_(id, rotulo, valorAtual, desabilitado) {
+    const ativoAtual = normalizarSemAcentoCliente_(valorAtual) === "sim";
+    return criarCampoSelect_(id, rotulo, [{ valor: "NAO", rotulo: "Não" }, { valor: "SIM", rotulo: "Sim" }], ativoAtual ? "SIM" : "NAO", desabilitado);
+}
+
+// Mesmo padrão visual dos campos de data das outras telas (máscara +
+// ícone que abre o seletor nativo) — reaproveita aplicarMascaraData/
+// abrirSeletor/aplicarDataDoPicker, que são globais (Painel.html).
+function criarCampoDataComIcone_(id, rotulo, valorAtual, desabilitado) {
+
+    const div = document.createElement("div");
+    div.style.flex = "1";
+    div.style.minWidth = "0";
+
+    const label = document.createElement("div");
+    label.className = "linhaSubcampo";
+    label.textContent = rotulo;
+    div.appendChild(label);
+
+    const grupo = document.createElement("div");
+    grupo.className = "grupoCampoIcone";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = id;
+    input.placeholder = "dd/mm/aaaa";
+    input.maxLength = 10;
+    input.value = valorAtual || "";
+    input.disabled = !!desabilitado;
+    input.oninput = function () { aplicarMascaraData(this); };
+    grupo.appendChild(input);
+
+    const inputOculto = document.createElement("input");
+    inputOculto.type = "date";
+    inputOculto.id = id + "Oculto";
+    inputOculto.onchange = function () { aplicarDataDoPicker(id, this.value); };
+    grupo.appendChild(inputOculto);
+
+    if (!desabilitado) {
+        const botaoIcone = document.createElement("button");
+        botaoIcone.type = "button";
+        botaoIcone.className = "botaoIconeCampo";
+        botaoIcone.textContent = "📅";
+        botaoIcone.onclick = () => abrirSeletor(id + "Oculto");
+        grupo.appendChild(botaoIcone);
+    }
+
+    div.appendChild(grupo);
+    return div;
+
+}
+
+/*=====================================================
+  HELPERS DE AJUDA CONTEXTUAL (aditivos — não tocam nos
+  helpers de campo existentes acima, só são usados nos
+  pontos específicos listados na Central de Ajuda)
+=====================================================*/
+
+// Ícone "?" discreto que abre a Central de Ajuda direto na seção
+// correspondente (RegrasCurricularesAjuda.abrir, definido em
+// ConfigRegrasCurricularesAjuda.html).
+function criarIconeAjuda_(ajudaId, rotuloAria) {
+    const icone = document.createElement("span");
+    icone.className = "iconeAjudaContextual";
+    icone.textContent = "?";
+    icone.setAttribute("role", "button");
+    icone.setAttribute("tabindex", "0");
+    icone.setAttribute("aria-label", "Ajuda: " + (rotuloAria || ajudaId));
+    icone.onclick = () => window.RegrasCurricularesAjuda && window.RegrasCurricularesAjuda.abrir(ajudaId);
+    icone.onkeydown = (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); icone.click(); }
+    };
+    return icone;
+}
+
+// Anexa um ícone de ajuda ao final do rótulo (.linhaSubcampo) de um
+// campo já criado pelos helpers acima — não altera o input em si,
+// só acrescenta o ícone ao lado do texto do rótulo.
+function adicionarAjudaAoCampo_(divCampo, ajudaId, rotuloAria) {
+    const rotulo = divCampo.querySelector(".linhaSubcampo");
+    if (rotulo) rotulo.appendChild(criarIconeAjuda_(ajudaId, rotuloAria));
+    return divCampo;
+}
+
+// Cabeçalho de aba (Requisitos/Disciplinas/Grupos) com título + "?"
+// de ajuda contextual — usado no topo das 3 abas de itens.
+function criarCabecalhoAbaComAjuda_(titulo, ajudaId) {
+    const cabecalho = document.createElement("div");
+    cabecalho.style.display = "flex";
+    cabecalho.style.alignItems = "center";
+    cabecalho.style.marginBottom = "10px";
+    const tituloEl = document.createElement("strong");
+    tituloEl.style.fontSize = "13px";
+    tituloEl.style.color = "#555";
+    tituloEl.textContent = titulo;
+    cabecalho.appendChild(tituloEl);
+    cabecalho.appendChild(criarIconeAjuda_(ajudaId, titulo));
+    return cabecalho;
+}
+
+// Aviso curto e discreto (reaproveita .avisoInfoRuleset, já usado em
+// outras partes da tela) — usado nas abas Disciplinas/Grupos e perto
+// de Ativar ruleset (Instruções item 12).
+function criarAvisoCurto_(texto) {
+    const aviso = document.createElement("div");
+    aviso.className = "avisoInfoRuleset";
+    aviso.textContent = texto;
+    return aviso;
+}
+
+function iconePorHabilitacao_(nome) {
+    const n = String(nome || "").toLowerCase();
+    if (n.indexOf("psic") !== -1) return "🧠";
+    if (n.indexOf("licenc") !== -1) return "📘";
+    return "🎓";
+}
+
+function badgeStatusRuleset_(status) {
+    const el = document.createElement("div");
+    const statusNorm = String(status || "").trim().toUpperCase();
+    el.className = "badgeStatusRuleset " + statusNorm.toLowerCase();
+    el.textContent = statusNorm || "—";
+    return el;
+}
+
+// Badge discreto de revisão — sempre exibido separado da versão (nunca
+// no mesmo texto), pra deixar claro que são dois contadores diferentes:
+// versão = decisão institucional deliberada; revisão = correção interna
+// auditada dentro da MESMA versão (Instruções da tarefa).
+function badgeRevisao_(revisao) {
+    const el = document.createElement("div");
+    el.className = "badgeRevisaoRuleset";
+    const numero = (revisao === null || revisao === undefined || revisao === "") ? 1 : revisao;
+    el.textContent = "rev. " + numero;
+    return el;
+}
+
+/*=====================================================
+  DICIONÁRIO (cache em memória por sessão de página)
+=====================================================*/
+
+function obterDicionarioRegras_(callback) {
+    if (dicionarioRegrasCache) { callback(dicionarioRegrasCache); return; }
+    google.script.run
+        .withSuccessHandler(dicionario => {
+            dicionarioRegrasCache = dicionario;
+            callback(dicionario);
+        })
+        .withFailureHandler(erro => {
+            alert("Não consegui carregar o dicionário de Regras Curriculares: " + extrairMensagemErro_(erro));
+        })
+        .obterDicionarioRegrasCurriculares();
+}
+
+/*=====================================================
+  LISTA DE RULESETS
+=====================================================*/
+
+function carregarRulesetsCurriculares() {
+
+    const lista = document.getElementById("listaRulesetsCurriculares");
+    lista.innerHTML = "";
+    const carregando = document.createElement("div");
+    carregando.className = "vazio";
+    carregando.textContent = "Carregando rulesets...";
+    lista.appendChild(carregando);
+
+    google.script.run
+        .withSuccessHandler(rulesets => {
+            rulesetsCurriculares = rulesets || [];
+            renderizarListaRulesets();
+        })
+        .withFailureHandler(erro => {
+            lista.innerHTML = "";
+            const erroEl = document.createElement("div");
+            erroEl.className = "vazio";
+            erroEl.textContent = "Não consegui carregar os rulesets: " + extrairMensagemErro_(erro);
+            lista.appendChild(erroEl);
+        })
+        .listarRulesetsCurriculares();
+
+}
+
+// Agrupamento de exibição: curso_codigo → habilitação (código+nome) →
+// versão (mais recente primeiro). Multi-currículo (Instruções da
+// tarefa: "vários curso_codigo podem coexistir, cada um com suas
+// próprias habilitações") — a lista precisa deixar isso visualmente
+// óbvio, nunca misturar currículos diferentes numa mesma "pilha" de
+// versões.
+function agruparRulesetsParaLista_(rulesets) {
+
+    const gruposCurso = new Map(); // curso_codigo -> Map(habilitacao_codigo -> {nome, itens[]})
+
+    rulesets.forEach(r => {
+        const curso = String(r.curso_codigo || "").trim() || "(sem código de curso)";
+        const habCodigo = String(r.habilitacao_codigo === null || r.habilitacao_codigo === undefined ? "" : r.habilitacao_codigo).trim();
+
+        if (!gruposCurso.has(curso)) gruposCurso.set(curso, new Map());
+        const gruposHab = gruposCurso.get(curso);
+
+        if (!gruposHab.has(habCodigo)) gruposHab.set(habCodigo, { nome: r.habilitacao_nome || "", itens: [] });
+        gruposHab.get(habCodigo).itens.push(r);
+    });
+
+    // curso_codigo ordenado por texto (não numérico — códigos podem ter
+    // zeros à esquerda relevantes); habilitação por nome; versão desc.
+    const cursosOrdenados = Array.from(gruposCurso.keys()).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+    return cursosOrdenados.map(curso => {
+        const gruposHab = gruposCurso.get(curso);
+        const habilitacoesOrdenadas = Array.from(gruposHab.keys()).sort((a, b) => {
+            const ga = gruposHab.get(a), gb = gruposHab.get(b);
+            return String(ga.nome || "").localeCompare(String(gb.nome || ""), "pt-BR");
+        });
+        return {
+            curso: curso,
+            habilitacoes: habilitacoesOrdenadas.map(habCodigo => {
+                const g = gruposHab.get(habCodigo);
+                const itensOrdenados = g.itens.slice().sort((a, b) => (Number(b.versao) || 0) - (Number(a.versao) || 0));
+                return { habCodigo: habCodigo, nome: g.nome, itens: itensOrdenados };
+            })
+        };
+    });
+
+}
+
+function renderizarListaRulesets() {
+
+    const lista = document.getElementById("listaRulesetsCurriculares");
+    lista.innerHTML = "";
+
+    if (rulesetsCurriculares.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum ruleset cadastrado na planilha de Regras Curriculares.";
+        lista.appendChild(vazio);
+        return;
+    }
+
+    const grupos = agruparRulesetsParaLista_(rulesetsCurriculares);
+
+    grupos.forEach(grupoCurso => {
+
+        const cabecalhoCurso = document.createElement("div");
+        cabecalhoCurso.className = "cabecalhoGrupoCurso";
+        cabecalhoCurso.textContent = `📚 Currículo ${grupoCurso.curso}`;
+        lista.appendChild(cabecalhoCurso);
+
+        grupoCurso.habilitacoes.forEach(grupoHab => {
+
+            const cabecalhoHab = document.createElement("div");
+            cabecalhoHab.className = "subCabecalhoHabilitacao";
+            const iconeHab = iconePorHabilitacao_(grupoHab.nome);
+            cabecalhoHab.textContent = `${iconeHab} ${grupoHab.nome || "(habilitação sem nome)"} — código ${grupoHab.habCodigo || "—"}`;
+            lista.appendChild(cabecalhoHab);
+
+            grupoHab.itens.forEach(ruleset => {
+
+                const card = document.createElement("div");
+                card.className = "cardSistema";
+
+                const icone = document.createElement("div");
+                icone.className = "iconeSistema";
+                icone.textContent = iconePorHabilitacao_(ruleset.habilitacao_nome);
+
+                const info = document.createElement("div");
+                info.className = "infoSistema";
+
+                const nomeEl = document.createElement("strong");
+                nomeEl.textContent = `v${ruleset.versao} — ${ruleset.ruleset_id}`;
+                info.appendChild(nomeEl);
+
+                const detalheEl = document.createElement("div");
+                detalheEl.textContent = ruleset.estrutura_curricular
+                    ? `Estrutura: ${ruleset.estrutura_curricular}`
+                    : "Estrutura curricular não definida";
+                info.appendChild(detalheEl);
+
+                card.appendChild(icone);
+                card.appendChild(info);
+                card.appendChild(badgeRevisao_(ruleset.revisao));
+                card.appendChild(badgeStatusRuleset_(ruleset.status));
+
+                const seta = document.createElement("div");
+                seta.className = "setaSistema";
+                seta.textContent = "→";
+                card.appendChild(seta);
+
+                card.onclick = () => abrirRuleset(ruleset.ruleset_id);
+
+                lista.appendChild(card);
+
+            });
+
+        });
+
+    });
+
+}
+
+/*=====================================================
+  ABRIR / RENDERIZAR EDITOR DE RULESET
+=====================================================*/
+
+function abrirRuleset(rulesetId) {
+
+    modoCorrecaoAtiva = null; // toda vez que abre um ruleset, começa fora do modo de correção
+    document.getElementById("painelListaRulesets").style.display = "none";
+    document.getElementById("painelEditorRuleset").style.display = "block";
+    document.getElementById("tabConteudoGeral").innerHTML = '<div class="vazio">Carregando...</div>';
+
+    obterDicionarioRegras_(() => {
+        google.script.run
+            .withSuccessHandler(detalhe => {
+                rulesetEmEdicao = detalhe;
+                tabAtivaRuleset = "geral";
+                renderizarEditorRuleset();
+            })
+            .withFailureHandler(erro => {
+                alert("Não consegui abrir este ruleset: " + extrairMensagemErro_(erro));
+                voltarParaListaRulesets();
+            })
+            .obterRulesetCurricular(rulesetId);
+    });
+
+}
+
+function voltarParaListaRulesets() {
+    document.getElementById("painelEditorRuleset").style.display = "none";
+    document.getElementById("painelListaRulesets").style.display = "block";
+    rulesetEmEdicao = null;
+    modoCorrecaoAtiva = null;
+    carregarRulesetsCurriculares();
+}
+
+function renderizarEditorRuleset() {
+
+    const r = rulesetEmEdicao.ruleset;
+    const status = String(r.status || "").trim().toUpperCase();
+
+    document.getElementById("tituloEditorRuleset").textContent = r.habilitacao_nome || r.ruleset_id;
+    document.getElementById("subtituloEditorRuleset").textContent = `${r.curso_codigo}/${r.habilitacao_codigo} · ${r.ruleset_id} · v${r.versao}`;
+
+    const badgeContainer = document.getElementById("badgeStatusEditorRuleset");
+    badgeContainer.innerHTML = "";
+    badgeContainer.appendChild(badgeRevisao_(r.revisao));
+    badgeContainer.appendChild(badgeStatusRuleset_(status));
+
+    renderizarBannerModoCorrecao_(status);
+    renderizarBarraAcoesRuleset_(status);
+    selecionarTabRuleset(tabAtivaRuleset);
+
+}
+
+// Banner fixo, discreto mas impossível de não notar, mostrado só
+// enquanto modoCorrecaoAtiva estiver ativo — Instruções da tarefa:
+// "sinalize claramente, na tela, que a edição está acontecendo sobre
+// um ruleset ATIVO". Mostra o ruleset, a revisão atual (a que vai
+// virar "anterior" na próxima correção confirmada) e o motivo
+// informado ao entrar no modo.
+function renderizarBannerModoCorrecao_(status) {
+
+    const antigo = document.getElementById("bannerModoCorrecao");
+    if (antigo) antigo.remove();
+
+    if (!dentroDoModoCorrecao_() || status !== "ATIVO") return;
+
+    const r = rulesetEmEdicao.ruleset;
+    const banner = document.createElement("div");
+    banner.id = "bannerModoCorrecao";
+    banner.className = "bannerModoCorrecao";
+
+    const titulo = document.createElement("strong");
+    titulo.textContent = "✏️ MODO DE CORREÇÃO";
+    banner.appendChild(titulo);
+
+    const detalhe = document.createElement("div");
+    detalhe.textContent = `Corrigindo "${r.ruleset_id}" (revisão atual: ${r.revisao || 1}) — cada alteração confirmada aqui gera uma nova revisão auditada.`;
+    banner.appendChild(detalhe);
+
+    const motivoEl = document.createElement("div");
+    motivoEl.className = "motivoBannerModoCorrecao";
+    motivoEl.textContent = `Motivo informado: "${modoCorrecaoAtiva.motivo}"`;
+    banner.appendChild(motivoEl);
+
+    const botaoSair = document.createElement("button");
+    botaoSair.className = "botaoSecundarioConfig";
+    botaoSair.textContent = "Sair do modo de correção";
+    botaoSair.onclick = sairDoModoCorrecao;
+    banner.appendChild(botaoSair);
+
+    const cabecalho = document.querySelector("#painelEditorRuleset .cabecalhoTelaConfig");
+    cabecalho.parentNode.insertBefore(banner, cabecalho.nextSibling);
+
+}
+
+function sairDoModoCorrecao() {
+    modoCorrecaoAtiva = null;
+    renderizarEditorRuleset();
+}
+
+function abrirModalCorrigirAtivo() {
+    document.getElementById("campoMotivoCorrecaoAtiva").value = "";
+    esconderAvisoModal_("avisoModalCorrigirAtivo");
+    document.getElementById("modalCorrigirAtivo").style.display = "flex";
+}
+
+function fecharModalCorrigirAtivo() {
+    document.getElementById("modalCorrigirAtivo").style.display = "none";
+}
+
+function confirmarEntrarModoCorrecao() {
+
+    const motivo = document.getElementById("campoMotivoCorrecaoAtiva").value.trim();
+    if (!motivo) {
+        mostrarAvisoModal_("avisoModalCorrigirAtivo", "Informe o motivo da correção antes de continuar.");
+        return;
+    }
+
+    modoCorrecaoAtiva = { motivo: motivo };
+    fecharModalCorrigirAtivo();
+    renderizarEditorRuleset();
+
+}
+
+function renderizarBarraAcoesRuleset_(status) {
+
+    const container = document.getElementById("acoesEditorRuleset");
+    container.innerHTML = "";
+
+    const criarBotao = (texto, onclick, classe) => {
+        const b = document.createElement("button");
+        b.className = classe || "botaoSecundarioConfig";
+        b.textContent = texto;
+        b.onclick = onclick;
+        return b;
+    };
+
+    if (status === "RASCUNHO") {
+        container.appendChild(criarBotao("🔍 Validar regras", () => validarRuleset(false)));
+        container.appendChild(criarIconeAjuda_("validar-regras", "Validar regras"));
+        container.appendChild(criarBotao("✅ Ativar ruleset", () => validarRuleset(true), "botaoPrimarioConfig"));
+        container.appendChild(criarIconeAjuda_("ativar-ruleset", "Ativar ruleset"));
+    } else if (status === "ATIVO") {
+        if (!dentroDoModoCorrecao_()) {
+            container.appendChild(criarBotao("✏️ Corrigir ruleset ativo", abrirModalCorrigirAtivo));
+            container.appendChild(criarIconeAjuda_("editar-ativo", "Corrigir ruleset ativo"));
+        }
+        container.appendChild(criarBotao("⏸️ Inativar ruleset", inativarRulesetAtual));
+        container.appendChild(criarBotao("🆕 Criar nova versão", criarNovaVersaoRulesetAtual, "botaoPrimarioConfig"));
+        container.appendChild(criarIconeAjuda_("nova-versao", "Nova versão"));
+    } else {
+        container.appendChild(criarBotao("🆕 Criar nova versão", criarNovaVersaoRulesetAtual, "botaoPrimarioConfig"));
+        container.appendChild(criarIconeAjuda_("nova-versao", "Nova versão"));
+    }
+
+    container.appendChild(criarBotao("🧬 Criar regras para outro currículo", abrirModalOutroCurriculo));
+    container.appendChild(criarIconeAjuda_("outro-curriculo", "Criar regras para outro currículo"));
+
+    container.appendChild(criarBotao("📜 Histórico de revisões", abrirModalHistoricoRevisoes));
+
+}
+
+// Usado pelas 3 abas de itens (Requisitos/Disciplinas/Grupos): editável
+// em RASCUNHO (fluxo normal) OU em modo de correção de um ATIVO — nos
+// dois casos o servidor decide de novo, por conta própria
+// (prepararContextoMutacaoRuleset_), se aceita a mutação.
+function editavelAgora_() {
+    const status = String(rulesetEmEdicao.ruleset.status).trim().toUpperCase();
+    return status === "RASCUNHO" || (status === "ATIVO" && dentroDoModoCorrecao_());
+}
+
+function selecionarTabRuleset(tab) {
+
+    tabAtivaRuleset = tab;
+
+    document.querySelectorAll(".botaoTabRuleset").forEach(b => {
+        b.classList.toggle("ativo", b.dataset.tab === tab);
+    });
+
+    ["geral", "requisitos", "disciplinas", "grupos"].forEach(t => {
+        const el = document.getElementById("tabConteudo" + t.charAt(0).toUpperCase() + t.slice(1));
+        if (el) el.style.display = (t === tab) ? "block" : "none";
+    });
+
+    if (tab === "geral") renderizarTabGeral();
+    else if (tab === "requisitos") renderizarTabRequisitos();
+    else if (tab === "disciplinas") renderizarTabDisciplinas();
+    else if (tab === "grupos") renderizarTabGrupos();
+
+}
+
+/*=====================================================
+  ABA: GERAL
+=====================================================*/
+
+function renderizarTabGeral() {
+
+    const r = rulesetEmEdicao.ruleset;
+    const status = String(r.status).trim().toUpperCase();
+    // Editável em RASCUNHO (fluxo normal) OU em modo de correção de um
+    // ATIVO — nos dois casos o SERVIDOR decide de novo, por conta
+    // própria, se aceita a mutação (prepararContextoMutacaoRuleset_);
+    // isto aqui é só a UI liberando os campos que o servidor de fato
+    // aceitaria.
+    const editavel = status === "RASCUNHO" || (status === "ATIVO" && dentroDoModoCorrecao_());
+    // Campos de IDENTIDADE nunca são liberados, nem em modo de correção
+    // (Instruções da tarefa: "ruleset_id, curso_codigo,
+    // habilitacao_codigo, habilitacao_nome, versao e estrutura_curricular
+    // são imutáveis mesmo em correção") — por isso estrutura_curricular
+    // usa sua própria flag, sempre travada fora do RASCUNHO.
+    const estruturaEditavel = status === "RASCUNHO";
+    const resumo = rulesetEmEdicao.resumo;
+
+    const container = document.getElementById("tabConteudoGeral");
+    container.innerHTML = "";
+
+    const resumoEl = document.createElement("div");
+    resumoEl.className = "resumoRuleset";
+    resumoEl.textContent = `${resumo.requisitosAtivos} requisito(s) ativo(s) · ${resumo.disciplinas} disciplina(s) · ${resumo.grupos} grupo(s)`;
+    container.appendChild(resumoEl);
+
+    if (rulesetEmEdicao.jaUtilizado && status === "RASCUNHO") {
+        const avisoUso = document.createElement("div");
+        avisoUso.className = "avisoInfoRuleset erro";
+        avisoUso.textContent = "⚠️ Este ruleset já foi utilizado em uma análise de histórico e não pode mais ser alterado.";
+        container.appendChild(avisoUso);
+    }
+
+    if (rulesetEmEdicao.analisesCount > 0 && status === "ATIVO") {
+        const avisoUso = document.createElement("div");
+        avisoUso.className = "avisoInfoRuleset";
+        avisoUso.textContent = `ℹ️ Este ruleset já foi utilizado em ${rulesetEmEdicao.analisesCount} análise(s) de histórico. Isso não impede a correção — análises antigas nunca são alteradas retroativamente.`;
+        container.appendChild(avisoUso);
+    }
+
+    const grade = document.createElement("div");
+    grade.className = "gradeCamposGeral";
+    grade.appendChild(criarCampoSomenteLeitura_("Identificador", r.ruleset_id));
+    grade.appendChild(criarCampoSomenteLeitura_("Código do curso", r.curso_codigo));
+    grade.appendChild(criarCampoSomenteLeitura_("Código da habilitação", r.habilitacao_codigo));
+    grade.appendChild(criarCampoSomenteLeitura_("Nome da habilitação", r.habilitacao_nome));
+    grade.appendChild(criarCampoSomenteLeitura_("Versão", r.versao));
+    grade.appendChild(criarCampoSomenteLeitura_("Revisão", r.revisao || 1));
+    if (r.ultima_revisao_em) grade.appendChild(criarCampoSomenteLeitura_("Última revisão em", r.ultima_revisao_em));
+    if (r.ultima_revisao_por) grade.appendChild(criarCampoSomenteLeitura_("Última revisão por", r.ultima_revisao_por));
+    container.appendChild(grade);
+
+    container.appendChild(adicionarAjudaAoCampo_(
+        criarCampoTexto_("campoEstruturaCurricular", "Estrutura curricular", r.estrutura_curricular, !estruturaEditavel),
+        "estrutura-curricular", "Estrutura curricular"
+    ));
+
+    const linhaVigencia = document.createElement("div");
+    linhaVigencia.className = "linhaCampoDuplo";
+    linhaVigencia.appendChild(adicionarAjudaAoCampo_(
+        criarCampoDataComIcone_("campoVigenciaInicio", "Vigência — início", r.vigencia_inicio, !editavel),
+        "vigencia", "Vigência"
+    ));
+    linhaVigencia.appendChild(criarCampoDataComIcone_("campoVigenciaFim", "Vigência — fim", r.vigencia_fim, !editavel));
+    container.appendChild(linhaVigencia);
+
+    container.appendChild(adicionarAjudaAoCampo_(
+        criarCampoSimNao_("campoSelecaoAutomatica", "Seleção automática deste currículo", r.selecao_automatica, !estruturaEditavel),
+        "selecao-automatica", "Seleção automática deste currículo"
+    ));
+    container.appendChild(adicionarAjudaAoCampo_(
+        criarCampoTexto_("campoCriterioSelecao", "Critério de seleção (usado futuramente pelo motor de análise)", r.criterio_selecao, !estruturaEditavel),
+        "criterio-selecao", "Critério de seleção"
+    ));
+
+    // Campos acadêmicos novos — aceitos tanto em RASCUNHO quanto em
+    // correção de ATIVO (Instruções da tarefa). "" continua sendo um
+    // valor válido/opcional (NULL_NUNCA_ZERO); "Sim"/"Não" nunca infere
+    // um vazio como "Não" (normalizarBooleanoEstrito_, no servidor).
+    const linhaSemestres = document.createElement("div");
+    linhaSemestres.className = "linhaCampoDuplo";
+    linhaSemestres.appendChild(adicionarAjudaAoCampo_(
+        criarCampoTexto_("campoSemestresMinimos", "Semestres mínimos", r.semestres_minimos, !editavel),
+        "semestres-min-max", "Semestres mínimos"
+    ));
+    linhaSemestres.appendChild(criarCampoTexto_("campoSemestresMaximos", "Semestres máximos", r.semestres_maximos, !editavel));
+    container.appendChild(linhaSemestres);
+
+    container.appendChild(adicionarAjudaAoCampo_(
+        criarCampoSelect_("campoExcedenteEletivasCompensaLivres", "Excedente de eletivas compensa créditos livres?",
+            [{ valor: "NAO", rotulo: "Não" }, { valor: "SIM", rotulo: "Sim" }],
+            r.excedente_eletivas_compensa_livres, !editavel),
+        "semestres-min-max", "Excedente de eletivas compensa créditos livres"
+    ));
+
+    container.appendChild(criarCampoTexto_("campoObservacaoGeral", "Observação", r.observacao, !editavel, true));
+
+    if (dentroDoModoCorrecao_() && status === "ATIVO") {
+        container.appendChild(criarCampoTexto_("campoMotivoCorrecaoGeral_display", "Motivo desta correção", modoCorrecaoAtiva.motivo, true));
+    }
+
+    const avisoGeral = document.createElement("div");
+    avisoGeral.id = "avisoGeralRuleset";
+    avisoGeral.className = "avisoValidacaoConfig";
+    container.appendChild(avisoGeral);
+
+    if (editavel) {
+        const botaoSalvar = document.createElement("button");
+        botaoSalvar.className = "botaoPrimarioConfig";
+        botaoSalvar.textContent = "💾 Salvar dados gerais";
+        botaoSalvar.onclick = salvarDadosGeraisRulesetAtual;
+        container.appendChild(botaoSalvar);
+    }
+
+}
+
+function salvarDadosGeraisRulesetAtual() {
+
+    esconderAvisoModal_("avisoGeralRuleset");
+
+    const dados = {
+        rulesetId: rulesetEmEdicao.ruleset.ruleset_id,
+        snapshotToken: rulesetEmEdicao.ruleset.snapshotToken,
+        estrutura_curricular: document.getElementById("campoEstruturaCurricular").value.trim(),
+        vigencia_inicio: document.getElementById("campoVigenciaInicio").value.trim(),
+        vigencia_fim: document.getElementById("campoVigenciaFim").value.trim(),
+        selecao_automatica: document.getElementById("campoSelecaoAutomatica").value,
+        criterio_selecao: document.getElementById("campoCriterioSelecao").value.trim(),
+        observacao: document.getElementById("campoObservacaoGeral").value.trim(),
+        semestres_minimos: document.getElementById("campoSemestresMinimos").value.trim(),
+        semestres_maximos: document.getElementById("campoSemestresMaximos").value.trim(),
+        excedente_eletivas_compensa_livres: document.getElementById("campoExcedenteEletivasCompensaLivres").value,
+        motivoCorrecaoAtiva: motivoParaMutacaoAtual_()
+    };
+
+    const restaurar = travarBotao_(document.querySelector("#tabConteudoGeral .botaoPrimarioConfig"), "Salvando...");
+
+    google.script.run
+        .withSuccessHandler(rulesetAtualizado => {
+            restaurar();
+            rulesetEmEdicao.ruleset = rulesetAtualizado;
+            renderizarEditorRuleset();
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoGeralRuleset", extrairMensagemErro_(erro));
+        })
+        .salvarDadosGeraisRuleset(dados);
+
+}
+
+// Chamada depois de QUALQUER mutação bem-sucedida de item (requisito/
+// disciplina/grupo). Fora do modo de correção, comportamento IDÊNTICO
+// ao original: só re-renderiza a aba com a lista já atualizada
+// (callback). Dentro do modo de correção, cada mutação pode ter mudado
+// a revisão/ultima_revisao_em/por/snapshotToken do RULESET em si (não
+// só do item) — então buscamos o bundle inteiro de novo (mesma função
+// usada ao abrir o ruleset) e deixamos renderizarEditorRuleset()
+// re-renderizar cabeçalho, badge de revisão, banner e a aba ativa,
+// tudo já consistente.
+function atualizarRulesetAposMutacaoCorretiva_(callback) {
+    if (!dentroDoModoCorrecao_()) { callback(); return; }
+    const rulesetId = rulesetEmEdicao.ruleset.ruleset_id;
+    google.script.run
+        .withSuccessHandler(bundle => {
+            rulesetEmEdicao = bundle;
+            renderizarEditorRuleset();
+        })
+        .withFailureHandler(erro => alert("Não consegui atualizar os dados do ruleset após a correção: " + extrairMensagemErro_(erro)))
+        .obterRulesetCurricular(rulesetId);
+}
+
+/*=====================================================
+  ABA: REQUISITOS NUMÉRICOS
+=====================================================*/
+
+function renderizarTabRequisitos() {
+
+    const container = document.getElementById("tabConteudoRequisitos");
+    container.innerHTML = "";
+
+    container.appendChild(criarCabecalhoAbaComAjuda_("Requisitos", "requisitos"));
+
+    const editavel = editavelAgora_();
+
+    if (editavel) {
+        const botaoAdd = document.createElement("button");
+        botaoAdd.className = "botaoSecundarioConfig";
+        botaoAdd.style.marginBottom = "14px";
+        botaoAdd.textContent = "+ Adicionar requisito";
+        botaoAdd.onclick = () => abrirModalRequisito(null);
+        container.appendChild(botaoAdd);
+    }
+
+    const lista = document.createElement("div");
+    lista.className = "listaSistemas";
+
+    const requisitos = rulesetEmEdicao.requisitos || [];
+
+    if (requisitos.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum requisito numérico cadastrado ainda.";
+        lista.appendChild(vazio);
+    }
+
+    const mapaCriterios = {};
+    (dicionarioRegrasCache.criteriosNumericos || []).forEach(c => { mapaCriterios[c.codigo] = c.rotulo; });
+    const mapaOperadores = {};
+    (dicionarioRegrasCache.operadores || []).forEach(o => { mapaOperadores[o.codigo] = o.rotulo; });
+
+    requisitos.forEach(req => {
+
+        const card = document.createElement("div");
+        card.className = "cardSistema";
+
+        const icone = document.createElement("div");
+        icone.className = "iconeSistema";
+        icone.textContent = "🔢";
+
+        const info = document.createElement("div");
+        info.className = "infoSistema";
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = mapaCriterios[req.criterio] || req.criterio;
+        info.appendChild(titulo);
+
+        const subtitulo = document.createElement("div");
+        const operadorRotulo = mapaOperadores[req.operador] || req.operador || "";
+        const partes = [operadorRotulo, req.valor, req.unidade].filter(p => p !== "" && p !== null && p !== undefined);
+        subtitulo.textContent = partes.join(" ") || "—";
+        info.appendChild(subtitulo);
+
+        card.appendChild(icone);
+        card.appendChild(info);
+
+        if (normalizarSemAcentoCliente_(req.ativo) !== "sim") {
+            card.appendChild(badgeStatusRuleset_("inativo"));
+        }
+
+        const seta = document.createElement("div");
+        seta.className = "setaSistema";
+        seta.textContent = "→";
+        card.appendChild(seta);
+
+        card.onclick = () => abrirModalRequisito(req);
+
+        lista.appendChild(card);
+
+    });
+
+    container.appendChild(lista);
+
+}
+
+function abrirModalRequisito(requisito) {
+
+    requisitoEmEdicao = requisito;
+    esconderAvisoModal_("avisoModalRequisito");
+
+    document.getElementById("tituloModalRequisito").textContent = requisito ? "Editar requisito" : "Novo requisito";
+    document.getElementById("botaoExcluirRequisito").style.display = requisito ? "inline-block" : "none";
+
+    const opcoesCriterio = (dicionarioRegrasCache.criteriosNumericos || []).map(c => ({ valor: c.codigo, rotulo: c.rotulo }));
+    const opcoesOperador = (dicionarioRegrasCache.operadores || []).map(o => ({ valor: o.codigo, rotulo: o.rotulo }));
+
+    const containerCriterio = document.getElementById("campoCriterioRequisitoContainer");
+    containerCriterio.innerHTML = "";
+    containerCriterio.appendChild(criarCampoSelect_("campoCriterioRequisito", "Critério", opcoesCriterio, requisito ? requisito.criterio : "", false));
+
+    const containerOperador = document.getElementById("campoOperadorRequisitoContainer");
+    containerOperador.innerHTML = "";
+    containerOperador.appendChild(criarCampoSelect_("campoOperadorRequisito", "Operador", opcoesOperador, requisito ? requisito.operador : "", false));
+
+    document.getElementById("campoValorRequisito").value = requisito ? requisito.valor : "";
+    document.getElementById("campoUnidadeRequisito").value = requisito ? requisito.unidade : "";
+    document.getElementById("campoDescricaoRequisito").value = requisito ? requisito.descricao : "";
+    document.getElementById("campoObservacaoRequisito").value = requisito ? requisito.observacao : "";
+
+    const containerObrigatorio = document.getElementById("campoObrigatorioRequisitoContainer");
+    containerObrigatorio.innerHTML = "";
+    containerObrigatorio.appendChild(adicionarAjudaAoCampo_(
+        criarCampoSimNao_("campoObrigatorioRequisito", "Obrigatório para decisão", requisito ? requisito.obrigatorio : "SIM", false),
+        "obrigatorio-decisao", "Obrigatório para decisão"
+    ));
+
+    const containerAtivo = document.getElementById("campoAtivoRequisitoContainer");
+    containerAtivo.innerHTML = "";
+    containerAtivo.appendChild(criarCampoSimNao_("campoAtivoRequisito", "Ativo", requisito ? requisito.ativo : "SIM", false));
+
+    document.getElementById("modalRequisito").style.display = "flex";
+
+}
+
+function fecharModalRequisito() {
+    document.getElementById("modalRequisito").style.display = "none";
+    requisitoEmEdicao = null;
+}
+
+function salvarRequisitoAtual() {
+
+    esconderAvisoModal_("avisoModalRequisito");
+
+    const dados = {
+        rulesetId: rulesetEmEdicao.ruleset.ruleset_id,
+        requisitoId: requisitoEmEdicao ? requisitoEmEdicao.requisito_id : null,
+        snapshotToken: requisitoEmEdicao ? requisitoEmEdicao.snapshotToken : null,
+        criterio: document.getElementById("campoCriterioRequisito").value,
+        operador: document.getElementById("campoOperadorRequisito").value,
+        valor: document.getElementById("campoValorRequisito").value.trim(),
+        unidade: document.getElementById("campoUnidadeRequisito").value.trim(),
+        obrigatorio: document.getElementById("campoObrigatorioRequisito").value,
+        descricao: document.getElementById("campoDescricaoRequisito").value.trim(),
+        ativo: document.getElementById("campoAtivoRequisito").value,
+        observacao: document.getElementById("campoObservacaoRequisito").value.trim(),
+        motivoCorrecaoAtiva: motivoParaMutacaoAtual_()
+    };
+
+    const restaurar = travarBotao_(document.querySelector("#modalRequisito .botaoPrimarioConfig"), "Salvando...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurar();
+            fecharModalRequisito();
+            atualizarRequisitosDoRulesetEmEdicao_();
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalRequisito", extrairMensagemErro_(erro));
+        })
+        .salvarRequisitoCurricular(dados);
+
+}
+
+function excluirRequisitoAtual() {
+
+    if (!requisitoEmEdicao) return;
+    if (!window.confirm("Excluir este requisito?")) return;
+
+    const restaurar = travarBotao_(document.getElementById("botaoExcluirRequisito"), "Excluindo...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurar();
+            fecharModalRequisito();
+            atualizarRequisitosDoRulesetEmEdicao_();
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalRequisito", extrairMensagemErro_(erro));
+        })
+        .excluirRequisitoCurricular(requisitoEmEdicao.requisito_id, requisitoEmEdicao.snapshotToken, motivoParaMutacaoAtual_());
+
+}
+
+function atualizarRequisitosDoRulesetEmEdicao_() {
+    google.script.run
+        .withSuccessHandler(requisitos => {
+            rulesetEmEdicao.requisitos = requisitos;
+            rulesetEmEdicao.resumo.requisitosAtivos = requisitos.filter(r => normalizarSemAcentoCliente_(r.ativo) === "sim").length;
+            atualizarRulesetAposMutacaoCorretiva_(() => renderizarTabRequisitos());
+        })
+        .withFailureHandler(erro => alert("Não consegui atualizar a lista de requisitos: " + extrairMensagemErro_(erro)))
+        .listarRequisitosRuleset(rulesetEmEdicao.ruleset.ruleset_id);
+}
+
+/*=====================================================
+  ABA: DISCIPLINAS
+=====================================================*/
+
+function renderizarTabDisciplinas() {
+
+    const container = document.getElementById("tabConteudoDisciplinas");
+    container.innerHTML = "";
+
+    container.appendChild(criarCabecalhoAbaComAjuda_("Disciplinas", "disciplinas"));
+    container.appendChild(criarAvisoCurto_("Não cadastre todas as disciplinas do curso. Cadastre apenas as que precisam ser verificadas individualmente ou que pertencem a grupos."));
+
+    const editavel = editavelAgora_();
+
+    if (editavel) {
+        const botaoAdd = document.createElement("button");
+        botaoAdd.className = "botaoSecundarioConfig";
+        botaoAdd.style.marginBottom = "14px";
+        botaoAdd.textContent = "+ Adicionar disciplina";
+        botaoAdd.onclick = () => abrirModalDisciplina(null);
+        container.appendChild(botaoAdd);
+    }
+
+    const lista = document.createElement("div");
+    lista.className = "listaSistemas";
+
+    const disciplinas = rulesetEmEdicao.disciplinas || [];
+
+    if (disciplinas.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhuma disciplina cadastrada ainda.";
+        lista.appendChild(vazio);
+    }
+
+    const mapaTipoRegra = {};
+    (dicionarioRegrasCache.tipoRegraDisciplina || []).forEach(t => { mapaTipoRegra[t.codigo] = t.rotulo; });
+
+    const mapaGrupos = {};
+    (rulesetEmEdicao.grupos || []).forEach(g => { mapaGrupos[g.grupo_id] = g.nome_grupo; });
+
+    disciplinas.forEach(disc => {
+
+        const card = document.createElement("div");
+        card.className = "cardSistema";
+
+        const icone = document.createElement("div");
+        icone.className = "iconeSistema";
+        icone.textContent = "📖";
+
+        const info = document.createElement("div");
+        info.className = "infoSistema";
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = `${disc.sigla} — ${disc.nome}`;
+        info.appendChild(titulo);
+
+        const subtitulo = document.createElement("div");
+        const tipoRotulo = mapaTipoRegra[disc.tipo_regra] || disc.tipo_regra;
+        const grupoNome = disc.grupo_id ? (mapaGrupos[disc.grupo_id] || "grupo removido") : "";
+        subtitulo.textContent = grupoNome ? `${tipoRotulo} · ${grupoNome}` : tipoRotulo;
+        info.appendChild(subtitulo);
+
+        card.appendChild(icone);
+        card.appendChild(info);
+
+        if (normalizarSemAcentoCliente_(disc.ativo) !== "sim") {
+            card.appendChild(badgeStatusRuleset_("inativo"));
+        }
+
+        const seta = document.createElement("div");
+        seta.className = "setaSistema";
+        seta.textContent = "→";
+        card.appendChild(seta);
+
+        card.onclick = () => abrirModalDisciplina(disc);
+
+        lista.appendChild(card);
+
+    });
+
+    container.appendChild(lista);
+
+}
+
+function abrirModalDisciplina(disciplina) {
+
+    disciplinaEmEdicao = disciplina;
+    esconderAvisoModal_("avisoModalDisciplina");
+
+    document.getElementById("tituloModalDisciplina").textContent = disciplina ? "Editar disciplina" : "Nova disciplina";
+    document.getElementById("botaoExcluirDisciplina").style.display = disciplina ? "inline-block" : "none";
+
+    document.getElementById("campoSiglaDisciplina").value = disciplina ? disciplina.sigla : "";
+    document.getElementById("campoNomeDisciplina").value = disciplina ? disciplina.nome : "";
+    document.getElementById("campoStatusAceitosDisciplina").value = disciplina ? disciplina.status_aceitos : "";
+    document.getElementById("campoObservacaoDisciplina").value = disciplina ? disciplina.observacao : "";
+
+    const opcoesTipo = (dicionarioRegrasCache.tipoRegraDisciplina || []).map(t => ({ valor: t.codigo, rotulo: t.rotulo }));
+    const containerTipo = document.getElementById("campoTipoRegraDisciplinaContainer");
+    containerTipo.innerHTML = "";
+    containerTipo.appendChild(criarCampoSelect_("campoTipoRegraDisciplina", "Tipo de exigência", opcoesTipo, disciplina ? disciplina.tipo_regra : "", false));
+    document.getElementById("campoTipoRegraDisciplina").addEventListener("change", atualizarVisibilidadeGrupoDisciplina_);
+
+    const opcoesGrupo = (rulesetEmEdicao.grupos || []).map(g => ({ valor: g.grupo_id, rotulo: g.nome_grupo }));
+    const containerGrupo = document.getElementById("campoGrupoDisciplinaContainer");
+    containerGrupo.innerHTML = "";
+    containerGrupo.appendChild(criarCampoSelect_("campoGrupoDisciplina", "Grupo", opcoesGrupo, disciplina ? disciplina.grupo_id : "", false));
+
+    const containerAtivo = document.getElementById("campoAtivoDisciplinaContainer");
+    containerAtivo.innerHTML = "";
+    containerAtivo.appendChild(criarCampoSimNao_("campoAtivoDisciplina", "Ativo", disciplina ? disciplina.ativo : "SIM", false));
+
+    atualizarVisibilidadeGrupoDisciplina_();
+
+    document.getElementById("modalDisciplina").style.display = "flex";
+
+}
+
+function atualizarVisibilidadeGrupoDisciplina_() {
+    const tipo = document.getElementById("campoTipoRegraDisciplina").value;
+    document.getElementById("blocoGrupoDisciplina").style.display = (tipo === "GRUPO") ? "block" : "none";
+}
+
+function fecharModalDisciplina() {
+    document.getElementById("modalDisciplina").style.display = "none";
+    disciplinaEmEdicao = null;
+}
+
+function salvarDisciplinaAtual() {
+
+    esconderAvisoModal_("avisoModalDisciplina");
+
+    const tipoRegra = document.getElementById("campoTipoRegraDisciplina").value;
+
+    const dados = {
+        rulesetId: rulesetEmEdicao.ruleset.ruleset_id,
+        regraDisciplinaId: disciplinaEmEdicao ? disciplinaEmEdicao.regra_disciplina_id : null,
+        snapshotToken: disciplinaEmEdicao ? disciplinaEmEdicao.snapshotToken : null,
+        sigla: document.getElementById("campoSiglaDisciplina").value.trim(),
+        nome: document.getElementById("campoNomeDisciplina").value.trim(),
+        tipo_regra: tipoRegra,
+        grupo_id: tipoRegra === "GRUPO" ? document.getElementById("campoGrupoDisciplina").value : "",
+        status_aceitos: document.getElementById("campoStatusAceitosDisciplina").value.trim(),
+        ativo: document.getElementById("campoAtivoDisciplina").value,
+        observacao: document.getElementById("campoObservacaoDisciplina").value.trim(),
+        motivoCorrecaoAtiva: motivoParaMutacaoAtual_()
+    };
+
+    const restaurar = travarBotao_(document.querySelector("#modalDisciplina .botaoPrimarioConfig"), "Salvando...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurar();
+            fecharModalDisciplina();
+            atualizarDisciplinasDoRulesetEmEdicao_();
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalDisciplina", extrairMensagemErro_(erro));
+        })
+        .salvarDisciplinaCurricular(dados);
+
+}
+
+function excluirDisciplinaAtual() {
+
+    if (!disciplinaEmEdicao) return;
+    if (!window.confirm("Excluir esta disciplina?")) return;
+
+    const restaurar = travarBotao_(document.getElementById("botaoExcluirDisciplina"), "Excluindo...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurar();
+            fecharModalDisciplina();
+            atualizarDisciplinasDoRulesetEmEdicao_();
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalDisciplina", extrairMensagemErro_(erro));
+        })
+        .excluirDisciplinaCurricular(disciplinaEmEdicao.regra_disciplina_id, disciplinaEmEdicao.snapshotToken, motivoParaMutacaoAtual_());
+
+}
+
+function atualizarDisciplinasDoRulesetEmEdicao_() {
+    google.script.run
+        .withSuccessHandler(disciplinas => {
+            rulesetEmEdicao.disciplinas = disciplinas;
+            rulesetEmEdicao.resumo.disciplinas = disciplinas.length;
+            atualizarRulesetAposMutacaoCorretiva_(() => renderizarTabDisciplinas());
+        })
+        .withFailureHandler(erro => alert("Não consegui atualizar a lista de disciplinas: " + extrairMensagemErro_(erro)))
+        .listarDisciplinasRuleset(rulesetEmEdicao.ruleset.ruleset_id);
+}
+
+/*=====================================================
+  ABA: GRUPOS DE REGRAS
+=====================================================*/
+
+function renderizarTabGrupos() {
+
+    const container = document.getElementById("tabConteudoGrupos");
+    container.innerHTML = "";
+
+    container.appendChild(criarCabecalhoAbaComAjuda_("Grupos", "grupos"));
+    container.appendChild(criarAvisoCurto_("Use grupos somente quando a regra envolver uma combinação de disciplinas."));
+
+    const editavel = editavelAgora_();
+
+    if (editavel) {
+        const botaoAdd = document.createElement("button");
+        botaoAdd.className = "botaoSecundarioConfig";
+        botaoAdd.style.marginBottom = "14px";
+        botaoAdd.textContent = "+ Adicionar grupo";
+        botaoAdd.onclick = () => abrirModalGrupo(null);
+        container.appendChild(botaoAdd);
+    }
+
+    const lista = document.createElement("div");
+    lista.className = "listaSistemas";
+
+    const grupos = rulesetEmEdicao.grupos || [];
+
+    if (grupos.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum grupo cadastrado ainda.";
+        lista.appendChild(vazio);
+    }
+
+    const mapaTipoGrupo = {};
+    (dicionarioRegrasCache.tipoRegraGrupo || []).forEach(t => { mapaTipoGrupo[t.codigo] = t.rotulo; });
+
+    grupos.forEach(grupo => {
+
+        const card = document.createElement("div");
+        card.className = "cardSistema";
+
+        const icone = document.createElement("div");
+        icone.className = "iconeSistema";
+        icone.textContent = "🗃️";
+
+        const info = document.createElement("div");
+        info.className = "infoSistema";
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = grupo.nome_grupo;
+        info.appendChild(titulo);
+
+        const subtitulo = document.createElement("div");
+        const tipoRotulo = mapaTipoGrupo[grupo.tipo_regra] || grupo.tipo_regra;
+        const partes = [tipoRotulo];
+        if (grupo.valor_minimo !== "" && grupo.valor_minimo !== null && grupo.valor_minimo !== undefined) {
+            partes.push(`mín. ${grupo.valor_minimo}${grupo.unidade ? " " + grupo.unidade : ""}`);
+        }
+        subtitulo.textContent = partes.join(" · ");
+        info.appendChild(subtitulo);
+
+        card.appendChild(icone);
+        card.appendChild(info);
+
+        if (normalizarSemAcentoCliente_(grupo.ativo) !== "sim") {
+            card.appendChild(badgeStatusRuleset_("inativo"));
+        }
+
+        const seta = document.createElement("div");
+        seta.className = "setaSistema";
+        seta.textContent = "→";
+        card.appendChild(seta);
+
+        card.onclick = () => abrirModalGrupo(grupo);
+
+        lista.appendChild(card);
+
+    });
+
+    container.appendChild(lista);
+
+}
+
+function abrirModalGrupo(grupo) {
+
+    grupoEmEdicao = grupo;
+    esconderAvisoModal_("avisoModalGrupo");
+
+    document.getElementById("tituloModalGrupo").textContent = grupo ? "Editar grupo" : "Novo grupo";
+    document.getElementById("botaoExcluirGrupo").style.display = grupo ? "inline-block" : "none";
+
+    document.getElementById("campoNomeGrupo").value = grupo ? grupo.nome_grupo : "";
+    document.getElementById("campoValorMinimoGrupo").value = grupo ? grupo.valor_minimo : "";
+    document.getElementById("campoUnidadeGrupo").value = grupo ? grupo.unidade : "";
+    document.getElementById("campoObservacaoGrupo").value = grupo ? grupo.observacao : "";
+
+    const opcoesTipo = (dicionarioRegrasCache.tipoRegraGrupo || []).map(t => ({ valor: t.codigo, rotulo: t.rotulo }));
+    const containerTipo = document.getElementById("campoTipoRegraGrupoContainer");
+    containerTipo.innerHTML = "";
+    containerTipo.appendChild(adicionarAjudaAoCampo_(
+        criarCampoSelect_("campoTipoRegraGrupo", "Tipo de regra", opcoesTipo, grupo ? grupo.tipo_regra : "", false),
+        "grupos", "Tipo de regra do grupo"
+    ));
+    document.getElementById("campoTipoRegraGrupo").addEventListener("change", atualizarVisibilidadeCampoSomaGrupo_);
+    document.getElementById("campoTipoRegraGrupo").addEventListener("change", atualizarExplicacaoTipoGrupo_);
+
+    const opcoesCampoSoma = dicionarioRegrasCache.opcoesCampoSoma || [];
+    const containerCampoSoma = document.getElementById("campoCampoSomaGrupoContainer");
+    containerCampoSoma.innerHTML = "";
+    containerCampoSoma.appendChild(adicionarAjudaAoCampo_(
+        criarCampoSelect_("campoCampoSomaGrupo", "Campo de soma", opcoesCampoSoma, grupo ? grupo.campo_soma : "", false),
+        "campo-de-soma", "Campo de soma"
+    ));
+
+    const containerAtivo = document.getElementById("campoAtivoGrupoContainer");
+    containerAtivo.innerHTML = "";
+    containerAtivo.appendChild(criarCampoSimNao_("campoAtivoGrupo", "Ativo", grupo ? grupo.ativo : "SIM", false));
+
+    atualizarVisibilidadeCampoSomaGrupo_();
+    atualizarExplicacaoTipoGrupo_();
+
+    document.getElementById("modalGrupo").style.display = "flex";
+
+}
+
+function atualizarVisibilidadeCampoSomaGrupo_() {
+    const tipo = document.getElementById("campoTipoRegraGrupo").value;
+    document.getElementById("blocoCampoSomaGrupo").style.display = (tipo === "MIN_CREDITS") ? "block" : "none";
+}
+
+// Frase curta e dinâmica explicando o tipo de grupo escolhido — puro
+// texto de apoio (UX), não altera nenhuma regra nem validação
+// (Instruções item 35).
+const EXPLICACOES_TIPO_GRUPO = {
+    ONE_OF: "O aluno precisa cumprir pelo menos uma das disciplinas vinculadas.",
+    MIN_COUNT: "O aluno precisa cumprir uma quantidade mínima das disciplinas vinculadas.",
+    MIN_CREDITS: "O aluno precisa somar um mínimo de créditos entre as disciplinas vinculadas."
+};
+
+function atualizarExplicacaoTipoGrupo_() {
+    const tipo = document.getElementById("campoTipoRegraGrupo").value;
+    const el = document.getElementById("explicacaoTipoGrupo");
+    const texto = EXPLICACOES_TIPO_GRUPO[tipo];
+    if (texto) {
+        el.textContent = texto;
+        el.style.display = "block";
+    } else {
+        el.style.display = "none";
+    }
+}
+
+function fecharModalGrupo() {
+    document.getElementById("modalGrupo").style.display = "none";
+    grupoEmEdicao = null;
+}
+
+function salvarGrupoAtual() {
+
+    esconderAvisoModal_("avisoModalGrupo");
+
+    const dados = {
+        rulesetId: rulesetEmEdicao.ruleset.ruleset_id,
+        grupoId: grupoEmEdicao ? grupoEmEdicao.grupo_id : null,
+        snapshotToken: grupoEmEdicao ? grupoEmEdicao.snapshotToken : null,
+        nome_grupo: document.getElementById("campoNomeGrupo").value.trim(),
+        tipo_regra: document.getElementById("campoTipoRegraGrupo").value,
+        valor_minimo: document.getElementById("campoValorMinimoGrupo").value.trim(),
+        unidade: document.getElementById("campoUnidadeGrupo").value.trim(),
+        campo_soma: document.getElementById("campoCampoSomaGrupo").value,
+        ativo: document.getElementById("campoAtivoGrupo").value,
+        observacao: document.getElementById("campoObservacaoGrupo").value.trim(),
+        motivoCorrecaoAtiva: motivoParaMutacaoAtual_()
+    };
+
+    const restaurar = travarBotao_(document.querySelector("#modalGrupo .botaoPrimarioConfig"), "Salvando...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurar();
+            fecharModalGrupo();
+            atualizarGruposDoRulesetEmEdicao_();
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalGrupo", extrairMensagemErro_(erro));
+        })
+        .salvarGrupoCurricular(dados);
+
+}
+
+function excluirGrupoAtual() {
+
+    if (!grupoEmEdicao) return;
+    if (!window.confirm("Excluir este grupo?")) return;
+
+    const restaurar = travarBotao_(document.getElementById("botaoExcluirGrupo"), "Excluindo...");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            restaurar();
+            fecharModalGrupo();
+            atualizarGruposDoRulesetEmEdicao_();
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalGrupo", extrairMensagemErro_(erro));
+        })
+        .excluirGrupoCurricular(grupoEmEdicao.grupo_id, grupoEmEdicao.snapshotToken, motivoParaMutacaoAtual_());
+
+}
+
+function atualizarGruposDoRulesetEmEdicao_() {
+    google.script.run
+        .withSuccessHandler(grupos => {
+            rulesetEmEdicao.grupos = grupos;
+            rulesetEmEdicao.resumo.grupos = grupos.length;
+            atualizarRulesetAposMutacaoCorretiva_(() => renderizarTabGrupos());
+        })
+        .withFailureHandler(erro => alert("Não consegui atualizar a lista de grupos: " + extrairMensagemErro_(erro)))
+        .listarGruposRuleset(rulesetEmEdicao.ruleset.ruleset_id);
+}
+
+/*=====================================================
+  VALIDAR / ATIVAR / INATIVAR / NOVA VERSÃO
+=====================================================*/
+
+function fecharModalResultadoValidacao() {
+    document.getElementById("modalResultadoValidacao").style.display = "none";
+}
+
+function renderizarCorpoResultadoValidacao_(resultado) {
+
+    const corpo = document.getElementById("corpoResultadoValidacao");
+    corpo.innerHTML = "";
+
+    if (resultado.valido) {
+        const ok = document.createElement("div");
+        ok.className = "avisoInfoRuleset sucesso";
+        ok.textContent = "✅ Nenhum problema encontrado.";
+        corpo.appendChild(ok);
+
+        const resumo = document.createElement("div");
+        resumo.className = "resumoRuleset";
+        resumo.textContent = `${resultado.resumo.requisitosAtivos} requisito(s) ativo(s) · ${resultado.resumo.disciplinas} disciplina(s) · ${resultado.resumo.grupos} grupo(s)`;
+        corpo.appendChild(resumo);
+        return;
+    }
+
+    const intro = document.createElement("div");
+    intro.className = "avisoInfoRuleset erro";
+    intro.textContent = `${resultado.erros.length} problema(s) encontrado(s):`;
+    corpo.appendChild(intro);
+
+    const lista = document.createElement("ul");
+    lista.className = "listaErrosValidacao";
+    resultado.erros.forEach(erro => {
+        const li = document.createElement("li");
+        li.textContent = erro;
+        lista.appendChild(li);
+    });
+    corpo.appendChild(lista);
+
+}
+
+// comFluxoDeAtivacao=true: se a validação passar, abre direto a
+// confirmação de ativação em vez de só mostrar "✅ válido".
+function validarRuleset(comFluxoDeAtivacao) {
+
+    const rulesetId = rulesetEmEdicao.ruleset.ruleset_id;
+
+    google.script.run
+        .withSuccessHandler(resultado => {
+
+            if (comFluxoDeAtivacao && resultado.valido) {
+                abrirModalConfirmarAtivacao_(resultado);
+                return;
+            }
+
+            document.getElementById("tituloModalResultadoValidacao").textContent =
+                resultado.valido ? "✅ Ruleset válido" : "❌ Ruleset com problemas";
+            renderizarCorpoResultadoValidacao_(resultado);
+            document.getElementById("modalResultadoValidacao").style.display = "flex";
+
+        })
+        .withFailureHandler(erro => alert("Não consegui validar este ruleset: " + extrairMensagemErro_(erro)))
+        .validarRulesetCurricular(rulesetId);
+
+}
+
+function abrirModalConfirmarAtivacao_(resultadoValidacao) {
+
+    esconderAvisoModal_("avisoModalConfirmarAtivacao");
+
+    const r = rulesetEmEdicao.ruleset;
+    document.getElementById("tituloModalConfirmarAtivacao").textContent = `Ativar ${r.ruleset_id}?`;
+
+    const corpo = document.getElementById("corpoConfirmarAtivacao");
+    corpo.innerHTML = "";
+
+    // Mostra discretamente qual estrutura curricular está sendo
+    // ativada — é o escopo usado pra decidir quais outros rulesets
+    // ATIVOS (mesma habilitação + mesma estrutura) serão inativados
+    // automaticamente. Ajuda o operador a perceber esse escopo antes
+    // de confirmar.
+    const estruturaInfo = document.createElement("div");
+    estruturaInfo.style.fontSize = "13px";
+    estruturaInfo.style.color = "#444";
+    estruturaInfo.style.marginBottom = "10px";
+    const rotuloEstrutura = document.createElement("strong");
+    rotuloEstrutura.textContent = "Estrutura curricular: ";
+    estruturaInfo.appendChild(rotuloEstrutura);
+    estruturaInfo.appendChild(document.createTextNode(r.estrutura_curricular || "—"));
+    corpo.appendChild(estruturaInfo);
+
+    const resumo = document.createElement("div");
+    resumo.className = "resumoRuleset";
+    resumo.textContent = `${resultadoValidacao.resumo.requisitosAtivos} requisito(s) numérico(s) ativo(s) · ${resultadoValidacao.resumo.disciplinas} disciplina(s) cadastrada(s) · ${resultadoValidacao.resumo.grupos} grupo(s) de regras · nenhuma referência inválida`;
+    corpo.appendChild(resumo);
+
+    const aviso = document.createElement("div");
+    aviso.className = "avisoInfoRuleset";
+    aviso.textContent = "Depois de ativado, o ruleset ficará somente leitura. Alterações futuras deverão ser feitas através de uma nova versão.";
+    corpo.appendChild(aviso);
+
+    corpo.appendChild(criarAvisoCurto_("Se não tiver certeza sobre a estrutura curricular ou sobre a regra acadêmica, mantenha como RASCUNHO."));
+
+    document.getElementById("modalConfirmarAtivacao").style.display = "flex";
+
+}
+
+function fecharModalConfirmarAtivacao() {
+    document.getElementById("modalConfirmarAtivacao").style.display = "none";
+}
+
+function confirmarAtivacaoRulesetAtual() {
+
+    esconderAvisoModal_("avisoModalConfirmarAtivacao");
+
+    const rulesetId = rulesetEmEdicao.ruleset.ruleset_id;
+    const snapshotToken = rulesetEmEdicao.ruleset.snapshotToken;
+
+    const restaurar = travarBotao_(document.querySelector("#modalConfirmarAtivacao .botaoPrimarioConfig"), "Ativando...");
+
+    google.script.run
+        .withSuccessHandler(resultado => {
+
+            restaurar();
+            fecharModalConfirmarAtivacao();
+            rulesetEmEdicao.ruleset = resultado.ruleset;
+
+            let mensagem = `"${rulesetId}" foi ativado.`;
+            if (resultado.rulesetsDesativadosAutomaticamente && resultado.rulesetsDesativadosAutomaticamente.length > 0) {
+                mensagem += `\n\nO(s) ruleset(s) a seguir foram inativados automaticamente por pertencerem à mesma estrutura curricular: ${resultado.rulesetsDesativadosAutomaticamente.join(", ")}.`;
+            }
+            alert(mensagem);
+
+            renderizarEditorRuleset();
+
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalConfirmarAtivacao", extrairMensagemErro_(erro));
+        })
+        .ativarRulesetCurricular(rulesetId, snapshotToken);
+
+}
+
+function inativarRulesetAtual() {
+
+    if (!window.confirm(`Inativar "${rulesetEmEdicao.ruleset.ruleset_id}"?`)) return;
+
+    const rulesetId = rulesetEmEdicao.ruleset.ruleset_id;
+    const snapshotToken = rulesetEmEdicao.ruleset.snapshotToken;
+
+    google.script.run
+        .withSuccessHandler(rulesetAtualizado => {
+            rulesetEmEdicao.ruleset = rulesetAtualizado;
+            renderizarEditorRuleset();
+        })
+        .withFailureHandler(erro => alert("Não consegui inativar este ruleset: " + extrairMensagemErro_(erro)))
+        .inativarRulesetCurricular(rulesetId, snapshotToken);
+
+}
+
+function criarNovaVersaoRulesetAtual() {
+
+    if (!window.confirm(`Criar uma nova versão de "${rulesetEmEdicao.ruleset.ruleset_id}"? A versão atual não será alterada.`)) return;
+
+    const rulesetIdOrigem = rulesetEmEdicao.ruleset.ruleset_id;
+
+    google.script.run
+        .withSuccessHandler(novoRuleset => {
+            // criarNovaVersaoRuleset devolve só o ruleset (não o bundle
+            // completo) — reabrimos pelo ID pra já vir com requisitos/
+            // disciplinas/grupos clonados e o resumo certinho.
+            abrirRuleset(novoRuleset.ruleset_id);
+        })
+        .withFailureHandler(erro => alert("Não consegui criar a nova versão: " + extrairMensagemErro_(erro)))
+        .criarNovaVersaoRuleset(rulesetIdOrigem);
+
+}
+
+/*=====================================================
+  CRIAR REGRAS PARA OUTRO CURRÍCULO (multi-currículo)
+=====================================================*/
+
+function abrirModalOutroCurriculo() {
+
+    esconderAvisoModal_("avisoModalOutroCurriculo");
+
+    document.getElementById("campoNovoCursoCodigo").value = "";
+    document.getElementById("campoEstruturaOutroCurriculo").value = "";
+    document.getElementById("campoVigenciaInicioOutroCurriculo").value = "";
+    document.getElementById("campoVigenciaFimOutroCurriculo").value = "";
+    document.getElementById("campoSemestresMinimosOutroCurriculo").value = "";
+    document.getElementById("campoSemestresMaximosOutroCurriculo").value = "";
+
+    const containerExcedente = document.getElementById("campoExcedenteOutroCurriculoContainer");
+    containerExcedente.innerHTML = "";
+    containerExcedente.appendChild(criarCampoSelect_(
+        "campoExcedenteOutroCurriculo", "Excedente de eletivas compensa créditos livres?",
+        [{ valor: "NAO", rotulo: "Não" }, { valor: "SIM", rotulo: "Sim" }], "", false
+    ));
+
+    document.getElementById("modalOutroCurriculo").style.display = "flex";
+
+}
+
+function fecharModalOutroCurriculo() {
+    document.getElementById("modalOutroCurriculo").style.display = "none";
+}
+
+function confirmarCriarOutroCurriculo() {
+
+    esconderAvisoModal_("avisoModalOutroCurriculo");
+
+    const novoCursoCodigo = document.getElementById("campoNovoCursoCodigo").value.trim();
+    if (!novoCursoCodigo) {
+        mostrarAvisoModal_("avisoModalOutroCurriculo", "Informe o código do novo currículo.");
+        return;
+    }
+
+    const dados = {
+        rulesetIdOrigem: rulesetEmEdicao.ruleset.ruleset_id,
+        novoCursoCodigo: novoCursoCodigo,
+        estrutura_curricular: document.getElementById("campoEstruturaOutroCurriculo").value.trim(),
+        vigencia_inicio: document.getElementById("campoVigenciaInicioOutroCurriculo").value.trim(),
+        vigencia_fim: document.getElementById("campoVigenciaFimOutroCurriculo").value.trim(),
+        semestres_minimos: document.getElementById("campoSemestresMinimosOutroCurriculo").value.trim(),
+        semestres_maximos: document.getElementById("campoSemestresMaximosOutroCurriculo").value.trim(),
+        excedente_eletivas_compensa_livres: document.getElementById("campoExcedenteOutroCurriculo").value
+    };
+
+    const restaurar = travarBotao_(document.querySelector("#modalOutroCurriculo .botaoPrimarioConfig"), "Criando...");
+
+    google.script.run
+        .withSuccessHandler(novoRuleset => {
+            restaurar();
+            fecharModalOutroCurriculo();
+            // mesmo padrão de criarNovaVersaoRulesetAtual: reabre pelo ID
+            // pra já vir com requisitos/disciplinas/grupos clonados e o
+            // resumo certinho, em vez de tentar remontar o bundle aqui.
+            abrirRuleset(novoRuleset.ruleset_id);
+        })
+        .withFailureHandler(erro => {
+            restaurar();
+            mostrarAvisoModal_("avisoModalOutroCurriculo", extrairMensagemErro_(erro));
+        })
+        .criarRulesetParaOutroCurriculo(dados);
+
+}
+
+/*=====================================================
+  HISTÓRICO DE REVISÕES (somente leitura)
+=====================================================*/
+
+function abrirModalHistoricoRevisoes() {
+
+    const corpo = document.getElementById("corpoHistoricoRevisoes");
+    corpo.innerHTML = "";
+    const carregando = document.createElement("div");
+    carregando.className = "vazio";
+    carregando.textContent = "Carregando histórico...";
+    corpo.appendChild(carregando);
+
+    document.getElementById("modalHistoricoRevisoes").style.display = "flex";
+
+    google.script.run
+        .withSuccessHandler(auditorias => renderizarCorpoHistoricoRevisoes_(auditorias || []))
+        .withFailureHandler(erro => {
+            corpo.innerHTML = "";
+            const erroEl = document.createElement("div");
+            erroEl.className = "vazio";
+            erroEl.textContent = "Não consegui carregar o histórico de revisões: " + extrairMensagemErro_(erro);
+            corpo.appendChild(erroEl);
+        })
+        .listarHistoricoRevisoesRuleset(rulesetEmEdicao.ruleset.ruleset_id);
+
+}
+
+function fecharModalHistoricoRevisoes() {
+    document.getElementById("modalHistoricoRevisoes").style.display = "none";
+}
+
+function renderizarCorpoHistoricoRevisoes_(auditorias) {
+
+    const corpo = document.getElementById("corpoHistoricoRevisoes");
+    corpo.innerHTML = "";
+
+    if (auditorias.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhuma revisão registrada para este ruleset ainda (correções de ATIVO só passam a ser auditadas depois que a migração administrativa for executada uma vez).";
+        corpo.appendChild(vazio);
+        return;
+    }
+
+    const lista = document.createElement("div");
+    lista.className = "listaSistemas";
+
+    const rotuloEstado = { CONFIRMADA: "✅ Confirmada", FALHOU: "❌ Falhou (desfeita)", PREPARADA: "⏳ Incompleta" };
+    const rotuloOperacao = {
+        EDITAR_DADOS_GERAIS: "Dados gerais", INCLUIR_REQUISITO: "Requisito incluído", EDITAR_REQUISITO: "Requisito editado",
+        EXCLUIR_REQUISITO: "Requisito excluído", INCLUIR_DISCIPLINA: "Disciplina incluída", EDITAR_DISCIPLINA: "Disciplina editada",
+        EXCLUIR_DISCIPLINA: "Disciplina excluída", INCLUIR_GRUPO: "Grupo incluído", EDITAR_GRUPO: "Grupo editado",
+        EXCLUIR_GRUPO: "Grupo excluído", MIGRACAO_BASELINE: "Linha de base (migração)"
+    };
+
+    auditorias.forEach(a => {
+
+        const card = document.createElement("div");
+        card.className = "cardSistema";
+        card.style.cursor = "default";
+
+        const icone = document.createElement("div");
+        icone.className = "iconeSistema";
+        icone.textContent = a.estado === "CONFIRMADA" ? "✅" : (a.estado === "FALHOU" ? "❌" : "⏳");
+
+        const info = document.createElement("div");
+        info.className = "infoSistema";
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = `Revisão ${a.revisao_anterior} → ${a.revisao_nova} · ${rotuloOperacao[a.operacao] || a.operacao || "—"}`;
+        info.appendChild(titulo);
+
+        const linha1 = document.createElement("div");
+        linha1.textContent = `${a.registrado_em || "—"} · ${a.registrado_por || "—"}`;
+        info.appendChild(linha1);
+
+        const linha2 = document.createElement("div");
+        linha2.textContent = `Motivo: ${a.motivo || "—"}`;
+        info.appendChild(linha2);
+
+        card.appendChild(icone);
+        card.appendChild(info);
+
+        const badgeEstado = document.createElement("div");
+        badgeEstado.className = "badgeStatusRuleset " + (a.estado === "CONFIRMADA" ? "ativo" : (a.estado === "FALHOU" ? "" : "rascunho"));
+        if (a.estado === "FALHOU") { badgeEstado.style.background = "#fdecea"; badgeEstado.style.color = "#b71c1c"; }
+        badgeEstado.textContent = rotuloEstado[a.estado] || a.estado || "—";
+        card.appendChild(badgeEstado);
+
+        lista.appendChild(card);
+
+    });
+
+    corpo.appendChild(lista);
+
+}
+
+</script>

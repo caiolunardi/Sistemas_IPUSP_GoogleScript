@@ -1,0 +1,42 @@
+<!-- ⚙️ CONFIGURAÇÕES — landing com 2 cards. Cada card abre sua
+     sub-tela (ConfigFormulariosUI.html / ConfigRegrasCurricularesUI.html)
+     dentro do mesmo #telaConfiguracoes (ver abrirSubTelaConfig, Painel.html). -->
+<div id="configHome" class="subTelaConfig">
+
+    <div class="cabecalhoTelaConfig">
+        <div class="cardResumo" style="margin-bottom:0; flex:1;">
+            <h1>⚙️ Configurações</h1>
+            <p>Escolha o que você quer configurar</p>
+        </div>
+    </div>
+
+    <div style="margin-bottom:18px;">
+        <button class="botaoVoltar" onclick="fecharTelaConfiguracoes()">← Voltar ao painel</button>
+    </div>
+
+    <div class="listaSistemas">
+
+        <div class="cardSistema" onclick="abrirSubTelaConfig('configFormularios'); carregarFormulariosConfig();">
+            <div class="iconeSistema">📅</div>
+            <div class="infoSistema">
+                <strong>Formulários</strong>
+                <div>Períodos de abertura, encerramento e configurações dos formulários</div>
+            </div>
+            <div class="setaSistema">→</div>
+        </div>
+
+        <div class="cardSistema" onclick="abrirSubTelaConfig('configRegrasCurriculares'); carregarRulesetsCurriculares();">
+            <div class="iconeSistema">🎓</div>
+            <div class="infoSistema">
+                <strong>Regras Curriculares</strong>
+                <div>Critérios utilizados na conferência de históricos escolares</div>
+            </div>
+            <div class="setaSistema">→</div>
+        </div>
+
+    </div>
+
+    <div class="rodape">IPUSP — Assistência Acadêmica</div>
+
+</div>
+

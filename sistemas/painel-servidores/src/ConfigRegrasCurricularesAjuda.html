@@ -1,0 +1,840 @@
+<!-- ❓ MANUAL E FAQ — REGRAS CURRICULARES
+     Camada de ajuda pura client-side (Instruções: nenhum .gs novo, nenhum
+     google.script.run). Fonte de verdade editorial: Manual_FAQ_Regras_
+     Curriculares_v1.0.md — o conteúdo abaixo transcreve esse Markdown em
+     dados estruturados (categorias -> itens), sem alterar o significado.
+     Tudo dentro do namespace RegrasCurricularesAjuda pra não poluir o
+     escopo global (só alguns wrappers mínimos ficam globais, exigidos
+     pelos atributos onclick do HTML). -->
+
+<div id="ajudaRegrasCurriculares" class="telaAjudaOverlay" style="display:none;">
+
+    <div class="cabecalhoAjuda">
+        <div>
+            <h1>❓ Manual e FAQ — Regras Curriculares</h1>
+            <p class="subtituloAjuda">Guia completo para cadastrar, validar e ativar regras curriculares — Manual e FAQ — versão 1.0</p>
+        </div>
+        <button class="botaoVoltar" onclick="RegrasCurricularesAjuda.fechar()">← Voltar</button>
+    </div>
+
+    <div class="corpoAjuda">
+        <div class="corpoAjudaConteudoInterno">
+
+            <div class="buscaAjudaContainer">
+                <input type="text" id="buscaAjudaInput" class="campoBuscaAjuda"
+                       placeholder="Buscar no Manual e FAQ..." aria-label="Buscar no Manual e FAQ"
+                       oninput="RegrasCurricularesAjuda.buscar(this.value)">
+            </div>
+
+            <div id="estadoBuscaVazia" class="estadoBuscaVazia" style="display:none;"></div>
+
+            <div id="blocosDestacadosAjuda">
+                <div class="blocoDestacadoAjuda">
+                    <h2>Ajuda rápida</h2>
+                    <div class="gradeAtalhosAjudaRapida" id="gradeAtalhosAjudaRapida"></div>
+                </div>
+
+                <div class="cardDecisaoRapida">
+                    <h2>🧭 Decisão em 10 segundos</h2>
+                    <div class="linhaDecisaoRapida"><span class="pergunta">É um número?</span><span class="resposta">→ Requisitos</span></div>
+                    <div class="linhaDecisaoRapida"><span class="pergunta">É uma disciplina específica?</span><span class="resposta">→ Disciplinas</span></div>
+                    <div class="linhaDecisaoRapida"><span class="pergunta">É uma combinação de disciplinas?</span><span class="resposta">→ Grupos + Disciplinas</span></div>
+                    <div class="linhaDecisaoRapida"><span class="pergunta">Não tenho certeza?</span><span class="resposta">→ Não ative.</span></div>
+                </div>
+            </div>
+
+            <select class="seletorIndiceAjudaMobile" id="seletorIndiceAjudaMobile" aria-label="Ir para categoria" onchange="RegrasCurricularesAjuda.navegarParaCategoria(this.value)"></select>
+
+            <div class="layoutAjudaPrincipal">
+                <nav class="indiceAjuda" id="indiceAjudaCategorias" aria-label="Índice do manual"></nav>
+                <div class="conteudoAjudaCategorias" id="conteudoAjudaCategorias"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="rodapeAjuda">Manual e FAQ — versão 1.0</div>
+
+</div>
+
+<script>
+(function () {
+
+/*=====================================================
+  CONTEÚDO — transcrito de Manual_FAQ_Regras_Curriculares_v1.0.md
+  Cada categoria vira uma seção com <details> (accordion) por item.
+  "resposta" é HTML estático escrito por nós (não é dado de planilha),
+  por isso pode usar innerHTML com segurança — não vem de entrada do
+  usuário nem da planilha.
+=====================================================*/
+
+const CATEGORIAS = [
+
+{
+  id: "comece-aqui", icone: "🚀", titulo: "Comece aqui",
+  itens: [
+    { id: "regra-mais-importante", pergunta: "A regra mais importante de todas", chaves: ["regra importante","certeza","nao ative","rascunho"],
+      resposta: `<blockquote><strong>Se você não tiver certeza do que está preenchendo, NÃO ATIVE o ruleset.</strong></blockquote>
+      <p>Deixe como <strong>RASCUNHO</strong>, confirme a informação em documento oficial ou com a instância competente e só depois continue.</p>
+      <p>O sistema foi projetado para ser conservador: é melhor deixar uma configuração incompleta em RASCUNHO do que ativar uma regra errada.</p>
+      <p>Este painel <strong>não é o histórico escolar</strong>, <strong>não é o currículo do Júpiter</strong> e <strong>não é um catálogo completo de disciplinas</strong>. Ele é um painel de configuração: o que você cadastra aqui são as regras que o sistema deverá usar, futuramente, para conferir automaticamente históricos escolares.</p>` },
+    { id: "o-que-e-o-painel", pergunta: "O que é este painel?", chaves: ["painel","regras curriculares","o que e"],
+      resposta: `<p>O painel Regras Curriculares serve para registrar de forma organizada regras como:</p>
+      <ul><li>quantidade mínima de horas de AAC;</li><li>quantidade mínima de horas de estágio;</li><li>carga horária mínima;</li><li>créditos mínimos;</li><li>disciplinas específicas que precisam ser cumpridas;</li><li>regras do tipo "uma dentre estas disciplinas";</li><li>regras do tipo "duas dentre estas disciplinas";</li><li>regras do tipo "mínimo de X créditos dentro deste grupo".</li></ul>
+      <p>Essas regras ficam armazenadas em uma planilha do Google Sheets. Normalmente você <strong>não deve editar essa planilha diretamente</strong> — use o painel.</p>
+      <p>O painel existe justamente para evitar erros como: digitar um código errado, alterar a linha errada, apagar um identificador, criar duas regras conflitantes, editar uma versão já usada, colocar texto onde deveria existir número, colocar <code>0</code> onde o correto seria "não informado", cadastrar uma disciplina no grupo errado, ativar um currículo incompleto.</p>` },
+    { id: "o-que-e-ruleset", pergunta: "O que é um ruleset?", chaves: ["ruleset","o que e"],
+      resposta: `<p>Um <strong>ruleset</strong> é um conjunto de regras curriculares. Pense nele como uma "caixa" que contém todas as regras necessárias para uma determinada habilitação + estrutura curricular + versão das regras.</p>
+      <p>Exemplo: <em>Bacharelado — estrutura curricular X — versão 1</em>.</p>
+      <p>Dentro desse ruleset podem existir requisitos numéricos, disciplinas específicas, grupos de disciplinas, observações e informações de vigência.</p>` },
+    { id: "rascunho", pergunta: "O que significa RASCUNHO?", chaves: ["rascunho","status","preparacao"],
+      resposta: `<p>É uma versão em preparação. Você pode preencher dados gerais, adicionar requisitos, adicionar disciplinas, adicionar grupos, editar, excluir itens e validar.</p>
+      <p>Um RASCUNHO <strong>não deve ser usado para decisão automática</strong>.</p>
+      <blockquote>Em linguagem simples: "Ainda estou montando e conferindo."</blockquote>` },
+    { id: "ativo", pergunta: "O que significa ATIVO?", chaves: ["ativo","status","liberado"],
+      resposta: `<p>É uma versão validada e liberada para uso. Depois que um ruleset fica ATIVO, ele não deve mais ser editado — passa a ser somente leitura. Alterações futuras devem ser feitas em uma nova versão.</p>
+      <blockquote>Em linguagem simples: "Esta versão foi conferida e pode ser usada."</blockquote>` },
+    { id: "inativo", pergunta: "O que significa INATIVO?", chaves: ["inativo","status","antigo","substituido"],
+      resposta: `<p>É uma versão antiga ou substituída. Ela continua existindo para histórico, auditoria e reprodução de análises antigas. Também fica somente leitura.</p>
+      <blockquote>Em linguagem simples: "Não uso para novos casos, mas preciso guardar."</blockquote>` },
+    { id: "editar-ativo", pergunta: "Posso editar um ruleset ATIVO?", chaves: ["editar ativo","corrigir","travado","modo de correcao"],
+      resposta: `<p><strong>Depende do que você precisa fazer.</strong></p>
+      <p>Se <strong>a regra acadêmica mudou de verdade</strong> (é uma nova exigência institucional, uma estrutura curricular nova, um requisito que passou a valer a partir de agora): crie uma <strong>Nova versão</strong>. A versão ATIVA atual é preservada intacta, e a versão nova entra como RASCUNHO até você ativá-la.</p>
+      <p>Se você descobriu um <strong>erro de cadastro</strong> na versão que já está ATIVA — um valor digitado errado, uma disciplina com sigla trocada, um campo que ficou faltando — e a regra oficial <strong>sempre foi</strong> a corrigida, sem nunca ter mudado de verdade: use <strong>✏️ Corrigir ruleset ativo</strong>. Isso abre um "modo de correção" que exige um motivo, libera os campos (exceto identidade: curso, habilitação, estrutura curricular, versão) e registra tudo numa auditoria própria — data, quem alterou, o que mudou, antes e depois.</p>
+      <p>Nunca edite "rapidinho, sem motivo, sem deixar rastro" — os dois caminhos acima (Nova versão / Corrigir ruleset ativo) sempre deixam rastro. Veja também: <em>"Versão e revisão são a mesma coisa?"</em> e <em>"Quando eu uso Nova versão e quando uso Corrigir ruleset ativo?"</em>, na categoria "Multi-currículo e correção de ATIVO".</p>` },
+    { id: "editar-inativo", pergunta: "Posso editar um ruleset INATIVO?", chaves: ["editar inativo"],
+      resposta: `<p><strong>Não.</strong> INATIVO também deve permanecer preservado. Se for necessário voltar a usar regras semelhantes, crie uma nova versão apropriada.</p>` },
+    { id: "estrutura-curricular", pergunta: "O que é uma estrutura curricular?", chaves: ["estrutura curricular","ano de ingresso","semestre de ingresso","nao sei a estrutura"],
+      resposta: `<p>A estrutura curricular identifica o conjunto oficial de regras aplicável àquele currículo. Ela <strong>não deve ser inventada</strong> — o valor deve vir de fonte oficial.</p>
+      <p><strong>Atenção:</strong> não confunda ano de ingresso, semestre de ingresso, habilitação e versão do ruleset com estrutura curricular. Essas coisas não são necessariamente iguais.</p>
+      <p><strong>Se eu não souber qual estrutura curricular colocar?</strong> Não chute. Deixe o ruleset como RASCUNHO. Um ruleset <strong>não pode ser ativado</strong> sem estrutura curricular.</p>` },
+    { id: "multiplos-ativos", pergunta: "Podem existir dois rulesets ATIVOS de Bacharelado ao mesmo tempo?", chaves: ["dois ativos","varios ativos","mesma habilitacao"],
+      resposta: `<p><strong>Sim.</strong> Isso pode acontecer quando são de <strong>estruturas curriculares diferentes</strong>.</p>
+      <p>Exemplo: Bacharelado — estrutura A — V2 — ATIVO, e Bacharelado — estrutura B — V1 — ATIVO. Isso é normal: alunos antigos podem continuar vinculados a uma estrutura antiga enquanto alunos novos usam uma estrutura nova.</p>` },
+    { id: "ativacao-inativa-anterior", pergunta: "O que acontece quando ativo uma nova versão da mesma estrutura?", chaves: ["nova versao ativa","inativa automaticamente"],
+      resposta: `<p>A versão ATIVA anterior da <strong>mesma estrutura curricular</strong> é inativada automaticamente.</p>
+      <p>Exemplo — antes: Estrutura A-V1 INATIVO, Estrutura A-V2 ATIVO, Estrutura B-V1 ATIVO, Estrutura A-V3 RASCUNHO.</p>
+      <p>Depois de ativar A-V3: Estrutura A-V1 INATIVO, Estrutura A-V2 INATIVO, Estrutura A-V3 ATIVO, Estrutura B-V1 continua ATIVO.</p>` },
+    { id: "ordem-preenchimento", pergunta: "O que eu devo preencher primeiro?", chaves: ["ordem","por onde comeco","primeiro passo"],
+      resposta: `<p>Use sempre esta ordem:</p>
+      <ol><li><strong>Geral</strong></li><li><strong>Requisitos</strong></li><li><strong>Disciplinas</strong>, se necessário</li><li><strong>Grupos</strong>, se necessário</li><li><strong>Validar regras</strong></li><li>corrigir erros</li><li>validar novamente</li><li><strong>Ativar ruleset</strong></li></ol>
+      <p>Se você estiver começando agora, não comece por Disciplinas ou Grupos.</p>` },
+    { id: "fluxo-seguro-iniciante", pergunta: "Tenho medo de mexer. Qual é o caminho mais seguro?", chaves: ["medo","inseguro","caminho seguro","iniciante"],
+      resposta: `<p>Faça assim: abra o ruleset; confirme que está RASCUNHO; preencha apenas o que você tem certeza; salve; valide; se houver dúvida, pare; peça confirmação; só ative quando tudo estiver conferido.</p>
+      <p>Você pode usar o painel sem conhecer programação — não precisa saber JavaScript, Apps Script, banco de dados, regex nem APIs. Você precisa entender a regra acadêmica que está cadastrando.</p>` },
+    { id: "fluxo-emergencia", pergunta: "Abri a tela e não entendi nada. E agora?", chaves: ["nao entendi","perdido","emergencia"],
+      resposta: `<p>Se você abriu a tela e não entendeu o que está vendo: não clique em Ativar; não apague nada; não altere ID; não tente "testar" em produção; volte para Regras Curriculares; anote qual ruleset estava aberto; peça ajuda.</p>` }
+  ]
+},
+
+{
+  id: "geral", icone: "📋", titulo: "Aba Geral",
+  itens: [
+    { id: "aba-geral", pergunta: "Aba Geral — para que serve?", chaves: ["geral","dados principais"],
+      resposta: `<p>A aba Geral contém os dados principais do ruleset: identificador, código do curso, código da habilitação, nome da habilitação, versão, revisão, estrutura curricular, vigência, seleção automática, critério de seleção, semestres mínimos/máximos, se excedente de eletivas compensa créditos livres, e observação.</p>` },
+    { id: "alterar-identificador", pergunta: "Posso alterar o Identificador?", chaves: ["identificador","ruleset_id"],
+      resposta: `<p><strong>Não, nunca — nem mesmo em modo de correção de um ATIVO.</strong> O identificador é criado pelo sistema — exemplo: <code>PSI-47012-0-V1</code>. Você não precisa decorar isso.</p>` },
+    { id: "alterar-curso", pergunta: "Posso alterar o código do curso ou da habilitação?", chaves: ["codigo do curso","codigo da habilitacao","identidade"],
+      resposta: `<p><strong>Não, nunca — nem mesmo em modo de correção de um ATIVO.</strong> Código do curso, código da habilitação, nome da habilitação, versão e estrutura curricular são campos de <strong>identidade</strong> do ruleset: o sistema recusa qualquer tentativa de alterá-los, mesmo durante uma correção auditada.</p>
+      <p><strong>Cadastrei o ruleset no curso errado (ex: 47011 em vez de 47012), o que eu faço?</strong> Não existe "mover" um ruleset de currículo. Deixe este como está (ou inative, se ele nunca deveria ter existido) e cadastre um novo, do zero ou usando <strong>🧬 Criar regras para outro currículo</strong> a partir de um ruleset correto como ponto de partida.</p>` },
+    { id: "alterar-versao", pergunta: "Posso alterar a versão manualmente?", chaves: ["versao manual"],
+      resposta: `<p><strong>Não.</strong> A versão é controlada pelo sistema. Para criar V2, V3 etc., use a função <strong>Nova versão</strong>.</p>` },
+    { id: "como-preencher-estrutura", pergunta: "Como preencher Estrutura curricular?", chaves: ["como preencher estrutura","identificador oficial"],
+      resposta: `<p>Use o identificador oficial da estrutura correspondente. Se o documento ou sistema oficial não deixar isso claro: não invente, não use o ano "porque parece certo", não copie de outro aluno sem confirmar — mantenha RASCUNHO.</p>` },
+    { id: "vigencia", pergunta: "O que é Vigência (início e fim)?", chaves: ["vigencia","inicio","fim","data"],
+      resposta: `<p><strong>Vigência — início:</strong> informação auxiliar para registrar quando aquela estrutura passa a ser aplicável. Preencha somente se houver uma regra documental clara.</p>
+      <p><strong>Vigência — fim:</strong> encerramento da aplicabilidade daquela estrutura, quando existir. Se não houver informação segura, deixe em branco.</p>
+      <p><strong>Posso deixar Vigência vazia?</strong> Sim. É melhor deixar vazio do que preencher uma data inventada.</p>` },
+    { id: "selecao-automatica", pergunta: "O que é \"Seleção automática deste currículo\"?", chaves: ["selecao automatica","testar"],
+      resposta: `<p>É uma configuração reservada para o mecanismo que, no futuro, poderá escolher automaticamente qual estrutura curricular usar para determinado aluno.</p>
+      <p>Enquanto essa lógica não estiver formalmente definida: deixe <strong>Não</strong>.</p>
+      <p><strong>Posso marcar Sim só para testar?</strong> Não é recomendado. Só faça isso quando houver um critério de seleção formalizado e testado.</p>` },
+    { id: "criterio-selecao", pergunta: "O que é \"Critério de seleção\"?", chaves: ["criterio de selecao"],
+      resposta: `<p>É um campo reservado para a futura lógica de escolha automática do ruleset. Não invente fórmulas, textos ou critérios. Enquanto essa lógica não estiver definida, deixe em branco.</p>` },
+    { id: "semestres-min-max", pergunta: "O que são Semestres mínimos/máximos e \"Excedente de eletivas compensa créditos livres\"?", chaves: ["semestres minimos","semestres maximos","excedente eletivas","creditos livres"],
+      resposta: `<p><strong>Semestres mínimos</strong> e <strong>Semestres máximos</strong>: a duração mínima e máxima, em semestres, prevista para a integralização deste currículo. Preencha só com número inteiro e só quando houver uma regra oficial clara — deixe em branco se não tiver certeza (vazio nunca é interpretado como zero).</p>
+      <p><strong>Excedente de eletivas compensa créditos livres?</strong>: responde se créditos cursados além do mínimo exigido em disciplinas eletivas podem ser aproveitados para completar a exigência de créditos livres. Escolha <strong>Sim</strong> ou <strong>Não</strong> conforme a regra oficial do currículo — um campo em branco <strong>não</strong> é o mesmo que "Não": significa "ainda não respondido", e por isso este campo (como os outros dois) pode ser preenchido tanto em RASCUNHO quanto durante uma correção de ruleset ATIVO.</p>` },
+    { id: "observacao-geral", pergunta: "O que devo escrever em Observação?", chaves: ["observacao","contexto"],
+      resposta: `<p>Use para deixar contexto humano. Exemplos: "Regras conferidas no documento X.", "Estrutura vigente conforme documento emitido em dd/mm/aaaa.", "Cadastro revisado por Fulano.", "Regra excepcional confirmada em reunião da CG.", "Aguardando confirmação sobre vigência."</p>
+      <p>Não coloque informação sigilosa desnecessária.</p>` }
+  ]
+},
+
+{
+  id: "requisitos", icone: "🔢", titulo: "Requisitos",
+  itens: [
+    { id: "aba-requisitos", pergunta: "Aba Requisitos — o que é?", chaves: ["requisitos","numerico"],
+      resposta: `<p>É onde você cadastra regras numéricas. Esta é a aba que você provavelmente mais usará. Use quando o histórico escolar já fornece um valor que pode ser comparado com um mínimo, máximo ou valor exato.</p>` },
+    { id: "exemplos-requisitos", pergunta: "Exemplos de Requisitos", chaves: ["exemplos requisitos","aac","estagio","credito"],
+      resposta: `<ul><li>AAC &gt;= 60 horas</li><li>Estágio &gt;= 680 horas</li><li>EXT &gt;= X horas</li><li>Carga horária total &gt;= X horas</li><li>Créditos obrigatórios &gt;= X</li><li>Créditos eletivos &gt;= X</li><li>Créditos livres &gt;= X</li></ul>` },
+    { id: "como-saber-requisito", pergunta: "Como saber se algo vai em Requisitos?", chaves: ["como saber","numero comparavel"],
+      resposta: `<p>Faça esta pergunta: "O histórico já traz um número que eu consigo comparar?" Se sim, provavelmente é <strong>Requisitos</strong>.</p>` },
+    { id: "exemplo-aac", pergunta: "Exemplo — AAC", chaves: ["aac","exemplo aac","60 horas"],
+      resposta: `<p>Regra oficial: mínimo de 60 horas de AAC.</p><p>Cadastro: Critério <strong>Carga Horária em AAC</strong>; Operador <strong>Maior ou igual</strong>; Valor <code>60</code>; Unidade <code>horas</code>; Obrigatório para decisão <code>Sim</code>; Ativo <code>Sim</code>; Descrição <code>Carga horária mínima em AAC</code>.</p>` },
+    { id: "exemplo-estagio", pergunta: "Exemplo — estágio", chaves: ["estagio","exemplo estagio","680 horas"],
+      resposta: `<p>Regra: mínimo de 680 horas de estágio.</p><p>Cadastro: Critério <strong>Carga Horária de Estágio</strong>; Operador <code>&gt;=</code>; Valor <code>680</code>; Unidade <code>horas</code>; Obrigatório <code>Sim</code>; Ativo <code>Sim</code>.</p>` },
+    { id: "o-que-e-criterio", pergunta: "O que é Critério?", chaves: ["criterio"],
+      resposta: `<p>É o tipo de informação que será comparada. Você escolhe em uma lista — não digite código técnico. Exemplos: AAC, EXT, Estágio, Carga horária total, Créditos totais, Créditos obrigatórios.</p>` },
+    { id: "o-que-e-operador", pergunta: "O que é Operador?", chaves: ["operador",">=","maior que","igual"],
+      resposta: `<p>É a forma de comparação: <code>&gt;=</code> maior ou igual, <code>&gt;</code> maior que, <code>=</code> igual, <code>&lt;=</code> menor ou igual, <code>&lt;</code> menor que. Na maioria dos requisitos mínimos, será usado <code>&gt;=</code>.</p>` },
+    { id: "o-que-e-valor", pergunta: "O que é Valor?", chaves: ["valor","numero exigido"],
+      resposta: `<p>É o número exigido pela regra oficial (ex: 60, 680, 138). Não coloque unidade junto. Errado: <code>60 horas</code>. Certo: Valor = <code>60</code>, Unidade = <code>horas</code>.</p>` },
+    { id: "o-que-e-unidade", pergunta: "O que é Unidade?", chaves: ["unidade"],
+      resposta: `<p>É a unidade humana do requisito — exemplos: horas, créditos, disciplinas. Ela ajuda o sistema a mostrar mensagens compreensíveis.</p>` },
+    { id: "obrigatorio-decisao", pergunta: "O que significa \"Obrigatório para decisão\"?", chaves: ["obrigatorio para decisao","obrigatorio"],
+      resposta: `<p>Significa que esse requisito precisa estar disponível para que o sistema tome uma decisão automática. Se o histórico não trouxer o valor de um requisito obrigatório, o sistema não deve inventar. A postura segura é encaminhar para conferência manual.</p>` },
+    { id: "ativo-requisito", pergunta: "O que significa \"Ativo\" dentro de um requisito?", chaves: ["ativo do requisito"],
+      resposta: `<p>Significa se aquela regra participa ou não da avaliação. Um requisito pode continuar cadastrado, mas ficar inativo.</p>
+      <p><strong>"Ativo do requisito" é a mesma coisa que "ATIVO do ruleset"?</strong> Não. ATIVO do ruleset = versão liberada. Ativo do requisito = aquela regra específica participa da avaliação.</p>
+      <p><strong>Se um requisito está inativo, ele some?</strong> Não necessariamente — ele pode continuar cadastrado, mas não participa da avaliação.</p>` },
+    { id: "requisitos-duplicados", pergunta: "Posso cadastrar dois requisitos iguais?", chaves: ["duplicado","dois requisitos iguais"],
+      resposta: `<p>Não é recomendado, e o sistema deve impedir regras ativas duplicadas para o mesmo critério dentro do mesmo ruleset. Exemplo ruim: AAC &gt;= 60 e AAC &gt;= 80 no mesmo ruleset — isso criaria conflito.</p>
+      <p><strong>Posso colocar mínimo e máximo do mesmo critério?</strong> Só se houver uma regra real que exija isso. Na versão atual, regras ativas duplicadas do mesmo critério podem ser recusadas.</p>` },
+    { id: "valor-invalido", pergunta: "Se eu digitar uma letra no campo Valor? E se deixar vazio?", chaves: ["letra no valor","valor vazio","texto no numero"],
+      resposta: `<p>Se digitar uma letra, o sistema deve recusar — valor numérico precisa ser realmente numérico. Se deixar vazio, o ruleset não deve ser ativado com um requisito ativo incompleto.</p>` },
+    { id: "descricao-requisito", pergunta: "O que é a descrição do requisito?", chaves: ["descricao"],
+      resposta: `<p>É um texto amigável para explicar a regra. Exemplo: <code>Carga horária mínima em AAC</code>.</p>` },
+    { id: "numero-formato", pergunta: "Posso usar vírgula? O sistema arredonda?", chaves: ["virgula","60,0","arredonda"],
+      resposta: `<p>Prefira números simples conforme o campo aceitar. Para horas e créditos inteiros, use <code>60</code>, <code>680</code>, <code>12</code>. Se o requisito é inteiro, prefira <code>60</code> em vez de <code>60,0</code>. Não conte com arredondamento implícito — cadastre o valor oficial.</p>` }
+  ]
+},
+
+{
+  id: "disciplinas", icone: "📖", titulo: "Disciplinas",
+  itens: [
+    { id: "nao-cadastrar-todas", pergunta: "Preciso cadastrar todas as disciplinas do curso?", chaves: ["todas as disciplinas","catalogo completo","40 disciplinas"],
+      resposta: `<p><strong>NÃO.</strong> Esta é uma das dúvidas mais importantes.</p>
+      <p>A aba Disciplinas <strong>não é um catálogo completo do currículo</strong>. Cadastre somente disciplinas que precisam ser verificadas individualmente.</p>
+      <p><strong>O curso tem 40 disciplinas, preciso cadastrar 40?</strong> Não, provavelmente não. Cadastre apenas as disciplinas que precisam ser verificadas individualmente.</p>` },
+    { id: "quando-cadastro-disciplina", pergunta: "Quando eu cadastro uma disciplina?", chaves: ["quando cadastrar"],
+      resposta: `<p>Cadastre quando: uma disciplina específica é obrigatória; uma disciplina participa de uma regra de grupo; o total de créditos sozinho não é suficiente para provar o cumprimento.</p>` },
+    { id: "quando-nao-cadastro-disciplina", pergunta: "Quando eu NÃO cadastro uma disciplina?", chaves: ["quando nao cadastrar"],
+      resposta: `<p>Não cadastre só porque ela existe no currículo. Se o sistema já consegue decidir pelo total de créditos, não há necessidade de listar cada disciplina.</p>` },
+    { id: "exemplo-disciplina-obrigatoria", pergunta: "Exemplo de disciplina obrigatória", chaves: ["exemplo obrigatoria","xyz1234"],
+      resposta: `<p>Regra: o aluno deve ter aprovação em XYZ1234.</p><p>Cadastro: Sigla <code>XYZ1234</code>; Nome oficial; Tipo de exigência <strong>Obrigatória</strong>; Ativo <code>Sim</code>.</p>` },
+    { id: "tipo-exigencia", pergunta: "O que significa Tipo de exigência (Obrigatória / Grupo)?", chaves: ["tipo de exigencia","obrigatoria","grupo"],
+      resposta: `<p><strong>Obrigatória:</strong> significa que aquela disciplina específica precisa ser cumprida.</p>
+      <p><strong>Grupo:</strong> significa que a disciplina não é analisada sozinha — ela pertence a um conjunto de disciplinas que será avaliado por uma regra de grupo.</p>` },
+    { id: "status-aceitos-jupiter", pergunta: "O que é \"Status aceitos no Júpiter\"?", chaves: ["status aceitos","jupiter","aprovado","aproveitamento"],
+      resposta: `<p>É a configuração que define quais situações do histórico significam que a disciplina foi cumprida. Exemplos possíveis podem incluir situações como aprovação ou aproveitamento, mas <strong>não invente status</strong>. Use somente valores cuja interpretação já esteja definida para o sistema.</p>
+      <p><strong>Posso escrever qualquer coisa nesse campo?</strong> Não deveria — esse campo deve representar valores esperados pelo motor. Se a política ainda não estiver formalizada, mantenha o ruleset em RASCUNHO.</p>` },
+    { id: "disciplina-nome-sigla", pergunta: "Nome abreviado, mudança de nome ou de sigla — o que fazer?", chaves: ["nome abreviado","mudou de nome","mudou de sigla","equivalente"],
+      resposta: `<p><strong>Nome abreviado:</strong> prefira o nome oficial. A sigla é ainda mais importante para identificação.</p>
+      <p><strong>Disciplina mudou de nome mas manteve a sigla:</strong> registre conforme a regra oficial aplicável à estrutura. Se houver dúvida, documente em Observação.</p>
+      <p><strong>Disciplina mudou de sigla:</strong> não trate automaticamente como a mesma disciplina. Confirme a equivalência oficial.</p>
+      <p><strong>Disciplinas aproveitadas/equivalentes:</strong> não invente regra de equivalência. A política deve ser definida formalmente antes de ser automatizada. Enquanto isso, use RASCUNHO ou conferência manual.</p>` }
+  ]
+},
+
+{
+  id: "grupos", icone: "🗃️", titulo: "Grupos",
+  itens: [
+    { id: "aba-grupos", pergunta: "Aba Grupos — para que serve?", chaves: ["grupos","combinacao de disciplinas"],
+      resposta: `<p>Grupos servem para regras que envolvem várias disciplinas. Exemplos: uma dentre três; duas dentre cinco; mínimo de 12 créditos dentro de um conjunto.</p>
+      <p><strong>Preciso criar grupos para toda área do currículo?</strong> Não. Crie grupo somente quando existir uma regra que realmente envolva um conjunto de disciplinas.</p>` },
+    { id: "one-of", pergunta: "O que é ONE_OF?", chaves: ["one_of","uma dentre varias","pelo menos uma"],
+      resposta: `<p>Significa: <strong>cumprir pelo menos uma disciplina do grupo.</strong></p>
+      <p>Exemplo: disciplinas A, B, C — regra: basta cumprir uma delas. Grupo: Tipo <strong>ONE_OF</strong>, Valor mínimo <code>1</code>.</p>` },
+    { id: "min-count", pergunta: "O que é MIN_COUNT?", chaves: ["min_count","quantidade minima de disciplinas"],
+      resposta: `<p>Significa: <strong>cumprir uma quantidade mínima de disciplinas do grupo.</strong></p>
+      <p>Exemplo: 5 opções, precisa cumprir 2. Grupo: Tipo <strong>MIN_COUNT</strong>, Valor mínimo <code>2</code>.</p>` },
+    { id: "min-credits", pergunta: "O que é MIN_CREDITS?", chaves: ["min_credits","minimo de creditos"],
+      resposta: `<p>Significa: <strong>obter um mínimo de créditos dentro das disciplinas do grupo.</strong></p>
+      <p>Exemplo: Grupo X precisa somar pelo menos 12 créditos. Grupo: Tipo <strong>MIN_CREDITS</strong>, Valor mínimo <code>12</code>, Unidade <code>créditos</code>, Campo de soma: componente de crédito aplicável.</p>` },
+    { id: "campo-de-soma", pergunta: "O que é Campo de soma?", chaves: ["campo de soma"],
+      resposta: `<p>É a informação que diz ao sistema qual tipo de crédito deve ser somado para a regra MIN_CREDITS. Não escolha qualquer opção "porque parece" — use apenas a opção coerente com a regra oficial.</p>` },
+    { id: "ligar-disciplina-grupo", pergunta: "Como ligo uma disciplina a um grupo?", chaves: ["ligar disciplina a grupo","vincular"],
+      resposta: `<p>Primeiro crie o grupo. Depois, em Disciplinas: Tipo de exigência = Grupo, e escolha o grupo correspondente.</p>
+      <p><strong>Posso colocar uma disciplina em um grupo que não existe?</strong> Não — o sistema deve impedir.</p>` },
+    { id: "apagar-grupo-com-disciplinas", pergunta: "Posso apagar um grupo que ainda tem disciplinas ligadas?", chaves: ["apagar grupo","referencia quebrada"],
+      resposta: `<p><strong>Não.</strong> Primeiro altere ou remova os vínculos das disciplinas.</p>
+      <p><strong>O que é uma referência quebrada?</strong> É quando um item aponta para outro que não existe — por exemplo, uma disciplina apontando para um grupo G1 que foi apagado. O sistema deve impedir isso.</p>
+      <p><strong>Por que não posso apagar qualquer coisa?</strong> Porque outras regras podem depender daquele item — isso protege a consistência.</p>` },
+    { id: "grupo-sem-disciplina", pergunta: "Posso criar grupo sem nenhuma disciplina?", chaves: ["grupo vazio"],
+      resposta: `<p>Durante o RASCUNHO, tecnicamente pode acontecer. Mas antes de ativar o ruleset a configuração precisa fazer sentido.</p>` }
+  ]
+},
+
+{
+  id: "validar-ativar", icone: "✅", titulo: "Validar e Ativar",
+  itens: [
+    { id: "validar-regras", pergunta: "O que faz o botão Validar regras?", chaves: ["validar regras","o que faz validar"],
+      resposta: `<p>Ele verifica se o ruleset está estruturalmente consistente. Ele <strong>não ativa</strong>. Use sem medo.</p>
+      <p><strong>Validar muda alguma coisa?</strong> Não deveria mudar a configuração — ele serve para apontar problemas.</p>
+      <p><strong>Posso validar várias vezes?</strong> Sim, é recomendado.</p>` },
+    { id: "erros-validacao", pergunta: "Que erros o botão Validar pode mostrar?", chaves: ["erros","estrutura curricular vazia","critico duplicado","referencia quebrada"],
+      resposta: `<p>Exemplos: estrutura curricular vazia; requisito sem valor; critério duplicado; operador inválido; disciplina sem sigla; disciplina tipo Grupo sem grupo; grupo inexistente; grupo MIN_COUNT sem valor mínimo; grupo MIN_CREDITS sem campo de soma; IDs duplicados; referência quebrada.</p>
+      <p><strong>Apareceu um monte de erros. Estraguei tudo?</strong> Provavelmente não — você ainda está em RASCUNHO. O objetivo da validação é justamente mostrar o que falta. Corrija um item por vez.</p>` },
+    { id: "ativar-ruleset", pergunta: "O que faz Ativar ruleset?", chaves: ["ativar ruleset","o que faz ativar"],
+      resposta: `<p>Torna aquela versão disponível para uso. É uma ação importante.</p>
+      <p><strong>Posso clicar em Ativar só para ver o que acontece?</strong> Não é recomendado. Use primeiro <strong>Validar regras</strong>.</p>
+      <p><strong>Validar regras substitui minha conferência?</strong> Não. Validação verifica consistência técnica — ela não garante que a regra acadêmica cadastrada está correta.</p>
+      <p><strong>Se a validação ficou verde, posso ativar sem ler nada?</strong> Não. Ainda é necessário revisar o conteúdo.</p>
+      <p><strong>Quem pode ativar?</strong> Somente usuário autorizado e que tenha segurança sobre as regras cadastradas. Se um colega quiser mexer "só um pouquinho" e não entende a regra, melhor não deixar.</p>` },
+    { id: "o-que-revisar-antes-de-ativar", pergunta: "O que revisar antes de ativar?", chaves: ["revisar antes de ativar"],
+      resposta: `<p>Confira: estrutura curricular; requisitos; valores; operadores; disciplinas; grupos; observações; resultado da validação.</p>` },
+    { id: "ativei-errado", pergunta: "Ativei errado. E agora?", chaves: ["ativei errado","erro grave"],
+      resposta: `<p>Depende do tipo de erro:</p>
+      <p>Se foi um <strong>erro de cadastro</strong> (digitou o valor errado, esqueceu de marcar algo, trocou uma sigla) e a regra oficial em si está certa: use <strong>✏️ Corrigir ruleset ativo</strong>, informe o motivo e corrija o item específico. Isso fica registrado numa auditoria própria.</p>
+      <p>Se você ativou uma <strong>versão que não deveria ter sido ativada ainda</strong> (estava incompleta, ou a regra em si mudou): crie uma <strong>Nova versão</strong> a partir dela, corrija o que for necessário, valide e ative a nova versão — isso inativa automaticamente a anterior (dentro da mesma estrutura curricular).</p>
+      <p>Se o erro for grave ou você não tiver certeza de qual caminho seguir, informe o responsável pelo sistema e registre a situação antes de agir.</p>` },
+    { id: "campo-vazio-nao-e-zero", pergunta: "\"Campo vazio não é zero\" — o que significa?", chaves: ["campo vazio","zero","0 pra passar"],
+      resposta: `<p>Vazio = informação ausente. Zero = valor conhecido igual a zero. Essas coisas são diferentes — nunca preencha <code>0</code> só para "não deixar vazio".</p>
+      <p><strong>Posso colocar 0 para passar pela validação?</strong> Não. Isso cria uma regra falsa.</p>
+      <p><strong>Posso cadastrar uma regra "mais ou menos" e corrigir depois?</strong> Enquanto RASCUNHO, sim, desde que você não ative. Depois de ATIVO, não.</p>` }
+  ]
+},
+
+{
+  id: "nova-versao", icone: "🆕", titulo: "Nova versão",
+  itens: [
+    { id: "o-que-e-nova-versao", pergunta: "O que é Nova versão?", chaves: ["nova versao","o que e"],
+      resposta: `<p>Cria uma nova cópia editável das regras da <strong>mesma estrutura curricular</strong>. Exemplo: V1 → V2.</p>` },
+    { id: "o-que-e-copiado", pergunta: "O que é copiado para a nova versão?", chaves: ["o que e copiado","clona"],
+      resposta: `<p>Normalmente: estrutura curricular, requisitos, disciplinas, grupos, dados gerais aplicáveis. A nova versão recebe novos identificadores internos e começa como RASCUNHO.</p>` },
+    { id: "nova-versao-nao-cria-estrutura", pergunta: "Nova versão cria uma nova estrutura curricular?", chaves: ["nova estrutura","cria estrutura"],
+      resposta: `<p><strong>Não.</strong> Nova versão significa nova versão das regras da mesma estrutura curricular. Estrutura diferente é outro escopo.</p>
+      <p><strong>Posso criar nova versão só porque quero reorganizar a tela?</strong> Não. Crie nova versão quando houver mudança real nas regras aplicáveis.</p>` },
+    { id: "significado-mesma-estrutura", pergunta: "O que significa \"mesma estrutura curricular\"?", chaves: ["mesma estrutura curricular","mesmo nome"],
+      resposta: `<p>Significa o mesmo escopo curricular oficial. <strong>Não significa apenas a mesma habilitação.</strong></p>
+      <p><strong>Se duas estruturas têm o mesmo nome, são a mesma?</strong> Não necessariamente — confirme o identificador oficial.</p>` },
+    { id: "quando-criar-nova-versao", pergunta: "Quando preciso mesmo criar uma nova versão?", chaves: ["ano mudou","mudanca pequena","v2"],
+      resposta: `<p><strong>O ano mudou, preciso criar nova versão?</strong> Não necessariamente. Só crie nova versão se as regras realmente mudaram ou se houver uma nova versão formal da mesma estrutura.</p>
+      <p><strong>Mudou uma regra pequena, preciso mesmo criar V2?</strong> Depende: se a regra acadêmica <strong>mudou de verdade</strong> a partir de agora, sim, crie V2 — isso preserva o que estava valendo em V1 para quem já foi analisado com ela. Se foi só um <strong>erro de cadastro</strong> numa regra que sempre foi a mesma, use <strong>Corrigir ruleset ativo</strong> em vez de criar uma versão nova.</p>
+      <p><strong>A V1 ainda não foi ativada, posso corrigir nela?</strong> Sim — RASCUNHO existe para isso, e não precisa de motivo nem gera auditoria.</p>
+      <p><strong>Ativei V1 ontem e hoje descobri um erro. Posso voltar para RASCUNHO?</strong> Não como procedimento normal. Use Corrigir ruleset ativo (erro de cadastro) ou crie uma nova versão (regra mudou de verdade).</p>` },
+    { id: "apagar-versao-antiga", pergunta: "Posso apagar uma versão antiga? Por que guardar regras antigas?", chaves: ["apagar versao antiga","por que guardar"],
+      resposta: `<p><strong>Posso apagar uma versão antiga?</strong> Não se ela já foi usada — preserve para auditoria.</p>
+      <p><strong>Por que guardar regras antigas?</strong> Para conseguir responder: "Com qual regra este aluno foi analisado naquela data?"</p>` }
+  ]
+},
+
+{
+  id: "multi-curriculo", icone: "🧬", titulo: "Multi-currículo e correção de ATIVO",
+  itens: [
+    { id: "versao-vs-revisao", pergunta: "Versão e revisão são a mesma coisa?", chaves: ["versao","revisao","diferenca"],
+      resposta: `<p><strong>Não — são dois contadores diferentes, com finalidades diferentes:</strong></p>
+      <p><strong>Versão</strong> é uma decisão institucional deliberada: V1, V2, V3... Uma versão nova existe porque a regra acadêmica mudou de verdade (ou porque uma estrutura curricular diferente entrou em vigor). Criar uma versão nova nunca altera a versão anterior.</p>
+      <p><strong>Revisão</strong> é um contador interno de correções dentro da <strong>mesma</strong> versão ATIVA — sobe de 1 para 2, de 2 para 3 etc. cada vez que um erro de cadastro é corrigido através de <strong>✏️ Corrigir ruleset ativo</strong>. Um ruleset RASCUNHO sempre tem revisão 1 (revisão só sobe em correções de ATIVO); ao ativar pela primeira vez, a revisão continua 1.</p>
+      <p>Os dois aparecem sempre separados na tela (nunca no mesmo número) — a lista mostra "v2" e "rev. 3" lado a lado, por exemplo.</p>` },
+    { id: "corrigir-ativo-fluxo", pergunta: "Como funciona o modo de correção de um ruleset ATIVO, na prática?", chaves: ["modo de correcao","como corrigir","fluxo de correcao"],
+      resposta: `<ol><li>Abra o ruleset ATIVO e clique em <strong>✏️ Corrigir ruleset ativo</strong>.</li><li>Informe o <strong>motivo</strong> da correção (obrigatório) — descreva objetivamente o que estava errado.</li><li>A tela entra em <strong>MODO DE CORREÇÃO</strong> (um aviso amarelo fica visível o tempo todo) e libera os campos para edição, EXCETO os campos de identidade (código do curso, código e nome da habilitação, versão, estrutura curricular).</li><li>Edite, adicione ou exclua o que for necessário — nas abas Geral, Requisitos, Disciplinas ou Grupos.</li><li>Cada alteração confirmada gera, sozinha, uma nova revisão auditada (a revisão sobe a cada confirmação — nunca é uma correção "em lote" cobrindo várias telas de uma vez).</li><li>Clique em <strong>Sair do modo de correção</strong> quando terminar.</li></ol>
+      <p><strong>Se a correção deixar o ruleset com um problema estrutural (referência quebrada, campo obrigatório faltando)?</strong> A alteração é recusada e desfeita automaticamente — o ruleset ATIVO nunca fica, mesmo temporariamente, num estado inválido.</p>` },
+    { id: "quando-corrigir-vs-nova-versao", pergunta: "Quando eu uso Nova versão e quando uso Corrigir ruleset ativo?", chaves: ["nova versao ou corrigir","qual usar"],
+      resposta: `<table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <tr><th style="text-align:left; padding:6px; border-bottom:2px solid #ddd;">Situação</th><th style="text-align:left; padding:6px; border-bottom:2px solid #ddd;">Use</th></tr>
+      <tr><td style="padding:6px; border-bottom:1px solid #eee;">A regra acadêmica mudou de verdade (nova exigência institucional)</td><td style="padding:6px; border-bottom:1px solid #eee;"><strong>Nova versão</strong></td></tr>
+      <tr><td style="padding:6px; border-bottom:1px solid #eee;">Erro de digitação/cadastro num valor que sempre esteve errado</td><td style="padding:6px; border-bottom:1px solid #eee;"><strong>Corrigir ruleset ativo</strong></td></tr>
+      <tr><td style="padding:6px; border-bottom:1px solid #eee;">Faltou preencher um campo novo (ex: semestres mínimos) numa regra antiga que nunca mudou</td><td style="padding:6px; border-bottom:1px solid #eee;"><strong>Corrigir ruleset ativo</strong></td></tr>
+      <tr><td style="padding:6px;">Currículo novo (código de curso diferente) reaproveitando a mesma habilitação</td><td style="padding:6px;"><strong>Criar regras para outro currículo</strong></td></tr>
+      </table>
+      <p>Na dúvida, prefira <strong>Nova versão</strong> — é o caminho mais conservador, e nunca some com o histórico de quem foi analisado com a regra anterior.</p>` },
+    { id: "analises-antigas-apos-correcao", pergunta: "O que acontece com análises antigas depois de uma correção de ATIVO?", chaves: ["analises antigas","historico antigo","reconciliacao"],
+      resposta: `<p><strong>Nada.</strong> Análises de histórico já registradas <strong>nunca são alteradas retroativamente</strong> por uma correção — nem o resultado, nem os dados extraídos, nem a revisão do ruleset gravada naquela análise. A correção vale só para análises feitas <strong>a partir dali</strong>.</p>
+      <p><strong>Um ruleset já usado em análises pode ser corrigido?</strong> Sim — isso é justamente o caso esperado (é por isso que a correção auditada existe). O painel mostra um aviso informativo (não um bloqueio) quando o ruleset já foi utilizado em análises.</p>` },
+    { id: "quem-registra-correcao", pergunta: "Como sei quem alterou um ruleset ATIVO, quando e por quê?", chaves: ["quem alterou","quem corrigiu","auditoria"],
+      resposta: `<p>Toda correção de ATIVO fica registrada numa auditoria própria, com: data/hora, usuário, ruleset, o que foi alterado (dados gerais, requisito, disciplina ou grupo), motivo informado, revisão anterior e nova, e o conteúdo completo antes e depois (em formato técnico). Consulte pelo botão <strong>📜 Histórico de revisões</strong>, na tela do ruleset.</p>` },
+    { id: "como-ver-historico", pergunta: "Como vejo o histórico de revisões de um ruleset?", chaves: ["historico de revisoes","ver historico"],
+      resposta: `<p>Abra o ruleset e clique em <strong>📜 Histórico de revisões</strong>. A lista mostra cada correção (confirmada ou desfeita por erro), mais recente primeiro, com data, autor, motivo e o que foi alterado.</p>
+      <p><strong>A lista está vazia mesmo tendo corrigido algo.</strong> Isso só acontece se a migração administrativa (<code>migrarRegrasCurricularesMultiCurriculoERevisaoV1</code>) ainda não tiver sido executada na planilha — sem ela, a aba de auditoria não existe e nenhuma correção pode ser confirmada. Avise o responsável técnico.</p>` },
+    { id: "multiplos-curriculos-simultaneos", pergunta: "Posso ter regras de 47011 e 47012 ATIVAS ao mesmo tempo, para a mesma habilitação?", chaves: ["47011","47012","dois curriculos ativos","varios curriculos"],
+      resposta: `<p><strong>Sim.</strong> Currículos diferentes (códigos de curso diferentes) são escopos completamente independentes. É normal e esperado ter, por exemplo, o Bacharelado do currículo 47012 ATIVO ao mesmo tempo que o Bacharelado do currículo 47011 também ATIVO — cada um com suas próprias versões, revisões e estruturas curriculares.</p>` },
+    { id: "ativar-nao-afeta-outro-curriculo", pergunta: "Ativar um ruleset do currículo 47012 desativa algo do currículo 47011?", chaves: ["ativar desativa outro curriculo","47011 47012"],
+      resposta: `<p><strong>Não, nunca.</strong> A ativação só pode inativar automaticamente outro ruleset ATIVO da <strong>mesma habilitação, mesmo código de curso e mesma estrutura curricular</strong>. Currículos diferentes nunca se afetam entre si — nem para ativar, nem para inativar, nem para corrigir.</p>` },
+    { id: "outro-curriculo", pergunta: "O que faz \"Criar regras para outro currículo\"?", chaves: ["criar para outro curriculo","novo curso codigo","clonar curriculo"],
+      resposta: `<p>Clona os requisitos, disciplinas e grupos do ruleset aberto como <strong>ponto de partida</strong> para um <strong>código de curso diferente</strong> (ex: do currículo 47012 para o 47011), mantendo a mesma habilitação. O resultado é sempre um <strong>RASCUNHO novo</strong> — nunca é ativado automaticamente, e o ruleset de origem nunca é alterado.</p>
+      <p><strong>Diferente de Nova versão?</strong> Sim. Nova versão mantém o mesmo currículo (mesmo código de curso) e sobe a versão (V1 → V2). Criar regras para outro currículo muda o código do curso e sempre recomeça em V1 dentro daquele currículo novo.</p>
+      <p><strong>O sistema inventa as regras do currículo novo?</strong> Não — ele só copia a estrutura como esqueleto. É sua responsabilidade revisar e confirmar que cada requisito, disciplina e grupo copiado realmente se aplica ao currículo novo antes de ativar.</p>` },
+    { id: "resolver-motor-futuro", pergunta: "Como o futuro motor de análise (projeto Diplomas) vai escolher qual ruleset usar?", chaves: ["motor de analise","diplomas","qual ruleset usar"],
+      resposta: `<p>Este painel expõe uma função de referência (<code>resolverRulesetAtivoPorCursoEHabilitacao_</code>) que, dado um código de curso e um código de habilitação, procura o ruleset <strong>ATIVO</strong> correspondente. Essa função <strong>nunca escolhe por conta própria</strong> entre currículos diferentes nem usa heurísticas como "o mais recente" ou "a versão mais alta" — cada currículo só resolve dentro do seu próprio código de curso.</p>
+      <p><strong>Este painel já usa essa função para decidir alguma coisa sozinho?</strong> Não. Ela é só o contrato de referência; quem vai efetivamente chamá-la é o projeto Diplomas, numa evolução futura e separada deste painel.</p>` },
+    { id: "resolver-nao-encontrado", pergunta: "O que acontece se não existir nenhum ruleset ATIVO para o currículo do aluno?", chaves: ["nao encontrado","sem ruleset ativo","nenhum ruleset"],
+      resposta: `<p><strong>A conferir junto com o projeto Diplomas</strong> (fora do escopo deste painel): a função de referência devolve um resultado explícito de "não encontrado", sem tentar adivinhar ou cair para outro currículo. A decisão de como tratar esse caso na prática (encaminhar para conferência manual, bloquear a análise, etc.) cabe ao motor de análise que vier a consumir essa função.</p>` },
+    { id: "resolver-ambiguo", pergunta: "O que acontece se houver mais de um ruleset ATIVO igualmente válido para o mesmo currículo?", chaves: ["ambiguo","mais de um ativo","conflito de ruleset"],
+      resposta: `<p><strong>A conferir junto com o projeto Diplomas</strong> (fora do escopo deste painel): a função de referência devolve um resultado explícito de "ambíguo", listando os candidatos, em vez de escolher um sozinho. Isso normalmente indica um problema de cadastro (duas estruturas curriculares diferentes cadastradas sem uma forma de diferenciá-las para aquele caso) que precisa ser resolvido no cadastro, não pelo motor de análise.</p>` }
+  ]
+},
+
+{
+  id: "planilha-tecnico", icone: "🗄️", titulo: "Planilha e bastidores técnicos",
+  itens: [
+    { id: "mexer-planilha-direto", pergunta: "Posso mexer direto na planilha do Google Sheets?", chaves: ["planilha direto","editar planilha"],
+      resposta: `<p>Evite. A edição direta deve ser exceção técnica. O painel existe justamente para proteger a estrutura.</p>` },
+    { id: "ordenar-linhas", pergunta: "Se eu ordenar as linhas da planilha manualmente, o sistema quebra?", chaves: ["ordenar linhas","reordenar"],
+      resposta: `<p>A arquitetura foi feita para trabalhar com IDs, não com número fixo de linha. Mesmo assim, não faça alterações estruturais desnecessárias na planilha.</p>` },
+    { id: "renomear-aba-cabecalho", pergunta: "Posso renomear abas, alterar cabeçalhos ou inserir colunas?", chaves: ["renomear aba","alterar cabecalho","inserir coluna"],
+      resposta: `<p><strong>Renomear aba:</strong> não — o código espera nomes específicos.</p>
+      <p><strong>Alterar cabeçalhos:</strong> não — isso pode impedir o sistema de funcionar.</p>
+      <p><strong>Inserir coluna no meio:</strong> não faça sem alinhamento técnico. O sistema localiza colunas por cabeçalho, o que reduz risco, mas o schema ainda deve ser controlado.</p>` },
+    { id: "dicionario-historico", pergunta: "Posso mexer no DICIONARIO ou no ANALISE_HISTORICO?", chaves: ["dicionario","analise_historico","auditoria"],
+      resposta: `<p><strong>Apagar ou editar DICIONARIO pelo painel:</strong> não — é uma área técnica e somente leitura para o usuário comum, e alimenta opções e validações.</p>
+      <p><strong>Editar ANALISE_HISTORICO:</strong> não — essa aba é uma trilha de auditoria e deve ser tratada como histórico.</p>
+      <p><strong>O que é auditoria?</strong> É o registro que permite saber qual arquivo foi analisado, qual ruleset foi usado, qual versão do parser, qual resultado, quando aconteceu e quais dados foram extraídos.</p>` },
+    { id: "nao-preciso-saber-codigo", pergunta: "Preciso saber o que é campo_parser ou ruleset_id?", chaves: ["campo_parser","ruleset_id","decorar codigo"],
+      resposta: `<p>Não. Você não precisa decorar códigos como <code>BAC-47012-100-V1</code> — o sistema controla isso. <code>campo_parser</code> é uma ligação técnica entre a regra e o dado extraído do histórico, cuidada automaticamente pelo painel; você não pode alterá-lo pelo uso normal. <code>ruleset_id</code> é apenas o identificador técnico daquela versão.</p>` }
+  ]
+},
+
+{
+  id: "dia-a-dia", icone: "🖱️", titulo: "Uso do dia a dia",
+  itens: [
+    { id: "painel-travando", pergunta: "O que fazer se o painel ficar carregando para sempre?", chaves: ["carregando para sempre","travou"],
+      resposta: `<p>Tente: aguardar alguns segundos; atualizar a página; tentar novamente; se continuar, abrir o console somente se você souber usar; informar ao responsável técnico. Não fique clicando dezenas de vezes no mesmo botão.</p>` },
+    { id: "clique-duplo-salvar", pergunta: "Cliquei Salvar duas vezes. Vai duplicar? A tela travou no meio da gravação.", chaves: ["clicar duas vezes","duplo clique","travou gravando"],
+      resposta: `<p>Os botões devem ser desabilitados durante a gravação, mas evite duplo clique. Se suspeitar de duplicidade, recarregue e confira.</p>
+      <p>Se a tela travar no meio de uma gravação: não continue clicando. Atualize a página e confira o estado atual antes de tentar novamente.</p>` },
+    { id: "alteracao-concorrente", pergunta: "Apareceu mensagem dizendo que o registro mudou desde que abri. O que significa?", chaves: ["alteracao concorrente","mudou desde que abri","concorrencia"],
+      resposta: `<p>Significa que outra pessoa ou outra aba alterou aquele item. Recarregue a tela. Isso existe para evitar que uma pessoa sobrescreva o trabalho da outra.</p>
+      <p><strong>Duas pessoas podem editar ao mesmo tempo?</strong> Pode acontecer, mas não é o ideal. Se receber aviso de alteração concorrente: não force, recarregue, confira, tente novamente.</p>
+      <p><strong>Posso ter duas abas do navegador abertas?</strong> Pode, mas aumenta risco de conflito. Prefira uma por vez.</p>` },
+    { id: "deixar-aberto-navegador", pergunta: "Posso deixar o painel aberto o dia todo? E usar o botão Voltar do navegador?", chaves: ["deixar aberto","botao voltar navegador"],
+      resposta: `<p>Pode, mas antes de salvar algo importante é recomendável recarregar se a tela estiver aberta há muito tempo. Pode usar o botão Voltar do navegador, mas prefira os botões Voltar do próprio painel quando disponíveis.</p>` },
+    { id: "como-sei-que-salvou", pergunta: "Como sei se salvou? Fechei a página sem salvar, perco algo?", chaves: ["como sei se salvou","fechar sem salvar","atualizar pagina perde"],
+      resposta: `<p>Espere o retorno da interface — não assuma que salvou só porque você clicou. Se fechar a página ou atualizar sem salvar, as alterações não salvas serão perdidas.</p>` },
+    { id: "perguntas-rapidas-interface", pergunta: "Perguntas rápidas sobre a interface", chaves: ["cancelar","enter","tela cinza","onde voltar","amarelo","verde","acento","espaco na sigla","apelido","celular"],
+      resposta: `<p><strong>Posso clicar em Cancelar?</strong> Sim. Cancelar existe para desistir sem salvar.</p>
+      <p><strong>Fechei o modal no X. Salvou?</strong> Não necessariamente — fechar não equivale a salvar.</p>
+      <p><strong>Apertei Enter. Salvou?</strong> Não conte com isso. Use o botão Salvar.</p>
+      <p><strong>A tela ficou cinza. Travou?</strong> Provavelmente existe um modal aberto.</p>
+      <p><strong>Não acho onde voltar.</strong> Use o botão Voltar da própria tela.</p>
+      <p><strong>Apareceu RASCUNHO em amarelo. É erro?</strong> Não, é apenas o status atual.</p>
+      <p><strong>ATIVO em verde significa que está tudo certo academicamente?</strong> Significa que aquela versão foi ativada. Ainda pressupõe que o cadastro foi conferido corretamente por humano responsável.</p>
+      <p><strong>Posso usar acento em Observação?</strong> Sim.</p>
+      <p><strong>Posso usar espaço ou apelido na sigla/nome da disciplina?</strong> Use a sigla oficial exatamente como cadastrada. Evite apelido — use nome oficial.</p>
+      <p><strong>Posso cadastrar regra sem descrição?</strong> Se o campo permitir, tecnicamente pode, mas prefira uma descrição clara.</p>
+      <p><strong>Posso mexer pelo celular?</strong> Para operações críticas, prefira computador.</p>` }
+  ]
+},
+
+{
+  id: "problemas", icone: "⚠️", titulo: "Problemas e soluções",
+  itens: [
+    { id: "tela-carregando-rulesets", pergunta: "A tela de Regras Curriculares fica em \"Carregando rulesets...\"", chaves: ["carregando rulesets","nao carrega"],
+      resposta: `<p>Tente: atualizar a página; abrir novamente; confirmar se a implantação atual do Apps Script está correta; confirmar acesso à planilha; informar ao responsável técnico se persistir.</p>` },
+    { id: "salvar-nao-responde", pergunta: "O botão Salvar não responde", chaves: ["salvar nao responde","travou"],
+      resposta: `<p>Espere alguns segundos. Se não houver retorno: não clique repetidamente; atualize a página; confira se o dado foi salvo; tente novamente.</p>` },
+    { id: "lista-vazia", pergunta: "A lista de opções está vazia", chaves: ["lista vazia","dropdown vazio","zero opcoes"],
+      resposta: `<p>Pode haver problema no DICIONARIO ou na leitura da planilha. Não digite valor técnico "na mão" para contornar — informe ao responsável técnico.</p>` },
+    { id: "erro-cabecalho", pergunta: "Apareceu erro de cabeçalho", chaves: ["erro de cabecalho","cabecalho ausente"],
+      resposta: `<p>Não altere o código. Provavelmente a planilha foi modificada estruturalmente. Informe ao responsável técnico.</p>` },
+    { id: "erro-permissao", pergunta: "Apareceu erro de permissão", chaves: ["erro de permissao","acesso negado"],
+      resposta: `<p>Verifique se a conta que executa o painel tem acesso à planilha oficial.</p>` },
+    { id: "erro-concorrencia-problema", pergunta: "Apareceu mensagem de alteração concorrente (na seção de Problemas)", chaves: ["alteracao concorrente erro"],
+      resposta: `<p>Outra sessão alterou o item. Recarregue.</p>` }
+  ]
+},
+
+{
+  id: "regras-institucionais", icone: "🏛️", titulo: "Regras acadêmicas, exceções e limites do painel",
+  itens: [
+    { id: "copiar-de-outro-ruleset", pergunta: "Posso copiar valores de outro ruleset? Posso usar Bacharelado como base pra Psicólogo?", chaves: ["copiar de outro ruleset","usar como base"],
+      resposta: `<p>Só se tiver certeza de que são realmente aplicáveis — não copie por comodidade. Não é recomendado usar manualmente um ruleset de uma habilitação como base para outra: são contextos diferentes.</p>` },
+    { id: "excecoes-cg", pergunta: "Exceções aprovadas pela CG e precedentes", chaves: ["excecao","cg","precedente"],
+      resposta: `<p><strong>O que fazer com exceções aprovadas pela CG?</strong> Não transforme uma exceção individual em regra geral sem autorização. Registre e trate conforme orientação institucional.</p>
+      <p><strong>Uma decisão anterior da CG vale automaticamente para todo mundo?</strong> Não necessariamente — precedente não é sinônimo de regra universal.</p>` },
+    { id: "fonte-da-regra", pergunta: "Posso cadastrar regra de memória ou porque \"sempre fizemos assim\"?", chaves: ["regra de memoria","sempre fizemos"],
+      resposta: `<p>Não. Use documento oficial ou fonte confiável. "Sempre fizemos assim" só vale depois de confirmar que isso representa a regra vigente.</p>` },
+    { id: "documentos-contraditorios", pergunta: "O que fazer se dois documentos oficiais parecerem contraditórios? E se o Júpiter mostrar números diferentes do documento?", chaves: ["documentos contraditorios","jupiter diferente"],
+      resposta: `<p>Se dois documentos parecerem contraditórios: não ative. Registre a dúvida em Observação e busque esclarecimento.</p>
+      <p>Se o Júpiter mostrar números diferentes do documento: não altere a regra para "bater" com um aluno — investigue primeiro.</p>` },
+    { id: "regra-para-caso-individual", pergunta: "Posso mudar uma regra para resolver o caso de um aluno específico?", chaves: ["aluno especifico","caso individual","liberar manualmente"],
+      resposta: `<p><strong>Não.</strong> Regras devem representar o currículo, não o caso individual. Em regra, também não crie um ruleset só para um aluno — ruleset representa estrutura curricular, não exceção individual.</p>
+      <p>Se falta pouco (ex: 1 hora) para o aluno cumprir um requisito, isso é decisão administrativa/acadêmica fora do painel de configuração — não altere a regra geral para resolver um caso individual.</p>` },
+    { id: "quando-pedir-ajuda", pergunta: "Quando devo pedir ajuda / parar imediatamente?", chaves: ["quando pedir ajuda","parar imediatamente"],
+      resposta: `<p>Peça ajuda quando houver dúvida sobre: estrutura curricular; vigência; equivalência; aproveitamento; exceção; interpretação de norma; status aceitos; regra de grupo; mudança curricular; conflito documental.</p>
+      <p>Pare imediatamente se: você não sabe qual estrutura selecionar; o documento não bate com o painel; dois documentos dizem coisas diferentes; você está prestes a mudar um ruleset ATIVO; você acha que precisa cadastrar todas as disciplinas; você não sabe qual tipo de grupo usar; você está criando valor "só para passar na validação"; você quer alterar regra para resolver um aluno específico; você não sabe o significado de um status; você recebeu erro de concorrência; a tela não carrega corretamente.</p>` },
+    { id: "painel-nao-decide-sozinho", pergunta: "O painel decide sozinho se o aluno se forma? Ele lê PDF?", chaves: ["decide sozinho","le pdf","motor de analise"],
+      resposta: `<p><strong>Não, nesta etapa.</strong> Este painel apenas configura regras. O motor de análise será outra parte do sistema. Se você preencher tudo aqui, o aluno ainda não será analisado automaticamente — este painel não executa análise de históricos nem lê PDF (isso pertence ao futuro módulo de análise de históricos).</p>` },
+    { id: "dado-nao-encontrado", pergunta: "O que acontece se um dado não for encontrado no histórico? Isso é igual a zero?", chaves: ["nao encontrado","zero","dado ausente"],
+      resposta: `<p>Se for obrigatório, a postura segura é não tomar decisão automática — o caso deve ir para conferência. <strong>"Não encontrado" nunca é igual a zero.</strong></p>
+      <p>Se o aluno tem 58 de 60 horas de AAC, o sistema não pode arredondar: 58 é menor que 60.</p>` },
+    { id: "o-que-nao-e-problema-tecnico", pergunta: "O que NÃO é problema técnico do painel?", chaves: ["nao e problema tecnico"],
+      resposta: `<p>Algumas dúvidas não devem ser "resolvidas no código": qual regra curricular é juridicamente aplicável; se uma exceção individual deve ser aceita; se uma decisão anterior da CG vale para outro caso; se uma disciplina é equivalente a outra; se um aluno pode antecipar colação; se uma dispensa substitui determinado requisito.</p>
+      <p>Essas são decisões acadêmicas/administrativas — o painel apenas registra a regra formalmente definida.</p>` },
+    { id: "substituicao-temporaria", pergunta: "Estou cobrindo férias/afastamento do responsável. O que preciso saber?", chaves: ["substituicao","ferias","afastamento"],
+      resposta: `<p>Não altere regras existentes sem necessidade; prefira consultar antes de ativar; trabalhe somente em RASCUNHO quando possível; registre Observações claras; não apague versões; não mude planilha diretamente; não tente "corrigir" códigos internos; tire print de erro antes de pedir ajuda; informe qual ruleset estava aberto; informe exatamente o que você tentou fazer.</p>` }
+  ]
+},
+
+{
+  id: "exemplos-praticos", icone: "💡", titulo: "Exemplos práticos",
+  itens: [
+    { id: "so-60-horas-aac", pergunta: "\"Eu só quero colocar 60 horas de AAC. Preciso mexer em tudo?\"", chaves: ["so 60 horas","preciso mexer em tudo"],
+      resposta: `<p>Não. Você pode: abrir o ruleset; preencher a estrutura curricular; ir em Requisitos; adicionar AAC &gt;= 60; salvar; continuar cadastrando as outras regras necessárias. Disciplinas e Grupos só são usados se houver necessidade real.</p>` },
+    { id: "quantas-disciplinas-optativas", pergunta: "Optativas: preciso cadastrar a lista inteira?", chaves: ["optativas","lista de optativas","10 optativas"],
+      resposta: `<p><strong>Tem uma lista de optativas, preciso cadastrar todas?</strong> Só se houver uma regra que dependa exatamente daquela lista. Se basta cumprir um total de créditos eletivos e o histórico já fornece esse total, use Requisitos, não uma lista de disciplinas.</p>
+      <p><strong>Tem 10 optativas e o aluno precisa fazer qualquer uma — é grupo?</strong> Sim, se a regra realmente for "uma dentre estas 10". Use grupo ONE_OF.</p>
+      <p><strong>Tem 10 optativas e o aluno precisa fazer 3 — é grupo?</strong> Sim. Use MIN_COUNT = 3.</p>
+      <p><strong>Tem várias optativas e precisa somar 12 créditos — é grupo?</strong> Sim. Use MIN_CREDITS = 12.</p>
+      <p><strong>O histórico já mostra 12 créditos eletivos no total. Ainda preciso cadastrar grupo?</strong> Provavelmente não, se o requisito curricular for apenas "12 créditos eletivos" e não depender de uma lista específica — use Requisitos.</p>
+      <p><strong>Qual a diferença entre crédito eletivo e grupo de disciplinas?</strong> Crédito eletivo é um total acadêmico. Grupo é uma regra lógica sobre um conjunto específico de disciplinas.</p>` },
+    { id: "exemplo-completo-a", pergunta: "Exemplo completo A — regra simples", chaves: ["exemplo a","regra simples"],
+      resposta: `<p>Regra oficial: AAC &gt;= 60h; estágio &gt;= 680h.</p>
+      <p><strong>Geral:</strong> Estrutura curricular = identificador oficial; Status = RASCUNHO; Seleção automática = Não.</p>
+      <p><strong>Requisitos:</strong> 1) AAC &gt;= 60; 2) Estágio &gt;= 680.</p>
+      <p><strong>Disciplinas:</strong> nenhuma. <strong>Grupos:</strong> nenhum.</p>
+      <p>Depois: Validar regras → revisar → Ativar.</p>` },
+    { id: "exemplo-completo-b", pergunta: "Exemplo completo B — requisito + disciplina obrigatória", chaves: ["exemplo b"],
+      resposta: `<p>Regra: AAC &gt;= 60h; XYZ1234 obrigatória.</p>
+      <p><strong>Requisitos:</strong> AAC &gt;= 60. <strong>Disciplinas:</strong> XYZ1234 — Obrigatória. <strong>Grupos:</strong> nenhum.</p>` },
+    { id: "exemplo-completo-c", pergunta: "Exemplo completo C — requisito + grupo ONE_OF", chaves: ["exemplo c"],
+      resposta: `<p>Regra: AAC &gt;= 60h; cumprir A ou B ou C.</p>
+      <p><strong>Requisitos:</strong> AAC &gt;= 60.</p>
+      <p><strong>Grupos:</strong> Grupo "Alternativas X", Tipo ONE_OF, mínimo 1.</p>
+      <p><strong>Disciplinas:</strong> A, B e C → Grupo Alternativas X.</p>` },
+    { id: "exemplo-completo-d", pergunta: "Exemplo completo D — MIN_COUNT", chaves: ["exemplo d"],
+      resposta: `<p>Regra: cumprir 2 dentre A/B/C/D/E.</p>
+      <p><strong>Grupo:</strong> Tipo MIN_COUNT, valor mínimo = 2. <strong>Disciplinas:</strong> A, B, C, D, E vinculadas ao grupo.</p>` },
+    { id: "exemplo-completo-e", pergunta: "Exemplo completo E — MIN_CREDITS", chaves: ["exemplo e"],
+      resposta: `<p>Regra: somar pelo menos 12 créditos dentre A/B/C/D/E.</p>
+      <p><strong>Grupo:</strong> Tipo MIN_CREDITS, valor mínimo = 12, unidade = créditos, campo de soma conforme regra oficial. <strong>Disciplinas:</strong> A, B, C, D, E vinculadas ao grupo.</p>` },
+    { id: "tabela-ajuda-por-situacao", pergunta: "Tabela — Ajuda rápida por situação", chaves: ["tabela","ajuda por situacao"],
+      resposta: `<table class="tabelaAjuda"><thead><tr><th>Situação</th><th>O que usar</th></tr></thead><tbody>
+      <tr><td>Mínimo de 60h AAC</td><td>Requisitos</td></tr>
+      <tr><td>Mínimo de 680h estágio</td><td>Requisitos</td></tr>
+      <tr><td>Mínimo de 12 créditos eletivos totais</td><td>Requisitos</td></tr>
+      <tr><td>Disciplina X obrigatória</td><td>Disciplinas</td></tr>
+      <tr><td>Uma dentre A/B/C</td><td>Grupo ONE_OF + Disciplinas</td></tr>
+      <tr><td>Duas dentre A/B/C/D</td><td>Grupo MIN_COUNT + Disciplinas</td></tr>
+      <tr><td>12 créditos dentre A/B/C/D</td><td>Grupo MIN_CREDITS + Disciplinas</td></tr>
+      <tr><td>Não sei a estrutura curricular</td><td>Manter RASCUNHO</td></tr>
+      <tr><td>Regra mudou depois de ativada</td><td>Nova versão</td></tr>
+      <tr><td>Documento contraditório</td><td>Não ativar; confirmar</td></tr>
+      <tr><td>Caso individual excepcional</td><td>Não alterar regra geral</td></tr>
+      </tbody></table>` }
+  ]
+},
+
+{
+  id: "glossario", icone: "📚", titulo: "Glossário",
+  itens: [
+    { id: "glossario-completo", pergunta: "Glossário rápido", chaves: ["glossario","ruleset","auditoria"],
+      resposta: `<div class="listaGlossarioAjuda">
+        <div class="termoGlossario"><strong>Ruleset</strong><span>Conjunto de regras de uma estrutura curricular.</span></div>
+        <div class="termoGlossario"><strong>RASCUNHO</strong><span>Em preparação.</span></div>
+        <div class="termoGlossario"><strong>ATIVO</strong><span>Liberado para uso.</span></div>
+        <div class="termoGlossario"><strong>INATIVO</strong><span>Preservado, mas não usado para novos casos.</span></div>
+        <div class="termoGlossario"><strong>Estrutura curricular</strong><span>Identificador oficial do currículo aplicável.</span></div>
+        <div class="termoGlossario"><strong>Requisito</strong><span>Regra numérica.</span></div>
+        <div class="termoGlossario"><strong>Disciplina</strong><span>Disciplina que precisa ser verificada individualmente.</span></div>
+        <div class="termoGlossario"><strong>Grupo</strong><span>Conjunto de disciplinas avaliado por uma regra.</span></div>
+        <div class="termoGlossario"><strong>ONE_OF</strong><span>Cumprir uma dentre várias.</span></div>
+        <div class="termoGlossario"><strong>MIN_COUNT</strong><span>Cumprir uma quantidade mínima.</span></div>
+        <div class="termoGlossario"><strong>MIN_CREDITS</strong><span>Somar um mínimo de créditos.</span></div>
+        <div class="termoGlossario"><strong>Auditoria</strong><span>Registro histórico do que foi analisado e com qual regra.</span></div>
+      </div>` }
+  ]
+},
+
+{
+  id: "checklists", icone: "✔️", titulo: "Checklists",
+  itens: [
+    { id: "fluxo-seguro-30s", pergunta: "Fluxo seguro em 30 segundos (antes de ativar)", chaves: ["fluxo seguro","antes de ativar","checklist ativar"],
+      resposta: `<p>Confira antes de ativar:</p>
+      <ul class="listaChecklistAjuda">
+        <li><input type="checkbox">Estou no ruleset certo?</li>
+        <li><input type="checkbox">A habilitação está certa?</li>
+        <li><input type="checkbox">A estrutura curricular está certa?</li>
+        <li><input type="checkbox">Os valores vieram de fonte oficial?</li>
+        <li><input type="checkbox">Não cadastrei disciplina desnecessária?</li>
+        <li><input type="checkbox">Os grupos fazem sentido?</li>
+        <li><input type="checkbox">Cliquei em Validar?</li>
+        <li><input type="checkbox">Corrigi todos os erros?</li>
+        <li><input type="checkbox">Revisei uma última vez?</li>
+        <li><input type="checkbox">Tenho certeza?</li>
+      </ul>
+      <p>Se alguma resposta for "não": <strong>não ative.</strong> (Esta lista é só uma ferramenta de revisão visual — marcar os itens não salva nada.)</p>` },
+    { id: "checklist-encerramento", pergunta: "Checklist de encerramento do cadastro", chaves: ["checklist encerramento","concluido"],
+      resposta: `<p>Antes de considerar o trabalho concluído:</p>
+      <ul class="listaChecklistAjuda">
+        <li><input type="checkbox">Geral preenchido</li>
+        <li><input type="checkbox">Estrutura curricular confirmada</li>
+        <li><input type="checkbox">Requisitos cadastrados</li>
+        <li><input type="checkbox">Disciplinas específicas cadastradas somente se necessário</li>
+        <li><input type="checkbox">Grupos cadastrados somente se necessário</li>
+        <li><input type="checkbox">Nenhuma duplicidade</li>
+        <li><input type="checkbox">Nenhuma referência quebrada</li>
+        <li><input type="checkbox">Observações úteis registradas</li>
+        <li><input type="checkbox">Validação executada</li>
+        <li><input type="checkbox">Todos os erros corrigidos</li>
+        <li><input type="checkbox">Revisão humana feita</li>
+        <li><input type="checkbox">Ruleset ativado somente após confirmação</li>
+      </ul>` },
+    { id: "regra-final", pergunta: "Regra final", chaves: ["regra final"],
+      resposta: `<blockquote><strong>O painel ajuda a evitar erro técnico. Ele não substitui responsabilidade acadêmica.</strong></blockquote>
+      <p>Se a regra estiver errada na origem, o sistema executará a regra errada com muita eficiência. Por isso: confirme; documente; valide; revise; só então ative.</p>` }
+  ]
+}
+
+];
+
+/*=====================================================
+  ATALHOS DE "AJUDA RÁPIDA" (Instruções item 21)
+=====================================================*/
+
+const ATALHOS_RAPIDOS = [
+  { rotulo: "Por onde começo?", alvo: "ordem-preenchimento" },
+  { rotulo: "Preciso cadastrar todas as disciplinas?", alvo: "nao-cadastrar-todas" },
+  { rotulo: "Quando uso Requisitos?", alvo: "como-saber-requisito" },
+  { rotulo: "Quando uso Grupos?", alvo: "aba-grupos" },
+  { rotulo: "O que é RASCUNHO?", alvo: "rascunho" },
+  { rotulo: "Posso editar um ATIVO?", alvo: "editar-ativo" },
+  { rotulo: "Versão e revisão são a mesma coisa?", alvo: "versao-vs-revisao" },
+  { rotulo: "O que é Nova versão?", alvo: "o-que-e-nova-versao" },
+  { rotulo: "O que fazer se der erro?", alvo: "problemas" },
+  { rotulo: "Não sei a estrutura curricular", alvo: "estrutura-curricular" },
+  { rotulo: "Antes de ativar", alvo: "fluxo-seguro-30s" }
+];
+
+/*=====================================================
+  BUSCA — normalização (ignora maiúsculas/acentos)
+=====================================================*/
+
+function normalizar(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Pré-computa, uma vez, o texto pesquisável de cada item (pergunta +
+// resposta sem tags HTML + palavras-chave) — assim a busca a cada
+// tecla só compara strings já normalizadas, sem tocar no DOM até
+// decidir o que mostrar/esconder (Instruções item 29: instantâneo).
+CATEGORIAS.forEach(categoria => {
+  categoria.itens.forEach(item => {
+    const textoSemTags = item.resposta.replace(/<[^>]+>/g, " ");
+    item._buscavel = normalizar(item.pergunta + " " + textoSemTags + " " + (item.chaves || []).join(" "));
+  });
+});
+
+/*=====================================================
+  RENDERIZAÇÃO
+=====================================================*/
+
+let _iniciado = false;
+
+function renderizarAjudaRapida() {
+  const container = document.getElementById("gradeAtalhosAjudaRapida");
+  container.innerHTML = "";
+  ATALHOS_RAPIDOS.forEach(atalho => {
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "atalhoAjudaRapida";
+    botao.textContent = atalho.rotulo;
+    botao.onclick = () => abrir(atalho.alvo);
+    container.appendChild(botao);
+  });
+}
+
+function renderizarIndice() {
+
+  const nav = document.getElementById("indiceAjudaCategorias");
+  const select = document.getElementById("seletorIndiceAjudaMobile");
+  nav.innerHTML = "";
+  select.innerHTML = "";
+
+  CATEGORIAS.forEach(categoria => {
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "itemIndiceAjuda";
+    botao.dataset.categoria = categoria.id;
+    botao.textContent = `${categoria.icone} ${categoria.titulo}`;
+    botao.onclick = () => navegarParaCategoria(categoria.id);
+    nav.appendChild(botao);
+
+    const opcao = document.createElement("option");
+    opcao.value = categoria.id;
+    opcao.textContent = `${categoria.icone} ${categoria.titulo}`;
+    select.appendChild(opcao);
+  });
+
+}
+
+// Cria HTML de forma segura: "resposta" é conteúdo estático nosso
+// (não vem de planilha nem de input do usuário), então usar innerHTML
+// aqui é seguro — mas pergunta/título de categoria também são
+// estáticos, então tudo neste arquivo pode usar inserção direta sem
+// risco (diferente do resto do painel, que sempre trata dado de
+// planilha via textContent).
+function renderizarConteudo() {
+
+  const container = document.getElementById("conteudoAjudaCategorias");
+  container.innerHTML = "";
+
+  CATEGORIAS.forEach(categoria => {
+
+    const secao = document.createElement("section");
+    secao.className = "categoriaAjuda";
+    secao.id = "categoria-ajuda-" + categoria.id;
+
+    const titulo = document.createElement("h2");
+    titulo.className = "tituloCategoriaAjuda";
+    titulo.innerHTML = `${categoria.icone} ${categoria.titulo} <span class="contadorItensCategoria">(${categoria.itens.length})</span>`;
+    secao.appendChild(titulo);
+
+    categoria.itens.forEach(item => {
+      const detalhes = document.createElement("details");
+      detalhes.className = "itemAjuda";
+      detalhes.id = "item-ajuda-" + item.id;
+
+      const resumo = document.createElement("summary");
+      resumo.textContent = item.pergunta;
+      detalhes.appendChild(resumo);
+
+      const corpo = document.createElement("div");
+      corpo.className = "respostaItemAjuda";
+      corpo.innerHTML = item.resposta;
+      detalhes.appendChild(corpo);
+
+      secao.appendChild(detalhes);
+    });
+
+    container.appendChild(secao);
+
+  });
+
+}
+
+/*=====================================================
+  BUSCA
+=====================================================*/
+
+function buscar(termoBruto) {
+
+  const termo = normalizar(termoBruto);
+  const blocosDestacados = document.getElementById("blocosDestacadosAjuda");
+  const estadoVazio = document.getElementById("estadoBuscaVazia");
+
+  if (!termo) {
+    blocosDestacados.style.display = "";
+    estadoVazio.style.display = "none";
+    document.querySelectorAll(".categoriaAjuda").forEach(el => el.classList.remove("ocultaPorBusca"));
+    document.querySelectorAll(".itemAjuda").forEach(el => {
+      el.classList.remove("ocultoPorBusca");
+      el.open = false;
+    });
+    return;
+  }
+
+  blocosDestacados.style.display = "none";
+
+  let totalEncontrado = 0;
+
+  CATEGORIAS.forEach(categoria => {
+
+    let algumVisivelNaCategoria = false;
+
+    categoria.itens.forEach(item => {
+      const encontrado = item._buscavel.indexOf(termo) !== -1;
+      const elDetalhes = document.getElementById("item-ajuda-" + item.id);
+      if (!elDetalhes) return;
+      elDetalhes.classList.toggle("ocultoPorBusca", !encontrado);
+      if (encontrado) {
+        elDetalhes.open = true;
+        algumVisivelNaCategoria = true;
+        totalEncontrado++;
+      } else {
+        elDetalhes.open = false;
+      }
+    });
+
+    const elCategoria = document.getElementById("categoria-ajuda-" + categoria.id);
+    if (elCategoria) elCategoria.classList.toggle("ocultaPorBusca", !algumVisivelNaCategoria);
+
+  });
+
+  estadoVazio.style.display = totalEncontrado === 0 ? "block" : "none";
+  if (totalEncontrado === 0) {
+    estadoVazio.textContent = `Nenhum item encontrado para "${termoBruto}".`;
+  }
+
+}
+
+/*=====================================================
+  NAVEGAÇÃO / DEEP LINK
+=====================================================*/
+
+function navegarParaCategoria(categoriaId) {
+  const el = document.getElementById("categoria-ajuda-" + categoriaId);
+  if (!el) return;
+  document.querySelectorAll(".itemIndiceAjuda").forEach(b => b.classList.toggle("ativo", b.dataset.categoria === categoriaId));
+  document.getElementById("seletorIndiceAjudaMobile").value = categoriaId;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// Ponto único de entrada pra ajuda contextual (Instruções item 31):
+// aceita um id de CATEGORIA (abre a categoria) ou de ITEM específico
+// (expande e destaca aquele item dentro da categoria dele).
+function abrir(alvoId) {
+
+  if (!_iniciado) iniciar();
+
+  document.getElementById("ajudaRegrasCurriculares").style.display = "flex";
+
+  // limpa busca eventualmente ativa de uma visita anterior
+  const campoBusca = document.getElementById("buscaAjudaInput");
+  if (campoBusca.value) {
+    campoBusca.value = "";
+    buscar("");
+  }
+
+  if (!alvoId) return;
+
+  // é uma categoria?
+  const categoria = CATEGORIAS.find(c => c.id === alvoId);
+  if (categoria) {
+    setTimeout(() => navegarParaCategoria(alvoId), 30);
+    return;
+  }
+
+  // é um item específico?
+  for (const cat of CATEGORIAS) {
+    const item = cat.itens.find(i => i.id === alvoId);
+    if (item) {
+      setTimeout(() => {
+        const elCategoria = document.getElementById("categoria-ajuda-" + cat.id);
+        const elItem = document.getElementById("item-ajuda-" + item.id);
+        if (elCategoria) elCategoria.scrollIntoView({ behavior: "auto", block: "start" });
+        if (elItem) {
+          elItem.open = true;
+          elItem.classList.add("destacadoTemporario");
+          setTimeout(() => elItem.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+          setTimeout(() => elItem.classList.remove("destacadoTemporario"), 1700);
+        }
+        document.querySelectorAll(".itemIndiceAjuda").forEach(b => b.classList.toggle("ativo", b.dataset.categoria === cat.id));
+      }, 30);
+      return;
+    }
+  }
+
+}
+
+function fechar() {
+  document.getElementById("ajudaRegrasCurriculares").style.display = "none";
+}
+
+function iniciar() {
+  if (_iniciado) return;
+  renderizarAjudaRapida();
+  renderizarIndice();
+  renderizarConteudo();
+  _iniciado = true;
+}
+
+/*=====================================================
+  NAMESPACE PÚBLICO (Instruções item 27) — só isto fica global.
+  onclick do HTML exige nomes globais, então os atributos chamam
+  RegrasCurricularesAjuda.metodo(...) diretamente, sem funções soltas.
+=====================================================*/
+
+window.RegrasCurricularesAjuda = {
+  abrir: abrir,
+  fechar: fechar,
+  buscar: buscar,
+  navegarParaCategoria: navegarParaCategoria
+};
+
+})();
+</script>
