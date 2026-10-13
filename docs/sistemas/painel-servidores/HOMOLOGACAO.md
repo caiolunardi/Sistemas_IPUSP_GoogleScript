@@ -39,7 +39,7 @@ IDs de elementos, textos operacionais, fluxos e chamadas `google.script.run` for
 
 ## Testes locais
 
-`node sistemas/painel-servidores/testes/testar_navegador.js`: **256 checagens, 0 falhas** (Chromium do Playwright, `google.script.run` simulado com dados fictícios).
+`node sistemas/painel-servidores/testes/testar_navegador.js`: **258 checagens, 0 falhas** (Chromium do Playwright, `google.script.run` simulado com dados fictícios).
 
 | Item do checklist | Resultado |
 |---|---|
@@ -50,6 +50,7 @@ IDs de elementos, textos operacionais, fluxos e chamadas `google.script.run` for
 | Navegação | Abre no menu lateral; `aria-current` no item atual; Voltar sincroniza; abas com `tablist`/`tab`/`tabpanel`, setas, Home/End e Enter; troca anunciada; modo não persiste. |
 | Teclado | Cards focáveis (link ou botão) e abertos com Enter. |
 | Pessoas do IPUSP | Primeiro card, categoria Pessoas, abre o endereço da busca de alunos. |
+| Configurações de Grade Horária | Card na categoria Grade Horária abre o endereço informado. |
 | Ajuda | Seção contextual, foco, bloqueio de rolagem, busca com e sem acento, sem resultado, FAQ com `aria-expanded`, atalhos internos, abertura do manual das Regras, ESC com retorno do foco, ajuda por cima de modal. |
 | Mobile | 360, 390, 480, 768 e 1024 px nos dois temas: sem rolagem horizontal (lista, Formulários, abas e ajuda), menu recolhido até 900 px, alvos ≥ 44 px. |
 | Movimento reduzido | Transições do menu anuladas. |
@@ -81,8 +82,8 @@ Não testado localmente: gravação real nas planilhas, editor de ruleset com da
 | `GradipMarcaUSP.html` | novo | `7714a3fc7c5e5a384151ccb5d30c6342ad86481d15762d7b31a74defcc352734` | — |
 | `GradipTema.html` | novo | `35ab5bdf248b7a4cfd2778d4cfdf26d338b8c05905dd1d65e406f9b3a832abae` | — |
 | `GradipTemaControle.html` | novo | `fb779bf073d81f1e4c4f584b3c05b94574bb577bab13325acc827e27e66ba7c7` | — |
-| `Painel.html` | alterado | `ff15d0d1fc6757cf8de6cacbb57c0bcf47f8df98c71cddc2d38742c6c45c834e` | `b697f7a4e93f92f8ceec45c2c4da4515599d8d3d36b056d30d61dbcfa4407678` |
-| `PainelAjuda.html` | novo | `f773610bb8706b9cf36f7c4612bd707bfcfe80c7a403ccfaf738616f3e7e04e0` | — |
+| `Painel.html` | alterado | `6aa1d31c8c42c2379266485ff4873493ae2727558b226fba1f23d1b5ae97aaf4` | `b697f7a4e93f92f8ceec45c2c4da4515599d8d3d36b056d30d61dbcfa4407678` |
+| `PainelAjuda.html` | novo | `23535249e3da6ce76491a96de8cf7139a1f1ec6ce20f3e5c6003212642714d98` | — |
 | `PainelAjudaEstilos.html` | novo | `4b34766ecf2a6f194c9d04dad4a8b0a6b5c6109a99946e9f5a8079ca586ad2c7` | — |
 | `PainelAjudaUI.html` | novo | `dc571371baf84152e99785a24dab393f6221563f4f497dd0d58ea883ed0592b3` | — |
 | `PainelIcones.html` | novo | `c52a0f5a39e3d3565409a13efd4563defb1089403168c7d45fa9acd56f79509c` | — |

@@ -25,6 +25,7 @@ O painel tem duas partes:
 | Habilitações e Matrícula | Matrícula de Intercambistas | pendentes de inclusão e de exclusão, em selos separados |
 | Habilitações e Matrícula | Exclusão de Disciplinas | alunos com ao menos uma disciplina não concluída |
 | Outros Serviços | 2ª Via do BUSP | vermelho: pendente de análise/emissão; amarelo: aguardando o serviço técnico de apoio financeiro |
+| Grade Horária | Configurações de Grade Horária | não tem |
 
 O card **Pessoas do IPUSP** tem esse nome por pedido do responsável funcional: a busca de alunos é só a primeira consulta da área, e docentes e servidores devem entrar no mesmo sistema. Os cards ficam declarados no array `SISTEMAS` de `Painel.html`; incluir um sistema é acrescentar um objeto ali.
 
@@ -49,3 +50,4 @@ Os avisos são lidos uma vez, quando a página abre (`obterContadoresPendencias`
 |---|---|
 | Recebida (13/10/2026) | 19 arquivos: painel com cards e avisos, Configurações de Formulários e Regras Curriculares. Sem tema escuro, sem Central de Ajuda do painel. |
 | Fonte no Git (13/10/2026) | Tema GRADIP, menu lateral/abas, card Pessoas do IPUSP, Central de Ajuda e gatilhos `?`, cards acessíveis por teclado, avisos mantidos ao usar a busca. Backend sem mudança de comportamento. Verificada localmente; implantação pendente. |
+| Fonte no Git (13/10/2026, 2ª) | Card Configurações de Grade Horária (categoria Grade Horária, sem aviso de pendência). Só `Painel.html` e `PainelAjuda.html` mudam. |

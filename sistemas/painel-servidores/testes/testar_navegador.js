@@ -78,6 +78,8 @@ async function contraste(p, scheme, seletores, rotulo=''){
   chk(`${T} Pessoas do IPUSP é o primeiro card`, primeiro[0].includes('Pessoas')&&primeiro[1].includes('Pessoas do IPUSP')&&!primeiro[1].includes('Busca de Alunos'), primeiro[0]);
   await p.click('#listaCategorias .cardSistema >> nth=0');
   chk(`${T} card abre o app de alunos`, (await p.evaluate(()=>window.__abertos[0]||'')).endsWith('/AKfycbzKbGAI31-yuWnBNcR6XYM99vXZiUvY0iO5zjvd1_G-_pgfISJo-IRPUpyzdhVCLqzn/exec'));
+  await p.evaluate(()=>{const c=[...document.querySelectorAll('#listaCategorias .cardSistema')].find(c=>c.textContent.includes('Configurações de Grade Horária'));c.click()});
+  chk(`${T} card Configurações de Grade Horária abre o link`, (await p.evaluate(()=>window.__abertos.pop()||'')).endsWith('/AKfycbwp1SjW2YQmnS0BYNgTJTlAZmxX_92b21j4y3_lHWrhuGOvTt_MT5u0gcJG6SgpF3O4xA/exec'));
   chk(`${T} card focável como link`, await p.evaluate(()=>{const c=document.querySelector('#listaCategorias .cardSistema');return c.tabIndex===0&&c.getAttribute('role')==='link'}));
   await p.focus('#listaCategorias .cardSistema >> nth=1'); await p.keyboard.press('Enter');
   chk(`${T} Enter abre card`, await p.evaluate(()=>window.__abertos.length===2));
