@@ -38,6 +38,8 @@ Sistemas pequenos podem concentrar tudo no `README.md`, mas a seção de dados/s
 - [Painel de Solicitações dos alunos v1.2](painel-solicitacoes/README.md) — interface aceita em 25/09/2026; [código sanitizado](../../sistemas/painel-solicitacoes/README.md); [evidências e limites](painel-solicitacoes/HOMOLOGACAO.md); [segurança e configuração](painel-solicitacoes/DADOS_E_SEGURANCA.md).
 - [Estrutura Curricular e Grade Horária 1.10.0](estrutura-curricular/README.md) — fonte sobre a baseline 1.9.3 auditada; [manual](estrutura-curricular/MANUAL_OPERACAO.md), [instalação](estrutura-curricular/INSTALACAO_E_ATUALIZACAO.md), [arquitetura](estrutura-curricular/ARQUITETURA.md), [segurança](estrutura-curricular/DADOS_E_SEGURANCA.md) e [verificação local](estrutura-curricular/VERIFICACAO_1_10_0.md). Sidebar e abas usam os mesmos controles. A nova versão ainda precisa de homologação no Google.
 
+- [Painel de Sistemas dos servidores](painel-servidores/README.md) — fonte recebida em 13/10/2026 com tema GRADIP, menu lateral/abas, card Pessoas do IPUSP e Central de Ajuda; [manual e instalação](painel-servidores/MANUAL_OPERACAO.md), [ajuda](painel-servidores/AJUDA.md), [segurança](painel-servidores/DADOS_E_SEGURANCA.md) e [homologação](painel-servidores/HOMOLOGACAO.md). Verificado localmente; implantação no Google pendente. Acesso anônimo sem autorização no backend registrado para decisão.
+
 ## Ordem prevista
 
 1. painéis e dashboards;

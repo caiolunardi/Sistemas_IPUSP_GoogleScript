@@ -1,53 +1,83 @@
-<meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
 <base target="_top">
+<meta charset="UTF-8">
+
+<!-- GRADIP UI — tema (Sistema/Claro/Escuro). Incluído antes de qualquer
+     <style> que use var(--gradip-...) e antes do iniciar(), para o tema
+     certo já aparecer no primeiro desenho da página. Não chama o
+     servidor: a preferência fica só no navegador ("gradip-theme"). -->
+<?!= include_('GradipTema'); ?>
 
 <style>
+
+/*=====================================================
+  PAINEL DOS SERVIDORES — estilos da casca.
+
+  GRADIP UI: as cores literais do código anterior (#f5f5f5, #333,
+  #005AA9, #d9d9d9, #eaf2fa, #fdecea...) foram trocadas pelos tokens
+  semânticos de GradipTema.html. Claro e Escuro saem do MESMO CSS;
+  tamanhos, espaçamentos e classes foram preservados.
+=====================================================*/
+
 body{
     margin:0;
     font-family:Arial, Helvetica, sans-serif;
-    background:#f5f5f5;
-    color:#333;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
 }
 
 #headerSistema{
-    background:white;
-    height:72px;
+    background:var(--gradip-header-bg);
+    min-height:72px;
     display:flex;
     align-items:center;
     justify-content:space-between;
+    gap:12px;
     padding:0 22px;
-    border-bottom:1px solid #ddd;
+    border-bottom:1px solid var(--gradip-border);
 }
 
 .logoEsquerda{
     display:flex;
     align-items:center;
     gap:15px;
+    min-width:0;
 }
 
-.logoEsquerda img{
+.logoEsquerda .marcaIpuspSvg{
     height:52px;
+    flex:0 0 auto;
 }
 
 .logoUSP{
     height:44px;
+    width:auto;
+    flex:0 0 auto;
+}
+
+.logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
 }
 
 .tituloSistema{
     font-size:17px;
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .subtituloSistema{
     font-size:13px;
-    color:#666;
+    color:var(--gradip-text-muted);
     margin-top:2px;
 }
 
 .barraAzul{
     height:6px;
-    background:#005AA9;
+    background:var(--gradip-header-accent);
 }
 
 #conteudo{
@@ -57,34 +87,36 @@ body{
 }
 
 .cardResumo{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:18px 22px;
     margin-bottom:22px;
-    box-shadow:0 1px 3px rgba(0,0,0,.05);
+    box-shadow:var(--gradip-shadow);
 }
 
 .cardResumo h1{
     font-size:19px;
     margin:0;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .cardResumo p{
     margin:6px 0 0 0;
     font-size:13px;
-    color:#777;
+    color:var(--gradip-text-muted);
 }
 
 .caixaBusca{
     width:100%;
     padding:11px 14px;
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:6px;
     font-size:14px;
     box-sizing:border-box;
     margin-bottom:18px;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
 }
 
 .grupoCategoria{
@@ -95,7 +127,7 @@ body{
     font-size:12px;
     text-transform:uppercase;
     letter-spacing:.05em;
-    color:#005AA9;
+    color:var(--gradip-link);
     font-weight:bold;
     margin:0 0 10px 4px;
 }
@@ -107,8 +139,8 @@ body{
 }
 
 .cardSistema{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:16px 20px;
     display:flex;
@@ -116,12 +148,12 @@ body{
     gap:16px;
     cursor:pointer;
     transition:.15s;
-    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    box-shadow:var(--gradip-shadow);
 }
 
 .cardSistema:hover{
-    border-color:#005AA9;
-    box-shadow:0 2px 8px rgba(0,90,169,.15);
+    border-color:var(--gradip-link);
+    background:var(--gradip-surface-2);
 }
 
 .cardSistema.desabilitado{
@@ -130,8 +162,8 @@ body{
 }
 
 .cardSistema.desabilitado:hover{
-    border-color:#d9d9d9;
-    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    border-color:var(--gradip-border);
+    background:var(--gradip-surface);
 }
 
 .iconeSistema{
@@ -139,7 +171,7 @@ body{
     width:46px;
     height:46px;
     border-radius:8px;
-    background:#eaf2fa;
+    background:var(--gradip-info-bg);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -155,19 +187,19 @@ body{
 .infoSistema strong{
     display:block;
     font-size:15px;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .infoSistema div{
     font-size:12px;
-    color:#777;
+    color:var(--gradip-text-muted);
     margin-top:3px;
 }
 
 .setaSistema{
     flex:0 0 auto;
     font-size:18px;
-    color:#005AA9;
+    color:var(--gradip-link);
 }
 
 .badgeEmBreve{
@@ -175,8 +207,9 @@ body{
     font-weight:bold;
     padding:4px 10px;
     border-radius:12px;
-    background:#f0f0f0;
-    color:#999;
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border:1px solid var(--gradip-border);
     white-space:nowrap;
     flex:0 0 auto;
 }
@@ -195,27 +228,29 @@ body{
     font-weight:bold;
     padding:4px 10px;
     border-radius:12px;
-    background:#fdecea;
-    color:#b71c1c;
+    background:var(--gradip-danger-bg);
+    color:var(--gradip-danger);
+    border:1px solid var(--gradip-danger-border);
     white-space:nowrap;
     flex:0 0 auto;
 }
 
 .badgePendencia.aguardando{
-    background:#fff4e5;
-    color:#b5690a;
+    background:var(--gradip-warning-bg);
+    color:var(--gradip-warning);
+    border-color:var(--gradip-warning-border);
 }
 
 .vazio{
     text-align:center;
-    color:#999;
+    color:var(--gradip-text-muted);
     padding:40px 20px;
     font-size:14px;
 }
 
 .rodape{
     text-align:center;
-    color:#aaa;
+    color:var(--gradip-text-muted);
     font-size:12px;
     margin-top:30px;
 }
@@ -228,10 +263,13 @@ body{
     display:flex;
     align-items:center;
     gap:8px;
+    min-height:44px;
+    min-width:44px;
+    justify-content:center;
     padding:9px 16px;
-    background:white;
-    border:1.5px solid #005AA9;
-    color:#005AA9;
+    background:var(--gradip-surface);
+    border:1.5px solid var(--gradip-link);
+    color:var(--gradip-link);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -240,13 +278,160 @@ body{
 }
 
 .botaoConfiguracoes:hover{
-    background:#eaf2fa;
+    background:var(--gradip-info-bg);
 }
 
 .grupoDireitaHeader{
     display:flex;
     align-items:center;
-    gap:18px;
+    gap:14px;
+    flex:0 0 auto;
+}
+
+/* Botão global da Central de Ajuda (mesmo padrão dos outros sistemas). */
+.botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+}
+
+.botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+}
+
+/* Gatilhos contextuais "?" que abrem a Central na seção certa. */
+.linhaAjudaContextual{
+    margin:-8px 0 18px 0;
+}
+
+.linkAjudaContextual{
+    display:inline-flex;
+    align-items:center;
+    min-height:44px;
+    padding:0 4px;
+    background:none;
+    border:0;
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+}
+
+.linkAjudaContextual:hover{
+    color:var(--gradip-link-hover);
+}
+
+/* Conteúdo próprio da Central de Ajuda do painel (o restante vem de
+   PainelAjudaEstilos, cópia sem alteração de shared/ajuda). */
+.painelAjudaAtalhos{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:8px;
+    margin:0;
+    padding:0;
+    list-style:none;
+}
+
+.painelAjudaAtalhos .painelAjudaLink{
+    width:100%;
+    min-height:44px;
+    padding:8px 12px;
+    border:1px solid var(--gradip-info-border);
+    border-radius:8px;
+    background:var(--gradip-info-bg);
+    text-align:left;
+    text-decoration:none;
+}
+
+/* Link dentro do texto: alvo do tamanho da linha (exceção de texto
+   corrido do WCAG 2.5.8); nos atalhos acima ganha 44 px. */
+.painelAjudaLink{
+    padding:0;
+    background:none;
+    border:0;
+    color:var(--gradip-link);
+    font:inherit;
+    font-weight:bold;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+}
+
+.painelAjudaLink:hover{
+    color:var(--gradip-link-hover);
+}
+
+.painelAjudaBotao{
+    min-height:44px;
+    padding:8px 14px;
+    border:1px solid var(--gradip-primary);
+    border-radius:8px;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+    font:inherit;
+    font-weight:bold;
+    text-align:left;
+    cursor:pointer;
+}
+
+.painelAjudaBotao:hover{
+    background:var(--gradip-primary-hover);
+    border-color:var(--gradip-primary-hover);
+}
+
+.painelAjudaLink:focus-visible,
+.painelAjudaBotao:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.painelAjudaTabela{
+    max-width:100%;
+    overflow-x:auto;
+    margin:8px 0;
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+}
+
+.painelAjudaTabela table{
+    width:100%;
+    min-width:420px;
+    border-collapse:collapse;
+    font-size:13.5px;
+}
+
+.painelAjudaTabela th,
+.painelAjudaTabela td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--gradip-border);
+    text-align:left;
+    vertical-align:top;
+}
+
+.painelAjudaTabela th{
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text);
+}
+
+.painelAjudaTabela tbody tr:last-child td{
+    border-bottom:0;
 }
 
 /*=================================
@@ -263,10 +448,11 @@ body{
 }
 
 .botaoVoltar{
+    min-height:44px;
     padding:9px 16px;
-    background:white;
-    border:1px solid #ccc;
-    color:#444;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border-strong);
+    color:var(--gradip-text);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -274,8 +460,8 @@ body{
 }
 
 .botaoVoltar:hover{
-    border-color:#005AA9;
-    color:#005AA9;
+    border-color:var(--gradip-link);
+    color:var(--gradip-link);
 }
 
 /*=================================
@@ -289,7 +475,7 @@ body{
 
 .linhaSubcampo{
     font-size:11px;
-    color:#888;
+    color:var(--gradip-text-muted);
     font-weight:bold;
     margin-bottom:5px;
 }
@@ -313,10 +499,12 @@ body{
 .grupoCampoIcone input[type=text]{
     width:100%;
     padding:9px 34px 9px 10px;
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:4px;
     font-size:13px;
     box-sizing:border-box;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
 }
 
 .grupoCampoIcone .botaoIconeCampo{
@@ -329,12 +517,12 @@ body{
     cursor:pointer;
     font-size:16px;
     padding:5px 6px;
-    color:#005AA9;
+    color:var(--gradip-link);
     border-radius:4px;
 }
 
 .grupoCampoIcone .botaoIconeCampo:hover{
-    background:#eaf2fa;
+    background:var(--gradip-info-bg);
 }
 
 .grupoCampoIcone input[type=date],
@@ -346,6 +534,11 @@ body{
     height:1px;
     right:0;
     top:0;
+}
+
+input::placeholder,
+textarea::placeholder{
+    color:var(--gradip-input-placeholder);
 }
 
 /*=================================
@@ -362,7 +555,7 @@ body{
     top:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.45);
+    background:var(--gradip-overlay);
     align-items:center;
     justify-content:center;
     overflow-y:auto;
@@ -371,7 +564,9 @@ body{
 }
 
 .modalCaixaConfig{
-    background:white;
+    background:var(--gradip-surface-elevated);
+    color:var(--gradip-text);
+    border:1px solid var(--gradip-border);
     width:560px;
     max-width:92vw;
     max-height:90vh;
@@ -388,8 +583,8 @@ body{
 }
 
 .modalCabecalhoConfig{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     padding:16px 22px;
     display:flex;
     justify-content:space-between;
@@ -414,7 +609,7 @@ body{
 }
 
 .avisoValidacaoConfig{
-    color:#b71c1c;
+    color:var(--gradip-danger);
     font-size:12px;
     margin:-6px 0 14px 0;
     display:none;
@@ -423,7 +618,7 @@ body{
 
 .modalRodapeConfig{
     padding:14px 22px;
-    border-top:1px solid #eee;
+    border-top:1px solid var(--gradip-border);
     display:flex;
     gap:10px;
     justify-content:space-between;
@@ -433,8 +628,8 @@ body{
 
 .botaoPrimarioConfig{
     padding:11px 20px;
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     border:none;
     border-radius:6px;
     font-size:13px;
@@ -443,19 +638,20 @@ body{
 }
 
 .botaoPrimarioConfig:hover{
-    background:#00468a;
+    background:var(--gradip-primary-hover);
 }
 
 .botaoPrimarioConfig:disabled{
-    background:#9fb8cc;
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
     cursor:default;
 }
 
 .botaoSecundarioConfig{
     padding:11px 20px;
-    background:white;
-    border:1px solid #ccc;
-    color:#444;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border-strong);
+    color:var(--gradip-text);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -463,15 +659,15 @@ body{
 }
 
 .botaoSecundarioConfig:hover{
-    border-color:#005AA9;
-    color:#005AA9;
+    border-color:var(--gradip-link);
+    color:var(--gradip-link);
 }
 
 .botaoDesativarConfig{
     padding:11px 16px;
-    background:white;
-    border:1.5px solid #b71c1c;
-    color:#b71c1c;
+    background:var(--gradip-surface);
+    border:1.5px solid var(--gradip-danger);
+    color:var(--gradip-danger);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -479,7 +675,7 @@ body{
 }
 
 .botaoDesativarConfig:hover{
-    background:#fdecea;
+    background:var(--gradip-danger-bg);
 }
 
 .botaoDesativarConfig:disabled{
@@ -490,6 +686,23 @@ body{
 .grupoBotoesDireita{
     display:flex;
     gap:10px;
+}
+
+/* Foco por teclado visível nos dois temas (antes dependia do padrão do
+   navegador, que some sobre o azul do cabeçalho dos modais). */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+.cardSistema:focus-visible,
+[role="button"]:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.modalCabecalhoConfig :focus-visible{
+    outline-color:var(--gradip-on-primary);
 }
 
 /*=================================
@@ -507,27 +720,165 @@ body{
     display:none;
 }
 
+/*=================================
+    CABEÇALHO EM TELAS ESTREITAS
+    (duas faixas: marca + título;
+    Aparência, Ajuda, Configurações
+    e USP) — sem rolagem horizontal
+==================================*/
+
+@media (max-width:760px){
+    #headerSistema{
+        flex-wrap:wrap;
+        padding:10px 14px;
+        row-gap:8px;
+    }
+    .logoEsquerda{
+        flex:1 1 100%;
+    }
+    .grupoDireitaHeader{
+        flex:1 1 100%;
+        justify-content:flex-end;
+        flex-wrap:wrap;
+        gap:8px;
+    }
+    #conteudo{
+        margin-top:20px;
+        padding:0 14px;
+    }
+}
+
+@media (max-width:480px){
+    .logoEsquerda{
+        gap:8px;
+    }
+    .logoEsquerda .marcaIpuspSvg{
+        height:38px;
+    }
+    .logoUSP{
+        height:32px;
+    }
+    .tituloSistema{
+        font-size:14px;
+    }
+    .subtituloSistema{
+        font-size:11px;
+    }
+    .grupoDireitaHeader{
+        justify-content:space-between;
+        gap:6px;
+    }
+    .botaoAjuda .textoAjuda,
+    .botaoConfiguracoes .textoBotaoHeader{
+        display:none;
+    }
+    .botaoAjuda{
+        padding:8px;
+        border-radius:50%;
+    }
+    .botaoConfiguracoes{
+        padding:8px 12px;
+    }
+    .gradip-theme-control__select{
+        padding:0 26px 0 8px;
+    }
+    .cabecalhoTelaConfig{
+        flex-wrap:wrap;
+        gap:10px;
+    }
+    .cardSistema{
+        padding:14px;
+        gap:12px;
+        flex-wrap:wrap;
+    }
+    /* Ícone, nome e seta na 1ª linha; avisos de pendência na linha de
+       baixo, alinhados ao texto (sem espremer o nome em uma palavra
+       por linha). */
+    .infoSistema{
+        flex:1 1 calc(100% - 100px);
+    }
+    .setaSistema{
+        order:2;
+    }
+    .cardSistema > .badgePendencia,
+    .cardSistema > .gruposBadges,
+    .cardSistema > .badgeEmBreve{
+        order:3;
+        margin-left:58px;
+    }
+    .gruposBadges{
+        align-items:flex-start;
+    }
+    .badgePendencia{
+        white-space:normal;
+    }
+}
+
 </style>
+
+<?!= include_('PainelNavegacaoEstilos'); ?>
+<?!= include_('PainelAjudaEstilos'); ?>
+
+</head>
+<body>
 
 <header id="headerSistema">
     <div class="logoEsquerda">
-        <img src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/logo_ip.png">
+        <?!= include_('GradipMarcaIPUSP'); ?>
         <div>
             <div class="tituloSistema">Painel de Sistemas</div>
             <div class="subtituloSistema">Serviço de Graduação — Instituto de Psicologia</div>
         </div>
     </div>
     <div class="grupoDireitaHeader">
-        <button class="botaoConfiguracoes" onclick="abrirTelaConfiguracoes()">⚙️ Configurações</button>
-        <img class="logoUSP" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/usp.png">
+        <?!= include_('GradipTemaControle'); ?>
+        <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
+            <span aria-hidden="true">❓</span>
+            <span class="textoAjuda">Ajuda</span>
+        </button>
+        <button type="button" class="botaoConfiguracoes" onclick="abrirTelaConfiguracoes()" aria-label="Configurações"><span aria-hidden="true">⚙️</span><span class="textoBotaoHeader">Configurações</span></button>
+        <span class="logoUSPWrap">
+            <?!= include_('GradipMarcaUSP'); ?>
+        </span>
     </div>
 </header>
 
 <div class="barraAzul"></div>
 
+<!-- NAVEGAÇÃO: menu lateral (padrão ao abrir) ou abas. Os mesmos botões
+     servem aos dois modos; trocar de modo só muda a apresentação — não
+     recarrega listas, não fecha modais e não chama o servidor. Ver
+     PainelNavegacaoUI.html. -->
+<div class="painelNavegacaoModos">
+    <p class="painelNavegacaoModos__rotulo" id="painelModoRotulo">Navegação</p>
+    <div class="painelNavegacaoModos__grupo" role="group" aria-labelledby="painelModoRotulo">
+        <button type="button" class="painelModo" data-painel-modo="sidebar" data-icone="panel-left" aria-pressed="true"><span>Menu lateral</span></button>
+        <button type="button" class="painelModo" data-painel-modo="abas" data-icone="panels-top-left" aria-pressed="false"><span>Abas</span></button>
+    </div>
+    <span class="somenteLeitor" id="painelModoStatus" role="status" aria-live="polite"></span>
+</div>
+
+<div id="painelLayout" class="painelLayout" data-navegacao="sidebar">
+
+    <aside id="painelSidebar" class="painelSidebar" aria-label="Navegação do painel">
+        <div class="painelSidebar__topo">
+            <p class="painelSidebar__titulo">Áreas do painel</p>
+            <button type="button" id="painelMenuMovel" class="painelMenuMovel" aria-controls="painelMenu" aria-expanded="true">Recolher menu</button>
+        </div>
+        <nav id="painelMenu" class="painelMenu" aria-label="Áreas do painel">
+            <button type="button" class="painelNavItem" id="navPainelSistemas" data-pagina="sistemas" data-icone="layout-grid" aria-controls="conteudo"><span class="painelNavTexto">Sistemas</span></button>
+            <button type="button" class="painelNavItem" id="navPainelConfiguracoes" data-pagina="configuracoes" data-icone="settings" aria-controls="conteudo"><span class="painelNavTexto">Configurações</span></button>
+            <button type="button" class="painelNavItem painelNavItem--sub" id="navPainelFormularios" data-pagina="formularios" data-icone="calendar-days" aria-controls="conteudo"><span class="painelNavTexto">Formulários</span></button>
+            <button type="button" class="painelNavItem painelNavItem--sub" id="navPainelRegras" data-pagina="regras" data-icone="graduation-cap" aria-controls="conteudo"><span class="painelNavTexto">Regras Curriculares</span></button>
+        </nav>
+        <div class="painelSidebar__apoio">
+            <button type="button" class="painelNavItem painelNavItem--apoio" data-gradip-help-open="ajuda-inicio" data-icone="circle-help" aria-haspopup="dialog"><span class="painelNavTexto">Ajuda e perguntas frequentes</span></button>
+        </div>
+    </aside>
+
 <div id="conteudo">
 
-    <!-- TELA 1: LISTA DE SISTEMAS (padrão — intocada) -->
+    <!-- TELA 1: LISTA DE SISTEMAS -->
     <div id="telaListaSistemas">
 
         <div class="cardResumo">
@@ -535,7 +886,12 @@ body{
             <p>Escolha abaixo o sistema que você quer acessar</p>
         </div>
 
+        <label for="caixaBusca" class="somenteLeitor">Buscar sistema</label>
         <input type="text" class="caixaBusca" id="caixaBusca" placeholder="Buscar sistema..." oninput="filtrarSistemas()">
+
+        <div class="linhaAjudaContextual">
+            <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-pendencias">? Entenda os avisos de pendência</button>
+        </div>
 
         <div id="listaCategorias"></div>
 
@@ -553,6 +909,8 @@ body{
         <?!= include_('ConfigRegrasCurricularesUI'); ?>
 
     </div>
+
+</div>
 
 </div>
 
@@ -576,6 +934,18 @@ body{
 // pode ter mais de um badge (ex: BUSP) usando "chavesContador"
 // (array) em vez de "chaveContador" (singular) — ver mais abaixo.
 const SISTEMAS = [
+    // "Pessoas do IPUSP" é o nome da área, não de uma busca específica:
+    // hoje o link abre a busca de alunos; consultas de docentes e
+    // servidores devem entrar no mesmo sistema no futuro, sem mudar o
+    // nome do card. Sem contador de pendência (não há fila a atender).
+    {
+        categoria: "Pessoas",
+        nome: "Pessoas do IPUSP",
+        descricao: "Consulta de pessoas do Instituto de Psicologia. Por enquanto, reúne a busca de alunos",
+        icone: "👥",
+        url: "https://script.google.com/a/macros/usp.br/s/AKfycbzKbGAI31-yuWnBNcR6XYM99vXZiUvY0iO5zjvd1_G-_pgfISJo-IRPUpyzdhVCLqzn/exec",
+        ativo: true
+    },
     {
         categoria: "Diplomas e Colação de Grau",
         nome: "Emissão de Diplomas",
@@ -690,9 +1060,14 @@ function montarMapaRotulosBadges_() {
 // Só mexe nos badges que existem na tela (sistema.chaveContador ou
 // alguma entrada de sistema.chavesContador correspondente) — chaves
 // desconhecidas ou sem card são ignoradas.
+// Guarda a última contagem para reaplicá-la quando a busca redesenha
+// os cards (antes, digitar na busca apagava os avisos até recarregar).
+let ultimosContadoresPendencia = null;
+
 function aplicarContadoresPendencia(contadores) {
 
     if (!contadores) return;
+    ultimosContadoresPendencia = contadores;
 
     const mapaRotulos = montarMapaRotulosBadges_();
 
@@ -732,6 +1107,7 @@ function filtrarSistemas() {
 
     if (!termo) {
         renderizarSistemas(SISTEMAS);
+        aplicarContadoresPendencia(ultimosContadoresPendencia);
         return;
     }
 
@@ -742,6 +1118,7 @@ function filtrarSistemas() {
     );
 
     renderizarSistemas(filtrados);
+    aplicarContadoresPendencia(ultimosContadoresPendencia);
 
 }
 
@@ -863,6 +1240,7 @@ function abrirTelaConfiguracoes() {
 function fecharTelaConfiguracoes() {
     document.getElementById("telaConfiguracoes").style.display = "none";
     document.getElementById("telaListaSistemas").style.display = "block";
+    sincronizarNavegacaoPainel_();
 }
 
 // idSubTela: "configHome" | "configFormularios" | "configRegrasCurriculares"
@@ -870,7 +1248,25 @@ function abrirSubTelaConfig(idSubTela) {
     document.querySelectorAll(".subTelaConfig").forEach(el => {
         el.style.display = (el.id === idSubTela) ? "block" : "none";
     });
+    sincronizarNavegacaoPainel_();
 }
+
+// Menu lateral/abas (PainelNavegacaoUI.html) só marca a área atual —
+// os botões "Voltar" e os cards continuam chamando as funções acima,
+// e é daqui que o destaque do menu acompanha qualquer caminho usado.
+function sincronizarNavegacaoPainel_() {
+    if (window.PainelNavegacao) window.PainelNavegacao.sincronizar();
+}
+
+// Botão "Abrir o Manual e FAQ das Regras Curriculares", dentro da
+// Central de Ajuda do painel: fecha a Central (para não empilhar duas
+// telas de ajuda) e abre o manual completo que já existia.
+document.addEventListener("click", event => {
+    const botao = event.target.closest ? event.target.closest("[data-painel-abrir-manual-regras]") : null;
+    if (!botao) return;
+    if (window.GradipHelp) window.GradipHelp.close();
+    if (window.RegrasCurricularesAjuda) window.RegrasCurricularesAjuda.abrir(botao.getAttribute("data-painel-abrir-manual-regras") || undefined);
+});
 
 /*=====================================================
   CAMPOS DE DATA/HORA — digitação com máscara + ícone que
@@ -955,3 +1351,11 @@ function travarBotao_(botao, textoEnquantoTrava) {
 }
 
 </script>
+
+<?!= include_('PainelIcones'); ?>
+<?!= include_('PainelAjuda'); ?>
+<?!= include_('PainelAjudaUI'); ?>
+<?!= include_('PainelNavegacaoUI'); ?>
+
+</body>
+</html>

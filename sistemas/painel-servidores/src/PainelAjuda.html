@@ -1,0 +1,384 @@
+<!-- Central de Ajuda do Painel dos servidores — conteúdo.
+     Estrutura e atributos data-gradip-help-* conforme docs/ajuda/ e
+     shared/ajuda/GradipAjudaTemplate.html; comportamento em
+     PainelAjudaUI.html (cópia sem alteração de shared/ajuda/GradipAjudaUI.html).
+     Texto-fonte e regras de onde cada afirmação foi conferida:
+     docs/sistemas/painel-servidores/AJUDA.md. Conteúdo estático: abrir,
+     buscar e expandir perguntas não chama o servidor.
+     O manual detalhado das Regras Curriculares continua em
+     ConfigRegrasCurricularesAjuda.html; aqui há só o resumo e o atalho. -->
+<div class="gradip-help-overlay" data-gradip-help-overlay hidden>
+  <section class="gradip-help-dialog" data-gradip-help-dialog role="dialog" aria-modal="true" aria-labelledby="gradip-help-title" tabindex="-1">
+    <header class="gradip-help-header">
+      <div><p class="gradip-help-eyebrow">Serviço de Graduação — IPUSP</p><h2 id="gradip-help-title">Ajuda do Painel de Sistemas</h2></div>
+      <button type="button" class="gradip-help-close" data-gradip-help-close aria-label="Fechar ajuda"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="gradip-help-search-wrap">
+      <label for="gradip-help-search">Buscar na ajuda</label>
+      <input id="gradip-help-search" type="search" placeholder="Ex.: pendência, sazonal, desativar, abas" autocomplete="off" data-gradip-help-search>
+      <p class="gradip-help-search-status" data-gradip-help-search-status aria-live="polite"></p>
+    </div>
+    <div class="gradip-help-layout">
+      <nav class="gradip-help-nav" aria-label="Seções da ajuda">
+        <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
+        <button type="button" data-gradip-help-target="ajuda-sistemas">Abrir um sistema</button>
+        <button type="button" data-gradip-help-target="ajuda-pendencias">Avisos de pendência</button>
+        <button type="button" data-gradip-help-target="ajuda-pessoas">Pessoas do IPUSP</button>
+        <button type="button" data-gradip-help-target="ajuda-navegacao">Menu lateral e abas</button>
+        <button type="button" data-gradip-help-target="ajuda-aparencia">Aparência</button>
+        <button type="button" data-gradip-help-target="ajuda-configuracoes">Configurações</button>
+        <button type="button" data-gradip-help-target="ajuda-formularios">Períodos dos formulários</button>
+        <button type="button" data-gradip-help-target="ajuda-colacao">Colação de Grau</button>
+        <button type="button" data-gradip-help-target="ajuda-exclusao">Exclusão de Disciplinas</button>
+        <button type="button" data-gradip-help-target="ajuda-regras">Regras Curriculares</button>
+        <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
+        <button type="button" data-gradip-help-target="ajuda-faq">Perguntas frequentes</button>
+      </nav>
+      <main class="gradip-help-main" data-gradip-help-main>
+
+        <!-- ===================== COMECE AQUI ===================== -->
+        <section id="ajuda-inicio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Comece aqui</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="painel inicio comecar o que e equipe servidores">
+            <h4>Para que serve este painel</h4>
+            <p>É a porta de entrada da equipe do Serviço de Graduação para os sistemas internos: cada card abre um sistema, e os avisos vermelhos ou amarelos mostram quantos pedidos ainda esperam atendimento. Em <strong>Configurações</strong> você define quando os formulários dos alunos ficam abertos e cadastra as Regras Curriculares.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="atalhos o que voce quer fazer tarefas">
+            <h4>O que você quer fazer?</h4>
+            <ul class="painelAjudaAtalhos">
+              <li><button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-sistemas">Abrir um sistema da equipe</button></li>
+              <li><button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-pendencias">Entender um aviso de pendência</button></li>
+              <li><button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-pessoas">Procurar um aluno</button></li>
+              <li><button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-formularios">Abrir ou fechar um formulário dos alunos</button></li>
+              <li><button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-regras">Cadastrar Regras Curriculares</button></li>
+              <li><button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-problemas">Resolver um problema</button></li>
+            </ul>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="mapa telas areas menu">
+            <h4>As áreas do painel</h4>
+            <ul>
+              <li><strong>Sistemas</strong>: lista de sistemas por categoria, com busca.</li>
+              <li><strong>Configurações</strong>: escolha entre Formulários e Regras Curriculares.</li>
+              <li><strong>Formulários</strong>: períodos de abertura e encerramento dos formulários dos alunos.</li>
+              <li><strong>Regras Curriculares</strong>: critérios que serão usados na conferência de históricos escolares.</li>
+            </ul>
+            <p>Você chega a cada área pelo menu (lateral ou em abas) ou pelos botões da própria tela, como <strong>⚙️ Configurações</strong> e <strong>← Voltar</strong>.</p>
+          </article>
+        </section>
+
+        <!-- ===================== SISTEMAS ===================== -->
+        <section id="ajuda-sistemas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Abrir um sistema</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="card abrir nova aba guia clicar sistema">
+            <h4>Como abrir</h4>
+            <ol>
+              <li>Na área <strong>Sistemas</strong>, encontre o card pela categoria ou pela busca.</li>
+              <li>Clique no card (ou selecione-o com Tab e aperte Enter).</li>
+              <li>O sistema abre em uma <strong>nova aba</strong>; o painel continua aberto na aba anterior.</li>
+            </ol>
+            <p>Abrir um sistema pelo painel não altera nada nele: o painel só leva até o endereço do sistema.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="buscar busca filtro procurar nome categoria acento acentuacao">
+            <h4>Buscar um sistema</h4>
+            <p>Digite parte do nome, da descrição ou da categoria. A busca não diferencia maiúsculas de minúsculas, mas <strong>considera os acentos</strong>: “matrícula” encontra “Habilitações e Matrícula”, e “matricula” não. Apague o texto para ver a lista completa de novo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="em breve desabilitado indisponivel">
+            <h4>Card “Em breve”</h4>
+            <p>Um card esmaecido com o selo <strong>Em breve</strong> é de um sistema ainda não publicado. Ele não abre.</p>
+          </article>
+        </section>
+
+        <!-- ===================== PENDÊNCIAS ===================== -->
+        <section id="ajuda-pendencias" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Avisos de pendência</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="badge selo contador vermelho amarelo pendente quantidade numero">
+            <h4>O que os avisos mostram</h4>
+            <p>Os selos nos cards contam os pedidos que ainda esperam a equipe, lidos das planilhas de cada sistema <strong>no momento em que o painel abre</strong>. Vermelho indica pedidos a atender; amarelo, no 2ª Via do BUSP, indica pedidos que estão com o Serviço Técnico de Apoio Financeiro. Sem selo, o painel não encontrou pendências naquele sistema ou não conseguiu contá-las (veja <button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>).</p>
+            <p>Os números não se atualizam sozinhos. Depois de atender pedidos, recarregue a página do painel.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="o que conta diplomas habilitacoes trancamento busp intercambistas exclusao disciplinas regra contagem">
+            <h4>O que cada sistema conta</h4>
+            <div class="painelAjudaTabela">
+              <table>
+                <thead><tr><th scope="col">Sistema</th><th scope="col">Entra na contagem</th></tr></thead>
+                <tbody>
+                  <tr><td>Emissão de Diplomas</td><td>Pedidos com nome preenchido cuja conferência de dados pessoais ainda não está como <strong>OK</strong>.</td></tr>
+                  <tr><td>Abertura de Habilitações</td><td>Pedidos com situação <strong>pendente</strong>, inclusive os do período 2021–2022.</td></tr>
+                  <tr><td>Trancamento Total</td><td>Pedidos com nome preenchido cuja situação ainda <strong>não é “concluído”</strong> (situação em branco também conta).</td></tr>
+                  <tr><td>Trancamento Parcial</td><td>Pedidos com nome preenchido e situação <strong>pendente</strong>.</td></tr>
+                  <tr><td>2ª Via do BUSP</td><td>Vermelho: <strong>pendente de análise</strong> ou <strong>pendente de emissão</strong>. Amarelo: <strong>aguardando serviço técnico de apoio financeiro</strong>.</td></tr>
+                  <tr><td>Matrícula de Intercambistas</td><td>Pedidos pendentes, separados em <strong>inclusão</strong> e <strong>exclusão</strong>.</td></tr>
+                  <tr><td>Exclusão de Disciplinas</td><td><strong>Alunos</strong> (não disciplinas) com ao menos uma disciplina ainda não concluída. Um aluno com três disciplinas pendentes conta uma vez.</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Pessoas do IPUSP não tem aviso de pendência: é uma consulta, não uma fila de pedidos.</p>
+          </article>
+        </section>
+
+        <!-- ===================== PESSOAS DO IPUSP ===================== -->
+        <section id="ajuda-pessoas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Pessoas do IPUSP</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="pessoas ipusp busca de alunos aluno docentes servidores consulta procurar">
+            <h4>O que é</h4>
+            <p>O card <strong>Pessoas do IPUSP</strong>, na categoria Pessoas, abre a consulta de pessoas do Instituto em uma nova aba. Hoje ela reúne a <strong>busca de alunos</strong>. O nome é da área toda porque outras consultas de pessoas, como docentes e servidores, devem entrar no mesmo lugar no futuro.</p>
+            <p>As instruções de uso da busca estão no botão <strong>Ajuda</strong> do próprio sistema, depois de aberto.</p>
+          </article>
+        </section>
+
+        <!-- ===================== NAVEGAÇÃO ===================== -->
+        <section id="ajuda-navegacao" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Menu lateral e abas</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sidebar menu lateral abas trocar modo navegacao">
+            <h4>Escolher entre menu lateral e abas</h4>
+            <p>Acima do conteúdo, em <strong>Navegação</strong>, escolha <strong>Menu lateral</strong> (as áreas ficam numa coluna à esquerda) ou <strong>Abas</strong> (as áreas ficam numa faixa acima do conteúdo). As duas formas levam às mesmas telas.</p>
+            <p>Trocar de modo não recarrega listas, não fecha janelas abertas e não apaga o que você digitou. O painel <strong>sempre abre no menu lateral</strong>; a escolha vale até você fechar ou recarregar a página.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="celular tela pequena mostrar menu recolher">
+            <h4>Em telas estreitas</h4>
+            <p>No celular ou numa janela estreita, o menu lateral fica acima do conteúdo e começa recolhido. Use <strong>Mostrar menu</strong> para ver as áreas; depois de escolher uma, ele se recolhe de novo. No modo Abas, deslize a faixa de abas para os lados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="teclado tab setas enter atalho acessibilidade">
+            <h4>Pelo teclado</h4>
+            <p>Use Tab para chegar ao menu e Enter para abrir uma área. No modo Abas, as setas para a esquerda e para a direita passam de uma aba para outra, e Home/End vão para a primeira e a última. Os cards também abrem com Enter.</p>
+          </article>
+        </section>
+
+        <!-- ===================== APARÊNCIA ===================== -->
+        <section id="ajuda-aparencia" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Aparência (Claro e Escuro)</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="tema escuro claro sistema dark mode aparencia cores">
+            <h4>Escolher a aparência</h4>
+            <p>No cabeçalho, em <strong>Aparência</strong>, escolha:</p>
+            <ul>
+              <li><strong>Sistema</strong>: acompanha a configuração clara ou escura do seu computador ou celular, inclusive se ela mudar com o painel aberto. É o padrão.</li>
+              <li><strong>Claro</strong> ou <strong>Escuro</strong>: fixa a aparência escolhida.</li>
+            </ul>
+            <p>A escolha fica guardada <strong>neste navegador</strong> e vale para este painel; cada sistema guarda a própria escolha. Ela não muda nada nas planilhas nem para outras pessoas.</p>
+          </article>
+        </section>
+
+        <!-- ===================== CONFIGURAÇÕES ===================== -->
+        <section id="ajuda-configuracoes" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Configurações</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="configuracoes o que muda efeito alunos cuidado planilha">
+            <h4>O que muda quando você salva</h4>
+            <p>Diferente dos cards, que só abrem sistemas, as telas de Configurações <strong>gravam</strong> nas planilhas usadas pelos sistemas e formulários:</p>
+            <ul>
+              <li><strong>Formulários</strong>: o que você salva define quando cada formulário aceita pedidos dos alunos. Uma data errada pode fechar ou abrir um formulário fora do prazo.</li>
+              <li><strong>Regras Curriculares</strong>: o que você cadastra e ativa será usado na conferência de históricos escolares.</li>
+            </ul>
+            <p>Confira datas e valores em fonte oficial (por exemplo, o Calendário Escolar da USP) antes de salvar.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="entrar voltar navegar configuracoes formularios regras">
+            <h4>Como chegar</h4>
+            <p>Use <strong>⚙️ Configurações</strong> no cabeçalho ou o menu. Na tela de Configurações, escolha <strong>Formulários</strong> ou <strong>Regras Curriculares</strong>. O botão <strong>← Voltar</strong> de cada tela devolve para a tela de Configurações; <strong>← Voltar ao painel</strong> devolve para a lista de sistemas.</p>
+          </article>
+        </section>
+
+        <!-- ===================== FORMULÁRIOS ===================== -->
+        <section id="ajuda-formularios" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Períodos dos formulários</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="formularios lista selo sazonal continuo">
+            <h4>A lista de formulários</h4>
+            <p>Cada card é um formulário dos alunos. O selo mostra o tipo atual: <strong>Contínuo</strong> (“Sempre aberto”) ou <strong>Sazonal</strong> (“Aberto por período definido”). Clique no card para configurar.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sazonal continuo diferenca escolher sempre aberto periodo">
+            <h4>Sazonal ou Contínuo</h4>
+            <ul>
+              <li><strong>Contínuo</strong>: o formulário não depende de datas. Ao salvar, as datas e horários dos dois semestres são apagados da configuração. Os campos de semestre ficam esmaecidos e o que estiver neles é ignorado.</li>
+              <li><strong>Sazonal</strong>: o formulário tem período de abertura e de encerramento em cada semestre.</li>
+            </ul>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="preencher semestre abertura encerramento data hora passo a passo">
+            <h4>Preencher um formulário Sazonal</h4>
+            <ol>
+              <li>Para cada semestre, preencha <strong>Abertura</strong> e <strong>Encerramento</strong>, cada um com data (dd/mm/aaaa) e horário (hh:mm, 24 horas). Os ícones 📅 e 🕒 abrem o seletor do navegador.</li>
+              <li>Cada semestre precisa estar <strong>completo (os quatro campos) ou totalmente em branco</strong>.</li>
+              <li>Pelo menos um semestre precisa estar completo. Se o formulário não tem período, escolha Contínuo.</li>
+              <li>Clique em <strong>💾 Salvar</strong>. O botão mostra “Salvando...” até a gravação terminar; a lista é recarregada em seguida.</li>
+            </ol>
+            <p>Um semestre deixado em branco é apagado da configuração ao salvar.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="desativar fechar formulario apagar datas">
+            <h4>Desativar um formulário</h4>
+            <p><strong>🚫 Desativar Formulário</strong> pede confirmação e apaga todas as datas, horários e demais campos de período do formulário. Ele fica <strong>fechado para os alunos</strong> até alguém configurar um novo período. O formulário não some da lista: o link e o tipo continuam guardados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="telas proprias formularios especiais colacao exclusao">
+            <h4>Formulários com tela própria</h4>
+            <p><strong>Pedido de Colação de Grau</strong> e <strong>Formulário de Exclusão de Disciplinas</strong> abrem telas diferentes, com regras próprias: veja <button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-colacao">Colação de Grau</button> e <button type="button" class="painelAjudaLink" data-gradip-help-target="ajuda-exclusao">Exclusão de Disciplinas</button>.</p>
+          </article>
+        </section>
+
+        <!-- ===================== COLAÇÃO ===================== -->
+        <section id="ajuda-colacao" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Pedido de Colação de Grau</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="colacao de grau periodo unico semestre aaaa/s virada">
+            <h4>Como preencher</h4>
+            <p>A Colação de Grau usa <strong>um único período</strong>, que pode atravessar a virada do semestre (por exemplo, de dezembro a janeiro). Por isso não há escolha entre Sazonal e Contínuo, nem divisão em 1º e 2º semestre.</p>
+            <ol>
+              <li>Preencha data e horário de <strong>Abertura</strong> e de <strong>Encerramento</strong>. Todos são obrigatórios.</li>
+              <li>Em <strong>Semestre da colação de grau</strong>, digite o semestre a que a colação se refere, como <strong>20262</strong> ou <strong>2026/2</strong>. O semestre só pode terminar em 1 ou 2; o painel guarda sempre no formato 2026/2.</li>
+              <li>Clique em <strong>💾 Salvar</strong>.</li>
+            </ol>
+          </article>
+        </section>
+
+        <!-- ===================== EXCLUSÃO ===================== -->
+        <section id="ajuda-exclusao" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Formulário de Exclusão de Disciplinas</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="exclusao de disciplinas retificacao calendario escolar inicio fim">
+            <h4>Como preencher</h4>
+            <p>Funciona como um formulário Sazonal, com uma exigência a mais: cada semestre preenchido precisa das datas de <strong>início e fim da retificação de matrícula</strong>, do Calendário Escolar da USP. Sem elas, o texto do requerimento que o aluno vê fica incompleto.</p>
+            <ol>
+              <li>Para cada semestre usado, preencha Abertura e Encerramento (data e horário) e as duas datas de Retificação.</li>
+              <li>Um semestre que não será usado fica totalmente em branco. Pelo menos um semestre precisa estar completo.</li>
+              <li>Clique em <strong>💾 Salvar</strong>.</li>
+            </ol>
+            <p>Não há opção Contínuo para este formulário. O número do semestre e o ano que o aluno vê são calculados pelo próprio formulário, a partir do período que estiver aberto.</p>
+          </article>
+        </section>
+
+        <!-- ===================== REGRAS ===================== -->
+        <section id="ajuda-regras" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Regras Curriculares</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="regras curriculares ruleset rascunho ativo inativo historico escolar">
+            <h4>Resumo</h4>
+            <p>Cada conjunto de regras (<strong>ruleset</strong>) reúne o que um currículo exige: requisitos numéricos (horas, créditos), disciplinas obrigatórias e grupos de disciplinas. A situação de cada ruleset é escrita no selo: <strong>RASCUNHO</strong> (em preparação, editável), <strong>ATIVO</strong> (validado e liberado, somente leitura) ou <strong>INATIVO</strong> (guardado para histórico).</p>
+            <p>Ordem de trabalho: <strong>Geral → Requisitos → Disciplinas (se houver) → Grupos (se houver) → Validar regras → corrigir → Ativar ruleset</strong>. Se não tiver certeza de algum dado, deixe como RASCUNHO.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="manual faq completo regras curriculares nova versao corrigir ativo outro curriculo">
+            <h4>Manual e FAQ completo</h4>
+            <p>As Regras Curriculares têm um manual próprio, com exemplos, glossário, checklists e problemas. Ele também abre pelo botão <strong>❓ Manual e FAQ</strong> e pelos “?” da tela de Regras.</p>
+            <p><button type="button" class="painelAjudaBotao" data-painel-abrir-manual-regras="">Abrir o Manual e FAQ das Regras Curriculares</button></p>
+            <p><button type="button" class="painelAjudaBotao" data-painel-abrir-manual-regras="ordem-preenchimento">Por onde começo um ruleset?</button></p>
+          </article>
+        </section>
+
+        <!-- ===================== PROBLEMAS ===================== -->
+        <section id="ajuda-problemas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Problemas comuns</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="aviso nao aparece badge sumiu numero errado desatualizado zero">
+            <h4>O aviso de pendência não aparece ou parece errado</h4>
+            <p><strong>Causas comuns:</strong> os números foram lidos quando o painel abriu e não se atualizam sozinhos; ou a contagem daquele sistema não pôde ser feita (planilha indisponível, aba ou coluna renomeada, conta sem acesso). Nesse caso o painel simplesmente não mostra o selo, e isso não significa que não há pedidos.</p>
+            <p><strong>O que tentar:</strong> recarregue a página. Se continuar sem selo e você sabe que há pedidos, abra o próprio sistema e confira lá; avise quem mantém o painel.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sistema nao abre nova aba bloqueada pop-up popup conta google usp acesso negado">
+            <h4>O sistema não abre ou pede outra conta</h4>
+            <p><strong>Causas comuns:</strong> o navegador bloqueou a nova aba (bloqueador de pop-ups) ou você está conectado com uma conta Google diferente da conta USP.</p>
+            <p><strong>O que tentar:</strong> permita pop-ups para este endereço, ou abra a nova aba com o botão do meio do mouse. Se aparecer pedido de acesso, entre com a conta USP.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao encontrei sistema busca vazia nenhum sistema encontrado">
+            <h4>“Nenhum sistema encontrado.”</h4>
+            <p>A busca considera acentos. Tente com acento (“matrícula”), com menos letras ou por outra palavra da descrição. Apague a busca para ver todos.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao consegui carregar os formularios erro lista carregando">
+            <h4>“Não consegui carregar os formulários”</h4>
+            <p><strong>Causas comuns:</strong> falha momentânea de conexão ou a planilha de períodos indisponível para a conta que executa o painel.</p>
+            <p><strong>O que tentar:</strong> clique em ← Voltar e abra Formulários de novo, ou recarregue a página. Se persistir, avise quem mantém o painel.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="mudou de posicao recarregue a lista erro salvar formulario">
+            <h4>“Esse formulário mudou de posição na planilha de Períodos...”</h4>
+            <p>Alguém alterou a ordem dos formulários na planilha depois que você abriu a lista. Nada foi gravado. Feche a janela, volte para Configurações, abra Formulários de novo e repita a alteração.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="mensagem vermelha validacao preencha data invalida horario invalido nao existe no calendario">
+            <h4>Mensagem em vermelho ao salvar</h4>
+            <p>A mensagem diz qual campo corrigir, por exemplo semestre incompleto, data que não existe no calendário ou horário fora do formato hh:mm (24 horas). Nada é gravado enquanto houver erro. Corrija e clique em Salvar de novo; o que você já preencheu continua na janela.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="aparencia nao fica salva tema volta anonima navegador">
+            <h4>A aparência escolhida não fica guardada</h4>
+            <p><strong>Causas comuns:</strong> janela anônima ou navegador que apaga os dados dos sites ao fechar. A aparência funciona durante a visita, mas não é lembrada. Use Sistema para seguir automaticamente o seu computador.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="regras curriculares erro validacao ativar nao consigo">
+            <h4>Erro nas Regras Curriculares</h4>
+            <p>Consulte a categoria “Problemas e soluções” do manual: <button type="button" class="painelAjudaBotao" data-painel-abrir-manual-regras="problemas">Abrir Problemas e soluções</button></p>
+          </article>
+        </section>
+
+        <!-- ===================== FAQ ===================== -->
+        <section id="ajuda-faq" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Perguntas frequentes</h3>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="atualizar avisos sozinhos recarregar tempo real">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-atualizar">
+              <span>Os avisos de pendência se atualizam sozinhos?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-atualizar" class="gradip-help-faq-panel" hidden><p>Não. Eles são lidos quando o painel abre. Recarregue a página para ver os números atuais.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="sem aviso zero pendencias certeza">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-sem-aviso">
+              <span>Card sem aviso quer dizer que não há pedidos?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-sem-aviso" class="gradip-help-faq-panel" hidden><p>Quase sempre, mas não com certeza: se a contagem daquele sistema falhar, o painel também não mostra o selo. Na dúvida, abra o sistema.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="abrir sistema altera muda dados">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-abrir">
+              <span>Abrir um sistema pelo painel muda alguma coisa nele?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-abrir" class="gradip-help-faq-panel" hidden><p>Não. O card só abre o sistema numa nova aba. Só as telas de Configurações gravam alguma coisa.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="pessoas do ipusp busca de alunos nome docentes servidores">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-pessoas">
+              <span>Por que o card se chama “Pessoas do IPUSP” e não “Busca de Alunos”?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-pessoas" class="gradip-help-faq-panel" hidden><p>Porque a busca de alunos é só a primeira consulta dessa área. Outras consultas de pessoas, como docentes e servidores, devem entrar no mesmo sistema.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="escolha abas menu lateral fica salva lembrar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-modo">
+              <span>A escolha entre menu lateral e abas fica guardada?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-modo" class="gradip-help-faq-panel" hidden><p>Não. O painel sempre abre no menu lateral; a troca vale até você recarregar ou fechar a página. A aparência (Claro/Escuro), essa sim, fica guardada no navegador.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="continuo apaga datas digitadas semestre">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-continuo">
+              <span>Se eu mudar para Contínuo, as datas que estavam salvas se perdem?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-continuo" class="gradip-help-faq-panel" hidden><p>Sim, ao salvar. Enquanto a janela está aberta, as datas continuam visíveis (esmaecidas) e voltam a valer se você escolher Sazonal de novo antes de salvar. Depois de salvar como Contínuo, elas são apagadas.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="so segundo semestre um semestre em branco">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-um-semestre">
+              <span>Posso preencher só um dos semestres?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-um-semestre" class="gradip-help-faq-panel" hidden><p>Sim. O outro semestre fica totalmente em branco e é apagado da configuração ao salvar. Vale para os formulários Sazonais e para a Exclusão de Disciplinas.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="desativar apaga exclui formulario some">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-desativar">
+              <span>Desativar apaga o formulário?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-desativar" class="gradip-help-faq-panel" hidden><p>Não. Apaga só as datas e os horários (e, quando houver, semestre e retificação). O formulário fica fechado para os alunos, continua na lista e pode ser reaberto configurando um novo período.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="cancelar fechar janela perde alteracoes x">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-cancelar">
+              <span>Se eu clicar em Cancelar ou no ×, algo é gravado?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-cancelar" class="gradip-help-faq-panel" hidden><p>Não. Só Salvar e Desativar gravam. Ao reabrir o formulário, a janela mostra o que está gravado.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="editar planilha diretamente periodos">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-planilha">
+              <span>Posso alterar os períodos direto na planilha?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-planilha" class="gradip-help-faq-panel" hidden><p>Prefira o painel. Ele confere o formato das datas e horários, exige semestres completos e grava cada formulário do jeito que o formulário dos alunos espera ler. Uma edição direta pode deixar um formulário aberto ou fechado sem querer.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="manual regras curriculares onde fica">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="painel-faq-manual">
+              <span>Onde está o manual das Regras Curriculares?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="painel-faq-manual" class="gradip-help-faq-panel" hidden><p>Na tela de Regras Curriculares, botão <strong>❓ Manual e FAQ</strong>, ou aqui: <button type="button" class="painelAjudaBotao" data-painel-abrir-manual-regras="">Abrir o manual</button></p></div>
+          </article>
+        </section>
+
+        <div class="gradip-help-no-results" data-gradip-help-no-results hidden><strong>Nenhum resultado encontrado.</strong><p>Tente outra palavra ou limpe a busca.</p></div>
+      </main>
+    </div>
+  </section>
+</div>

@@ -12,12 +12,12 @@
     width:16px;
     height:16px;
     border-radius:50%;
-    background:#eaf2fa;
-    color:#005AA9;
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
     font-size:11px;
     font-weight:bold;
     cursor:pointer;
-    border:1px solid #cfe0f0;
+    border:1px solid var(--gradip-info-border);
     margin-left:6px;
     line-height:1;
     vertical-align:middle;
@@ -25,8 +25,8 @@
 }
 
 .iconeAjudaContextual:hover{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
 }
 
 .botaoAjudaManual{
@@ -34,9 +34,9 @@
     align-items:center;
     gap:6px;
     padding:9px 14px;
-    background:white;
-    border:1px solid #ccc;
-    color:#444;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border-strong);
+    color:var(--gradip-text);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -45,18 +45,18 @@
 }
 
 .botaoAjudaManual:hover{
-    border-color:#005AA9;
-    color:#005AA9;
-    background:#eaf2fa;
+    border-color:var(--gradip-link);
+    color:var(--gradip-link);
+    background:var(--gradip-info-bg);
 }
 
 /* explicação dinâmica de tipo de grupo (ONE_OF/MIN_COUNT/MIN_CREDITS)
    dentro do modal de Novo Grupo */
 .explicacaoTipoGrupo{
     font-size:12px;
-    color:#555;
-    background:#f5f9fc;
-    border:1px solid #e3e8ec;
+    color:var(--gradip-text-muted);
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:8px 12px;
     margin:-6px 0 14px 0;
@@ -70,15 +70,15 @@
     position:fixed;
     inset:0;
     z-index:10500;
-    background:#f5f5f5;
+    background:var(--gradip-bg);
     display:flex;
     flex-direction:column;
     overflow:hidden;
 }
 
 .cabecalhoAjuda{
-    background:white;
-    border-bottom:1px solid #ddd;
+    background:var(--gradip-header-bg);
+    border-bottom:1px solid var(--gradip-border);
     padding:16px 26px;
     display:flex;
     align-items:center;
@@ -90,13 +90,13 @@
 .cabecalhoAjuda h1{
     margin:0;
     font-size:18px;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .subtituloAjuda{
     margin:4px 0 0 0;
     font-size:13px;
-    color:#777;
+    color:var(--gradip-text-muted);
 }
 
 .corpoAjuda{
@@ -112,7 +112,7 @@
 
 .rodapeAjuda{
     text-align:center;
-    color:#aaa;
+    color:var(--gradip-text-muted);
     font-size:12px;
     padding:10px 0 18px 0;
     flex-shrink:0;
@@ -129,19 +129,21 @@
 .campoBuscaAjuda{
     width:100%;
     padding:13px 16px;
-    border:1.5px solid #005AA9;
+    border:1.5px solid var(--gradip-link);
     border-radius:8px;
     font-size:15px;
     box-sizing:border-box;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
 }
 
 .estadoBuscaVazia{
     text-align:center;
-    color:#888;
+    color:var(--gradip-text-muted);
     padding:50px 20px;
     font-size:14px;
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
 }
 
@@ -150,18 +152,18 @@
 ==================================*/
 
 .blocoDestacadoAjuda{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:18px 20px;
     margin-bottom:18px;
-    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    box-shadow:var(--gradip-shadow);
 }
 
 .blocoDestacadoAjuda h2{
     margin:0 0 12px 0;
     font-size:14px;
-    color:#005AA9;
+    color:var(--gradip-link);
     text-transform:uppercase;
     letter-spacing:.03em;
 }
@@ -175,22 +177,22 @@
 .atalhoAjudaRapida{
     text-align:left;
     padding:10px 14px;
-    background:#f5f9fc;
-    border:1px solid #e3e8ec;
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     font-size:13px;
-    color:#333;
+    color:var(--gradip-text);
     cursor:pointer;
 }
 
 .atalhoAjudaRapida:hover{
-    border-color:#005AA9;
-    background:#eaf2fa;
+    border-color:var(--gradip-link);
+    background:var(--gradip-info-bg);
 }
 
 .cardDecisaoRapida{
-    background:#fffaf0;
-    border:1.5px solid #f0d9a8;
+    background:var(--gradip-warning-bg);
+    border:1.5px solid var(--gradip-warning-border);
     border-radius:8px;
     padding:18px 20px;
     margin-bottom:22px;
@@ -199,7 +201,7 @@
 .cardDecisaoRapida h2{
     margin:0 0 14px 0;
     font-size:15px;
-    color:#8a5300;
+    color:var(--gradip-warning);
 }
 
 .linhaDecisaoRapida{
@@ -207,7 +209,7 @@
     align-items:baseline;
     gap:10px;
     padding:8px 0;
-    border-bottom:1px dashed #e8d7ae;
+    border-bottom:1px dashed var(--gradip-warning-border);
     font-size:14px;
 }
 
@@ -217,12 +219,12 @@
 
 .linhaDecisaoRapida .pergunta{
     font-weight:bold;
-    color:#444;
+    color:var(--gradip-text);
     flex:0 0 auto;
 }
 
 .linhaDecisaoRapida .resposta{
-    color:#005AA9;
+    color:var(--gradip-link);
     font-weight:bold;
 }
 
@@ -252,7 +254,7 @@
     border:none;
     border-radius:6px;
     font-size:13px;
-    color:#555;
+    color:var(--gradip-text-muted);
     cursor:pointer;
     display:flex;
     align-items:center;
@@ -260,13 +262,13 @@
 }
 
 .itemIndiceAjuda:hover{
-    background:#eaf2fa;
-    color:#005AA9;
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
 }
 
 .itemIndiceAjuda.ativo{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     font-weight:bold;
 }
 
@@ -274,11 +276,13 @@
     display:none;
     width:100%;
     padding:11px 14px;
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:6px;
     font-size:14px;
     margin-bottom:16px;
     box-sizing:border-box;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
 }
 
 .conteudoAjudaCategorias{
@@ -291,12 +295,12 @@
 ==================================*/
 
 .categoriaAjuda{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:18px 20px;
     margin-bottom:18px;
-    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    box-shadow:var(--gradip-shadow);
     scroll-margin-top:10px;
 }
 
@@ -307,7 +311,7 @@
 .tituloCategoriaAjuda{
     margin:0 0 4px 0;
     font-size:16px;
-    color:#222;
+    color:var(--gradip-text);
     display:flex;
     align-items:center;
     gap:8px;
@@ -315,12 +319,12 @@
 
 .contadorItensCategoria{
     font-size:12px;
-    color:#999;
+    color:var(--gradip-text-muted);
     font-weight:normal;
 }
 
 .itemAjuda{
-    border-top:1px solid #eee;
+    border-top:1px solid var(--gradip-border);
     padding:4px 0;
 }
 
@@ -333,7 +337,7 @@
     cursor:pointer;
     font-size:14px;
     font-weight:bold;
-    color:#333;
+    color:var(--gradip-text);
     list-style:none;
     display:flex;
     align-items:center;
@@ -346,7 +350,7 @@
 
 .itemAjuda summary::before{
     content:"▸";
-    color:#005AA9;
+    color:var(--gradip-link);
     flex:0 0 auto;
     transition:transform .1s;
 }
@@ -356,13 +360,13 @@
 }
 
 .itemAjuda summary:hover{
-    color:#005AA9;
+    color:var(--gradip-link);
 }
 
 .respostaItemAjuda{
     padding:2px 4px 14px 22px;
     font-size:13.5px;
-    color:#444;
+    color:var(--gradip-text);
     line-height:1.6;
 }
 
@@ -380,21 +384,21 @@
 }
 
 .respostaItemAjuda code{
-    background:#f0f0f0;
+    background:var(--gradip-surface-2);
     padding:1px 5px;
     border-radius:3px;
     font-size:12.5px;
 }
 
 .respostaItemAjuda strong{
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .respostaItemAjuda blockquote{
     margin:8px 0;
     padding:8px 12px;
-    background:#f5f9fc;
-    border-left:3px solid #005AA9;
+    background:var(--gradip-info-bg);
+    border-left:3px solid var(--gradip-link);
     border-radius:0 4px 4px 0;
 }
 
@@ -404,7 +408,7 @@
 }
 
 @keyframes pulseAjuda{
-    0%   { background:#fff4d6; }
+    0%   { background:var(--gradip-warning-bg); }
     100% { background:transparent; }
 }
 
@@ -422,11 +426,11 @@
 .tabelaAjuda th, .tabelaAjuda td{
     text-align:left;
     padding:8px 10px;
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid var(--gradip-border);
 }
 
 .tabelaAjuda th{
-    color:#005AA9;
+    color:var(--gradip-link);
     font-size:11px;
     text-transform:uppercase;
     letter-spacing:.03em;
@@ -440,22 +444,22 @@
 }
 
 .termoGlossario{
-    background:#f5f9fc;
-    border:1px solid #e3e8ec;
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:10px 12px;
 }
 
 .termoGlossario strong{
     display:block;
-    color:#005AA9;
+    color:var(--gradip-link);
     font-size:13px;
     margin-bottom:3px;
 }
 
 .termoGlossario span{
     font-size:12.5px;
-    color:#555;
+    color:var(--gradip-text-muted);
 }
 
 /*=================================
@@ -474,7 +478,7 @@
     gap:8px;
     padding:6px 0;
     font-size:13.5px;
-    color:#444;
+    color:var(--gradip-text);
 }
 
 .listaChecklistAjuda input[type=checkbox]{

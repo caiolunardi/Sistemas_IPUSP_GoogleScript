@@ -1,0 +1,228 @@
+<script>
+/* Menu lateral / abas do Painel dos servidores — adaptador de apresentação.
+   Carregado por último, depois dos controladores existentes. Não lê nem
+   grava dados de negócio e não chama google.script.run: cada item do menu
+   apenas chama as funções de tela que já existiam (abrirTelaConfiguracoes,
+   abrirSubTelaConfig, fecharTelaConfiguracoes, carregarFormulariosConfig,
+   carregarRulesetsCurriculares). O destaque do item atual é lido das
+   próprias telas, então os botões "Voltar" e os cards continuam valendo.
+   Sempre abre em "Menu lateral"; o modo escolhido não é persistido. */
+(function () {
+  'use strict';
+  if (window.PainelNavegacao) return;
+
+  var layout = document.getElementById('painelLayout');
+  var sidebar = document.getElementById('painelSidebar');
+  var menu = document.getElementById('painelMenu');
+  var conteudo = document.getElementById('conteudo');
+  var menuMovel = document.getElementById('painelMenuMovel');
+  var statusModo = document.getElementById('painelModoStatus');
+  var modelo = document.getElementById('painelIcones');
+  var estreito = window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
+  if (!layout || !menu || !conteudo) return;
+
+  var modo = 'sidebar';
+  var temporizador = null;
+
+  function itens() {
+    return Array.prototype.slice.call(menu.querySelectorAll('[data-pagina]'));
+  }
+
+  /*---------------- ÍCONES (decorativos) ----------------*/
+
+  document.querySelectorAll('[data-icone]').forEach(function (botao) {
+    if (!modelo || !modelo.content || botao.querySelector('.painelNavIcone')) return;
+    var svg = modelo.content.querySelector('[data-painel-icone="' + botao.getAttribute('data-icone') + '"]');
+    if (!svg) return;
+    var span = document.createElement('span');
+    span.className = 'painelNavIcone';
+    span.setAttribute('aria-hidden', 'true');
+    span.appendChild(svg.cloneNode(true));
+    botao.insertBefore(span, botao.firstChild);
+  });
+
+  /*---------------- QUAL TELA ESTÁ ABERTA ----------------*/
+
+  function visivel(id) {
+    var el = document.getElementById(id);
+    return !!el && el.style.display === 'block';
+  }
+
+  function paginaAtual() {
+    if (!visivel('telaConfiguracoes')) return 'sistemas';
+    if (visivel('configFormularios')) return 'formularios';
+    if (visivel('configRegrasCurriculares')) return 'regras';
+    return 'configuracoes';
+  }
+
+  /* Papéis ARIA conforme o modo: no menu lateral, aria-current="page";
+     nas abas, tablist/tab/tabpanel com tabindex itinerante. */
+  function sincronizar() {
+    var atual = paginaAtual();
+    var abas = modo === 'abas';
+    var selecionado = null;
+    itens().forEach(function (b) {
+      var ativo = b.getAttribute('data-pagina') === atual;
+      if (ativo) selecionado = b;
+      if (abas) {
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', ativo ? 'true' : 'false');
+        b.removeAttribute('aria-current');
+        b.tabIndex = ativo ? 0 : -1;
+      } else {
+        b.removeAttribute('role');
+        b.removeAttribute('aria-selected');
+        if (ativo) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+        b.tabIndex = 0;
+      }
+    });
+    if (abas) {
+      menu.setAttribute('role', 'tablist');
+      menu.setAttribute('aria-orientation', 'horizontal');
+      conteudo.setAttribute('role', 'tabpanel');
+      if (selecionado) conteudo.setAttribute('aria-labelledby', selecionado.id);
+    } else {
+      menu.removeAttribute('role');
+      menu.removeAttribute('aria-orientation');
+      conteudo.removeAttribute('role');
+      conteudo.removeAttribute('aria-labelledby');
+    }
+  }
+
+  /*---------------- IR PARA UMA ÁREA ----------------*/
+
+  function transicao() {
+    clearTimeout(temporizador);
+    conteudo.classList.remove('painelConteudo--transicao');
+    void conteudo.offsetWidth; // reinicia só a animação, sem reconstruir telas
+    conteudo.classList.add('painelConteudo--transicao');
+    temporizador = setTimeout(function () { conteudo.classList.remove('painelConteudo--transicao'); }, 200);
+  }
+
+  function irPara(pagina) {
+    var antes = paginaAtual();
+    if (pagina === 'sistemas') {
+      fecharTelaConfiguracoes();
+    } else if (pagina === 'configuracoes') {
+      abrirTelaConfiguracoes();
+    } else if (pagina === 'formularios') {
+      abrirTelaConfiguracoes();
+      abrirSubTelaConfig('configFormularios');
+      carregarFormulariosConfig(); // mesmo comportamento do card de Configurações
+    } else if (pagina === 'regras') {
+      abrirTelaConfiguracoes();
+      abrirSubTelaConfig('configRegrasCurriculares');
+      // Se um ruleset estiver aberto no editor, ele é preservado (com o
+      // que já foi digitado). Só a lista é recarregada, como no card.
+      var editor = document.getElementById('painelEditorRuleset');
+      if (!editor || editor.style.display !== 'block') carregarRulesetsCurriculares();
+    }
+    sincronizar();
+    if (antes !== pagina) transicao();
+    if (estreito && estreito.matches && modo === 'sidebar') recolher(true);
+    var topo = layout.getBoundingClientRect().top + window.pageYOffset;
+    if (window.pageYOffset > topo) window.scrollTo(0, topo);
+  }
+
+  itens().forEach(function (b) {
+    b.addEventListener('click', function () { irPara(b.getAttribute('data-pagina')); });
+  });
+
+  // Nas abas, setas/Home/End só movem o foco; Enter/Espaço abrem (clique nativo).
+  menu.addEventListener('keydown', function (e) {
+    if (modo !== 'abas' || ['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
+    var lista = itens();
+    var i = lista.indexOf(e.target.closest ? e.target.closest('[data-pagina]') : null);
+    if (i < 0) return;
+    var n = lista.length;
+    var proximo = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (i + (e.key === 'ArrowRight' ? 1 : n - 1)) % n;
+    e.preventDefault();
+    lista.forEach(function (b, k) { b.tabIndex = k === proximo ? 0 : -1; });
+    lista[proximo].focus();
+  });
+
+  /*---------------- MENU RECOLHÍVEL (telas estreitas) ----------------*/
+
+  function recolher(sim) {
+    sidebar.setAttribute('data-recolhido', sim ? 'true' : 'false');
+    menuMovel.setAttribute('aria-expanded', sim ? 'false' : 'true');
+    menuMovel.textContent = sim ? 'Mostrar menu' : 'Recolher menu';
+  }
+
+  menuMovel.addEventListener('click', function () {
+    recolher(sidebar.getAttribute('data-recolhido') !== 'true');
+  });
+
+  function ajustarLargura() {
+    recolher(!!(estreito && estreito.matches));
+  }
+  if (estreito) {
+    if (estreito.addEventListener) estreito.addEventListener('change', ajustarLargura);
+    else if (estreito.addListener) estreito.addListener(ajustarLargura);
+  }
+
+  /*---------------- MENU LATERAL x ABAS ----------------*/
+
+  function setModo(novo, anunciar) {
+    if (novo !== 'sidebar' && novo !== 'abas') return;
+    var foco = document.activeElement;
+    var mudou = modo !== novo;
+    modo = novo;
+    layout.setAttribute('data-navegacao', modo);
+    document.querySelectorAll('[data-painel-modo]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-painel-modo') === modo));
+    });
+    if (modo === 'abas') recolher(false); else ajustarLargura();
+    sincronizar();
+    if (foco && foco !== document.body && foco.getClientRects().length) foco.focus({ preventScroll: true });
+    if (mudou) transicao();
+    if (anunciar && statusModo) statusModo.textContent = modo === 'sidebar' ? 'Menu lateral ativado.' : 'Navegação por abas ativada.';
+  }
+
+  document.querySelectorAll('[data-painel-modo]').forEach(function (b) {
+    b.addEventListener('click', function () { setModo(b.getAttribute('data-painel-modo'), true); });
+  });
+
+  /*---------------- CARDS ACESSÍVEIS POR TECLADO ----------------*/
+
+  /* Os cards (.cardSistema) já abriam com clique; aqui eles passam a
+     receber foco e a abrir com Enter (e Espaço, nos que são botão).
+     Vale para os cards criados depois (Formulários, Regras), por isso o
+     observador. Card sem ação (desabilitado, histórico) não recebe foco. */
+  function prepararCard(card) {
+    if (card.hasAttribute('tabindex') || card.classList.contains('desabilitado')) return;
+    if (typeof card.onclick !== 'function') return;
+    card.tabIndex = 0;
+    card.setAttribute('role', card.closest('#listaCategorias') ? 'link' : 'button');
+  }
+
+  function prepararCards(raiz) {
+    if (raiz.classList && raiz.classList.contains('cardSistema')) prepararCard(raiz);
+    if (raiz.querySelectorAll) raiz.querySelectorAll('.cardSistema').forEach(prepararCard);
+  }
+
+  prepararCards(conteudo);
+  new MutationObserver(function (mudancas) {
+    mudancas.forEach(function (m) {
+      m.addedNodes.forEach(function (n) { if (n.nodeType === 1) prepararCards(n); });
+    });
+  }).observe(conteudo, { childList: true, subtree: true });
+
+  conteudo.addEventListener('keydown', function (e) {
+    var card = e.target;
+    if (!card.classList || !card.classList.contains('cardSistema') || card.tabIndex !== 0) return;
+    if (e.key === 'Enter' || (e.key === ' ' && card.getAttribute('role') === 'button')) {
+      e.preventDefault();
+      card.click();
+    }
+  });
+
+  setModo('sidebar', false); // sempre abre no menu lateral
+  window.PainelNavegacao = Object.freeze({
+    sincronizar: sincronizar,
+    irPara: irPara,
+    getModo: function () { return modo; },
+    setModo: function (m) { setModo(m, true); }
+  });
+})();
+</script>

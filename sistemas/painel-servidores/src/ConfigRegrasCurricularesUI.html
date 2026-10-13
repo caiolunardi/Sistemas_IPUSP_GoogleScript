@@ -608,7 +608,7 @@ function criarCabecalhoAbaComAjuda_(titulo, ajudaId) {
     cabecalho.style.marginBottom = "10px";
     const tituloEl = document.createElement("strong");
     tituloEl.style.fontSize = "13px";
-    tituloEl.style.color = "#555";
+    tituloEl.style.color = "var(--gradip-text-muted)";
     tituloEl.textContent = titulo;
     cabecalho.appendChild(tituloEl);
     cabecalho.appendChild(criarIconeAjuda_(ajudaId, titulo));
@@ -1882,7 +1882,7 @@ function abrirModalConfirmarAtivacao_(resultadoValidacao) {
     // de confirmar.
     const estruturaInfo = document.createElement("div");
     estruturaInfo.style.fontSize = "13px";
-    estruturaInfo.style.color = "#444";
+    estruturaInfo.style.color = "var(--gradip-text)";
     estruturaInfo.style.marginBottom = "10px";
     const rotuloEstrutura = document.createElement("strong");
     rotuloEstrutura.textContent = "Estrutura curricular: ";
@@ -2133,8 +2133,7 @@ function renderizarCorpoHistoricoRevisoes_(auditorias) {
         card.appendChild(info);
 
         const badgeEstado = document.createElement("div");
-        badgeEstado.className = "badgeStatusRuleset " + (a.estado === "CONFIRMADA" ? "ativo" : (a.estado === "FALHOU" ? "" : "rascunho"));
-        if (a.estado === "FALHOU") { badgeEstado.style.background = "#fdecea"; badgeEstado.style.color = "#b71c1c"; }
+        badgeEstado.className = "badgeStatusRuleset " + (a.estado === "CONFIRMADA" ? "ativo" : (a.estado === "FALHOU" ? "falhou" : "rascunho"));
         badgeEstado.textContent = rotuloEstado[a.estado] || a.estado || "—";
         card.appendChild(badgeEstado);
 

@@ -9,26 +9,41 @@
     flex:0 0 auto;
 }
 
+/* GRADIP UI: cores trocadas por tokens semânticos (fundo + borda + texto),
+   iguais no Claro e no Escuro; o status continua escrito no badge. */
+.badgeStatusRuleset{
+    border:1px solid transparent;
+}
+
 .badgeStatusRuleset.rascunho{
-    background:#fff4e5;
-    color:#b5690a;
+    background:var(--gradip-warning-bg);
+    color:var(--gradip-warning);
+    border-color:var(--gradip-warning-border);
 }
 
 .badgeStatusRuleset.ativo{
-    background:#e8f5e9;
-    color:#2e7d32;
+    background:var(--gradip-success-bg);
+    color:var(--gradip-success);
+    border-color:var(--gradip-success-border);
 }
 
 .badgeStatusRuleset.inativo{
-    background:#eee;
-    color:#666;
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+}
+
+.badgeStatusRuleset.falhou{
+    background:var(--gradip-danger-bg);
+    color:var(--gradip-danger);
+    border-color:var(--gradip-danger-border);
 }
 
 .tabsRuleset{
     display:flex;
     gap:4px;
     margin-bottom:0;
-    border-bottom:2px solid #eaf2fa;
+    border-bottom:2px solid var(--gradip-border);
 }
 
 .botaoTabRuleset{
@@ -38,23 +53,24 @@
     border-bottom:3px solid transparent;
     font-size:13px;
     font-weight:bold;
-    color:#777;
+    color:var(--gradip-text-muted);
     cursor:pointer;
     margin-bottom:-2px;
+    min-height:44px;
 }
 
 .botaoTabRuleset.ativo{
-    color:#005AA9;
-    border-bottom-color:#005AA9;
+    color:var(--gradip-link);
+    border-bottom-color:var(--gradip-link);
 }
 
 .tabConteudoRuleset{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-top:none;
     border-radius:0 0 6px 6px;
     padding:20px 22px;
-    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    box-shadow:var(--gradip-shadow);
     margin-bottom:24px;
 }
 
@@ -64,7 +80,7 @@
     gap:14px;
     margin-bottom:18px;
     padding-bottom:18px;
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid var(--gradip-border);
 }
 
 .campoSomenteLeitura .linhaSubcampo{
@@ -73,16 +89,16 @@
 
 .valorSomenteLeitura{
     font-size:14px;
-    color:#333;
+    color:var(--gradip-text);
     font-weight:bold;
     word-break:break-word;
 }
 
 .resumoRuleset{
     font-size:13px;
-    color:#666;
-    background:#f5f9fc;
-    border:1px solid #e3e8ec;
+    color:var(--gradip-text-muted);
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:10px 14px;
     margin-bottom:16px;
@@ -93,19 +109,22 @@
     padding:10px 14px;
     border-radius:6px;
     margin-bottom:16px;
-    background:#fff4e5;
-    color:#8a5300;
+    background:var(--gradip-warning-bg);
+    color:var(--gradip-text);
+    border:1px solid var(--gradip-warning-border);
 }
 
 .avisoInfoRuleset.sucesso{
-    background:#e8f5e9;
-    color:#2e7d32;
+    background:var(--gradip-success-bg);
+    color:var(--gradip-success);
+    border-color:var(--gradip-success-border);
     font-weight:bold;
 }
 
 .avisoInfoRuleset.erro{
-    background:#fdecea;
-    color:#b71c1c;
+    background:var(--gradip-danger-bg);
+    color:var(--gradip-danger);
+    border-color:var(--gradip-danger-border);
     font-weight:bold;
 }
 
@@ -113,7 +132,7 @@
     margin:0;
     padding-left:20px;
     font-size:13px;
-    color:#b71c1c;
+    color:var(--gradip-danger);
     line-height:1.7;
 }
 
@@ -128,10 +147,10 @@
 .cabecalhoGrupoCurso{
     font-size:15px;
     font-weight:bold;
-    color:#003366;
+    color:var(--gradip-text);
     margin:22px 0 6px;
     padding-bottom:6px;
-    border-bottom:2px solid #005AA9;
+    border-bottom:2px solid var(--gradip-link);
 }
 
 .cabecalhoGrupoCurso:first-child{
@@ -141,7 +160,7 @@
 .subCabecalhoHabilitacao{
     font-size:12.5px;
     font-weight:bold;
-    color:#666;
+    color:var(--gradip-text-muted);
     margin:12px 0 6px 4px;
     text-transform:uppercase;
     letter-spacing:.02em;
@@ -157,9 +176,9 @@
     border-radius:14px;
     white-space:nowrap;
     flex:0 0 auto;
-    background:#eef3fb;
-    color:#005AA9;
-    border:1px solid #d5e3f5;
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
+    border:1px solid var(--gradip-info-border);
 }
 
 /* Banner "MODO DE CORREÇÃO" — precisa ser impossível de não notar
@@ -168,19 +187,20 @@
    um ruleset ativo"), mas sem parecer um erro (cor de alerta, não de
    erro). */
 .bannerModoCorrecao{
-    background:#fff8e1;
-    border:2px solid #f0b429;
+    background:var(--gradip-warning-bg);
+    border:2px solid var(--gradip-warning-border);
     border-radius:8px;
     padding:12px 16px;
     margin-bottom:18px;
     font-size:13px;
-    color:#7a5200;
+    color:var(--gradip-text);
     display:flex;
     flex-direction:column;
     gap:4px;
 }
 
 .bannerModoCorrecao strong{
+    color:var(--gradip-warning);
     font-size:14px;
     letter-spacing:.02em;
 }
