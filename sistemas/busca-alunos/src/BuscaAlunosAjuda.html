@@ -1,0 +1,245 @@
+<!--
+  BUSCA DE ALUNOS — Central de Ajuda (conteúdo estático).
+
+  Estrutura copiada de shared/ajuda/GradipAjudaTemplate.html do
+  repositório central, com o conteúdo de exemplo substituído pelo
+  conteúdo real deste app. O comportamento (abrir/fechar, ESC, focus
+  trap, busca sem acento, FAQ, navegação) fica todo em
+  BuscaAlunosAjudaUI.html; os estilos em BuscaAlunosAjudaEstilos.html.
+  Nenhuma chamada google.script.run — abrir, buscar e expandir a FAQ
+  funcionam só no navegador.
+
+  Linguagem: público = equipe do Serviço de Graduação. Explica o que
+  fazer e o que esperar; não cita planilhas, IDs, funções nem detalhes
+  de implementação (regra docs/ajuda/HELP_SECURITY_PRIVACY.md).
+
+  Texto-fonte revisado: docs/sistemas/busca-alunos/AJUDA.md. Ao mudar
+  um texto aqui, mude também lá. Os IDs de seção (ajuda-...) são
+  usados pelos gatilhos contextuais de BuscaAlunosApp.html — não
+  renomear sem ajustar os gatilhos.
+-->
+<div class="gradip-help-overlay" data-gradip-help-overlay hidden>
+  <section class="gradip-help-dialog" data-gradip-help-dialog role="dialog" aria-modal="true" aria-labelledby="gradip-help-title" tabindex="-1">
+    <header class="gradip-help-header">
+      <div><p class="gradip-help-eyebrow">Busca de Alunos — Serviço de Graduação</p><h2 id="gradip-help-title">Central de Ajuda</h2></div>
+      <button type="button" class="gradip-help-close" data-gradip-help-close aria-label="Fechar ajuda"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="gradip-help-search-wrap">
+      <label for="gradip-help-search">Buscar na ajuda</label>
+      <input id="gradip-help-search" type="search" placeholder="Ex.: sobrenome, número USP, não aparece" autocomplete="off" data-gradip-help-search>
+      <p class="gradip-help-search-status" data-gradip-help-search-status aria-live="polite"></p>
+    </div>
+    <div class="gradip-help-layout">
+      <nav class="gradip-help-nav" aria-label="Seções da ajuda">
+        <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
+        <button type="button" data-gradip-help-target="ajuda-como-buscar">Como buscar</button>
+        <button type="button" data-gradip-help-target="ajuda-resultados">Resultados</button>
+        <button type="button" data-gradip-help-target="ajuda-nao-encontrei">Não encontrei o aluno</button>
+        <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
+        <button type="button" data-gradip-help-target="ajuda-privacidade">Uso dos dados</button>
+        <button type="button" data-gradip-help-target="ajuda-aparencia">Aparência</button>
+        <button type="button" data-gradip-help-target="ajuda-faq">Perguntas frequentes</button>
+      </nav>
+      <main class="gradip-help-main" data-gradip-help-main>
+
+        <!-- ================= COMECE AQUI ================= -->
+        <section id="ajuda-inicio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Comece aqui</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="inicio comecar para que serve objetivo triagem atendimento clinico psicologia clinica grupos">
+            <h4>Para que serve</h4>
+            <p>Esta página localiza rapidamente um aluno a partir de um pedaço do nome, do número USP ou do e-mail. Foi pensada para a triagem dos grupos de atendimento clínico, quando o nome chega incompleto e sem número USP.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="rapido resumo passo como usar digitar">
+            <h4>Em três passos</h4>
+            <p>1. Espere aparecer a mensagem com o total de alunos carregados.<br>2. Digite no campo <strong>Buscar aluno</strong> qualquer parte do nome, do número USP ou do e-mail.<br>3. Os resultados aparecem enquanto você digita; os trechos que combinaram ficam destacados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="consulta somente leitura grava altera muda cadastro">
+            <h4>Só consulta</h4>
+            <p>A busca não grava, não altera e não envia nada. Ela mostra o que está no cadastro de alunos no momento em que a página foi aberta.</p>
+          </article>
+        </section>
+
+        <!-- ================= COMO BUSCAR ================= -->
+        <section id="ajuda-como-buscar" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Como buscar</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nome parcial incompleto sobrenome ordem palavras primeiro nome">
+            <h4>Por nome, mesmo incompleto</h4>
+            <p>Digite as partes do nome que você tem, em qualquer ordem. "silva ana" encontra "Ana Paula da Silva". Pedaços de palavra também valem: "fern" encontra "Fernanda" e "Fernandes".</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="numero usp nusp n usp codigo matricula digitos">
+            <h4>Por número USP</h4>
+            <p>Digite o número USP inteiro ou só uma parte dele. Quanto mais dígitos, menos resultados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="email e-mail correio usp.br secundario pessoal gmail">
+            <h4>Por e-mail</h4>
+            <p>A busca procura no e-mail principal e no e-mail secundário. Pode digitar só o começo, como "ana.silva", sem o domínio.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="varias palavras espaco combinar todas termos e ou">
+            <h4>Várias palavras ao mesmo tempo</h4>
+            <p>Cada palavra separada por espaço precisa aparecer no aluno, no nome, no número USP ou nos e-mails. Por isso, acrescentar uma palavra sempre reduz a lista. Se a lista ficar vazia, tire uma palavra.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="acento acentuacao maiuscula minuscula cedilha caixa alta">
+            <h4>Acentos e maiúsculas não importam</h4>
+            <p>"Claudia" encontra "Cláudia", e "JOAO" encontra "João". Não é preciso acertar acentos nem maiúsculas.</p>
+          </article>
+        </section>
+
+        <!-- ================= RESULTADOS ================= -->
+        <section id="ajuda-resultados" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Entendendo os resultados</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="card resultado nome email selo numero usp direita">
+            <h4>O que cada resultado mostra</h4>
+            <p>Em negrito, o nome do aluno. Embaixo, o e-mail principal e, se houver, o e-mail marcado "(secundário)". À direita, o número USP.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="destaque marcado amarelo grifado sublinhado onde combinou">
+            <h4>Trechos destacados</h4>
+            <p>As partes que combinaram com o que você digitou ficam destacadas. Se um aluno aparece sem destaque no nome, a combinação está no e-mail ou no número USP.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sem numero usp sem e-mail sem nome cadastrado vazio faltando">
+            <h4>"sem nº USP", "sem e-mail cadastrado", "(sem nome cadastrado)"</h4>
+            <p>Esse dado está em branco no cadastro de alunos. A busca não completa nem corrige informações; veja <button type="button" class="linkAjudaInterno" data-gradip-help-target="ajuda-faq">Perguntas frequentes</button> para saber a quem pedir a correção.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="60 sessenta limite primeiros mostrando refinar muitos resultados">
+            <h4>"Mostrando os primeiros 60 de..."</h4>
+            <p>A tela mostra no máximo 60 alunos de cada vez. Quando houver mais, digite outra parte do nome, do número ou do e-mail para refinar.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="contador quantos encontrados resultados alunos carregados total">
+            <h4>Contagem embaixo do campo</h4>
+            <p>Com o campo vazio, aparece quantos alunos foram carregados. Durante a busca, aparece quantos foram encontrados.</p>
+          </article>
+        </section>
+
+        <!-- ================= NÃO ENCONTREI ================= -->
+        <section id="ajuda-nao-encontrei" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Não encontrou o aluno?</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nenhum aluno encontrado vazio sem resultado nao aparece">
+            <h4>Apareceu "Nenhum aluno encontrado..."</h4>
+            <p>Nenhum aluno tem todas as palavras digitadas. Tente nesta ordem:<br>1. Use menos palavras, por exemplo só o sobrenome mais raro.<br>2. Tire abreviações e iniciais ("M." ou "Ma.").<br>3. Experimente outra grafia ("Luiz"/"Luis", "Tereza"/"Teresa", "Thais"/"Tais").<br>4. Confira se não há um número ou letra trocada.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="cadastro recente novo aluno acabou cadastrar recarregar atualizar pagina">
+            <h4>O aluno foi cadastrado agora há pouco</h4>
+            <p>A lista é carregada uma vez, quando a página abre. Recarregue a página para ver cadastros feitos depois disso.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="muitos resultados palavras curtas de da dos silva comum">
+            <h4>Aparecem alunos demais</h4>
+            <p>Palavras curtas e muito comuns, como "de", "da" ou "silva", combinam com muita gente. Prefira partes mais distintivas do nome ou acrescente outra palavra.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao esta no cadastro fora da lista aluno de outro curso procurar responsavel">
+            <h4>Ainda assim não aparece</h4>
+            <p>Uma causa possível é o aluno ainda não estar no cadastro usado por esta busca. Nesse caso, confirme a situação dele com o responsável pelo cadastro de alunos no Serviço de Graduação.</p>
+          </article>
+        </section>
+
+        <!-- ================= PROBLEMAS COMUNS ================= -->
+        <section id="ajuda-problemas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Problemas comuns</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="carregando demora lento travado campo desabilitado cinza nao deixa digitar">
+            <h4>A página fica em "Carregando lista de alunos..."</h4>
+            <p>O campo só libera depois que a lista termina de carregar, o que pode levar alguns segundos. Se demorar muito, recarregue a página. Se continuar, verifique sua conexão e tente de novo mais tarde.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="erro nao consegui carregar a lista de alunos mensagem vermelha falha">
+            <h4>Apareceu "Não consegui carregar a lista de alunos..."</h4>
+            <p>A página abriu, mas a lista não pôde ser lida. Causas comuns: uma falha momentânea, a conta usada não ter permissão ou uma mudança recente na configuração. Recarregue a página uma vez. Se a mensagem continuar, envie o texto que apareceu (sem dados de alunos) ao responsável pelo sistema no Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="conta google errada login usp.br nao foi possivel abrir o arquivo acesso negado permissao">
+            <h4>"Não foi possível abrir o arquivo" ou acesso negado</h4>
+            <p>Uma causa comum é estar conectado no navegador com outra conta Google. Entre com a sua conta institucional @usp.br (ou abra a página numa janela anônima e faça login só com ela) e abra o endereço de novo. Se o acesso continuar negado, peça liberação ao responsável pelo sistema.</p>
+          </article>
+        </section>
+
+        <!-- ================= USO DOS DADOS ================= -->
+        <section id="ajuda-privacidade" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Uso responsável dos dados</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="privacidade lgpd dados pessoais sigilo compartilhar copiar print captura tela">
+            <h4>São dados pessoais</h4>
+            <p>Nome, número USP e e-mail dos alunos são dados pessoais. Use-os só para o atendimento em andamento. Não copie a lista para outros arquivos, mensagens ou grupos, e evite capturas de tela com resultados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="fechar pagina computador compartilhado sair sessao aberta">
+            <h4>Ao terminar</h4>
+            <p>Feche a página quando acabar, principalmente em computadores compartilhados: enquanto ela estiver aberta, a lista carregada continua disponível nela.</p>
+          </article>
+        </section>
+
+        <!-- ================= APARÊNCIA ================= -->
+        <section id="ajuda-aparencia" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Aparência</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="tema claro escuro modo noturno dark light sistema cores aparencia">
+            <h4>Sistema, Claro ou Escuro</h4>
+            <p>No seletor <strong>Aparência</strong>, no topo, escolha <strong>Sistema</strong> para seguir a configuração do seu computador ou celular, ou fixe <strong>Claro</strong> ou <strong>Escuro</strong>. A escolha fica guardada só neste navegador.</p>
+          </article>
+        </section>
+
+        <!-- ================= FAQ ================= -->
+        <section id="ajuda-faq" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Perguntas frequentes</h3>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="nome completo inteiro precisa">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-nome-completo">
+              <span>Preciso digitar o nome completo?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-nome-completo" class="gradip-help-faq-panel" hidden><p>Não. Basta um pedaço de qualquer parte do nome, em qualquer ordem. Duas partes distintivas, como um prenome e um sobrenome, costumam bastar.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="por que apareceu aluno sem termo nome combinou email numero">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-por-que-apareceu">
+              <span>Por que apareceu um aluno cujo nome não tem o que eu digitei?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-por-que-apareceu" class="gradip-help-faq-panel" hidden><p>Porque a busca também olha o número USP e os dois e-mails. O trecho destacado mostra onde houve a combinação.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="parte do numero usp digitos incompleto">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-parte-numero">
+              <span>Posso buscar só uma parte do número USP?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-parte-numero" class="gradip-help-faq-panel" hidden><p>Sim. Qualquer sequência de dígitos é procurada dentro dos números USP e dos e-mails. Poucos dígitos trazem muitos resultados; digite mais para refinar.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="cadastrado hoje novo nao aparece atualizar recarregar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-novo-cadastro">
+              <span>Um aluno acabou de ser cadastrado e não aparece. Por quê?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-novo-cadastro" class="gradip-help-faq-panel" hidden><p>A lista é carregada quando a página abre. Recarregue a página para incluir os cadastros feitos depois disso.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="60 limite todos mostrar mais resultados lista completa">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-limite">
+              <span>Por que só aparecem 60 resultados?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-limite" class="gradip-help-faq-panel" hidden><p>Para manter a lista legível, a tela mostra no máximo 60 alunos. O total encontrado aparece embaixo do campo. Digite mais alguma coisa para chegar ao aluno certo.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="copiar e-mail numero colar selecionar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-copiar">
+              <span>Como copio o e-mail ou o número USP?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-copiar" class="gradip-help-faq-panel" hidden><p>Selecione o texto no resultado e copie normalmente (Ctrl+C, ou Cmd+C no Mac). Copie só o que for usar no atendimento.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="dado errado corrigir atualizar email nome errado desatualizado quem">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-corrigir">
+              <span>Encontrei um dado errado. Posso corrigir por aqui?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-corrigir" class="gradip-help-faq-panel" hidden><p>Não. Esta página só consulta. Informe a correção ao responsável pelo cadastro de alunos no Serviço de Graduação; depois que ele corrigir, recarregue a página.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="celular telefone tablet mobile smartphone">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-celular">
+              <span>Funciona no celular?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-celular" class="gradip-help-faq-panel" hidden><p>Sim. Em telas estreitas, o número USP passa para uma linha própria embaixo do nome. Lembre-se de que dados de alunos no celular pedem o mesmo cuidado que no computador.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="tema escuro mudou sozinho noite claro">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-tema">
+              <span>A página ficou escura (ou clara) sozinha. É normal?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-tema" class="gradip-help-faq-panel" hidden><p>Sim, se a <strong>Aparência</strong> estiver em <strong>Sistema</strong>: a página acompanha o modo claro/escuro do seu aparelho. Para fixar um dos dois, escolha <strong>Claro</strong> ou <strong>Escuro</strong>.</p></div>
+          </article>
+
+        </section>
+
+        <div class="gradip-help-no-results" data-gradip-help-no-results hidden><strong>Nenhum resultado encontrado.</strong><p>Tente outra palavra ou limpe a busca.</p></div>
+      </main>
+    </div>
+  </section>
+</div>

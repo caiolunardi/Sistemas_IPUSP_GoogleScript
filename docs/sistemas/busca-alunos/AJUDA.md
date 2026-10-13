@@ -1,0 +1,234 @@
+# Ajuda — Busca de Alunos (texto-fonte da Central de Ajuda, GRADIP UI v1.0)
+
+> **Nota editorial.** Este é o texto-fonte da Central de Ajuda do app (`src/BuscaAlunosAjuda.html`), na mesma ordem, com os mesmos títulos e identificadores (`{#ajuda-…}`) usados pelos gatilhos contextuais. O padrão segue [docs/ajuda](../../ajuda/README.md) e o [modelo de conteúdo](../../ajuda/HELP_CONTENT_MODEL.md).
+>
+> - **Público:** equipe do Serviço de Graduação que faz a triagem dos grupos de atendimento clínico.
+> - **Linguagem:** efeito para quem usa a página. Planilhas, IDs, propriedades do script e funções ficam no [manual](MANUAL_OPERACAO.md) e no [README do código](../../../sistemas/busca-alunos/README.md), não aqui.
+> - **Mecanismo:** `BuscaAlunosAjudaEstilos.html` e `BuscaAlunosAjudaUI.html` são byte-idênticos a `shared/ajuda/`. Abrir, buscar, navegar e expandir a FAQ não chamam o servidor.
+> - **Manutenção:** ao mudar um texto, mude-o nos dois lugares (aqui e em `BuscaAlunosAjuda.html`). Os "termos extras" são o `data-search` de cada item: a busca da Central procura neles **e** no texto visível.
+> - **Fonte dos fatos:** script de busca de `BuscaAlunosApp.html` (preservado do original) e `Codigo.gs`. Informações mutáveis citadas: limite de **60** resultados (`MAX_RESULTADOS`). Não há contato nominal; a ajuda encaminha ao "responsável pelo sistema" e ao "responsável pelo cadastro de alunos", sem inventar canal.
+
+## Gatilhos contextuais
+
+| Onde | Texto do gatilho | Abre |
+|---|---|---|
+| Cabeçalho | **Ajuda** | `ajuda-inicio` |
+| Abaixo do campo de busca | Como buscar? | `ajuda-como-buscar` |
+| Abaixo do campo de busca | Não encontrou o aluno? | `ajuda-nao-encontrei` |
+| Texto de "Entendendo os resultados" | Perguntas frequentes | `ajuda-faq` |
+
+---
+
+## Comece aqui {#ajuda-inicio}
+
+### Para que serve
+
+Esta página localiza rapidamente um aluno a partir de um pedaço do nome, do número USP ou do e-mail. Foi pensada para a triagem dos grupos de atendimento clínico, quando o nome chega incompleto e sem número USP.
+
+<sub>Termos extras da busca: inicio comecar para que serve objetivo triagem atendimento clinico psicologia clinica grupos</sub>
+
+### Em três passos
+
+1. Espere aparecer a mensagem com o total de alunos carregados.
+2. Digite no campo **Buscar aluno** qualquer parte do nome, do número USP ou do e-mail.
+3. Os resultados aparecem enquanto você digita; os trechos que combinaram ficam destacados.
+
+<sub>Termos extras da busca: rapido resumo passo como usar digitar</sub>
+
+### Só consulta
+
+A busca não grava, não altera e não envia nada. Ela mostra o que está no cadastro de alunos no momento em que a página foi aberta.
+
+<sub>Termos extras da busca: consulta somente leitura grava altera muda cadastro</sub>
+
+## Como buscar {#ajuda-como-buscar}
+
+### Por nome, mesmo incompleto
+
+Digite as partes do nome que você tem, em qualquer ordem. "silva ana" encontra "Ana Paula da Silva". Pedaços de palavra também valem: "fern" encontra "Fernanda" e "Fernandes".
+
+<sub>Termos extras da busca: nome parcial incompleto sobrenome ordem palavras primeiro nome</sub>
+
+### Por número USP
+
+Digite o número USP inteiro ou só uma parte dele. Quanto mais dígitos, menos resultados.
+
+<sub>Termos extras da busca: numero usp nusp n usp codigo matricula digitos</sub>
+
+### Por e-mail
+
+A busca procura no e-mail principal e no e-mail secundário. Pode digitar só o começo, como "ana.silva", sem o domínio.
+
+<sub>Termos extras da busca: email e-mail correio usp.br secundario pessoal gmail</sub>
+
+### Várias palavras ao mesmo tempo
+
+Cada palavra separada por espaço precisa aparecer no aluno, no nome, no número USP ou nos e-mails. Por isso, acrescentar uma palavra sempre reduz a lista. Se a lista ficar vazia, tire uma palavra.
+
+<sub>Termos extras da busca: varias palavras espaco combinar todas termos e ou</sub>
+
+### Acentos e maiúsculas não importam
+
+"Claudia" encontra "Cláudia", e "JOAO" encontra "João". Não é preciso acertar acentos nem maiúsculas.
+
+<sub>Termos extras da busca: acento acentuacao maiuscula minuscula cedilha caixa alta</sub>
+
+## Entendendo os resultados {#ajuda-resultados}
+
+### O que cada resultado mostra
+
+Em negrito, o nome do aluno. Embaixo, o e-mail principal e, se houver, o e-mail marcado "(secundário)". À direita, o número USP.
+
+<sub>Termos extras da busca: card resultado nome email selo numero usp direita</sub>
+
+### Trechos destacados
+
+As partes que combinaram com o que você digitou ficam destacadas. Se um aluno aparece sem destaque no nome, a combinação está no e-mail ou no número USP.
+
+<sub>Termos extras da busca: destaque marcado amarelo grifado sublinhado onde combinou</sub>
+
+### "sem nº USP", "sem e-mail cadastrado", "(sem nome cadastrado)"
+
+Esse dado está em branco no cadastro de alunos. A busca não completa nem corrige informações; veja [Perguntas frequentes](#ajuda-faq) para saber a quem pedir a correção.
+
+<sub>Termos extras da busca: sem numero usp sem e-mail sem nome cadastrado vazio faltando</sub>
+
+### "Mostrando os primeiros 60 de..."
+
+A tela mostra no máximo 60 alunos de cada vez. Quando houver mais, digite outra parte do nome, do número ou do e-mail para refinar.
+
+<sub>Termos extras da busca: 60 sessenta limite primeiros mostrando refinar muitos resultados</sub>
+
+### Contagem embaixo do campo
+
+Com o campo vazio, aparece quantos alunos foram carregados. Durante a busca, aparece quantos foram encontrados.
+
+<sub>Termos extras da busca: contador quantos encontrados resultados alunos carregados total</sub>
+
+## Não encontrou o aluno? {#ajuda-nao-encontrei}
+
+### Apareceu "Nenhum aluno encontrado..."
+
+Nenhum aluno tem todas as palavras digitadas. Tente nesta ordem:
+1. Use menos palavras, por exemplo só o sobrenome mais raro.
+2. Tire abreviações e iniciais ("M." ou "Ma.").
+3. Experimente outra grafia ("Luiz"/"Luis", "Tereza"/"Teresa", "Thais"/"Tais").
+4. Confira se não há um número ou letra trocada.
+
+<sub>Termos extras da busca: nenhum aluno encontrado vazio sem resultado nao aparece</sub>
+
+### O aluno foi cadastrado agora há pouco
+
+A lista é carregada uma vez, quando a página abre. Recarregue a página para ver cadastros feitos depois disso.
+
+<sub>Termos extras da busca: cadastro recente novo aluno acabou cadastrar recarregar atualizar pagina</sub>
+
+### Aparecem alunos demais
+
+Palavras curtas e muito comuns, como "de", "da" ou "silva", combinam com muita gente. Prefira partes mais distintivas do nome ou acrescente outra palavra.
+
+<sub>Termos extras da busca: muitos resultados palavras curtas de da dos silva comum</sub>
+
+### Ainda assim não aparece
+
+Uma causa possível é o aluno ainda não estar no cadastro usado por esta busca. Nesse caso, confirme a situação dele com o responsável pelo cadastro de alunos no Serviço de Graduação.
+
+<sub>Termos extras da busca: nao esta no cadastro fora da lista aluno de outro curso procurar responsavel</sub>
+
+## Problemas comuns {#ajuda-problemas}
+
+### A página fica em "Carregando lista de alunos..."
+
+O campo só libera depois que a lista termina de carregar, o que pode levar alguns segundos. Se demorar muito, recarregue a página. Se continuar, verifique sua conexão e tente de novo mais tarde.
+
+<sub>Termos extras da busca: carregando demora lento travado campo desabilitado cinza nao deixa digitar</sub>
+
+### Apareceu "Não consegui carregar a lista de alunos..."
+
+A página abriu, mas a lista não pôde ser lida. Causas comuns: uma falha momentânea, a conta usada não ter permissão ou uma mudança recente na configuração. Recarregue a página uma vez. Se a mensagem continuar, envie o texto que apareceu (sem dados de alunos) ao responsável pelo sistema no Serviço de Graduação.
+
+<sub>Termos extras da busca: erro nao consegui carregar a lista de alunos mensagem vermelha falha</sub>
+
+### "Não foi possível abrir o arquivo" ou acesso negado
+
+Uma causa comum é estar conectado no navegador com outra conta Google. Entre com a sua conta institucional @usp.br (ou abra a página numa janela anônima e faça login só com ela) e abra o endereço de novo. Se o acesso continuar negado, peça liberação ao responsável pelo sistema.
+
+<sub>Termos extras da busca: conta google errada login usp.br nao foi possivel abrir o arquivo acesso negado permissao</sub>
+
+## Uso responsável dos dados {#ajuda-privacidade}
+
+### São dados pessoais
+
+Nome, número USP e e-mail dos alunos são dados pessoais. Use-os só para o atendimento em andamento. Não copie a lista para outros arquivos, mensagens ou grupos, e evite capturas de tela com resultados.
+
+<sub>Termos extras da busca: privacidade lgpd dados pessoais sigilo compartilhar copiar print captura tela</sub>
+
+### Ao terminar
+
+Feche a página quando acabar, principalmente em computadores compartilhados: enquanto ela estiver aberta, a lista carregada continua disponível nela.
+
+<sub>Termos extras da busca: fechar pagina computador compartilhado sair sessao aberta</sub>
+
+## Aparência {#ajuda-aparencia}
+
+### Sistema, Claro ou Escuro
+
+No seletor **Aparência**, no topo, escolha **Sistema** para seguir a configuração do seu computador ou celular, ou fixe **Claro** ou **Escuro**. A escolha fica guardada só neste navegador.
+
+<sub>Termos extras da busca: tema claro escuro modo noturno dark light sistema cores aparencia</sub>
+
+## Perguntas frequentes {#ajuda-faq}
+
+### Preciso digitar o nome completo? {#busca-faq-nome-completo}
+
+Não. Basta um pedaço de qualquer parte do nome, em qualquer ordem. Duas partes distintivas, como um prenome e um sobrenome, costumam bastar.
+
+<sub>Termos extras da busca: nome completo inteiro precisa</sub>
+
+### Por que apareceu um aluno cujo nome não tem o que eu digitei? {#busca-faq-por-que-apareceu}
+
+Porque a busca também olha o número USP e os dois e-mails. O trecho destacado mostra onde houve a combinação.
+
+<sub>Termos extras da busca: por que apareceu aluno sem termo nome combinou email numero</sub>
+
+### Posso buscar só uma parte do número USP? {#busca-faq-parte-numero}
+
+Sim. Qualquer sequência de dígitos é procurada dentro dos números USP e dos e-mails. Poucos dígitos trazem muitos resultados; digite mais para refinar.
+
+<sub>Termos extras da busca: parte do numero usp digitos incompleto</sub>
+
+### Um aluno acabou de ser cadastrado e não aparece. Por quê? {#busca-faq-novo-cadastro}
+
+A lista é carregada quando a página abre. Recarregue a página para incluir os cadastros feitos depois disso.
+
+<sub>Termos extras da busca: cadastrado hoje novo nao aparece atualizar recarregar</sub>
+
+### Por que só aparecem 60 resultados? {#busca-faq-limite}
+
+Para manter a lista legível, a tela mostra no máximo 60 alunos. O total encontrado aparece embaixo do campo. Digite mais alguma coisa para chegar ao aluno certo.
+
+<sub>Termos extras da busca: 60 limite todos mostrar mais resultados lista completa</sub>
+
+### Como copio o e-mail ou o número USP? {#busca-faq-copiar}
+
+Selecione o texto no resultado e copie normalmente (Ctrl+C, ou Cmd+C no Mac). Copie só o que for usar no atendimento.
+
+<sub>Termos extras da busca: copiar e-mail numero colar selecionar</sub>
+
+### Encontrei um dado errado. Posso corrigir por aqui? {#busca-faq-corrigir}
+
+Não. Esta página só consulta. Informe a correção ao responsável pelo cadastro de alunos no Serviço de Graduação; depois que ele corrigir, recarregue a página.
+
+<sub>Termos extras da busca: dado errado corrigir atualizar email nome errado desatualizado quem</sub>
+
+### Funciona no celular? {#busca-faq-celular}
+
+Sim. Em telas estreitas, o número USP passa para uma linha própria embaixo do nome. Lembre-se de que dados de alunos no celular pedem o mesmo cuidado que no computador.
+
+<sub>Termos extras da busca: celular telefone tablet mobile smartphone</sub>
+
+### A página ficou escura (ou clara) sozinha. É normal? {#busca-faq-tema}
+
+Sim, se a **Aparência** estiver em **Sistema**: a página acompanha o modo claro/escuro do seu aparelho. Para fixar um dos dois, escolha **Claro** ou **Escuro**.
+
+<sub>Termos extras da busca: tema escuro mudou sozinho noite claro</sub>

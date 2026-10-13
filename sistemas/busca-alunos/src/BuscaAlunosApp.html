@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Busca de Alunos</title>
+
+<!-- GRADIP UI — tema (Light/Dark/Sistema). Incluído o mais cedo
+     possível, antes de qualquer <style> que consuma var(--gradip-...),
+     e antes do iniciar()/google.script.run: o tema é 100% client-side
+     e não depende da lista de alunos. Isso minimiza o "flash" de tema
+     errado ao carregar a página. -->
+<?!= include_('GradipTema') ?>
+
+<style>
+
+  /*=====================================================
+    BUSCA DE ALUNOS — estilos da página principal.
+
+    GRADIP UI v1.0: todas as cores literais do código original
+    (#f5f5f5, #333, #005AA9, #d9d9d9, #eaf2fa, #fff1b8, #a33...) foram
+    trocadas pelos tokens semânticos de GradipTema.html — Claro e
+    Escuro saem do MESMO CSS, sem regra [data-theme="dark"] específica
+    deste app. Tamanhos, espaçamentos e a estrutura dos cards de
+    resultado foram preservados; o cabeçalho passou a seguir o padrão
+    dos outros sistemas (marca IPUSP + título à esquerda; Aparência,
+    Ajuda e marca USP à direita; faixa azul embaixo).
+  =====================================================*/
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
+  }
+
+  /*---------------- CABEÇALHO (padrão GRADIP) ----------------*/
+
+  .cabecalho{
+    background:var(--gradip-header-bg);
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid var(--gradip-border);
+    gap:12px;
+  }
+
+  .logoEsquerda{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    min-width:0;
+  }
+
+  .logoEsquerda .marcaIpuspSvg{
+    height:52px;
+    flex:0 0 auto;
+  }
+
+  .textoCabecalho{
+    min-width:0;
+  }
+
+  .cabecalho h1{
+    margin:0;
+    font-size:17px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .cabecalho p{
+    margin:2px 0 0 0;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .cabecalhoDireita{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+  }
+
+  .logoUSP{
+    height:44px;
+    width:auto;
+    flex:0 0 auto;
+  }
+
+  /* Contêiner só de layout da marca USP — sem role/aria-label próprio:
+     cada variante (img clara / svg escura) já tem o nome acessível
+     "Universidade de São Paulo" dentro de GradipMarcaUSP.html. Mesmo
+     padrão do Painel de Solicitações. */
+  .logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+    padding:4px 6px;
+    border-radius:6px;
+    background:transparent;
+  }
+
+  .botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+  }
+
+  .botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+  }
+
+  .botaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .barraAzul{
+    height:6px;
+    background:var(--gradip-header-accent);
+  }
+
+  /*---------------- CONTEÚDO ----------------*/
+
+  .conteudo{
+    max-width:720px;
+    margin:0 auto;
+    padding:26px 20px 60px 20px;
+  }
+
+  .cardBusca{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:18px 20px;
+    box-shadow:var(--gradip-shadow);
+    margin-bottom:18px;
+  }
+
+  /* Rótulo visível do campo (o original só tinha placeholder, que some
+     ao digitar e não serve de nome acessível confiável). */
+  .rotuloBusca{
+    display:block;
+    font-size:13px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    margin-bottom:8px;
+  }
+
+  .campoBusca{
+    width:100%;
+    min-height:44px;
+    padding:13px 16px;
+    /* --gradip-border-strong: token dos limites de controles (>=3:1
+       contra o fundo do campo nos dois temas, ver GradipTema.html). O
+       original usava a borda azul de 1.5px como destaque; o azul agora
+       aparece no hover/foco. */
+    border:1.5px solid var(--gradip-border-strong);
+    border-radius:8px;
+    font-size:15px;
+    font-family:inherit;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+  }
+
+  .campoBusca::placeholder{
+    /* Mesmo ajuste do Painel de Solicitações: --gradip-input-placeholder
+       fica abaixo de 4.5:1 no Claro; --gradip-text-muted passa nos dois
+       temas. */
+    color:var(--gradip-text-muted);
+  }
+
+  .campoBusca:hover{
+    border-color:var(--gradip-link);
+  }
+
+  .campoBusca:focus{
+    outline:none;
+    border-color:var(--gradip-focus);
+    box-shadow:0 0 0 3px var(--gradip-info-border);
+  }
+
+  .campoBusca:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:1px;
+  }
+
+  .campoBusca:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    cursor:wait;
+  }
+
+  .infoBusca{
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+  }
+
+  /* Gatilhos de ajuda contextual — abrem a Central direto na seção
+     certa (data-gradip-help-open), sem repetir o texto aqui. */
+  .ajudaContextualLinha{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px 18px;
+    margin-top:10px;
+  }
+
+  .linkAjudaContextual{
+    display:inline-block;
+    background:none;
+    border:none;
+    /* Padding + margem negativa iguais: área de toque perto de 44px sem
+       mover o texto (mesma técnica do Painel de Solicitações). */
+    padding:15px 4px;
+    margin:-15px -4px;
+    font:inherit;
+    font-size:12.5px;
+    font-weight:bold;
+    text-decoration:underline;
+    cursor:pointer;
+    color:var(--gradip-link);
+  }
+
+  .linkAjudaContextual:hover{
+    color:var(--gradip-link-hover);
+  }
+
+  .linkAjudaContextual:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:-10px;
+  }
+
+  /* Link interno usado dentro de um texto da Central de Ajuda
+     (BuscaAlunosAjuda.html) para pular para outra seção. Fica aqui, e
+     não em BuscaAlunosAjudaEstilos.html, para que aquele arquivo
+     continue byte-idêntico a shared/ajuda/GradipAjudaEstilos.html. */
+  .linkAjudaInterno{
+    display:inline;
+    background:none;
+    border:none;
+    padding:0;
+    font:inherit;
+    color:var(--gradip-link);
+    text-decoration:underline;
+    cursor:pointer;
+  }
+
+  .linkAjudaInterno:hover{
+    color:var(--gradip-link-hover);
+  }
+
+  .linkAjudaInterno:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .listaResultados{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .cardAluno{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:12px 16px;
+    box-shadow:var(--gradip-shadow);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+
+  .cardAluno:hover{
+    border-color:var(--gradip-link);
+  }
+
+  .dadosAluno{
+    min-width:0;
+  }
+
+  .nomeAluno{
+    font-size:14.5px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .detalheAluno{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    margin-top:3px;
+    overflow-wrap:anywhere;
+  }
+
+  .detalheAluno .separador{
+    color:var(--gradip-border-strong);
+    margin:0 6px;
+  }
+
+  .badgeUsp{
+    flex:0 0 auto;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font-size:12px;
+    font-weight:bold;
+    padding:5px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+
+  .vazio{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    padding:40px 20px;
+    font-size:13.5px;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+  }
+
+  /* Erro: fundo + borda + texto semânticos de perigo (nada de pastel
+     claro fixo no Escuro). O estado não depende só da cor: a mensagem
+     sempre começa com "Não consegui carregar a lista de alunos". */
+  .vazio.erro{
+    color:var(--gradip-danger);
+    background:var(--gradip-danger-bg);
+    border-color:var(--gradip-danger-border);
+  }
+
+  .rodape{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:12px;
+    padding:10px 0 30px 0;
+  }
+
+  /* Destaque dos trechos que casaram com a busca. Não existe token de
+     "marca-texto" no GRADIP; usa-se o par de alerta (fundo + borda),
+     que já tem versão própria no Escuro. O sublinhado inferior garante
+     que o destaque não dependa só da cor de fundo. */
+  mark{
+    background:var(--gradip-warning-bg);
+    color:inherit;
+    border-radius:2px;
+    padding:0 1px;
+    box-shadow:inset 0 -2px 0 var(--gradip-warning-border);
+  }
+
+  /*---------------- RESPONSIVO — TELAS ESTREITAS ----------------*/
+
+  @media (max-width:480px){
+    /* Mesmo comportamento do header do Painel de Solicitações: duas
+       faixas (marca + título; Aparência + Ajuda + USP), título e
+       subtítulo quebram linha em vez de truncar. */
+    .cabecalho{
+      flex-wrap:wrap;
+      padding:10px 12px;
+      gap:8px;
+      row-gap:8px;
+    }
+    .logoEsquerda{
+      gap:8px;
+      flex:1 1 100%;
+      width:100%;
+    }
+    .logoEsquerda .marcaIpuspSvg{
+      height:38px;
+    }
+    .logoUSP{
+      height:32px;
+    }
+    .logoUSPWrap{
+      padding:2px 3px;
+    }
+    .cabecalho h1{
+      font-size:14px;
+      white-space:normal;
+      overflow:visible;
+      text-overflow:clip;
+    }
+    .cabecalho p{
+      font-size:11px;
+      white-space:normal;
+      overflow:visible;
+      text-overflow:clip;
+    }
+    .cabecalhoDireita{
+      gap:6px;
+      flex:1 1 100%;
+      width:100%;
+    }
+    .botaoAjuda .textoAjuda{
+      display:none;
+    }
+    .botaoAjuda{
+      padding:8px;
+      border-radius:50%;
+    }
+    .gradip-theme-control{
+      gap:0;
+    }
+    .gradip-theme-control__select{
+      padding:0 26px 0 8px;
+      font-size:12px;
+    }
+
+    .conteudo{
+      padding:18px 12px 48px 12px;
+    }
+    .cardBusca{
+      padding:14px;
+    }
+
+    /* Card de resultado: o selo do nº USP desce pra uma linha própria
+       em vez de espremer o nome (que continua truncando com "..."). */
+    .cardAluno{
+      flex-wrap:wrap;
+      row-gap:8px;
+    }
+    .dadosAluno{
+      flex:1 1 100%;
+    }
+  }
+
+</style>
+
+<?!= include_('BuscaAlunosAjudaEstilos') ?>
+
+</head>
+<body>
+
+  <header class="cabecalho">
+    <div class="logoEsquerda">
+      <?!= include_('GradipMarcaIPUSP') ?>
+      <div class="textoCabecalho">
+        <h1><span aria-hidden="true">🔎 </span>Busca de Alunos</h1>
+        <p>Serviço de Graduação — Instituto de Psicologia</p>
+      </div>
+    </div>
+    <div class="cabecalhoDireita">
+      <?!= include_('GradipTemaControle') ?>
+      <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
+        <span aria-hidden="true">❓</span>
+        <span class="textoAjuda">Ajuda</span>
+      </button>
+      <span class="logoUSPWrap">
+        <?!= include_('GradipMarcaUSP') ?>
+      </span>
+    </div>
+  </header>
+
+  <div class="barraAzul"></div>
+
+  <main class="conteudo">
+
+    <div class="cardBusca">
+      <label for="campoBusca" class="rotuloBusca">Buscar aluno</label>
+      <input type="text" id="campoBusca" class="campoBusca" autocomplete="off"
+             placeholder="Digite parte do nome, o número USP ou o e-mail..." disabled>
+      <div id="infoBusca" class="infoBusca" aria-live="polite">Carregando lista de alunos...</div>
+      <div class="ajudaContextualLinha">
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-como-buscar">Como buscar?</button>
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-nao-encontrei">Não encontrou o aluno?</button>
+      </div>
+    </div>
+
+    <div id="listaResultados" class="listaResultados"></div>
+
+  </main>
+
+  <div class="rodape">IPUSP — Assistência Acadêmica</div>
+
+<?!= include_('BuscaAlunosAjuda') ?>
+
+<!-- Script original da busca, preservado sem alterações (mesmos IDs,
+     mesma chamada google.script.run.listarAlunosParaBusca(), mesma
+     filtragem no navegador). O tema não depende dele. -->
+<script>
+
+  let TODOS_ALUNOS = [];
+  let CARREGOU = false;
+
+  const MAX_RESULTADOS = 60;
+
+  const campoBusca = document.getElementById("campoBusca");
+  const listaResultados = document.getElementById("listaResultados");
+  const infoBusca = document.getElementById("infoBusca");
+
+  /*-----------------------------------------------------
+    Normalização pra busca: minúsculas + sem acento, pra
+    "Claudia" achar "Cláudia" e vice-versa.
+  ------------------------------------------------------*/
+  function normalizar_(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .toLowerCase();
+  }
+
+  function escaparHtml_(texto) {
+    const div = document.createElement("div");
+    div.textContent = String(texto || "");
+    return div.innerHTML;
+  }
+
+  // Envolve, dentro de um texto já normalizado/minúsculo, os trechos
+  // que batem com os termos buscados, num <mark> — usa o texto
+  // ORIGINAL (com acento) pra exibição, só a posição vem do texto
+  // normalizado (os dois têm o mesmo tamanho, char a char).
+  function destacar_(textoOriginal, termos) {
+    const textoNormalizado = normalizar_(textoOriginal);
+    const marcado = new Array(textoOriginal.length).fill(false);
+    termos.forEach(termo => {
+      if (!termo) return;
+      let pos = 0;
+      while (true) {
+        const i = textoNormalizado.indexOf(termo, pos);
+        if (i === -1) break;
+        for (let k = i; k < i + termo.length; k++) marcado[k] = true;
+        pos = i + termo.length;
+      }
+    });
+    let html = "";
+    let aberto = false;
+    for (let i = 0; i < textoOriginal.length; i++) {
+      if (marcado[i] && !aberto) { html += "<mark>"; aberto = true; }
+      if (!marcado[i] && aberto) { html += "</mark>"; aberto = false; }
+      html += escaparHtml_(textoOriginal[i]);
+    }
+    if (aberto) html += "</mark>";
+    return html;
+  }
+
+  function prepararAluno_(aluno) {
+    const busca = normalizar_([aluno.nome, aluno.numeroUsp, aluno.email, aluno.emailSecundario].join(" "));
+    return Object.assign({}, aluno, { _busca: busca });
+  }
+
+  function filtrarAlunos_(query) {
+    const termos = normalizar_(query).split(/\s+/).filter(Boolean);
+    if (termos.length === 0) return { termos: [], resultado: [] };
+    const resultado = TODOS_ALUNOS.filter(aluno => termos.every(termo => aluno._busca.indexOf(termo) !== -1));
+    return { termos: termos, resultado: resultado };
+  }
+
+  function renderizarVazio_(mensagem, ehErro) {
+    listaResultados.innerHTML = "";
+    const div = document.createElement("div");
+    div.className = ehErro ? "vazio erro" : "vazio";
+    div.textContent = mensagem;
+    listaResultados.appendChild(div);
+  }
+
+  function renderizarResultados_(alunos, termos) {
+
+    listaResultados.innerHTML = "";
+
+    const mostrando = alunos.slice(0, MAX_RESULTADOS);
+
+    mostrando.forEach(aluno => {
+
+      const card = document.createElement("div");
+      card.className = "cardAluno";
+
+      const dados = document.createElement("div");
+      dados.className = "dadosAluno";
+
+      const nome = document.createElement("div");
+      nome.className = "nomeAluno";
+      nome.innerHTML = destacar_(aluno.nome || "(sem nome cadastrado)", termos);
+
+      const detalhe = document.createElement("div");
+      detalhe.className = "detalheAluno";
+      const partesDetalhe = [];
+      if (aluno.email) partesDetalhe.push(destacar_(aluno.email, termos));
+      if (aluno.emailSecundario) partesDetalhe.push(destacar_(aluno.emailSecundario, termos) + " (secundário)");
+      detalhe.innerHTML = partesDetalhe.length
+          ? partesDetalhe.join('<span class="separador">·</span>')
+          : "sem e-mail cadastrado";
+
+      dados.appendChild(nome);
+      dados.appendChild(detalhe);
+
+      const badge = document.createElement("div");
+      badge.className = "badgeUsp";
+      badge.innerHTML = aluno.numeroUsp ? destacar_(aluno.numeroUsp, termos) : "sem nº USP";
+
+      card.appendChild(dados);
+      card.appendChild(badge);
+      listaResultados.appendChild(card);
+
+    });
+
+    if (alunos.length > MAX_RESULTADOS) {
+      const aviso = document.createElement("div");
+      aviso.className = "vazio";
+      aviso.style.padding = "14px 20px";
+      aviso.textContent = `Mostrando os primeiros ${MAX_RESULTADOS} de ${alunos.length} resultados — digite mais alguma coisa pra refinar.`;
+      listaResultados.appendChild(aviso);
+    }
+
+  }
+
+  function executarBusca_() {
+
+    const query = campoBusca.value;
+
+    if (!query.trim()) {
+      listaResultados.innerHTML = "";
+      infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar pra buscar.`;
+      return;
+    }
+
+    const { termos, resultado } = filtrarAlunos_(query);
+
+    if (resultado.length === 0) {
+      infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados.`;
+      renderizarVazio_("Nenhum aluno encontrado com esse nome, número USP ou e-mail.", false);
+      return;
+    }
+
+    infoBusca.textContent = `${resultado.length} resultado${resultado.length === 1 ? "" : "s"} encontrado${resultado.length === 1 ? "" : "s"}.`;
+    renderizarResultados_(resultado, termos);
+
+  }
+
+  let temporizadorBusca = null;
+  campoBusca.addEventListener("input", () => {
+    clearTimeout(temporizadorBusca);
+    temporizadorBusca = setTimeout(executarBusca_, 120);
+  });
+
+  function iniciar() {
+    google.script.run
+        .withSuccessHandler(alunos => {
+          TODOS_ALUNOS = (alunos || []).map(prepararAluno_);
+          CARREGOU = true;
+          campoBusca.disabled = false;
+          infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar pra buscar.`;
+          campoBusca.focus();
+        })
+        .withFailureHandler(erro => {
+          infoBusca.textContent = "";
+          const mensagem = (erro && erro.message) ? erro.message : String(erro);
+          renderizarVazio_("Não consegui carregar a lista de alunos: " + mensagem, true);
+        })
+        .listarAlunosParaBusca();
+  }
+
+  iniciar();
+
+</script>
+
+<?!= include_('BuscaAlunosAjudaUI') ?>
+
+</body>
+</html>
