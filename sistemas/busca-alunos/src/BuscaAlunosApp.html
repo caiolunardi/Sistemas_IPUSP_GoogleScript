@@ -377,6 +377,292 @@
     box-shadow:inset 0 -2px 0 var(--gradip-warning-border);
   }
 
+  /*---------------- v1.1 — FILTROS E EXPORTAÇÃO ----------------*/
+
+  .linhaFiltros{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:10px 14px;
+    margin-top:14px;
+  }
+
+  .campoFiltro{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    font-size:12.5px;
+    font-weight:bold;
+    color:var(--gradip-text);
+  }
+
+  .seletorFiltro{
+    min-height:44px;
+    min-width:150px;
+    padding:0 34px 0 10px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+    font:inherit;
+    font-weight:normal;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  .seletorFiltro:hover{ border-color:var(--gradip-link); }
+
+  .seletorFiltro:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .seletorFiltro:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    cursor:not-allowed;
+  }
+
+  .acoesExportar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-left:auto;
+  }
+
+  .botaoSecundario,
+  .botaoPrimario{
+    min-height:44px;
+    padding:0 16px;
+    border-radius:8px;
+    font:inherit;
+    font-size:13.5px;
+    font-weight:bold;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .botaoSecundario{
+    background:var(--gradip-surface);
+    color:var(--gradip-link);
+    border:1px solid var(--gradip-border-strong);
+  }
+
+  .botaoSecundario:hover:not(:disabled){
+    border-color:var(--gradip-link);
+    background:var(--gradip-surface-2);
+  }
+
+  .botaoPrimario{
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+    border:1px solid var(--gradip-primary);
+  }
+
+  .botaoPrimario:hover:not(:disabled){
+    background:var(--gradip-primary-hover);
+    border-color:var(--gradip-primary-hover);
+  }
+
+  .botaoSecundario:focus-visible,
+  .botaoPrimario:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .botaoSecundario:disabled,
+  .botaoPrimario:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+    cursor:not-allowed;
+  }
+
+  /* O card agora abre a ficha do aluno: vira um <button> de verdade
+     (teclado e leitor de tela), sem mudar a aparência do original. */
+  button.cardAluno{
+    width:100%;
+    font:inherit;
+    color:inherit;
+    text-align:left;
+    cursor:pointer;
+  }
+
+  button.cardAluno:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .cardAluno .dadosAluno{ display:block; min-width:0; }
+  .cardAluno .nomeAluno,
+  .cardAluno .detalheAluno{ display:block; }
+
+  .ingressoAluno{
+    color:var(--gradip-text-muted);
+    font-weight:normal;
+    font-size:12px;
+    margin-left:6px;
+  }
+
+  /*---------------- v1.1 — FICHA DO ALUNO (modal) ----------------*/
+
+  .fichaOverlay[hidden]{ display:none !important; }
+
+  .fichaOverlay{
+    position:fixed;
+    inset:0;
+    z-index:9000; /* abaixo da Central de Ajuda (10000) */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    background:var(--gradip-overlay);
+  }
+
+  .fichaDialogo{
+    width:min(640px, calc(100vw - 32px));
+    max-height:calc(100vh - 32px);
+    max-height:calc(100dvh - 32px);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    background:var(--gradip-surface-elevated);
+    color:var(--gradip-text);
+    border:1px solid var(--gradip-border);
+    border-radius:12px;
+  }
+
+  .fichaCabecalho{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding:16px 20px;
+    border-bottom:1px solid var(--gradip-border);
+  }
+
+  .fichaCabecalho h2{
+    margin:2px 0 0;
+    font-size:18px;
+    overflow-wrap:anywhere;
+  }
+
+  .fichaRotuloTopo{
+    margin:0;
+    font-size:12px;
+    font-weight:bold;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--gradip-text-muted);
+  }
+
+  .fichaFechar{
+    flex:0 0 44px;
+    width:44px;
+    height:44px;
+    border:1px solid var(--gradip-border);
+    border-radius:9px;
+    background:var(--gradip-surface);
+    color:var(--gradip-text);
+    font:inherit;
+    font-size:24px;
+    line-height:1;
+    cursor:pointer;
+  }
+
+  .fichaFechar:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .fichaCorpo{
+    overflow-y:auto;
+    padding:16px 20px;
+  }
+
+  .fichaAviso{
+    margin:0 0 14px;
+    padding:10px 12px;
+    border-radius:8px;
+    font-size:13px;
+    line-height:1.45;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-text);
+  }
+
+  .fichaAviso.alerta{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+  }
+
+  .fichaCampo{
+    display:block;
+    margin-bottom:12px;
+  }
+
+  .fichaCampo span{
+    display:block;
+    font-size:12.5px;
+    font-weight:bold;
+    margin-bottom:5px;
+  }
+
+  .fichaCampo small{
+    font-weight:normal;
+    color:var(--gradip-text-muted);
+  }
+
+  .fichaCampo input{
+    width:100%;
+    min-height:44px;
+    padding:9px 12px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+    font:inherit;
+    font-size:14px;
+  }
+
+  .fichaCampo input:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:1px;
+  }
+
+  .fichaCampo input:read-only{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-text);
+    border-style:dashed;
+  }
+
+  .fichaCampo input.alterado{
+    border-color:var(--gradip-warning-border);
+    box-shadow:inset 4px 0 0 var(--gradip-warning-border);
+  }
+
+  .fichaRodape{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px 10px;
+    padding:12px 20px;
+    border-top:1px solid var(--gradip-border);
+  }
+
+  .fichaStatus{
+    flex:1 1 220px;
+    margin:0;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+  }
+
+  .fichaStatus.ok{ color:var(--gradip-success); font-weight:bold; }
+  .fichaStatus.erro{ color:var(--gradip-danger); font-weight:bold; }
+
   /*---------------- RESPONSIVO — TELAS ESTREITAS ----------------*/
 
   @media (max-width:480px){
@@ -451,6 +737,48 @@
     .dadosAluno{
       flex:1 1 100%;
     }
+
+    /* v1.1: filtros ocupam a largura toda; exportação embaixo. */
+    .campoFiltro{
+      flex:1 1 140px;
+    }
+    .seletorFiltro{
+      min-width:0;
+      width:100%;
+    }
+    .acoesExportar{
+      margin-left:0;
+      width:100%;
+    }
+    .acoesExportar .botaoSecundario{
+      flex:1 1 0;
+      justify-content:center;
+    }
+    .fichaOverlay{
+      padding:0;
+    }
+    .fichaDialogo{
+      width:100vw;
+      height:100vh;
+      height:100dvh;
+      max-height:none;
+      border:0;
+      border-radius:0;
+    }
+    .fichaCabecalho,
+    .fichaCorpo,
+    .fichaRodape{
+      padding-left:14px;
+      padding-right:14px;
+    }
+    .fichaStatus{
+      flex-basis:100%;
+    }
+    .fichaRodape .botaoSecundario,
+    .fichaRodape .botaoPrimario{
+      flex:1 1 0;
+      justify-content:center;
+    }
   }
 
 </style>
@@ -488,9 +816,28 @@
       <label for="campoBusca" class="rotuloBusca">Buscar aluno</label>
       <input type="text" id="campoBusca" class="campoBusca" autocomplete="off"
              placeholder="Digite parte do nome, o número USP ou o e-mail..." disabled>
+      <div class="linhaFiltros">
+        <label class="campoFiltro">Ano de ingresso
+          <select id="filtroAno" class="seletorFiltro" disabled>
+            <option value="">Todos os anos</option>
+          </select>
+        </label>
+        <label class="campoFiltro">Semestre
+          <select id="filtroSemestre" class="seletorFiltro" disabled>
+            <option value="">Ambos</option>
+            <option value="1">1º semestre</option>
+            <option value="2">2º semestre</option>
+          </select>
+        </label>
+        <div class="acoesExportar">
+          <button type="button" id="botaoCsv" class="botaoSecundario" disabled>Exportar CSV</button>
+          <button type="button" id="botaoPdf" class="botaoSecundario" disabled>Exportar PDF</button>
+        </div>
+      </div>
       <div id="infoBusca" class="infoBusca" aria-live="polite">Carregando lista de alunos...</div>
       <div class="ajudaContextualLinha">
         <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-como-buscar">Como buscar?</button>
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-ingresso">Filtrar e exportar por ingresso</button>
         <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-nao-encontrei">Não encontrou o aluno?</button>
       </div>
     </div>
@@ -501,12 +848,54 @@
 
   <div class="rodape">IPUSP — Assistência Acadêmica</div>
 
+  <!-- v1.1 — FICHA DO ALUNO. Os campos são montados por script a partir
+       das colunas da planilha (obterFichaAluno), sempre com
+       createElement/value, nunca como HTML bruto. -->
+  <div id="fichaOverlay" class="fichaOverlay" hidden>
+    <section id="fichaDialogo" class="fichaDialogo" role="dialog" aria-modal="true" aria-labelledby="fichaTitulo" tabindex="-1">
+      <header class="fichaCabecalho">
+        <div>
+          <p class="fichaRotuloTopo">Ficha do aluno</p>
+          <h2 id="fichaTitulo">Carregando...</h2>
+        </div>
+        <button type="button" id="fichaFechar" class="fichaFechar" aria-label="Fechar ficha"><span aria-hidden="true">×</span></button>
+      </header>
+      <form id="fichaFormulario" class="fichaCorpo" novalidate>
+        <div id="fichaCampos"></div>
+      </form>
+      <footer class="fichaRodape">
+        <p id="fichaStatus" class="fichaStatus" aria-live="polite"></p>
+        <button type="button" id="fichaCancelar" class="botaoSecundario">Fechar</button>
+        <button type="button" id="fichaSalvar" class="botaoPrimario" disabled>Salvar alterações</button>
+      </footer>
+    </section>
+  </div>
+
 <?!= include_('BuscaAlunosAjuda') ?>
 
-<!-- Script original da busca, preservado sem alterações (mesmos IDs,
-     mesma chamada google.script.run.listarAlunosParaBusca(), mesma
-     filtragem no navegador). O tema não depende dele. -->
+<!-- Script da busca. Na v1.0 era o script original sem alterações;
+     a v1.1 acrescenta filtro por ingresso, exportação e ficha do
+     aluno (ver comentário no topo do bloco). O tema não depende dele. -->
 <script>
+
+  /*=====================================================
+    BUSCA DE ALUNOS — comportamento da página.
+
+    v1.0: este bloco era o script original, byte-idêntico.
+    v1.1 (pedido do Serviço de Graduação, 13/10/2026) acrescenta,
+    sem mudar a busca por texto:
+      - filtro por ANO e SEMESTRE de ingresso (coluna Ingresso,
+        AAAA/S), combinável com o texto digitado; o combobox de
+        anos é montado a partir dos anos que existem na lista;
+      - EXPORTAÇÃO do resultado atual (todos os alunos filtrados,
+        não só os 60 da tela) em CSV (gerado aqui) ou PDF (gerado
+        no servidor por gerarPdfListaAlunos);
+      - FICHA DO ALUNO: clicar num resultado abre um modal com
+        todas as colunas da planilha (obterFichaAluno), editável
+        para quem é editor da planilha (salvarFichaAluno).
+    A lista continua chegando numa única chamada
+    (listarAlunosParaBusca) e a filtragem continua no navegador.
+  =====================================================*/
 
   let TODOS_ALUNOS = [];
   let CARREGOU = false;
@@ -516,6 +905,14 @@
   const campoBusca = document.getElementById("campoBusca");
   const listaResultados = document.getElementById("listaResultados");
   const infoBusca = document.getElementById("infoBusca");
+  const filtroAno = document.getElementById("filtroAno");
+  const filtroSemestre = document.getElementById("filtroSemestre");
+  const botaoCsv = document.getElementById("botaoCsv");
+  const botaoPdf = document.getElementById("botaoPdf");
+
+  // Resultado que está na tela agora (já filtrado por texto, ano e
+  // semestre) — é exatamente isso que os botões de exportação usam.
+  let RESULTADO_ATUAL = [];
 
   /*-----------------------------------------------------
     Normalização pra busca: minúsculas + sem acento, pra
@@ -562,16 +959,58 @@
     return html;
   }
 
+  // v1.1: além do texto de busca, guarda ano e semestre de ingresso
+  // já separados ("2024/1" → _ano "2024", _semestre "1"). Ingresso
+  // fora do formato fica com _ano vazio e só aparece em "Todos os anos".
   function prepararAluno_(aluno) {
     const busca = normalizar_([aluno.nome, aluno.numeroUsp, aluno.email, aluno.emailSecundario].join(" "));
-    return Object.assign({}, aluno, { _busca: busca });
+    const partes = String(aluno.ingresso || "").trim().match(/^(\d{4})(?:\s*\/\s*(\d))?/);
+    return Object.assign({}, aluno, {
+      _busca: busca,
+      _ano: partes ? partes[1] : "",
+      _semestre: partes && partes[2] ? partes[2] : ""
+    });
   }
 
   function filtrarAlunos_(query) {
     const termos = normalizar_(query).split(/\s+/).filter(Boolean);
-    if (termos.length === 0) return { termos: [], resultado: [] };
-    const resultado = TODOS_ALUNOS.filter(aluno => termos.every(termo => aluno._busca.indexOf(termo) !== -1));
+    const ano = filtroAno.value;
+    const semestre = filtroSemestre.value;
+    if (termos.length === 0 && !ano) return { termos: [], resultado: [] };
+    const resultado = TODOS_ALUNOS.filter(aluno =>
+      (!ano || aluno._ano === ano) &&
+      (!semestre || aluno._semestre === semestre) &&
+      termos.every(termo => aluno._busca.indexOf(termo) !== -1)
+    );
+    // Lista de um ano inteiro (sem texto) sai em ordem alfabética —
+    // é a que costuma ser exportada.
+    if (termos.length === 0) {
+      resultado.sort((a, b) => String(a.nome).localeCompare(String(b.nome), "pt-BR"));
+    }
     return { termos: termos, resultado: resultado };
+  }
+
+  // Monta o combobox com todos os anos que aparecem na coluna
+  // Ingresso, do mais recente para o mais antigo, com a contagem.
+  function montarFiltroAno_() {
+    const selecionado = filtroAno.value;
+    const contagem = {};
+    TODOS_ALUNOS.forEach(a => { if (a._ano) contagem[a._ano] = (contagem[a._ano] || 0) + 1; });
+    const anos = Object.keys(contagem).sort((a, b) => b.localeCompare(a));
+    filtroAno.innerHTML = "";
+    const todos = document.createElement("option");
+    todos.value = "";
+    todos.textContent = "Todos os anos";
+    filtroAno.appendChild(todos);
+    anos.forEach(ano => {
+      const opcao = document.createElement("option");
+      opcao.value = ano;
+      opcao.textContent = `${ano} (${contagem[ano]})`;
+      filtroAno.appendChild(opcao);
+    });
+    filtroAno.value = anos.indexOf(selecionado) !== -1 ? selecionado : "";
+    filtroSemestre.disabled = !filtroAno.value;
+    if (!filtroAno.value) filtroSemestre.value = "";
   }
 
   function renderizarVazio_(mensagem, ehErro) {
@@ -590,17 +1029,28 @@
 
     mostrando.forEach(aluno => {
 
-      const card = document.createElement("div");
+      // v1.1: o card é um <button> que abre a ficha do aluno.
+      const card = document.createElement("button");
+      card.type = "button";
       card.className = "cardAluno";
+      card.setAttribute("aria-haspopup", "dialog");
+      card.dataset.linha = String(aluno.linha);
+      card.addEventListener("click", () => abrirFicha_(aluno, card));
 
-      const dados = document.createElement("div");
+      const dados = document.createElement("span");
       dados.className = "dadosAluno";
 
-      const nome = document.createElement("div");
+      const nome = document.createElement("span");
       nome.className = "nomeAluno";
       nome.innerHTML = destacar_(aluno.nome || "(sem nome cadastrado)", termos);
+      if (aluno.ingresso) {
+        const ingresso = document.createElement("span");
+        ingresso.className = "ingressoAluno";
+        ingresso.textContent = "· ingresso " + aluno.ingresso;
+        nome.appendChild(ingresso);
+      }
 
-      const detalhe = document.createElement("div");
+      const detalhe = document.createElement("span");
       detalhe.className = "detalheAluno";
       const partesDetalhe = [];
       if (aluno.email) partesDetalhe.push(destacar_(aluno.email, termos));
@@ -612,7 +1062,7 @@
       dados.appendChild(nome);
       dados.appendChild(detalhe);
 
-      const badge = document.createElement("div");
+      const badge = document.createElement("span");
       badge.className = "badgeUsp";
       badge.innerHTML = aluno.numeroUsp ? destacar_(aluno.numeroUsp, termos) : "sem nº USP";
 
@@ -626,33 +1076,51 @@
       const aviso = document.createElement("div");
       aviso.className = "vazio";
       aviso.style.padding = "14px 20px";
-      aviso.textContent = `Mostrando os primeiros ${MAX_RESULTADOS} de ${alunos.length} resultados — digite mais alguma coisa pra refinar.`;
+      aviso.textContent = `Mostrando os primeiros ${MAX_RESULTADOS} de ${alunos.length} resultados — digite mais alguma coisa pra refinar. A exportação inclui todos os ${alunos.length}.`;
       listaResultados.appendChild(aviso);
     }
 
+  }
+
+  function atualizarExportacao_() {
+    const pode = RESULTADO_ATUAL.length > 0;
+    botaoCsv.disabled = !pode;
+    botaoPdf.disabled = !pode;
   }
 
   function executarBusca_() {
 
     const query = campoBusca.value;
 
-    if (!query.trim()) {
+    if (!query.trim() && !filtroAno.value) {
+      RESULTADO_ATUAL = [];
+      atualizarExportacao_();
       listaResultados.innerHTML = "";
-      infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar pra buscar.`;
+      infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar ou escolha um ano de ingresso.`;
       return;
     }
 
     const { termos, resultado } = filtrarAlunos_(query);
+    RESULTADO_ATUAL = resultado;
+    atualizarExportacao_();
 
     if (resultado.length === 0) {
       infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados.`;
-      renderizarVazio_("Nenhum aluno encontrado com esse nome, número USP ou e-mail.", false);
+      renderizarVazio_(filtroAno.value
+          ? "Nenhum aluno encontrado com esse filtro de ingresso e essa busca."
+          : "Nenhum aluno encontrado com esse nome, número USP ou e-mail.", false);
       return;
     }
 
-    infoBusca.textContent = `${resultado.length} resultado${resultado.length === 1 ? "" : "s"} encontrado${resultado.length === 1 ? "" : "s"}.`;
+    infoBusca.textContent = `${resultado.length} resultado${resultado.length === 1 ? "" : "s"} encontrado${resultado.length === 1 ? "" : "s"}${descreverFiltro_()}.`;
     renderizarResultados_(resultado, termos);
 
+  }
+
+  // " · ingresso 2024 (1º semestre)" — texto do filtro ativo.
+  function descreverFiltro_() {
+    if (!filtroAno.value) return "";
+    return ` · ingresso ${filtroAno.value}` + (filtroSemestre.value ? ` (${filtroSemestre.value}º semestre)` : "");
   }
 
   let temporizadorBusca = null;
@@ -661,13 +1129,295 @@
     temporizadorBusca = setTimeout(executarBusca_, 120);
   });
 
+  filtroAno.addEventListener("change", () => {
+    filtroSemestre.disabled = !filtroAno.value;
+    if (!filtroAno.value) filtroSemestre.value = "";
+    executarBusca_();
+  });
+  filtroSemestre.addEventListener("change", executarBusca_);
+
+  /*-----------------------------------------------------
+    EXPORTAÇÃO — sempre do RESULTADO_ATUAL inteiro.
+  ------------------------------------------------------*/
+  const COLUNAS_EXPORTACAO = [
+    ["Nome do Aluno", "nome"],
+    ["Número USP", "numeroUsp"],
+    ["Ingresso", "ingresso"],
+    ["eMail", "email"],
+    ["eMail Secundario", "emailSecundario"]
+  ];
+
+  function nomeBaseArquivo_() {
+    const partes = ["alunos"];
+    if (filtroAno.value) partes.push("ingresso-" + filtroAno.value + (filtroSemestre.value ? "-" + filtroSemestre.value : ""));
+    if (campoBusca.value.trim()) partes.push("busca");
+    return partes.join("_");
+  }
+
+  function tituloExportacao_() {
+    let titulo = "Alunos";
+    if (filtroAno.value) titulo += ` — ingresso ${filtroAno.value}` + (filtroSemestre.value ? `/${filtroSemestre.value}` : "");
+    if (campoBusca.value.trim()) titulo += ` — busca "${campoBusca.value.trim()}"`;
+    return titulo;
+  }
+
+  // CSV com ";" (padrão do Excel em português) e BOM UTF-8, pra
+  // acentos abrirem certo. Campos que começam com = + - @ ganham um
+  // apóstrofo na frente, pra planilhas não executarem como fórmula.
+  function celulaCsv_(valor) {
+    let t = String(valor == null ? "" : valor);
+    if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
+    return /[";\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+
+  function baixarArquivo_(conteudo, tipo, nome) {
+    const blob = conteudo instanceof Blob ? conteudo : new Blob([conteudo], { type: tipo });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = nome;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  botaoCsv.addEventListener("click", () => {
+    if (!RESULTADO_ATUAL.length) return;
+    const linhas = [COLUNAS_EXPORTACAO.map(c => celulaCsv_(c[0])).join(";")];
+    RESULTADO_ATUAL.forEach(a => linhas.push(COLUNAS_EXPORTACAO.map(c => celulaCsv_(a[c[1]])).join(";")));
+    baixarArquivo_("﻿" + linhas.join("\r\n") + "\r\n", "text/csv;charset=utf-8", nomeBaseArquivo_() + ".csv");
+    infoBusca.textContent = `CSV gerado com ${RESULTADO_ATUAL.length} aluno${RESULTADO_ATUAL.length === 1 ? "" : "s"}.`;
+  });
+
+  botaoPdf.addEventListener("click", () => {
+    if (!RESULTADO_ATUAL.length) return;
+    botaoPdf.disabled = true;
+    const textoOriginal = botaoPdf.textContent;
+    botaoPdf.textContent = "Gerando PDF...";
+    const linhas = RESULTADO_ATUAL.map(a => {
+      const l = {};
+      COLUNAS_EXPORTACAO.forEach(c => { l[c[1]] = a[c[1]] || ""; });
+      return l;
+    });
+    google.script.run
+        .withSuccessHandler(arquivo => {
+          botaoPdf.textContent = textoOriginal;
+          atualizarExportacao_();
+          const bytes = Uint8Array.from(atob(arquivo.base64), c => c.charCodeAt(0));
+          baixarArquivo_(new Blob([bytes], { type: "application/pdf" }), "application/pdf", arquivo.nome);
+          infoBusca.textContent = `PDF gerado com ${linhas.length} aluno${linhas.length === 1 ? "" : "s"}.`;
+        })
+        .withFailureHandler(erro => {
+          botaoPdf.textContent = textoOriginal;
+          atualizarExportacao_();
+          infoBusca.textContent = "Não consegui gerar o PDF: " + ((erro && erro.message) ? erro.message : String(erro));
+        })
+        .gerarPdfListaAlunos({ titulo: tituloExportacao_(), nomeArquivo: nomeBaseArquivo_(), linhas: linhas });
+  });
+
+  /*-----------------------------------------------------
+    FICHA DO ALUNO (modal) — ESC fecha, Tab fica preso dentro,
+    o foco volta ao card que abriu e o scroll da página fica
+    travado enquanto aberto (mesmo contrato da Central de Ajuda).
+  ------------------------------------------------------*/
+  const fichaOverlay = document.getElementById("fichaOverlay");
+  const fichaDialogo = document.getElementById("fichaDialogo");
+  const fichaTitulo = document.getElementById("fichaTitulo");
+  const fichaCampos = document.getElementById("fichaCampos");
+  const fichaStatus = document.getElementById("fichaStatus");
+  const fichaSalvar = document.getElementById("fichaSalvar");
+
+  let FICHA = null;          // { aluno, linha, campos, podeEditar }
+  let fichaGatilho = null;   // elemento que recebe o foco ao fechar
+  let fichaOverflowAnterior = "";
+  let fichaSalvando = false;
+
+  function definirStatusFicha_(texto, tipo) {
+    fichaStatus.textContent = texto || "";
+    fichaStatus.className = "fichaStatus" + (tipo ? " " + tipo : "");
+  }
+
+  function abrirFicha_(aluno, gatilho) {
+    fichaGatilho = gatilho || document.activeElement;
+    fichaOverflowAnterior = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    fichaOverlay.hidden = false;
+    FICHA = { aluno: aluno, linha: aluno.linha, campos: [], podeEditar: false };
+    fichaTitulo.textContent = aluno.nome || "(sem nome cadastrado)";
+    fichaCampos.innerHTML = "";
+    fichaSalvar.disabled = true;
+    definirStatusFicha_("Carregando a ficha...");
+    fichaDialogo.focus();
+    google.script.run
+        .withSuccessHandler(ficha => { if (FICHA && FICHA.aluno === aluno) preencherFicha_(ficha); })
+        .withFailureHandler(erro => { if (FICHA && FICHA.aluno === aluno) definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro"); })
+        .obterFichaAluno({ linha: aluno.linha, numeroUsp: aluno.numeroUsp, nome: aluno.nome });
+  }
+
+  function preencherFicha_(ficha) {
+    FICHA.linha = ficha.linha;
+    FICHA.campos = ficha.campos;
+    FICHA.podeEditar = !!ficha.podeEditar;
+    fichaCampos.innerHTML = "";
+
+    const aviso = document.createElement("p");
+    aviso.className = "fichaAviso" + (FICHA.podeEditar ? "" : " alerta");
+    aviso.textContent = FICHA.podeEditar
+        ? "Altere os campos necessários e clique em Salvar alterações. Só os campos modificados são gravados na planilha."
+        : "Sua conta pode consultar esta ficha, mas não alterar a planilha de alunos. Para editar, é preciso ser editor da planilha.";
+    fichaCampos.appendChild(aviso);
+
+    ficha.campos.forEach((campo, i) => {
+      const rotulo = document.createElement("label");
+      rotulo.className = "fichaCampo";
+      const texto = document.createElement("span");
+      texto.textContent = campo.titulo;
+      if (!campo.editavel) {
+        const nota = document.createElement("small");
+        nota.textContent = " (somente leitura)";
+        texto.appendChild(nota);
+      }
+      const entrada = document.createElement("input");
+      entrada.type = "text";
+      entrada.value = campo.valor;
+      entrada.dataset.indice = String(i);
+      entrada.readOnly = !FICHA.podeEditar || !campo.editavel;
+      entrada.autocomplete = "off";
+      entrada.spellcheck = false;
+      entrada.addEventListener("input", atualizarAlteracoesFicha_);
+      rotulo.appendChild(texto);
+      rotulo.appendChild(entrada);
+      fichaCampos.appendChild(rotulo);
+    });
+
+    definirStatusFicha_("");
+    atualizarAlteracoesFicha_();
+    const primeiro = fichaCampos.querySelector("input:not([readonly])");
+    if (primeiro) primeiro.focus();
+  }
+
+  function camposAlterados_() {
+    const novos = {};
+    const originais = {};
+    fichaCampos.querySelectorAll("input[data-indice]").forEach(entrada => {
+      const campo = FICHA.campos[Number(entrada.dataset.indice)];
+      const mudou = entrada.value.trim() !== String(campo.valor).trim();
+      entrada.classList.toggle("alterado", mudou);
+      if (mudou) {
+        novos[campo.titulo] = entrada.value.trim();
+        originais[campo.titulo] = campo.valor;
+      }
+    });
+    return { novos: novos, originais: originais, total: Object.keys(novos).length };
+  }
+
+  function atualizarAlteracoesFicha_() {
+    if (!FICHA) return;
+    const alt = camposAlterados_();
+    fichaSalvar.disabled = fichaSalvando || !FICHA.podeEditar || alt.total === 0;
+    if (alt.total && !fichaSalvando) {
+      definirStatusFicha_(`${alt.total} campo${alt.total === 1 ? "" : "s"} alterado${alt.total === 1 ? "" : "s"}, ainda não salvo${alt.total === 1 ? "" : "s"}.`);
+    } else if (!fichaSalvando && fichaStatus.classList.contains("ok") === false && fichaStatus.classList.contains("erro") === false) {
+      definirStatusFicha_("");
+    }
+  }
+
+  function salvarFicha_() {
+    if (!FICHA || fichaSalvando) return;
+    const alt = camposAlterados_();
+    if (!alt.total) return;
+    fichaSalvando = true;
+    fichaSalvar.disabled = true;
+    definirStatusFicha_("Salvando...");
+    const aluno = FICHA.aluno;
+    google.script.run
+        .withSuccessHandler(ficha => {
+          fichaSalvando = false;
+          // Atualiza a lista em memória com os dados novos e refaz a
+          // busca — o aluno pode até sair do filtro atual.
+          const atualizado = prepararAluno_(ficha.resumo);
+          const posicao = TODOS_ALUNOS.indexOf(aluno);
+          if (posicao !== -1) TODOS_ALUNOS[posicao] = atualizado;
+          FICHA.aluno = atualizado;
+          montarFiltroAno_();
+          executarBusca_();
+          fichaTitulo.textContent = atualizado.nome || "(sem nome cadastrado)";
+          preencherFicha_(ficha);
+          definirStatusFicha_("Alterações salvas na planilha.", "ok");
+        })
+        .withFailureHandler(erro => {
+          fichaSalvando = false;
+          atualizarAlteracoesFicha_();
+          definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro");
+        })
+        .salvarFichaAluno({
+          linha: FICHA.linha,
+          numeroUsp: aluno.numeroUsp,
+          nome: aluno.nome,
+          originais: alt.originais,
+          novos: alt.novos
+        });
+  }
+
+  function fecharFicha_() {
+    if (fichaOverlay.hidden) return;
+    if (fichaSalvando) return;
+    if (FICHA && camposAlterados_().total && !window.confirm("Há alterações não salvas. Fechar a ficha e descartar essas alterações?")) return;
+    fichaOverlay.hidden = true;
+    document.body.style.overflow = fichaOverflowAnterior;
+    FICHA = null;
+    fichaCampos.innerHTML = "";
+    definirStatusFicha_("");
+    // O card pode ter sido recriado pela busca depois de salvar:
+    // devolve o foco a ele (ou ao card novo do mesmo aluno); se o aluno
+    // saiu do filtro, ao campo de busca.
+    const linhaGatilho = fichaGatilho && fichaGatilho.dataset ? fichaGatilho.dataset.linha : "";
+    const cardNovo = linhaGatilho ? listaResultados.querySelector(`.cardAluno[data-linha="${linhaGatilho}"]`) : null;
+    if (fichaGatilho && document.body.contains(fichaGatilho)) fichaGatilho.focus();
+    else if (cardNovo) cardNovo.focus();
+    else campoBusca.focus();
+  }
+
+  document.getElementById("fichaFechar").addEventListener("click", fecharFicha_);
+  document.getElementById("fichaCancelar").addEventListener("click", fecharFicha_);
+  fichaSalvar.addEventListener("click", salvarFicha_);
+  document.getElementById("fichaFormulario").addEventListener("submit", ev => { ev.preventDefault(); salvarFicha_(); });
+  fichaOverlay.addEventListener("click", ev => { if (ev.target === fichaOverlay) fecharFicha_(); });
+
+  document.addEventListener("keydown", ev => {
+    if (fichaOverlay.hidden) return;
+    // Se a Central de Ajuda estiver aberta por cima, ela cuida do teclado.
+    const ajuda = document.querySelector("[data-gradip-help-overlay]");
+    if (ajuda && !ajuda.hidden) return;
+    if (ev.key === "Escape") { ev.preventDefault(); fecharFicha_(); return; }
+    if (ev.key !== "Tab") return;
+    const focaveis = Array.prototype.filter.call(
+        fichaDialogo.querySelectorAll("button:not([disabled]), input:not([disabled])"),
+        el => el.offsetParent !== null);
+    if (!focaveis.length) { ev.preventDefault(); fichaDialogo.focus(); return; }
+    const primeiro = focaveis[0];
+    const ultimo = focaveis[focaveis.length - 1];
+    const ativo = document.activeElement;
+    if (ativo === fichaDialogo || !fichaDialogo.contains(ativo)) {
+      ev.preventDefault();
+      (ev.shiftKey ? ultimo : primeiro).focus();
+    } else if (ev.shiftKey && ativo === primeiro) {
+      ev.preventDefault(); ultimo.focus();
+    } else if (!ev.shiftKey && ativo === ultimo) {
+      ev.preventDefault(); primeiro.focus();
+    }
+  });
+
   function iniciar() {
     google.script.run
         .withSuccessHandler(alunos => {
           TODOS_ALUNOS = (alunos || []).map(prepararAluno_);
           CARREGOU = true;
           campoBusca.disabled = false;
-          infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar pra buscar.`;
+          filtroAno.disabled = false;
+          montarFiltroAno_();
+          infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar ou escolha um ano de ingresso.`;
           campoBusca.focus();
         })
         .withFailureHandler(erro => {

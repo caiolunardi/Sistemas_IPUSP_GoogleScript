@@ -34,6 +34,8 @@
         <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
         <button type="button" data-gradip-help-target="ajuda-como-buscar">Como buscar</button>
         <button type="button" data-gradip-help-target="ajuda-resultados">Resultados</button>
+        <button type="button" data-gradip-help-target="ajuda-ficha">Ficha e edição</button>
+        <button type="button" data-gradip-help-target="ajuda-ingresso">Filtrar e exportar</button>
         <button type="button" data-gradip-help-target="ajuda-nao-encontrei">Não encontrei o aluno</button>
         <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
         <button type="button" data-gradip-help-target="ajuda-privacidade">Uso dos dados</button>
@@ -51,11 +53,11 @@
           </article>
           <article class="gradip-help-card" data-gradip-help-search-item data-search="rapido resumo passo como usar digitar">
             <h4>Em três passos</h4>
-            <p>1. Espere aparecer a mensagem com o total de alunos carregados.<br>2. Digite no campo <strong>Buscar aluno</strong> qualquer parte do nome, do número USP ou do e-mail.<br>3. Os resultados aparecem enquanto você digita; os trechos que combinaram ficam destacados.</p>
+            <p>1. Espere aparecer a mensagem com o total de alunos carregados.<br>2. Digite no campo <strong>Buscar aluno</strong> qualquer parte do nome, do número USP ou do e-mail.<br>3. Os resultados aparecem enquanto você digita; os trechos que combinaram ficam destacados. Clique no aluno para ver a ficha.</p>
           </article>
-          <article class="gradip-help-card" data-gradip-help-search-item data-search="consulta somente leitura grava altera muda cadastro">
-            <h4>Só consulta</h4>
-            <p>A busca não grava, não altera e não envia nada. Ela mostra o que está no cadastro de alunos no momento em que a página foi aberta.</p>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="o que da para fazer editar exportar lista ano ingresso ficha">
+            <h4>O que mais dá para fazer</h4>
+            <p>Clique num aluno para abrir a <button type="button" class="linkAjudaInterno" data-gradip-help-target="ajuda-ficha">ficha completa</button> e, se você for editor da planilha de alunos, corrigir dados. Escolha um <strong>Ano de ingresso</strong> para ver e <button type="button" class="linkAjudaInterno" data-gradip-help-target="ajuda-ingresso">exportar a turma</button> em CSV ou PDF.</p>
           </article>
         </section>
 
@@ -109,6 +111,60 @@
           </article>
         </section>
 
+        <!-- ================= FICHA E EDIÇÃO ================= -->
+        <section id="ajuda-ficha" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Ficha do aluno e edição</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="abrir ficha clicar aluno detalhes todos os dados modal">
+            <h4>Abrir a ficha</h4>
+            <p>Clique no resultado (ou use Tab até ele e aperte Enter). A ficha mostra todas as informações do aluno no cadastro, inclusive as que não aparecem na lista. Para fechar, use <strong>Fechar</strong>, o × ou a tecla Esc.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="editar corrigir alterar salvar mudar dados email nome numero">
+            <h4>Corrigir um dado</h4>
+            <p>1. Altere o campo; ele fica marcado e o rodapé mostra quantos campos mudaram.<br>2. Clique em <strong>Salvar alterações</strong>.<br>3. Espere "Alterações salvas na planilha." Só os campos que você mudou são gravados, e a lista de busca já passa a mostrar o dado novo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="quem pode editar permissao editor somente consulta nao consigo salvar campos bloqueados">
+            <h4>Quem pode editar</h4>
+            <p>Só quem é editor da planilha de alunos. Para as demais contas a ficha abre só para consulta, com um aviso no topo. Se precisar editar, peça acesso de editor ao responsável pelo cadastro.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="somente leitura id da pasta bloqueado nao edita tracejado">
+            <h4>Campos "somente leitura"</h4>
+            <p>Alguns campos, como o ID da Pasta, são usados por outros sistemas e não podem ser alterados por aqui. Eles aparecem com borda tracejada e a indicação "(somente leitura)".</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="formato ingresso 2024/1 numero usp digitos email invalido regra">
+            <h4>Formatos aceitos</h4>
+            <p>Número USP: só dígitos. Ingresso: ano e semestre com barra, como 2024/1 ou 2024/2. E-mails: no formato nome@dominio. O nome não pode ficar vazio. Se algo estiver fora do formato, a ficha avisa e nada é gravado.</p>
+          </article>
+        </section>
+
+        <!-- ================= FILTRAR E EXPORTAR ================= -->
+        <section id="ajuda-ingresso" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Filtrar por ingresso e exportar</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="ano de ingresso turma filtro combobox semestre 2024/1 lista do ano">
+            <h4>Ver os alunos de um ano de ingresso</h4>
+            <p>Em <strong>Ano de ingresso</strong>, escolha o ano; a lista mostra todos os alunos que entraram nele, em ordem alfabética. O número entre parênteses é quantos alunos há naquele ano. Depois, se quiser, escolha o <strong>Semestre</strong> (1º ou 2º). O ano vem dos quatro primeiros dígitos do ingresso e o semestre do número depois da barra: 2024/1 é o 1º semestre de 2024.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="combinar filtro busca texto nome ano juntos">
+            <h4>Combinar com a busca</h4>
+            <p>O filtro de ingresso funciona junto com o texto digitado: escolha 2023 e digite "ana" para ver só as Anas que entraram em 2023. Para voltar a buscar em todos, escolha "Todos os anos".</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="exportar csv excel planilha baixar download lista de emails comunicacao">
+            <h4>Exportar em CSV</h4>
+            <p><strong>Exportar CSV</strong> baixa um arquivo com nome, número USP, ingresso e os dois e-mails de todos os alunos da lista atual, não só dos 60 da tela. Ele abre no Excel ou no Google Planilhas; para montar uma lista de e-mails, copie a coluna eMail.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="exportar pdf imprimir baixar documento relatorio">
+            <h4>Exportar em PDF</h4>
+            <p><strong>Exportar PDF</strong> gera uma tabela com as mesmas colunas, em folha deitada, com título, quantidade e data. Pode levar alguns segundos; o botão mostra "Gerando PDF..." enquanto isso.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="ingresso vazio sem ano formato diferente nao aparece no filtro">
+            <h4>Aluno sem ingresso no filtro</h4>
+            <p>Quem está com o ingresso em branco ou fora do formato AAAA/S só aparece em "Todos os anos". Abra a ficha e corrija o ingresso para que ele entre no ano certo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="compartilhar arquivo exportado lgpd envio setor comunicacao cuidado">
+            <h4>Cuidado com os arquivos exportados</h4>
+            <p>CSV e PDF contêm dados pessoais. Envie só para quem pediu e para a finalidade informada, prefira compartilhar pelo e-mail institucional e apague as cópias que não forem mais necessárias.</p>
+          </article>
+        </section>
+
         <!-- ================= NÃO ENCONTREI ================= -->
         <section id="ajuda-nao-encontrei" class="gradip-help-section" data-gradip-help-section>
           <h3 tabindex="-1">Não encontrou o aluno?</h3>
@@ -144,6 +200,14 @@
           <article class="gradip-help-card" data-gradip-help-search-item data-search="conta google errada login usp.br nao foi possivel abrir o arquivo acesso negado permissao">
             <h4>"Não foi possível abrir o arquivo" ou acesso negado</h4>
             <p>Uma causa comum é estar conectado no navegador com outra conta Google. Entre com a sua conta institucional @usp.br (ou abra a página numa janela anônima e faça login só com ela) e abra o endereço de novo. Se o acesso continuar negado, peça liberação ao responsável pelo sistema.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sua conta nao tem permissao alterar planilha salvar bloqueado editor">
+            <h4>"Sua conta não tem permissão para alterar a planilha de alunos"</h4>
+            <p>A sua conta não está entre os editores da planilha de alunos (acesso dado só por grupo também não conta). Você continua podendo consultar e exportar. Para editar, peça acesso de editor individual ao responsável pelo cadastro.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao consegui gerar o pdf erro exportacao download nao baixou">
+            <h4>A exportação não baixou</h4>
+            <p>Confira se o navegador bloqueou o download (ícone na barra de endereço) e tente de novo. Listas muito grandes podem ser recusadas no PDF; filtre por ano ou semestre, ou use o CSV.</p>
           </article>
         </section>
 
@@ -205,7 +269,7 @@
             <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-limite">
               <span>Por que só aparecem 60 resultados?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
             </button>
-            <div id="busca-faq-limite" class="gradip-help-faq-panel" hidden><p>Para manter a lista legível, a tela mostra no máximo 60 alunos. O total encontrado aparece embaixo do campo. Digite mais alguma coisa para chegar ao aluno certo.</p></div>
+            <div id="busca-faq-limite" class="gradip-help-faq-panel" hidden><p>Para manter a lista legível, a tela mostra no máximo 60 alunos. O total encontrado aparece embaixo do campo. Digite mais alguma coisa para chegar ao aluno certo. A exportação em CSV ou PDF sempre inclui todos os encontrados.</p></div>
           </article>
 
           <article class="gradip-help-faq" data-gradip-help-search-item data-search="copiar e-mail numero colar selecionar">
@@ -215,11 +279,11 @@
             <div id="busca-faq-copiar" class="gradip-help-faq-panel" hidden><p>Selecione o texto no resultado e copie normalmente (Ctrl+C, ou Cmd+C no Mac). Copie só o que for usar no atendimento.</p></div>
           </article>
 
-          <article class="gradip-help-faq" data-gradip-help-search-item data-search="dado errado corrigir atualizar email nome errado desatualizado quem">
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="dado errado corrigir atualizar email nome errado desatualizado quem editar">
             <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-corrigir">
               <span>Encontrei um dado errado. Posso corrigir por aqui?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
             </button>
-            <div id="busca-faq-corrigir" class="gradip-help-faq-panel" hidden><p>Não. Esta página só consulta. Informe a correção ao responsável pelo cadastro de alunos no Serviço de Graduação; depois que ele corrigir, recarregue a página.</p></div>
+            <div id="busca-faq-corrigir" class="gradip-help-faq-panel" hidden><p>Sim, se a sua conta for editora da planilha de alunos: abra a ficha, altere o campo e clique em <strong>Salvar alterações</strong>. Se a ficha abrir só para consulta, informe a correção ao responsável pelo cadastro de alunos no Serviço de Graduação.</p></div>
           </article>
 
           <article class="gradip-help-faq" data-gradip-help-search-item data-search="celular telefone tablet mobile smartphone">
@@ -234,6 +298,21 @@
               <span>A página ficou escura (ou clara) sozinha. É normal?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
             </button>
             <div id="busca-faq-tema" class="gradip-help-faq-panel" hidden><p>Sim, se a <strong>Aparência</strong> estiver em <strong>Sistema</strong>: a página acompanha o modo claro/escuro do seu aparelho. Para fixar um dos dois, escolha <strong>Claro</strong> ou <strong>Escuro</strong>.</p></div>
+          </article>
+
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="lista emails setor comunicacao turma ano exportar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-lista-emails">
+              <span>Como tiro a lista de e-mails de uma turma?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-lista-emails" class="gradip-help-faq-panel" hidden><p>Escolha o ano (e, se quiser, o semestre) em <strong>Ano de ingresso</strong>, deixe o campo de busca vazio e clique em <strong>Exportar CSV</strong>. No arquivo, a coluna eMail tem o e-mail principal de cada aluno; a coluna eMail Secundario, o alternativo, quando houver.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="alguem mudou outra pessoa conflito planilha mudou recarregue erro salvar">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="busca-faq-conflito">
+              <span>Apareceu "foi alterado por outra pessoa" ou "a planilha mudou". O que faço?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="busca-faq-conflito" class="gradip-help-faq-panel" hidden><p>Recarregue a página, abra o aluno de novo e refaça a alteração. A gravação é recusada quando a planilha mudou depois que você abriu a página ou a ficha, para que você não sobrescreva o trabalho de outra pessoa nem grave no aluno errado.</p></div>
           </article>
 
         </section>

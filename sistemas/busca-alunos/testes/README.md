@@ -4,8 +4,8 @@ Não copie esta pasta para o Apps Script. Os testes não acessam planilhas reais
 
 | Script | O que confere |
 |---|---|
-| `testar_backend.js` | `Codigo.gs` com `SpreadsheetApp`/`PropertiesService`/`HtmlService` simulados: lista devolvida só com os quatro campos, linhas vazias ignoradas, propriedade ausente, chave ausente, ID vazio, aba `Página1` ou primeira aba, coluna faltando, planilha vazia, `doGet` por template, `include_` e diagnóstico sem dados pessoais. |
-| `testar_navegador.js` | Página montada com os `include_` resolvidos e `google.script.run` simulado, em Chromium: busca (ordem livre, sem acento, limite 60, e-mail secundário, vazio, erro), destaque, três modos de tema, persistência, mudança do sistema com a página aberta, marcas por tema, contraste (texto ≥ 4,5:1; borda do campo ≥ 3:1), Central de Ajuda (gatilhos, busca, FAQ, ESC, foco, scroll) e 360/390/480/768 px sem rolagem horizontal e com alvos ≥ 44 px. |
+| `testar_backend.js` | `Codigo.gs` com `SpreadsheetApp`/`PropertiesService`/`HtmlService`/`Session`/`LockService`/`Utilities` simulados: lista (campos, `linha`, `ingresso`, sem `ID da Pasta`), títulos de coluna, configuração do índice, ficha (colunas, somente leitura, fórmulas, permissão de edição, linha conferida), gravação (só o que mudou, tipo numérico, conflito, validações, limites, trava), PDF (escape, nome, limites), diagnóstico e ausência de logs com dados. |
+| `testar_navegador.js` | Página montada com os `include_` resolvidos e um backend simulado no navegador, em Chromium: busca, destaque, limite 60, erro; filtro por ano/semestre de ingresso; exportação CSV e PDF (downloads reais); ficha do aluno (abrir, editar, salvar, validação, foco, ESC, conta sem permissão); três modos de tema, persistência e mudança do sistema com a página aberta; marcas; contraste (texto ≥ 4,5:1, borda do campo ≥ 3:1); Central de Ajuda; 360/390/480/768 px sem rolagem horizontal e com alvos ≥ 44 px. |
 
 ```bash
 node testar_backend.js

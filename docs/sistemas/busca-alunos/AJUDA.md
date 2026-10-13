@@ -1,4 +1,4 @@
-# Ajuda — Busca de Alunos (texto-fonte da Central de Ajuda, GRADIP UI v1.0)
+# Ajuda — Busca de Alunos (texto-fonte da Central de Ajuda, v1.1)
 
 > **Nota editorial.** Este é o texto-fonte da Central de Ajuda do app (`src/BuscaAlunosAjuda.html`), na mesma ordem, com os mesmos títulos e identificadores (`{#ajuda-…}`) usados pelos gatilhos contextuais. O padrão segue [docs/ajuda](../../ajuda/README.md) e o [modelo de conteúdo](../../ajuda/HELP_CONTENT_MODEL.md).
 >
@@ -6,7 +6,7 @@
 > - **Linguagem:** efeito para quem usa a página. Planilhas, IDs, propriedades do script e funções ficam no [manual](MANUAL_OPERACAO.md) e no [README do código](../../../sistemas/busca-alunos/README.md), não aqui.
 > - **Mecanismo:** `BuscaAlunosAjudaEstilos.html` e `BuscaAlunosAjudaUI.html` são byte-idênticos a `shared/ajuda/`. Abrir, buscar, navegar e expandir a FAQ não chamam o servidor.
 > - **Manutenção:** ao mudar um texto, mude-o nos dois lugares (aqui e em `BuscaAlunosAjuda.html`). Os "termos extras" são o `data-search` de cada item: a busca da Central procura neles **e** no texto visível.
-> - **Fonte dos fatos:** script de busca de `BuscaAlunosApp.html` (preservado do original) e `Codigo.gs`. Informações mutáveis citadas: limite de **60** resultados (`MAX_RESULTADOS`). Não há contato nominal; a ajuda encaminha ao "responsável pelo sistema" e ao "responsável pelo cadastro de alunos", sem inventar canal.
+> - **Fonte dos fatos:** script de busca de `BuscaAlunosApp.html` (preservado do original) e `Codigo.gs`. Informações mutáveis citadas: limite de **60** resultados na tela (`MAX_RESULTADOS`), coluna somente leitura **ID da Pasta** (`COLUNAS_SOMENTE_LEITURA`), formato de ingresso **AAAA/S** e regra "só editores da planilha salvam". Não há contato nominal; a ajuda encaminha ao "responsável pelo sistema" e ao "responsável pelo cadastro de alunos", sem inventar canal.
 
 ## Gatilhos contextuais
 
@@ -14,10 +14,13 @@
 |---|---|---|
 | Cabeçalho | **Ajuda** | `ajuda-inicio` |
 | Abaixo do campo de busca | Como buscar? | `ajuda-como-buscar` |
+| Abaixo do campo de busca | Filtrar e exportar por ingresso | `ajuda-ingresso` |
 | Abaixo do campo de busca | Não encontrou o aluno? | `ajuda-nao-encontrei` |
+| Texto de "Comece aqui" | ficha completa / exportar a turma | `ajuda-ficha` / `ajuda-ingresso` |
 | Texto de "Entendendo os resultados" | Perguntas frequentes | `ajuda-faq` |
 
 ---
+
 
 ## Comece aqui {#ajuda-inicio}
 
@@ -31,15 +34,15 @@ Esta página localiza rapidamente um aluno a partir de um pedaço do nome, do n�
 
 1. Espere aparecer a mensagem com o total de alunos carregados.
 2. Digite no campo **Buscar aluno** qualquer parte do nome, do número USP ou do e-mail.
-3. Os resultados aparecem enquanto você digita; os trechos que combinaram ficam destacados.
+3. Os resultados aparecem enquanto você digita; os trechos que combinaram ficam destacados. Clique no aluno para ver a ficha.
 
 <sub>Termos extras da busca: rapido resumo passo como usar digitar</sub>
 
-### Só consulta
+### O que mais dá para fazer
 
-A busca não grava, não altera e não envia nada. Ela mostra o que está no cadastro de alunos no momento em que a página foi aberta.
+Clique num aluno para abrir a [ficha completa](#ajuda-ficha) e, se você for editor da planilha de alunos, corrigir dados. Escolha um **Ano de ingresso** para ver e [exportar a turma](#ajuda-ingresso) em CSV ou PDF.
 
-<sub>Termos extras da busca: consulta somente leitura grava altera muda cadastro</sub>
+<sub>Termos extras da busca: o que da para fazer editar exportar lista ano ingresso ficha</sub>
 
 ## Como buscar {#ajuda-como-buscar}
 
@@ -105,6 +108,78 @@ Com o campo vazio, aparece quantos alunos foram carregados. Durante a busca, apa
 
 <sub>Termos extras da busca: contador quantos encontrados resultados alunos carregados total</sub>
 
+## Ficha do aluno e edição {#ajuda-ficha}
+
+### Abrir a ficha
+
+Clique no resultado (ou use Tab até ele e aperte Enter). A ficha mostra todas as informações do aluno no cadastro, inclusive as que não aparecem na lista. Para fechar, use **Fechar**, o × ou a tecla Esc.
+
+<sub>Termos extras da busca: abrir ficha clicar aluno detalhes todos os dados modal</sub>
+
+### Corrigir um dado
+
+1. Altere o campo; ele fica marcado e o rodapé mostra quantos campos mudaram.
+2. Clique em **Salvar alterações**.
+3. Espere "Alterações salvas na planilha." Só os campos que você mudou são gravados, e a lista de busca já passa a mostrar o dado novo.
+
+<sub>Termos extras da busca: editar corrigir alterar salvar mudar dados email nome numero</sub>
+
+### Quem pode editar
+
+Só quem é editor da planilha de alunos. Para as demais contas a ficha abre só para consulta, com um aviso no topo. Se precisar editar, peça acesso de editor ao responsável pelo cadastro.
+
+<sub>Termos extras da busca: quem pode editar permissao editor somente consulta nao consigo salvar campos bloqueados</sub>
+
+### Campos "somente leitura"
+
+Alguns campos, como o ID da Pasta, são usados por outros sistemas e não podem ser alterados por aqui. Eles aparecem com borda tracejada e a indicação "(somente leitura)".
+
+<sub>Termos extras da busca: somente leitura id da pasta bloqueado nao edita tracejado</sub>
+
+### Formatos aceitos
+
+Número USP: só dígitos. Ingresso: ano e semestre com barra, como 2024/1 ou 2024/2. E-mails: no formato nome@dominio. O nome não pode ficar vazio. Se algo estiver fora do formato, a ficha avisa e nada é gravado.
+
+<sub>Termos extras da busca: formato ingresso 2024/1 numero usp digitos email invalido regra</sub>
+
+## Filtrar por ingresso e exportar {#ajuda-ingresso}
+
+### Ver os alunos de um ano de ingresso
+
+Em **Ano de ingresso**, escolha o ano; a lista mostra todos os alunos que entraram nele, em ordem alfabética. O número entre parênteses é quantos alunos há naquele ano. Depois, se quiser, escolha o **Semestre** (1º ou 2º). O ano vem dos quatro primeiros dígitos do ingresso e o semestre do número depois da barra: 2024/1 é o 1º semestre de 2024.
+
+<sub>Termos extras da busca: ano de ingresso turma filtro combobox semestre 2024/1 lista do ano</sub>
+
+### Combinar com a busca
+
+O filtro de ingresso funciona junto com o texto digitado: escolha 2023 e digite "ana" para ver só as Anas que entraram em 2023. Para voltar a buscar em todos, escolha "Todos os anos".
+
+<sub>Termos extras da busca: combinar filtro busca texto nome ano juntos</sub>
+
+### Exportar em CSV
+
+**Exportar CSV** baixa um arquivo com nome, número USP, ingresso e os dois e-mails de todos os alunos da lista atual, não só dos 60 da tela. Ele abre no Excel ou no Google Planilhas; para montar uma lista de e-mails, copie a coluna eMail.
+
+<sub>Termos extras da busca: exportar csv excel planilha baixar download lista de emails comunicacao</sub>
+
+### Exportar em PDF
+
+**Exportar PDF** gera uma tabela com as mesmas colunas, em folha deitada, com título, quantidade e data. Pode levar alguns segundos; o botão mostra "Gerando PDF..." enquanto isso.
+
+<sub>Termos extras da busca: exportar pdf imprimir baixar documento relatorio</sub>
+
+### Aluno sem ingresso no filtro
+
+Quem está com o ingresso em branco ou fora do formato AAAA/S só aparece em "Todos os anos". Abra a ficha e corrija o ingresso para que ele entre no ano certo.
+
+<sub>Termos extras da busca: ingresso vazio sem ano formato diferente nao aparece no filtro</sub>
+
+### Cuidado com os arquivos exportados
+
+CSV e PDF contêm dados pessoais. Envie só para quem pediu e para a finalidade informada, prefira compartilhar pelo e-mail institucional e apague as cópias que não forem mais necessárias.
+
+<sub>Termos extras da busca: compartilhar arquivo exportado lgpd envio setor comunicacao cuidado</sub>
+
 ## Não encontrou o aluno? {#ajuda-nao-encontrei}
 
 ### Apareceu "Nenhum aluno encontrado..."
@@ -154,6 +229,18 @@ A página abriu, mas a lista não pôde ser lida. Causas comuns: uma falha momen
 Uma causa comum é estar conectado no navegador com outra conta Google. Entre com a sua conta institucional @usp.br (ou abra a página numa janela anônima e faça login só com ela) e abra o endereço de novo. Se o acesso continuar negado, peça liberação ao responsável pelo sistema.
 
 <sub>Termos extras da busca: conta google errada login usp.br nao foi possivel abrir o arquivo acesso negado permissao</sub>
+
+### "Sua conta não tem permissão para alterar a planilha de alunos"
+
+A sua conta não está entre os editores da planilha de alunos (acesso dado só por grupo também não conta). Você continua podendo consultar e exportar. Para editar, peça acesso de editor individual ao responsável pelo cadastro.
+
+<sub>Termos extras da busca: sua conta nao tem permissao alterar planilha salvar bloqueado editor</sub>
+
+### A exportação não baixou
+
+Confira se o navegador bloqueou o download (ícone na barra de endereço) e tente de novo. Listas muito grandes podem ser recusadas no PDF; filtre por ano ou semestre, ou use o CSV.
+
+<sub>Termos extras da busca: nao consegui gerar o pdf erro exportacao download nao baixou</sub>
 
 ## Uso responsável dos dados {#ajuda-privacidade}
 
@@ -205,7 +292,7 @@ A lista é carregada quando a página abre. Recarregue a página para incluir os
 
 ### Por que só aparecem 60 resultados? {#busca-faq-limite}
 
-Para manter a lista legível, a tela mostra no máximo 60 alunos. O total encontrado aparece embaixo do campo. Digite mais alguma coisa para chegar ao aluno certo.
+Para manter a lista legível, a tela mostra no máximo 60 alunos. O total encontrado aparece embaixo do campo. Digite mais alguma coisa para chegar ao aluno certo. A exportação em CSV ou PDF sempre inclui todos os encontrados.
 
 <sub>Termos extras da busca: 60 limite todos mostrar mais resultados lista completa</sub>
 
@@ -217,9 +304,9 @@ Selecione o texto no resultado e copie normalmente (Ctrl+C, ou Cmd+C no Mac). Co
 
 ### Encontrei um dado errado. Posso corrigir por aqui? {#busca-faq-corrigir}
 
-Não. Esta página só consulta. Informe a correção ao responsável pelo cadastro de alunos no Serviço de Graduação; depois que ele corrigir, recarregue a página.
+Sim, se a sua conta for editora da planilha de alunos: abra a ficha, altere o campo e clique em **Salvar alterações**. Se a ficha abrir só para consulta, informe a correção ao responsável pelo cadastro de alunos no Serviço de Graduação.
 
-<sub>Termos extras da busca: dado errado corrigir atualizar email nome errado desatualizado quem</sub>
+<sub>Termos extras da busca: dado errado corrigir atualizar email nome errado desatualizado quem editar</sub>
 
 ### Funciona no celular? {#busca-faq-celular}
 
@@ -232,3 +319,15 @@ Sim. Em telas estreitas, o número USP passa para uma linha própria embaixo do 
 Sim, se a **Aparência** estiver em **Sistema**: a página acompanha o modo claro/escuro do seu aparelho. Para fixar um dos dois, escolha **Claro** ou **Escuro**.
 
 <sub>Termos extras da busca: tema escuro mudou sozinho noite claro</sub>
+
+### Como tiro a lista de e-mails de uma turma? {#busca-faq-lista-emails}
+
+Escolha o ano (e, se quiser, o semestre) em **Ano de ingresso**, deixe o campo de busca vazio e clique em **Exportar CSV**. No arquivo, a coluna eMail tem o e-mail principal de cada aluno; a coluna eMail Secundario, o alternativo, quando houver.
+
+<sub>Termos extras da busca: lista emails setor comunicacao turma ano exportar</sub>
+
+### Apareceu "foi alterado por outra pessoa" ou "a planilha mudou". O que faço? {#busca-faq-conflito}
+
+Recarregue a página, abra o aluno de novo e refaça a alteração. A gravação é recusada quando a planilha mudou depois que você abriu a página ou a ficha, para que você não sobrescreva o trabalho de outra pessoa nem grave no aluno errado.
+
+<sub>Termos extras da busca: alguem mudou outra pessoa conflito planilha mudou recarregue erro salvar</sub>
