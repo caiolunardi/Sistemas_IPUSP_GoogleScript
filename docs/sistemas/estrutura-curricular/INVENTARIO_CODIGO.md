@@ -6,13 +6,13 @@
 |---|---|---|---|
 | [`Acesso.gs`](../../../sistemas/estrutura-curricular/src/Acesso.gs) | servidor | identificação e papéis no servidor | byte idêntico |
 | [`AuditoriaGrade.gs`](../../../sistemas/estrutura-curricular/src/AuditoriaGrade.gs) | servidor | auditoria, índices e acionadores | byte idêntico |
-| [`AuditoriaPainel.gs`](../../../sistemas/estrutura-curricular/src/AuditoriaPainel.gs) | servidor | agregação de consulta/auditoria | byte idêntico |
-| [`Codigo.gs`](../../../sistemas/estrutura-curricular/src/Codigo.gs) | servidor | doGet, include_ e versão | somente versão |
+| [`AuditoriaPainel.gs`](../../../sistemas/estrutura-curricular/src/AuditoriaPainel.gs) | servidor | agregação de consulta/auditoria; (1.11.0) nome de quem aparece e `diagnosticarNomesAuditoria` | alterado na 1.11.0 |
+| [`Codigo.gs`](../../../sistemas/estrutura-curricular/src/Codigo.gs) | servidor | doGet, include_ e versão | somente versão (1.11.0) |
 | [`Configuracao.gs`](../../../sistemas/estrutura-curricular/src/Configuracao.gs) | servidor | propriedades, ID_INDEX e diagnóstico | byte idêntico |
 | [`Consulta.gs`](../../../sistemas/estrutura-curricular/src/Consulta.gs) | servidor | payload consistente do painel | byte idêntico |
 | [`EnvioGrade.gs`](../../../sistemas/estrutura-curricular/src/EnvioGrade.gs) | servidor | assinatura de conteúdo, backup e envio | byte idêntico |
 | [`Esquema.gs`](../../../sistemas/estrutura-curricular/src/Esquema.gs) | servidor | abas, colunas, formatos e preparação | byte idêntico |
-| [`EstruturaAjuda.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjuda.html) | página | conteúdo estático da Central | byte idêntico |
+| [`EstruturaAjuda.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjuda.html) | página | conteúdo estático da Central | (1.11.0) item "Nome de quem aparece" |
 | [`EstruturaAjudaEstilos.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjudaEstilos.html) | página | aparência da Central | byte idêntico |
 | [`EstruturaAjudaUI.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjudaUI.html) | página | busca, FAQ, foco e fechamento da Central | byte idêntico |
 | [`EstruturaIcones.html`](../../../sistemas/estrutura-curricular/src/EstruturaIcones.html) | página | 12 ícones Lucide e licença | novo, apresentação |
@@ -31,8 +31,8 @@
 | [`LeitorPdfFontes.html`](../../../sistemas/estrutura-curricular/src/LeitorPdfFontes.html) | página | PDF.js/OCR, modelo, integridade e progresso | byte idêntico |
 | [`Painel.html`](../../../sistemas/estrutura-curricular/src/Painel.html) | página | composição da página e includes | composição visual |
 | [`PainelApp.html`](../../../sistemas/estrutura-curricular/src/PainelApp.html) | página | dados, filtros, listas, fichas e pilha de modais | byte idêntico |
-| [`PainelAuditoria.html`](../../../sistemas/estrutura-curricular/src/PainelAuditoria.html) | página | consultas e vistas de auditoria | byte idêntico |
-| [`PainelEstilos.html`](../../../sistemas/estrutura-curricular/src/PainelEstilos.html) | página | CSS funcional existente | byte idêntico |
+| [`PainelAuditoria.html`](../../../sistemas/estrutura-curricular/src/PainelAuditoria.html) | página | consultas e vistas de auditoria | (1.11.0) nome, vínculo e e-mail das pessoas |
+| [`PainelEstilos.html`](../../../sistemas/estrutura-curricular/src/PainelEstilos.html) | página | CSS funcional existente | (1.11.0) estilos da pessoa na auditoria |
 | [`PainelImportacao.html`](../../../sistemas/estrutura-curricular/src/PainelImportacao.html) | página | leitura/conferência/prévia/gravação no cliente | byte idêntico |
 | [`PainelPreparacao.html`](../../../sistemas/estrutura-curricular/src/PainelPreparacao.html) | página | etapas, edição, lotes, Outros e envio | byte idêntico |
 | [`Planilha.gs`](../../../sistemas/estrutura-curricular/src/Planilha.gs) | servidor | leitura/escrita por título de coluna | byte idêntico |

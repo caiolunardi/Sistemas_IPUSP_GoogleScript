@@ -33,6 +33,14 @@ const ADMIN = 'dono@unidade.example';
 const LEITOR = 'prof.comissao@unidade.example';
 const SEC_PSA = 'secretaria.psa@usp.example';
 const SEC_PSE = 'secretaria.pse@usp.example';
+// (1.11.0) Cadastros de pessoas (fictícios): SEC_PSA é servidora; SEC_PSE é docente (e-mail em maiúsculas no cadastro).
+const ALUNO = 'aluno.ficticio@usp.example';
+const INTRUSO = 'desconhecido@usp.example';
+const CADASTROS = {
+  servidores: [[SEC_PSA, 'Servidora Fictícia Um', 'Secretaria do PSA'], ['outra.pessoa@usp.example', 'Outra Pessoa Fictícia', 'Setor X']],
+  docentes: [['  ' + SEC_PSE.toUpperCase() + ' ', 'Docente Fictícia Dois'], [SEC_PSA, 'Homônimo que não deve vencer']],
+  alunos: [['principal@usp.example', 'Aluno Fictício Três', ALUNO]]
+};
 
 function contagens(amb, sem) {
   const g = amb.ctx.linhasDaGrade_(amb.ctx.contextoPreparacao_(amb.estrutura()), sem);
@@ -50,8 +58,12 @@ function comPrevia(a, semestre, ano, esperado) {
 }
 const enviar = (amb, sem, ano) => pedir(amb.ctx.enviarGradeParaPreenchimento(comPrevia(amb, sem, ano, contagens(amb, sem))));
 
-/** Base importada, grade 2027/1 enviada, auditoria ativa e algumas edições das secretarias. */
-function ambiente(nEdicoesExtras) {
+/**
+ * Base importada, grade 2027/1 enviada, auditoria ativa e algumas edições das secretarias.
+ * (1.11.0) op: { cadastros (padrão CADASTROS; null = sem chaves), semChaves, aberturasExtras: [email] }.
+ */
+function ambiente(nEdicoesExtras, op) {
+  op = op || {};
   const amb = criarAmbiente({ dirSrc: DIR_SRC, agora: new Date('2026-10-04T12:00:00Z'), usuario: ADMIN, dono: ADMIN, permissoes: [[LEITOR, 'LEITOR']] });
   amb.ctx.obterDadosPainel();
   const prev = amb.ctx.prepararImportacao(JSON.parse(JSON.stringify(csvBase)));
@@ -80,7 +92,8 @@ function ambiente(nEdicoesExtras) {
   for (let i = 0; i < (nEdicoesExtras || 0); i++) editar('PSE', 5, 18, 'obs ' + i, SEC_PSE, i ? 'obs ' + (i - 1) : undefined);
   // 1.8.0: aberturas da planilha das secretarias (acionador de abertura)
   const abrir = (email) => amb.ctx.registrarAberturaGrade({ source: g, user: { getEmail: () => email } });
-  [SEC_PSA, SEC_PSE, SEC_PSA, SEC_PSA].forEach(abrir);
+  [SEC_PSA, SEC_PSE, SEC_PSA, SEC_PSA].concat(op.aberturasExtras || []).forEach(abrir);
+  if (op.cadastros !== null) amb.criarCadastrosPessoas(Object.assign({}, op.cadastros || CADASTROS, { semChaves: op.semChaves || [] }));
   return amb;
 }
 
@@ -163,6 +176,67 @@ function ambiente(nEdicoesExtras) {
     verdade(!/@/.test(logs), logs.slice(0, 300));
   });
 
+  console.log('\n== Servidor: nome de quem aparece na auditoria (1.11.0)');
+  await teste('(1.11.0) servidores → docentes → alunos: nome, vínculo e setor; e-mail comparado sem maiúsculas e espaços; o primeiro cadastro vence', () => {
+    const a = ambiente(0, { aberturasExtras: [ALUNO, INTRUSO] });
+    a.trocarUsuario(LEITOR);
+    const d = pedir(a.ctx.obterAuditoriaGrade({}));
+    igual(d.identificacao.indisponiveis, []);
+    igual(d.identificacao.pessoas[SEC_PSA], { nome: 'Servidora Fictícia Um', vinculo: 'servidor', setor: 'Secretaria do PSA' }, 'servidor (o homônimo nos docentes não vence)');
+    igual(d.identificacao.pessoas[SEC_PSE], { nome: 'Docente Fictícia Dois', vinculo: 'docente', setor: '' }, 'docente, e-mail em maiúsculas e com espaços no cadastro');
+    igual(d.identificacao.pessoas[ALUNO], { nome: 'Aluno Fictício Três', vinculo: 'aluno', setor: '' }, 'aluno pelo e-mail secundário (coluna E)');
+    igual(d.identificacao.pessoas[INTRUSO], { nome: '', vinculo: 'nao_cadastrado', setor: '' }, 'fora dos três cadastros');
+    verdade(!JSON.stringify(d).includes('Outra Pessoa Fictícia') && !JSON.stringify(d).includes('principal@usp.example'), 'só vão ao navegador as pessoas que aparecem na auditoria');
+    verdade(!/ID_(SERVIDORES|DOCENTES|ALUNOS)_TESTE/.test(JSON.stringify(d)), 'sem IDs dos cadastros');
+    ev('[nomes] ' + Object.keys(d.identificacao.pessoas).length + ' pessoas identificadas: ' + Object.values(d.identificacao.pessoas).map((p) => p.vinculo).join(', '));
+  });
+  await teste('(1.11.0) cadastro de alunos sem chave no ID_INDEX: só é procurado se falta alguém; quem falta fica "sem confirmação" (não "não cadastrado") e o aviso diz qual cadastro não abriu; sem e-mails nem IDs no registro', () => {
+    const todos = ambiente(0, { semChaves: ['PLANILHA_ALUNOS'] });
+    todos.trocarUsuario(LEITOR);
+    const d1 = pedir(todos.ctx.obterAuditoriaGrade({}));
+    igual([d1.identificacao.indisponiveis, Object.keys(d1.identificacao.pessoas).sort()], [[], [SEC_PSA, SEC_PSE].sort()], 'todos achados antes dos alunos: sem aviso');
+    const a = ambiente(0, { semChaves: ['PLANILHA_ALUNOS'], aberturasExtras: [INTRUSO] });
+    a.trocarUsuario(LEITOR);
+    const d = pedir(a.ctx.obterAuditoriaGrade({}));
+    igual(d.identificacao.indisponiveis, ['alunos']);
+    verdade(!(INTRUSO in d.identificacao.pessoas), 'sem confirmação: fora do mapa');
+    igual(d.identificacao.pessoas[SEC_PSA].vinculo, 'servidor');
+    const logs = a.estado.logs.concat(a.estado.erros).join('\n');
+    verdade(/identificarPessoas_ PLANILHA_ALUNOS/.test(logs) && !/@/.test(logs) && !/ID_[A-Z]+_TESTE/.test(logs), logs.slice(0, 300));
+    // a chave volta: na próxima leitura o intruso é confirmado como não cadastrado
+    a.planilhas.get('ID_INDEX_TESTE').getSheets()[0].appendRow(['PLANILHA_ALUNOS', 'spreadsheet', 'ID_ALUNOS_TESTE', '', '']);
+    const d2 = pedir(a.ctx.obterAuditoriaGrade({}));
+    igual([d2.identificacao.indisponiveis, d2.identificacao.pessoas[INTRUSO].vinculo], [[], 'nao_cadastrado']);
+  });
+  await teste('(1.11.0) sem nenhum cadastro configurado: o painel abre; todos "sem confirmação", com os três cadastros no aviso', () => {
+    const a = ambiente(0, { cadastros: null });
+    a.trocarUsuario(LEITOR);
+    const d = pedir(a.ctx.obterAuditoriaGrade({}));
+    igual([d.identificacao.indisponiveis, d.identificacao.pessoas], [['servidores', 'docentes', 'alunos'], {}]);
+    igual(d.pessoas.length, 2, 'o resto da auditoria continua');
+  });
+  await teste('(1.11.0) nome em cache por 10 min: a segunda leitura não depende dos cadastros', () => {
+    const a = ambiente(0);
+    a.trocarUsuario(LEITOR);
+    pedir(a.ctx.obterAuditoriaGrade({}));
+    const idx = a.planilhas.get('ID_INDEX_TESTE').getSheets()[0];
+    for (let r = 2; r <= idx.getLastRow(); r++) if (/^(SERVIDORES|PLANILHA_DOCENTES|PLANILHA_ALUNOS)$/.test(String(idx.get(r, 1)))) idx.set(r, 1, 'REMOVIDA');
+    const d = pedir(a.ctx.obterAuditoriaGrade({}));
+    igual([d.identificacao.indisponiveis, d.identificacao.pessoas[SEC_PSE].nome], [[], 'Docente Fictícia Dois']);
+  });
+  await teste('(1.11.0) diagnosticarNomesAuditoria: títulos das colunas usadas e número de linhas, sem nomes, e-mails nem IDs', () => {
+    const a = ambiente(0, { semChaves: ['PLANILHA_DOCENTES'] });
+    a.trocarUsuario(ADMIN);
+    const r = pedir(a.ctx.diagnosticarNomesAuditoria());
+    igual(r.map((x) => [x.chave, x.aberta]), [['SERVIDORES', true], ['PLANILHA_DOCENTES', false], ['PLANILHA_ALUNOS', true]]);
+    igual([r[0].titulos, r[0].linhas], [{ A: 'E-MAIL', B: 'NOME', C: 'SETOR' }, 2]);
+    igual(r[2].titulos, { D: 'eMail', E: 'eMail Secundario', B: 'Nome do Aluno' });
+    const texto = JSON.stringify(r) + a.estado.logs.join('\n');
+    verdade(!/@/.test(texto) && !/Fictíci/.test(texto) && !/ID_[A-Z]+_TESTE/.test(texto), texto.slice(0, 300));
+    a.trocarUsuario(LEITOR);
+    igual(a.ctx.diagnosticarNomesAuditoria().codigo, 'SO_ADMIN');
+  });
+
   console.log('\n== Interface (Chromium)');
   const nav = await abrirNavegador();
   try {
@@ -185,6 +259,9 @@ function ambiente(nEdicoesExtras) {
       igual(await pagina.getAttribute('[data-aud-aba="PSA"]', 'aria-pressed'), 'true');
       const primeira = await pagina.textContent('#audTabelaAba tbody tr');
       verdade(/SIM/.test(primeira) && /Docente Fictício Um/.test(primeira) && /Quarta-Feira/.test(primeira) && /08:00/.test(primeira) && new RegExp(SEC_PSA).test(primeira), primeira);
+      // (1.11.0) última edição: nome em destaque, setor · e-mail e a data embaixo
+      igual(await pagina.$$eval('#audTabelaAba tbody tr:first-child td[data-rotulo="Última edição"] .pessoaAud > span', (t) => t.map((x) => x.textContent)),
+        ['Servidora Fictícia Um', 'Secretaria do PSA · ' + SEC_PSA, '04/10/2026 11:00:00']);
       await pagina.click('[data-aud-aba="PSE"]');
       igual(await pagina.getAttribute('[data-aud-aba="PSE"]', 'aria-pressed'), 'true');
       verdade(/NÃO/.test(await pagina.textContent('#audTabelaAba tbody tr')), 'PSE');
@@ -195,19 +272,21 @@ function ambiente(nEdicoesExtras) {
       verdade(/NÃO\s*Aguardando Justificativa/.test(await pagina.textContent('#audTabelaAba tbody tr')), 'selo na tabela da aba');
       const linhas = await pagina.$$eval('#audNaoTitulo ~ .tabelaScroll tbody tr', (t) => t.map((x) => Array.from(x.cells).map((c) => c.textContent.trim())));
       igual(linhas.length, 1);
-      verdade(/^PSE\d{4}/.test(linhas[0][0]) && linhas[0][1] === 'PSE' && linhas[0][2].indexOf(SEC_PSE) >= 0 && linhas[0][3] === 'Aguardando Justificativa', JSON.stringify(linhas));
+      verdade(/^PSE\d{4}/.test(linhas[0][0]) && linhas[0][1] === 'PSE' && linhas[0][2].indexOf(SEC_PSE) >= 0 && linhas[0][2].indexOf('Docente Fictícia Dois') === 0 && /Docente · /.test(linhas[0][2]) && linhas[0][3] === 'Aguardando Justificativa', JSON.stringify(linhas));
       verdade(/\(1\)/.test(await pagina.textContent('#audNaoTitulo')));
     });
     await teste('(1.8.0) gráficos "Quem mais abre a planilha" e "Quem mais edita": barras do maior para o menor, valores em texto; "ver edições" filtra a lista', async () => {
-      const ab = await pagina.$$eval('#audGrafAberturas .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__valor').firstChild.textContent, x.querySelector('.graficoBarras__barra').style.width]));
-      igual(ab, [[SEC_PSA, '3', '100%'], [SEC_PSE, '1', '33%']]);
+      const ab = await pagina.$$eval('#audGrafAberturas .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__quem').textContent, x.querySelector('.graficoBarras__valor').firstChild.textContent, x.querySelector('.graficoBarras__barra').style.width]));
+      igual(ab, [['Servidora Fictícia Um', 'Secretaria do PSA · ' + SEC_PSA, '3', '100%'], ['Docente Fictícia Dois', 'Docente · ' + SEC_PSE, '1', '33%']], '(1.11.0) nome; embaixo, vínculo · e-mail');
       verdade(/4 aberturas/.test(await pagina.textContent('#audGrafAberturasTitulo')));
       const ed = await pagina.$$eval('#audGrafEdicoes .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__valor').firstChild.textContent]));
-      igual(ed, [[SEC_PSE, '61'], [SEC_PSA, '5']]);
+      igual(ed, [['Docente Fictícia Dois', '61'], ['Servidora Fictícia Um', '5']]);
       verdade(/66 edições/.test(await pagina.textContent('#audGrafEdicoesTitulo')));
       await pagina.click('[data-aud-pessoa="' + SEC_PSA + '"]');
       verdade(/^5 de \d+ edições/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
       igual(await pagina.inputValue('#audFiltroPessoa'), SEC_PSA);
+      igual(await pagina.$$eval('#audFiltroPessoa option', (o) => o.map((x) => x.textContent)),
+        ['Todas', 'Docente Fictícia Dois (Docente · ' + SEC_PSE + ')', 'Servidora Fictícia Um (Secretaria do PSA · ' + SEC_PSA + ')'], '(1.11.0) filtro pelo nome, valor = e-mail');
     });
     await teste('edições: busca sem acento, filtros, "Mostrar mais" de 50 em 50, limpar filtros', async () => {
       await pagina.click('[data-aud-limpar]');
@@ -220,8 +299,13 @@ function ambiente(nEdicoesExtras) {
       await pagina.fill('#audBusca', 'quarta');
       verdade(/^1 de/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
       verdade(/Terça-Feira\s*→\s*depois: Quarta-Feira|Terça-Feira.*Quarta-Feira/.test(await pagina.textContent('#audListaEdicoes tbody tr')), 'mudança antes → depois');
-      await pagina.fill('#audBusca', 'docente ficticio');
+      await pagina.fill('#audBusca', 'docente ficticio um');
       verdade(/^1 de/.test(await pagina.textContent('#audContagem')), 'busca sem acento');
+      await pagina.fill('#audBusca', 'servidora ficticia');
+      verdade(/^5 de/.test(await pagina.textContent('#audContagem')), '(1.11.0) busca pelo nome: ' + await pagina.textContent('#audContagem'));
+      await pagina.fill('#audBusca', 'secretaria do psa');
+      verdade(/^5 de/.test(await pagina.textContent('#audContagem')), '(1.11.0) busca pelo setor');
+      igual(await pagina.$eval('#audListaEdicoes tbody tr td[data-rotulo="Quem"] .pessoaAud__nome', (x) => x.textContent), 'Servidora Fictícia Um', '(1.11.0) coluna Quem com o nome');
       await pagina.fill('#audBusca', '');
       await pagina.selectOption('#audFiltroOrigem', 'Sistema');
       verdade(/^[23] de/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
@@ -270,7 +354,7 @@ function ambiente(nEdicoesExtras) {
       const piores = [];
       for (const tema of ['light', 'dark']) {
         for (const largura of [360, 768, 1280]) {
-          const ambV = ambiente(3);
+          const ambV = ambiente(3, { aberturasExtras: [INTRUSO] });
           ambV.trocarUsuario(LEITOR);
           const { pagina: pg, errosPagina: erros, contexto } = await abrirPainel(nav, { amb: ambV, largura, altura: 900, esquema: tema, latencia: 0 });
           await esperarCarregado(pg);
@@ -283,7 +367,8 @@ function ambiente(nEdicoesExtras) {
             const razao = (el) => { const a = lum(cor(getComputedStyle(el).color)), b = lum(fundo(el)); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
             const alvos = ['.visoes__botao[aria-selected="true"]', '.visoes__botao[aria-selected="false"]', '#auditoriaSubtitulo', '.auditoriaAba[aria-pressed="true"] .medida__rotulo', '.auditoriaAba[aria-pressed="false"] .medida__valor',
               '.auditoriaAba__total', '.tabelaAuditoria .texto-suave', '[data-aud-historico]', '.mudanca__antes', '.mudanca__depois', '#audContagem', '.linkDisciplina',
-              '.auditoriaAba__nao', '.seloJustificativa', '.graficoBarras__nome', '.graficoBarras__detalhe', '.graficoBarras__valor', '.graficoBarras__acao'];
+              '.auditoriaAba__nao', '.seloJustificativa', '.graficoBarras__nome', '.graficoBarras__detalhe', '.graficoBarras__valor', '.graficoBarras__acao',
+              '.graficoBarras__quem', '.pessoaAud__nome', '.pessoaAud__detalhe', '.seloPessoaNaoCadastrada'];
             // barra do gráfico contra o fundo do cartão: ≥ 3:1 (elemento gráfico)
             const barra = document.querySelector('.graficoBarras__barra');
             const lb = lum(cor(getComputedStyle(barra).backgroundColor)), lf = lum(fundo(barra.parentElement));
@@ -307,6 +392,34 @@ function ambiente(nEdicoesExtras) {
       ev('[visual] menor contraste: ' + piores.slice(0, 3).map((p) => p.join(' ') + ':1').join(' | '));
     });
     await pagina.context().close();
+
+    await teste('(1.11.0) pessoa fora dos cadastros: "Pessoa não cadastrada com acesso" com selo "Atenção" e o e-mail embaixo; cadastro indisponível: aviso "Nomes incompletos" e "nome não verificado"', async () => {
+      const a = ambiente(0, { aberturasExtras: [INTRUSO], semChaves: ['PLANILHA_ALUNOS'] });
+      a.trocarUsuario(LEITOR);
+      const r = await abrirPainel(nav, { amb: a, largura: 1280, altura: 900, latencia: 0 });
+      await esperarCarregado(r.pagina);
+      await r.pagina.click('#visao-auditoria');
+      await r.pagina.waitForSelector('.auditoriaAba');
+      const aviso = await r.pagina.textContent('#auditoriaConteudo .alerta--aviso');
+      verdade(/Nomes incompletos/.test(aviso) && /cadastro de alunos/.test(aviso), aviso);
+      const intruso = await r.pagina.$$eval('#audGrafAberturas .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, (x.querySelector('.graficoBarras__quem') || {}).textContent]));
+      verdade(intruso.some((x) => x[0] === INTRUSO && x[1] === 'nome não verificado'), 'sem confirmação: o e-mail no lugar do nome ' + JSON.stringify(intruso));
+      await r.pagina.context().close();
+
+      const b = ambiente(0, { aberturasExtras: [INTRUSO, INTRUSO] });
+      b.trocarUsuario(LEITOR);
+      const r2 = await abrirPainel(nav, { amb: b, largura: 1280, altura: 900, latencia: 0 });
+      await esperarCarregado(r2.pagina);
+      await r2.pagina.click('#visao-auditoria');
+      await r2.pagina.waitForSelector('.auditoriaAba');
+      verdade(!(await r2.pagina.$('#auditoriaConteudo .alerta--aviso')), 'sem aviso com os três cadastros lidos');
+      const item = await r2.pagina.$$eval('#audGrafAberturas .graficoBarras__item--naoCadastrada', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__quem').textContent, x.getAttribute('title')]));
+      igual(item.length, 1);
+      igual(item[0].slice(0, 2), ['Pessoa não cadastrada com acesso Atenção', INTRUSO]);
+      verdade(item[0][2].indexOf('Pessoa não cadastrada com acesso (' + INTRUSO + '): 2 aberturas') === 0, item[0][2]);
+      igual(r2.errosPagina, []);
+      await r2.pagina.context().close();
+    });
 
     const amb3 = ambiente(0);
     const r3 = await abrirPainel(nav, { amb: amb3, largura: 1280, altura: 900, latencia: 0 });

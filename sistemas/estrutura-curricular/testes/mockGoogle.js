@@ -442,7 +442,10 @@ function montarContexto(o, estado, planilhas, props) {
     // na leitura de todas: getProperties/getKeys) e os limites do Google: 9 KB por valor e 500 KB
     // no total (chaves + valores).
     PropertiesService: { getScriptProperties: () => propriedadesDoScript(estado, props) },
-    CacheService: { getScriptCache: () => ({ get: (k) => (cache.has(k) ? cache.get(k) : null), put: (k, v) => { cache.set(k, String(v)); }, remove: (k) => cache.delete(k) }) },
+    CacheService: { getScriptCache: () => ({ get: (k) => (cache.has(k) ? cache.get(k) : null), put: (k, v) => { cache.set(k, String(v)); }, remove: (k) => cache.delete(k),
+      // (1.11.0) getAll/putAll, como no Apps Script (nome da pessoa na auditoria)
+      getAll: (ks) => { const r = {}; ks.forEach((k) => { if (cache.has(k)) r[k] = cache.get(k); }); return r; },
+      putAll: (m) => { Object.keys(m).forEach((k) => cache.set(k, String(m[k]))); } }) },
     // (1.8.11) hasLock por objeto (como Lock.hasLock: true depois de um tryLock bem-sucedido nesse
     // objeto, até o releaseLock). O modelo de PROPRIEDADE entre execuções (A/B, liberação antecipada,
     // ocupação) fica na suíte da etapa 7 (testar_etapa7_trava_auditoria.js), que troca o LockService.
@@ -491,6 +494,29 @@ function montarContexto(o, estado, planilhas, props) {
      * com as três chaves no ID_INDEX. opcoes: { nome, semAba, cabecalhoErrado, semChaves: [] }.
      */
     criarPlanilhaGrade: (op) => criarPlanilhaGrade(estado, planilhas, op || {}),
+    /**
+     * (1.11.0) Cadastros de pessoas (nome na auditoria), com as chaves no ID_INDEX:
+     * SERVIDORES (A e-mail, B nome, C setor), PLANILHA_DOCENTES e PLANILHA_ALUNOS
+     * (B nome, D e-mail; alunos: E e-mail secundário). Dados fictícios.
+     * op: { servidores: [[email, nome, setor]], docentes: [[email, nome]], alunos: [[email, nome, email2]], semChaves: [] }
+     */
+    criarCadastrosPessoas: (op) => {
+      op = op || {};
+      const idx = planilhas.get('ID_INDEX_TESTE').getSheets()[0];
+      const fontes = [
+        ['SERVIDORES', 'ID_SERVIDORES_TESTE', ['E-MAIL', 'NOME', 'SETOR'], (op.servidores || []).map(([e, n, st]) => [e, n, st || ''])],
+        ['PLANILHA_DOCENTES', 'ID_DOCENTES_TESTE', ['N. USP', 'Nome', 'Departamento', 'E-mail'], (op.docentes || []).map(([e, n], i) => [String(9000 + i), n, 'Depto Fictício', e])],
+        ['PLANILHA_ALUNOS', 'ID_ALUNOS_TESTE', ['Número USP', 'Nome do Aluno', 'Ingresso', 'eMail', 'eMail Secundario'], (op.alunos || []).map(([e, n, e2], i) => [String(8000 + i), n, '2026/1', e, e2 || ''])]
+      ];
+      fontes.forEach(([chave, id, cab, linhas]) => {
+        const ss = new Spreadsheet(estado, id, o.dono, 'Cadastro ' + chave);
+        const aba = ss.insertSheet('Página1');
+        aba.getRange(1, 1, 1, cab.length).setValues([cab]);
+        linhas.forEach((l) => aba.appendRow(l));
+        planilhas.set(id, ss);
+        if (!(op.semChaves || []).includes(chave)) idx.appendRow([chave, 'spreadsheet', id, '', '']);
+      });
+    },
     grade: () => planilhas.get('ID_GRADE_TESTE'),
     indiceGrades: () => planilhas.get('ID_INDICE_GRADES_TESTE'),
     fotografia: () => fotografarPersistencia(estado, planilhas, props),

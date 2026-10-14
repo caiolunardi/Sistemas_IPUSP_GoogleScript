@@ -561,8 +561,9 @@ p.campoFicha__dica { margin: 8px 0 0; }
 .graficoBarras__total { font-weight: normal; font-size: 13px; color: var(--gradip-text-muted); }
 .graficoBarras__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .graficoBarras__item { display: grid; gap: 4px; min-width: 0; }
-.graficoBarras__rotulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
-.graficoBarras__nome { font-size: 14px; overflow-wrap: anywhere; }
+.graficoBarras__rotulo { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.graficoBarras__nome { font-size: 14px; font-weight: bold; overflow-wrap: anywhere; }
+.graficoBarras__quem { font-size: 12.5px; color: var(--gradip-text-muted); overflow-wrap: anywhere; }
 .graficoBarras__detalhe { font-size: 12.5px; color: var(--gradip-text-muted); }
 .graficoBarras__acao { min-height: 0; padding: 0 2px; font-size: 12.5px; }
 .graficoBarras__linha { display: flex; align-items: center; gap: 8px; }
@@ -571,6 +572,13 @@ p.campoFicha__dica { margin: 8px 0 0; }
 .graficoBarras__valor { flex: 0 0 auto; min-width: 3ch; font-weight: bold; font-size: 14px; text-align: right; font-variant-numeric: tabular-nums; }
 .graficoBarras__vazio { margin: 0; }
 @media (forced-colors: active) { .graficoBarras__barra { background: CanvasText; } }
+/* (1.11.0) Pessoa na auditoria: nome em destaque; embaixo, vínculo · e-mail (e a data, quando há).
+   Fora dos cadastros: selo "Atenção" (texto, não só cor) nos tokens de perigo. */
+.pessoaAud { display: inline-flex; flex-direction: column; gap: 1px; min-width: 0; max-width: 100%; vertical-align: top; }
+.pessoaAud__nome { font-weight: bold; overflow-wrap: anywhere; }
+.pessoaAud__detalhe { font-size: 12.5px; color: var(--gradip-text-muted); overflow-wrap: anywhere; }
+@media (min-width: 769px) { .tabelaAuditoria td.celPessoa { min-width: 220px; } }
+.seloPessoaNaoCadastrada { padding: 1px 8px; font-size: 12px; font-weight: bold; vertical-align: 1px; background: var(--gradip-danger-bg); border-color: var(--gradip-danger-border); color: var(--gradip-danger); }
 
 @media (max-width: 768px) {
   .cabecalho { padding: 8px 14px; }

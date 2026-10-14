@@ -706,9 +706,17 @@ A forma de consulta é este painel: não há link nem endereço da planilha de a
 - Aberturas só são registradas no navegador; o aplicativo do celular não registra aberturas. E-mails só aparecem para contas USP; os demais aparecem como não identificados.
 - Não são medida de produtividade nem prova de ausência de trabalho: uma pessoa pode preencher pelos colegas, combinar por outro meio ou abrir o arquivo de um jeito que não é registrado.
 
+### Nome de quem aparece {#ajuda-auditoria-pessoas}
+
+- Em toda a auditoria (última edição, "Marcada por", gráficos, filtro de pessoa e lista de edições), cada pessoa aparece com o **nome** em destaque e, embaixo, o **setor** (servidores), "Docente" ou "Aluno(a)", junto com o **e-mail**.
+- O nome vem dos cadastros do Serviço de Graduação, nesta ordem: servidores, docentes e alunos.
+- **"Pessoa não cadastrada com acesso"**, com o selo **"Atenção"**: o e-mail não está em nenhum dos três cadastros. Confira quem é e se essa pessoa deveria ter acesso à planilha das secretarias.
+- **"nome não verificado"**: um dos cadastros não pôde ser consultado naquele momento (o painel avisa no topo). Clique em "Atualizar" mais tarde; se continuar, avise o Serviço de Graduação.
+- Um cadastro novo ou corrigido pode levar até 10 minutos para aparecer aqui.
+
 ### Edições: busca, filtros e limites {#ajuda-auditoria-edicoes}
 
-- A lista vai da edição mais recente para a mais antiga, 50 por vez ("Mostrar mais"). Há busca (código, disciplina, docente, campo, e-mail…) e filtros por aba, pessoa e origem.
+- A lista vai da edição mais recente para a mais antiga, 50 por vez ("Mostrar mais"). Há busca (código, disciplina, docente, campo, nome, e-mail…) e filtros por aba, pessoa e origem.
 - **Origem**: "Secretaria" são edições feitas na planilha; "Sistema" são eventos do próprio sistema, como o envio da grade e o encerramento de um semestre.
 - No máximo as **5.000 edições mais recentes** são carregadas; quando há mais, a contagem avisa ("as 5.000 mais recentes de …"). A lista e o histórico mostram o que foi carregado, não necessariamente tudo desde o início.
 - Colagens geram uma linha por célula, sem o valor anterior; colagens muito grandes viram uma linha-resumo. Mudanças feitas pela própria planilha (como apagar dia e início por conflito) e mudanças só de formatação não aparecem.
@@ -1352,6 +1360,7 @@ Cada botão "?" abre a Central no destino indicado (`data-gradip-help-open`). Os
 | `PainelAuditoria.html` | O que "Aguardando Justificativa" quer dizer | `ajuda-auditoria-justificativas` |
 | `PainelAuditoria.html` | O que os gráficos mostram | `ajuda-auditoria-graficos` |
 | `PainelAuditoria.html` | Busca, origem e limite de edições | `ajuda-auditoria-edicoes` |
+| `PainelAuditoria.html` | Como os nomes são encontrados (gráficos e aviso de nomes incompletos) | `ajuda-auditoria-pessoas` |
 
 ## Revisão editorial (1.9.0)
 

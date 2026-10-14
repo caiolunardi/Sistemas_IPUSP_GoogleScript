@@ -17,6 +17,12 @@
                     quem mais edita (no lugar da tabela "Quem editou").
     Edições         linha do tempo com busca e filtros.
     Histórico       janela com todas as edições de uma disciplina.
+
+  (1.11.0) Pessoas: a auditoria grava o e-mail; o servidor manda também o
+  nome (cadastro de servidores, docentes ou alunos — identificacao). Onde
+  havia só o e-mail, aparece o nome em destaque e, embaixo, o setor,
+  "Docente" ou "Aluno(a)" e o e-mail. Fora dos cadastros: "Pessoa não
+  cadastrada com acesso", com selo de atenção.
 =====================================================================*/
 var Auditoria = (function () {
   'use strict';
@@ -121,10 +127,20 @@ var Auditoria = (function () {
     html += d.andamento ? htmlNaoOferecidas() + htmlPreenchimento() :
       '<div class="alerta alerta--info"><div class="alerta__titulo">Grade encerrada</div><p>A grade de ' + esc(rotuloSemestre(d.semestre)) +
       ' não está mais em preenchimento: a situação final dela está na cópia de segurança feita no envio da grade seguinte. Abaixo, todas as edições registradas.</p>' + gatilho('ajuda-auditoria-anteriores', 'Sobre as grades anteriores') + '</div>';
+    html = htmlAvisoCadastros() + html;
     html += htmlGraficos();
     html += htmlEdicoes();
     $('auditoriaConteudo').innerHTML = html;
     sincronizarFiltros();
+  }
+
+  /** (1.11.0) Algum cadastro de pessoas não abriu: quem não foi achado nos outros aparece só com o e-mail. */
+  function htmlAvisoCadastros() {
+    var ind = est.dados.identificacao && est.dados.identificacao.indisponiveis;
+    if (!ind || !ind.length) return '';
+    var nomes = ind.length === 1 ? ind[0] : ind.slice(0, -1).join(', ') + ' e ' + ind[ind.length - 1];
+    return '<div class="alerta alerta--aviso" role="status"><div class="alerta__titulo">Nomes incompletos</div><p>Não foi possível consultar o cadastro de ' + esc(nomes) +
+      '. Quem não foi encontrado nos outros cadastros aparece só com o e-mail, como "nome não verificado".</p>' + gatilho('ajuda-auditoria-pessoas', 'Como os nomes são encontrados') + '</div>';
   }
 
   /** Última edição de secretaria por código de disciplina: { codigo: linha }. */
@@ -137,6 +153,39 @@ var Auditoria = (function () {
   }
 
   function preenchido(v) { return String(v || '').trim() !== ''; }
+
+  /**
+   * (1.11.0) Quem é o e-mail registrado na auditoria.
+   * estado: 'cadastrada' | 'nao_cadastrada' (lido nos três cadastros, não
+   * achado) | 'sem_confirmacao' (algum cadastro não abriu) | 'sem_email'.
+   */
+  function pessoa(email) {
+    var e = String(email || '').trim();
+    if (!e || e.indexOf('@') < 0) return { estado: 'sem_email', nome: e || '(não identificado)', vinculo: '', email: '' };
+    var id = est.dados && est.dados.identificacao;
+    var p = id && id.pessoas ? id.pessoas[e.toLowerCase()] : null;
+    if (!p) return { estado: 'sem_confirmacao', nome: e, vinculo: 'nome não verificado', email: '' };
+    if (p.vinculo === 'nao_cadastrado') return { estado: 'nao_cadastrada', nome: 'Pessoa não cadastrada com acesso', vinculo: '', email: e };
+    var vinculo = p.vinculo === 'servidor' ? (p.setor || 'Servidor(a)') : p.vinculo === 'docente' ? 'Docente' : 'Aluno(a)';
+    return { estado: 'cadastrada', nome: p.nome, vinculo: vinculo, email: e };
+  }
+
+  var SELO_NAO_CADASTRADA = '<span class="selo seloPessoaNaoCadastrada">Atenção</span>';
+
+  /** Texto de uma linha para listas e dicas: "Nome (Setor · e-mail)". */
+  function rotuloPessoa(email) {
+    var p = pessoa(email), detalhe = [p.vinculo, p.email].filter(preenchido).join(' · ');
+    return p.nome + (detalhe ? ' (' + detalhe + ')' : '');
+  }
+
+  /** Nome em destaque e, embaixo, vínculo · e-mail; extra = linha a mais (ex.: data). */
+  function htmlPessoa(email, extra) {
+    var p = pessoa(email), detalhe = [p.vinculo, p.email].filter(preenchido).join(' · ');
+    return '<span class="pessoaAud' + (p.estado === 'nao_cadastrada' ? ' pessoaAud--naoCadastrada' : '') + '">' +
+      '<span class="pessoaAud__nome">' + esc(p.nome) + (p.estado === 'nao_cadastrada' ? ' ' + SELO_NAO_CADASTRADA : '') + '</span>' +
+      (detalhe ? '<span class="pessoaAud__detalhe">' + esc(detalhe) + '</span>' : '') +
+      (extra ? '<span class="pessoaAud__detalhe">' + extra + '</span>' : '') + '</span>';
+  }
 
   /** (1.8.0) "Será oferecida" = NÃO (com ou sem acento, maiúsculas ou não). */
   function naoOferecida(x) { return normalizar(x[D.oferecida]) === 'nao'; }
@@ -190,13 +239,13 @@ var Auditoria = (function () {
         ? esc(x[D.dia] || '—') + (preenchido(x[D.inicio]) ? '<br><span class="pequeno">' + esc(x[D.inicio]) + (preenchido(x[D.fim]) && x[D.fim] !== x[D.inicio] ? ' – ' + esc(x[D.fim]) : '') + '</span>' : '')
         : naoInf;
       var u = ult[x[D.codigo]];
-      var ultima = u ? '<span class="pequeno">' + esc(u[E.data]) + '<br>' + esc(u[E.email]) + '</span>' : '<span class="pequeno texto-suave">nenhuma edição</span>';
+      var ultima = u ? htmlPessoa(u[E.email], esc(u[E.data])) : '<span class="pequeno texto-suave">nenhuma edição</span>';
       var detalhe = [x[D.tipo], preenchido(x[D.semestreIdeal]) ? x[D.semestreIdeal] + 'º sem. ideal' : '', x[D.modalidade]].filter(preenchido).join(' · ');
       return '<tr><td><span class="mono">' + esc(x[D.codigo]) + '</span> ' + esc(x[D.nome]) + (detalhe ? '<br><span class="pequeno texto-suave">' + esc(detalhe) + '</span>' : '') + '</td>' +
         '<td data-rotulo="Será oferecida">' + (preenchido(x[D.oferecida]) ? esc(x[D.oferecida]) + (naoOferecida(x) ? '<br>' + SELO_JUSTIFICATIVA : '') : naoInf) + '</td>' +
         '<td data-rotulo="Docente">' + (preenchido(x[D.docente]) ? esc(x[D.docente]) : naoInf) + '</td>' +
         '<td data-rotulo="Dia e horário">' + horario + '</td>' +
-        '<td data-rotulo="Última edição">' + ultima + '</td>' +
+        '<td class="celPessoa" data-rotulo="Última edição">' + ultima + '</td>' +
         '<td><button type="button" class="botao botao--texto" data-aud-historico="' + esc(x[D.codigo]) + '" aria-label="Histórico de ' + esc(x[D.codigo]) + '">Histórico</button></td></tr>';
     }).join('');
     return '<div class="tabelaScroll"><table class="tabela tabelaAuditoria" id="audTabelaAba"><caption class="somenteLeitor">Disciplinas da aba ' + esc(a.aba) + '</caption>' +
@@ -229,7 +278,7 @@ var Auditoria = (function () {
       var x = item.x, m = marcacaoNao(x[D.codigo]);
       html += '<tr><td><span class="mono">' + esc(x[D.codigo]) + '</span> ' + esc(x[D.nome]) + (preenchido(x[D.tipo]) ? '<br><span class="pequeno texto-suave">' + esc(x[D.tipo]) + '</span>' : '') + '</td>' +
         '<td data-rotulo="Aba">' + esc(item.aba) + '</td>' +
-        '<td data-rotulo="Marcada por">' + (m ? '<span class="pequeno">' + esc(m[E.email]) + '<br>' + esc(m[E.data]) + '</span>' : '<span class="pequeno texto-suave">sem registro na auditoria</span>') + '</td>' +
+        '<td class="celPessoa" data-rotulo="Marcada por">' + (m ? htmlPessoa(m[E.email], esc(m[E.data])) : '<span class="pequeno texto-suave">sem registro na auditoria</span>') + '</td>' +
         '<td data-rotulo="Situação">' + SELO_JUSTIFICATIVA + '</td>' +
         '<td><button type="button" class="botao botao--texto" data-aud-historico="' + esc(x[D.codigo]) + '" aria-label="Histórico de ' + esc(x[D.codigo]) + '">Histórico</button></td></tr>';
     });
@@ -241,6 +290,7 @@ var Auditoria = (function () {
    * pessoas): uma cor (a primária do tema), rótulo e valor em texto, as
    * 10 primeiras; o resto vira "e mais N pessoas". itens: [{email, n,
    * ultima}]. acao(email) = HTML extra por linha (ex.: "ver edições").
+   * (1.11.0) Rótulo: nome; embaixo, vínculo · e-mail.
    */
   function graficoBarras(id, titulo, unidade, itens, total, vazio, acao) {
     var html = '<figure class="graficoBarras" aria-labelledby="' + id + 'Titulo"><figcaption class="graficoBarras__titulo" id="' + id + 'Titulo">' + esc(titulo) +
@@ -250,8 +300,11 @@ var Auditoria = (function () {
     html += '<ol class="graficoBarras__lista" id="' + id + '">';
     mostrar.forEach(function (it) {
       var pct = Math.max(2, Math.round(it.n / max * 100));
-      html += '<li class="graficoBarras__item" title="' + esc(it.email + ': ' + it.n + ' ' + unidade(it.n) + ' · última: ' + it.ultima) + '">' +
-        '<span class="graficoBarras__rotulo"><span class="graficoBarras__nome">' + esc(it.email) + '</span><span class="graficoBarras__detalhe">última: ' + esc(it.ultima) + (acao ? ' ' + acao(it.email) : '') + '</span></span>' +
+      var p = pessoa(it.email), quem = [p.vinculo, p.email].filter(preenchido).join(' · ');
+      html += '<li class="graficoBarras__item' + (p.estado === 'nao_cadastrada' ? ' graficoBarras__item--naoCadastrada' : '') + '" title="' + esc(rotuloPessoa(it.email) + ': ' + it.n + ' ' + unidade(it.n) + ' · última: ' + it.ultima) + '">' +
+        '<span class="graficoBarras__rotulo"><span class="graficoBarras__nome">' + esc(p.nome) + (p.estado === 'nao_cadastrada' ? ' ' + SELO_NAO_CADASTRADA : '') + '</span>' +
+        (quem ? '<span class="graficoBarras__quem">' + esc(quem) + '</span>' : '') +
+        '<span class="graficoBarras__detalhe">última: ' + esc(it.ultima) + (acao ? ' ' + acao(it.email) : '') + '</span></span>' +
         '<span class="graficoBarras__linha"><span class="graficoBarras__trilho" aria-hidden="true"><span class="graficoBarras__barra" style="width:' + pct + '%"></span></span>' +
         '<span class="graficoBarras__valor">' + it.n.toLocaleString('pt-BR') + '<span class="somenteLeitor"> ' + unidade(it.n) + '</span></span></span></li>';
     });
@@ -267,7 +320,7 @@ var Auditoria = (function () {
     var totalEd = ed.reduce(function (s, p) { return s + p.n; }, 0);
     return '<section class="cartao secaoAuditoria" aria-labelledby="audPessoasTitulo"><h3 class="secaoAuditoria__titulo" id="audPessoasTitulo">Quem mais abre e quem mais edita</h3>' +
       '<p class="pequeno texto-suave">Aberturas da planilha das secretarias no navegador (o aplicativo do celular não é registrado) e edições feitas nela, por pessoa.</p>' +
-      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-graficos', 'O que os gráficos mostram') + '</div>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-graficos', 'O que os gráficos mostram') + ' ' + gatilho('ajuda-auditoria-pessoas', 'Como os nomes são encontrados') + '</div>' +
       '<div class="graficosAuditoria">' +
       graficoBarras('audGrafAberturas', 'Quem mais abre a planilha', function (n) { return n === 1 ? 'abertura' : 'aberturas'; }, ab, d.totalAberturas,
         ab ? 'Nenhuma abertura registrada ainda.' : 'As aberturas passam a ser registradas quando o Serviço de Graduação ativar esse registro.') +
@@ -282,6 +335,15 @@ var Auditoria = (function () {
     }).join('');
   }
 
+  /** (1.11.0) Opções do filtro de pessoa: valor = e-mail, rótulo = nome (vínculo · e-mail), em ordem do rótulo. */
+  function opcoesPessoas(emails, atual) {
+    var itens = emails.map(function (e) { return { v: e, r: rotuloPessoa(e) }; });
+    itens.sort(function (a, b) { return a.r.localeCompare(b.r, 'pt-BR'); });
+    return '<option value="">Todas</option>' + itens.map(function (it) {
+      return '<option value="' + esc(it.v) + '"' + (it.v === atual ? ' selected' : '') + '>' + esc(it.r) + '</option>';
+    }).join('');
+  }
+
   function htmlEdicoes() {
     var ed = est.dados.edicoes;
     var abas = [], pessoas = [];
@@ -289,14 +351,14 @@ var Auditoria = (function () {
       if (l[E.aba] && abas.indexOf(l[E.aba]) < 0) abas.push(l[E.aba]);
       if (l[E.origem] === 'Secretaria' && l[E.email] && pessoas.indexOf(l[E.email]) < 0) pessoas.push(l[E.email]);
     });
-    abas.sort(); pessoas.sort();
+    abas.sort();
     var f = est.filtros;
     var html = '<section class="cartao secaoAuditoria" aria-labelledby="audEdicoesTitulo"><h3 class="secaoAuditoria__titulo" id="audEdicoesTitulo">Edições</h3>' +
       '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-edicoes', 'Busca, origem e limite de edições') + '</div>' +
       '<div class="filtrosAuditoria">' +
-        '<div class="campo campo--busca"><label class="campo__rotulo" for="audBusca">Buscar</label><input type="search" id="audBusca" autocomplete="off" placeholder="Código, disciplina, docente, campo, e-mail…" value="' + esc(f.busca) + '"></div>' +
+        '<div class="campo campo--busca"><label class="campo__rotulo" for="audBusca">Buscar</label><input type="search" id="audBusca" autocomplete="off" placeholder="Código, disciplina, docente, campo, nome, e-mail…" value="' + esc(f.busca) + '"></div>' +
         '<div class="campo"><label class="campo__rotulo" for="audFiltroAba">Aba</label><select id="audFiltroAba" data-aud-filtro="aba">' + opcoes(abas, f.aba, 'Todas') + '</select></div>' +
-        '<div class="campo"><label class="campo__rotulo" for="audFiltroPessoa">Pessoa</label><select id="audFiltroPessoa" data-aud-filtro="pessoa">' + opcoes(pessoas, f.pessoa, 'Todas') + '</select></div>' +
+        '<div class="campo"><label class="campo__rotulo" for="audFiltroPessoa">Pessoa</label><select id="audFiltroPessoa" data-aud-filtro="pessoa">' + opcoesPessoas(pessoas, f.pessoa) + '</select></div>' +
         '<div class="campo"><label class="campo__rotulo" for="audFiltroOrigem">Origem</label><select id="audFiltroOrigem" data-aud-filtro="origem">' +
           '<option value="">Todas</option><option value="Secretaria"' + (f.origem === 'Secretaria' ? ' selected' : '') + '>Secretarias</option><option value="Sistema"' + (f.origem === 'Sistema' ? ' selected' : '') + '>Sistema</option></select></div>' +
         '<button type="button" class="botao botao--texto" data-aud-limpar>Limpar filtros</button>' +
@@ -313,7 +375,8 @@ var Auditoria = (function () {
       if (f.pessoa && l[E.email] !== f.pessoa) return false;
       if (f.origem && l[E.origem] !== f.origem) return false;
       if (termo) {
-        var t = normalizar([l[E.email], l[E.aba], l[E.celula], l[E.campo], l[E.codigo], l[E.disciplina], l[E.antes], l[E.depois], l[E.tipo], l[E.obs]].join(' '));
+        var quem = pessoa(l[E.email]);
+        var t = normalizar([l[E.email], quem.nome, quem.vinculo, l[E.aba], l[E.celula], l[E.campo], l[E.codigo], l[E.disciplina], l[E.antes], l[E.depois], l[E.tipo], l[E.obs]].join(' '));
         if (t.indexOf(termo) < 0) return false;
       }
       return true;
@@ -335,7 +398,7 @@ var Auditoria = (function () {
     var onde = l[E.aba] ? esc(l[E.aba]) + (l[E.celula] ? ' · <span class="mono">' + esc(l[E.celula]) + '</span>' : '') : '—';
     var disc = l[E.codigo] ? '<button type="button" class="linkDisciplina" data-aud-historico="' + esc(l[E.codigo]) + '"><span class="mono">' + esc(l[E.codigo]) + '</span></button> ' + esc(l[E.disciplina]) : '<span class="texto-suave">—</span>';
     return '<tr><td class="auditoriaData">' + esc(l[E.data]) + '</td>' +
-      '<td data-rotulo="Quem">' + esc(l[E.origem] === 'Sistema' ? 'Sistema' : l[E.email]) + '</td>' +
+      '<td class="celPessoa" data-rotulo="Quem">' + (l[E.origem] === 'Sistema' ? 'Sistema' : htmlPessoa(l[E.email])) + '</td>' +
       '<td class="auditoriaOnde" data-rotulo="Onde">' + onde + '</td>' +
       (comDisciplina ? '<td data-rotulo="Disciplina">' + disc + '</td>' : '') +
       '<td data-rotulo="Campo">' + esc(l[E.campo] || l[E.tipo]) + (l[E.origem] === 'Secretaria' && l[E.campo] ? '<br><span class="pequeno texto-suave">' + esc(l[E.tipo]) + '</span>' : '') + '</td>' +

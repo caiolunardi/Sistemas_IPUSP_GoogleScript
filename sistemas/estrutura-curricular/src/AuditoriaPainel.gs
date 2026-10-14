@@ -17,6 +17,15 @@
   (1.8.0) Também: edições por pessoa (todas as linhas, não só as 5.000
   mais recentes) e aberturas da planilha das secretarias por pessoa
   (aba "Aberturas" da auditoria) para os gráficos.
+
+  (1.11.0) Nome de quem editou/abriu: a auditoria grava só o e-mail; o
+  painel recebe também o nome, procurado nesta ordem (primeira aba de
+  cada planilha, títulos na linha 1, chaves no ID_INDEX):
+    SERVIDORES         A e-mail · B nome · C setor
+    PLANILHA_DOCENTES  D e-mail · B nome
+    PLANILHA_ALUNOS    D e-mail (ou E, e-mail secundário) · B nome
+  Fora das três: "Pessoa não cadastrada com acesso". Só vão ao navegador
+  nome, vínculo e setor dos e-mails que aparecem na auditoria.
 =====================================================================*/
 
 var PAINEL_AUDITORIA = {
@@ -27,13 +36,32 @@ var PAINEL_AUDITORIA = {
 };
 
 /**
+ * (1.11.0) Cadastros onde o nome de quem aparece na auditoria é procurado,
+ * na ordem. Colunas pela posição (A = 1), dados da linha 2 em diante.
+ */
+var PESSOAS_AUDITORIA = {
+  FONTES: [
+    { chave: 'SERVIDORES', vinculo: 'servidor', descricao: 'servidores', colsEmail: [1], colNome: 2, colSetor: 3 },
+    { chave: 'PLANILHA_DOCENTES', vinculo: 'docente', descricao: 'docentes', colsEmail: [4], colNome: 2 },
+    { chave: 'PLANILHA_ALUNOS', vinculo: 'aluno', descricao: 'alunos', colsEmail: [4, 5], colNome: 2 }
+  ],
+  // Nome achado (ou "não cadastrado", com as três planilhas lidas) fica em cache por e-mail.
+  CACHE_SEGUNDOS: 600,
+  CACHE_PREFIXO: 'pessoaAud:'
+};
+
+/**
  * PÚBLICA. Dados do painel da auditoria.
  * @param {Object} pedido { semestre: 'AAAA/S' } (opcional; padrão = semestre atual)
  * @return {{ok, dados:{ semestres:[{semestre, atual}], semestre, atual, nomeGrade,
  *   edicoes:[[data, origem, email, aba, celula, campo, codigo, disciplina, antes, depois, tipo, celulas, obs, evento]],
  *   totalEdicoes, limitadas, andamento:null|[{aba, disciplinas:[[codigo, nome, tipo, modalidade, oferecida, docente, semestreIdeal, creditos, dia, inicio, fim]]}],
  *   pessoas:[{email, edicoes, ultima}], aberturas:null|[{email, aberturas, ultima}], totalAberturas,
+ *   identificacao:{pessoas:{emailMinusculo:{nome, vinculo, setor}}, indisponiveis:[descricao]},
  *   geradoEm}}}
+ * (1.11.0) identificacao.pessoas: vinculo 'servidor' | 'docente' | 'aluno' |
+ * 'nao_cadastrado' (lido nas três planilhas, não achado); e-mail ausente do
+ * mapa = não foi possível confirmar (algum cadastro não abriu: indisponiveis).
  */
 function obterAuditoriaGrade(pedido) {
   return executarComSeguranca_('obterAuditoriaGrade', function () {
@@ -58,7 +86,7 @@ function obterAuditoriaGrade(pedido) {
     if (!semestre) throw erroAmigavel_('SEM_AUDITORIA', 'Ainda não há grade enviada para preenchimento: não há auditoria para mostrar.');
     if (lista.indexOf(semestre) < 0) throw erroAmigavel_('SEMESTRE_INVALIDO', 'Não há auditoria da grade ' + semestre + '.');
 
-    var edicoes = [], total = 0, pessoas = [], aberturas = null, totalAberturas = 0;
+    var edicoes = [], total = 0, pessoas = [], aberturas = null, totalAberturas = 0, identificacao = { pessoas: {}, indisponiveis: [] };
     if (comAuditoria[semestre]) {
       var aud;
       try { aud = SpreadsheetApp.openById(comAuditoria[semestre]); }
@@ -68,6 +96,9 @@ function obterAuditoriaGrade(pedido) {
       pessoas = edicoesPorPessoa_(aud);
       var ab = aberturasPorPessoa_(aud);
       if (ab) { aberturas = ab.pessoas; totalAberturas = ab.total; }
+      // Eventos do sistema aparecem como "Sistema": só pessoas das edições das secretarias e das aberturas.
+      identificacao = identificarPessoas_(edicoes.filter(function (l) { return l[1] !== 'Sistema'; }).map(function (l) { return l[2]; })
+        .concat(pessoas.map(function (p) { return p.email; }), (aberturas || []).map(function (p) { return p.email; })));
     }
 
     return {
@@ -82,6 +113,7 @@ function obterAuditoriaGrade(pedido) {
       pessoas: pessoas,
       aberturas: aberturas,
       totalAberturas: totalAberturas,
+      identificacao: identificacao,
       geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, 'dd/MM/yyyy HH:mm')
     };
   });
@@ -184,4 +216,112 @@ function andamentoDaGrade_(grade) {
     }
     return { aba: a.aba, disciplinas: disciplinas };
   });
+}
+
+/*---------------------------------------------------------------------
+  (1.11.0) Nome de quem aparece na auditoria
+---------------------------------------------------------------------*/
+
+/**
+ * Procura os e-mails nos cadastros de PESSOAS_AUDITORIA.FONTES, na ordem:
+ * cada fonte só é aberta se ainda falta alguém. Um cadastro que não abre
+ * (chave ausente, sem acesso, vazio) não derruba o painel: vai para
+ * indisponiveis e quem não foi achado nas outras fica sem confirmação
+ * (fora do mapa), em vez de aparecer como "não cadastrado".
+ * @param {string[]} emails como estão na auditoria (repetidos e vazios são ignorados)
+ * @return {{pessoas: Object, indisponiveis: string[]}}
+ */
+function identificarPessoas_(emails) {
+  var pedidos = {};
+  (emails || []).forEach(function (e) {
+    var k = normalizarEmail_(e);
+    if (k && k.indexOf('@') > 0) pedidos[k] = true;
+  });
+  var lista = Object.keys(pedidos);
+  var res = { pessoas: {}, indisponiveis: [] };
+  if (!lista.length) return res;
+
+  var cache = CacheService.getScriptCache();
+  var emCache = cache.getAll(lista.map(function (k) { return PESSOAS_AUDITORIA.CACHE_PREFIXO + k; })) || {};
+  var faltam = lista.filter(function (k) {
+    var v = emCache[PESSOAS_AUDITORIA.CACHE_PREFIXO + k];
+    if (!v) return true;
+    try { res.pessoas[k] = JSON.parse(v); return false; } catch (e) { return true; }
+  });
+  if (!faltam.length) return res;
+
+  var achados = {};
+  PESSOAS_AUDITORIA.FONTES.forEach(function (fonte) {
+    var restantes = faltam.filter(function (k) { return !achados[k]; });
+    if (!restantes.length) return;
+    var mapa;
+    try { mapa = lerCadastroDePessoas_(fonte); }
+    catch (e) {
+      console.error('identificarPessoas_ ' + fonte.chave + ': ' + String(e && e.message || e).replace(/[A-Za-z0-9_-]{25,}/g, '[…]').replace(/\S+@\S+/g, '[e-mail]'));
+      res.indisponiveis.push(fonte.descricao);
+      return;
+    }
+    restantes.forEach(function (k) { if (mapa[k]) achados[k] = mapa[k]; });
+  });
+
+  var gravar = {};
+  faltam.forEach(function (k) {
+    var p = achados[k];
+    if (!p && res.indisponiveis.length) return;   // sem confirmação: não diz "não cadastrado" nem guarda em cache
+    p = p || { nome: '', vinculo: 'nao_cadastrado', setor: '' };
+    res.pessoas[k] = p;
+    gravar[PESSOAS_AUDITORIA.CACHE_PREFIXO + k] = JSON.stringify(p);
+  });
+  if (Object.keys(gravar).length) {
+    try { cache.putAll(gravar, PESSOAS_AUDITORIA.CACHE_SEGUNDOS); } catch (e) { /* cache é só atalho */ }
+  }
+  return res;
+}
+
+/**
+ * Mapa e-mail (minúsculo) → {nome, vinculo, setor} de um cadastro: primeira
+ * aba, linha 2 em diante. E-mail repetido: vale a primeira linha com nome.
+ */
+function lerCadastroDePessoas_(fonte) {
+  var aba = SpreadsheetApp.openById(idDoIndex_(fonte.chave)).getSheets()[0];
+  if (!aba) throw new Error('planilha sem abas');
+  var mapa = {};
+  var n = aba.getLastRow() - 1;
+  if (n < 1) return mapa;
+  var ultimaCol = Math.max.apply(null, fonte.colsEmail.concat([fonte.colNome, fonte.colSetor || 1]));
+  aba.getRange(2, 1, n, ultimaCol).getDisplayValues().forEach(function (l) {
+    var nome = String(l[fonte.colNome - 1] || '').replace(/\s+/g, ' ').trim();
+    if (!nome) return;
+    var p = { nome: nome, vinculo: fonte.vinculo, setor: fonte.colSetor ? String(l[fonte.colSetor - 1] || '').replace(/\s+/g, ' ').trim() : '' };
+    fonte.colsEmail.forEach(function (c) {
+      var k = normalizarEmail_(l[c - 1]);
+      if (k && !mapa[k]) mapa[k] = p;
+    });
+  });
+  return mapa;
+}
+
+/**
+ * (1.11.0) Para rodar no editor: confere se os três cadastros abrem e
+ * mostra os títulos das colunas usadas e o número de linhas. Não registra
+ * nomes, e-mails nem IDs.
+ */
+function diagnosticarNomesAuditoria() {
+  var r = executarComSeguranca_('diagnosticarNomesAuditoria', function () {
+    exigirAdmin_();
+    return PESSOAS_AUDITORIA.FONTES.map(function (fonte) {
+      try {
+        var aba = SpreadsheetApp.openById(idDoIndex_(fonte.chave)).getSheets()[0];
+        var cols = fonte.colsEmail.concat([fonte.colNome], fonte.colSetor ? [fonte.colSetor] : []);
+        var cab = aba.getRange(1, 1, 1, Math.max.apply(null, cols)).getDisplayValues()[0];
+        var titulos = {};
+        cols.forEach(function (c) { titulos[String.fromCharCode(64 + c)] = String(cab[c - 1] || '').trim(); });
+        return { chave: fonte.chave, aberta: true, aba: aba.getName(), linhas: Math.max(0, aba.getLastRow() - 1), titulos: titulos };
+      } catch (e) {
+        return { chave: fonte.chave, aberta: false, motivo: String(e && e.message || e).replace(/[A-Za-z0-9_-]{25,}/g, '[…]') };
+      }
+    });
+  });
+  console.log(JSON.stringify(r));
+  return r;
 }

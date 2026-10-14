@@ -1,6 +1,6 @@
 # Versões e decisões — Estrutura Curricular e Grade Horária
 
-Fonte atual **1.10.0**, sobre a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
+Fonte atual **1.11.0** (nome de quem aparece na auditoria), sobre a 1.10.0 e a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
 
 | Versão | Data | Marco |
 |---|---|---|
@@ -19,6 +19,7 @@ Fonte atual **1.10.0**, sobre a baseline **1.9.3 auditada**. Verificação local
 | 1.9.0–1.9.2 | 07/10/2026, conforme pacote | Central de Ajuda, foco e correções de orientação sobre resultados parciais/envio |
 | 1.9.3 | 11/10/2026 | correção editorial: nem todas as etapas do envio foram concluídas; auditada localmente |
 | 1.10.0 | 11/10/2026 | sidebar padrão, alternância para abas, ícones de catálogo, glow/elevação e documentação completa; algoritmos preservados |
+| 1.11.0 | 14/10/2026 | auditoria da grade mostra nome, vínculo (setor, Docente, Aluno(a)) e e-mail de quem edita ou abre a planilha, pelos cadastros `SERVIDORES` → `PLANILHA_DOCENTES` → `PLANILHA_ALUNOS`; fora deles, "Pessoa não cadastrada com acesso" |
 
 ## Decisões estruturais
 
@@ -32,6 +33,7 @@ Fonte atual **1.10.0**, sobre a baseline **1.9.3 auditada**. Verificação local
 - acesso migrou para `PERMISSOES_DE_ACESSO`.
 - painel de auditoria apresenta informação processada e não fornece link para dados crus.
 - justificativa de não oferecimento permanece fora do sistema nesta versão.
+- (1.11.0) a auditoria continua gravando só o e-mail; o nome é procurado na hora de exibir, nesta ordem: servidores (A e-mail, B nome, C setor), docentes (D e-mail, B nome) e alunos (D ou E e-mail, B nome), sempre na primeira aba e com títulos na linha 1. Nome e e-mail ficam visíveis juntos. Cadastro que não abre não vira "não cadastrado": a pessoa aparece como "nome não verificado" e o painel avisa. Decisões do responsável funcional em 14/10/2026.
 - sidebar é o modo em cada abertura; layout não é persistido. Tema continua com preferência local independente.
 - mesmo DOM/controladores nos dois layouts; sem duplicar formulários ou reconstruir o estado ao alternar.
 - glow/elevação limitados à navegação como exceção explícita solicitada, com movimento reduzido e toque respeitados.

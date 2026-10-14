@@ -1,6 +1,8 @@
-# Estrutura Curricular e Grade Horária — 1.10.0
+# Estrutura Curricular e Grade Horária — 1.11.0
 
-Fonte atual sobre a **baseline 1.9.3 auditada**, com **sidebar padrão**, alternância para abas, ícones padronizados e glow/elevação. Controladores de negócio e servidor permanecem iguais à baseline, salvo o número da versão. Código e testes locais versionados; **implantação e homologação desta versão no Google pendentes**.
+**1.11.0 (14/10/2026):** a Auditoria da grade mostra o nome, o vínculo e o e-mail de quem edita ou abre a planilha das secretarias ([verificação](VERIFICACAO_1_11_0.md)). O resto é a 1.10.0, descrita a seguir.
+
+Fonte 1.10.0 sobre a **baseline 1.9.3 auditada**, com **sidebar padrão**, alternância para abas, ícones padronizados e glow/elevação. Controladores de negócio e servidor permanecem iguais à baseline, salvo o número da versão. Código e testes locais versionados; **implantação e homologação desta versão no Google pendentes**.
 
 Este índice permite retomar o projeto por objetivo, sem depender de outra conversa. Lunaris/Licita são referências visuais; este repositório concentra a fonte e documentação do app curricular.
 
@@ -17,7 +19,8 @@ Este índice permite retomar o projeto por objetivo, sem depender de outra conve
 | [UX](UX.md) | comportamento de interface e acessibilidade |
 | [Ajuda](AJUDA.md) | Central estática, FAQ e orientação auditada |
 | [Dados e segurança](DADOS_E_SEGURANCA.md) | tratamento, autorização, recursos e validação institucional |
-| [Verificação atual](VERIFICACAO_1_10_0.md) | testes executados nesta rodada e limites |
+| [Verificação 1.11.0](VERIFICACAO_1_11_0.md) | nome de quem aparece na auditoria: testes e limites |
+| [Verificação 1.10.0](VERIFICACAO_1_10_0.md) | navegação e visual: testes executados e limites |
 | [Homologação histórica](HOMOLOGACAO.md) | evidências recebidas, reproduções e roteiro Google |
 | [Inventário do código](INVENTARIO_CODIGO.md) | todos os 34 arquivos e responsabilidades |
 | [Manutenção e continuidade](MANUTENCAO_E_CONTINUIDADE.md) | como retomar e evoluir sem regredir regras |
