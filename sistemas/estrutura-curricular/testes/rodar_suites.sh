@@ -208,6 +208,7 @@ suite testar_gravacao saida/evidencias_gravacao.txt env DIR_SRC_V100="$REPASSE_D
 suite testar_preparacao saida/evidencias_preparacao.txt env DIR_SRC_V124="$REPASSE_DIR_SRC_V124" DIR_SRC_V130="$REPASSE_DIR_SRC_V130" DIR_SRC_V131="$REPASSE_DIR_SRC_V131" node testar_preparacao.js "$CSV" "$UNIDADE"
 suite testar_envio_grade saida/evidencias_envio_grade.txt node testar_envio_grade.js "$CSV" "$UNIDADE"
 suite testar_auditoria_grade saida/evidencias_auditoria_grade.txt node testar_auditoria_grade.js "$CSV" "$UNIDADE"
+suite testar_validacoes_planilha saida/evidencias_validacoes_planilha.txt node testar_validacoes_planilha.js
 suite testar_painel_auditoria saida/evidencias_painel_auditoria.txt node testar_painel_auditoria.js "$CSV" "$UNIDADE"
 suite testar_etapa1_identidade_outros saida/evidencias_etapa1_identidade_outros.txt node testar_etapa1_identidade_outros.js
 suite testar_navegador_etapa1 - node testar_navegador_etapa1.js "$CSV"

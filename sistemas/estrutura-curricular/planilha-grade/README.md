@@ -2,6 +2,8 @@
 
 > Migração histórica recebida. A atualização visual 1.10.0 não modifica este script nem exige repetir remoções de arquivos/acionadores. Para implantação nova, confira o estado do projeto vinculado e [INSTALACAO_E_ATUALIZACAO.md](../../../docs/sistemas/estrutura-curricular/INSTALACAO_E_ATUALIZACAO.md).
 
+Documentação da planilha (estrutura, regras, operação, segurança): [docs/sistemas/planilha-grade-secretarias](../../../docs/sistemas/planilha-grade-secretarias/README.md).
+
 A planilha que as secretarias preenchem (chave `GRADE_HORARIA_PREENCHIMENTO` no `ID_INDEX`) fica com **um único arquivo de código**: `Validacoes.gs`. Nada de menu, backup, registro de edições ou grade visual: isso roda no sistema Estrutura Curricular (envio da grade, cópia de segurança, auditoria) ou vai para um projeto separado (grade visual).
 
 ## O que `Validacoes.gs` faz
@@ -10,6 +12,9 @@ Gatilho simples `onEdit` (roda sozinho, com as permissões de quem edita), só n
 
 1. **Modalidade "Prática"** (coluna F) → Dia da semana = "Horário Variável" e Horário de Início = "-- : --".
 2. **Conflito de horário**: ao escolher o dia (K) ou o início (L) de uma disciplina **Eletiva** ou **Livre**, procura nas 6 abas uma **Obrigatória** do mesmo semestre ideal, no mesmo dia, com horário sobreposto. Se achar, apaga o dia e o início da linha e explica numa nota na célula do dia (código, aba e horários da obrigatória). Sem conflito, a nota antiga sai.
+3. **(1.1) Caixa "Conflito de horário"**: depois de gravar a nota e apagar, abre para quem editou uma caixa com o mesmo texto e o botão OK (uma só por edição, listando todos os conflitos de uma colagem). Não aparece no app de celular; não pede autorização nova.
+
+**Atualizar da 1.0 para a 1.1:** no Apps Script da planilha, substitua o conteúdo do arquivo `Validacoes` pelo deste `Validacoes.gs` e salve. Nada mais.
 
 O **Horário de Fim (M)** não é mais digitado: o envio da grade grava em M a fórmula `início + créditos-aula` (1 crédito = 1 hora), com o resultado em **texto "HH:mm"** (1.6.2). Na Tabela, deixe a coluna Horário de Fim com o tipo **Texto** (ou sem tipo) e sem lista suspensa; o envio não muda o formato dela (o Google não deixa o script mudar o formato de coluna com tipo). Por isso a antiga "verificação de carga horária" saiu — o fim sempre bate com os créditos.
 

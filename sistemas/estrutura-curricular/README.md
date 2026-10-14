@@ -9,7 +9,7 @@ A fonte desta pasta parte do pacote **1.9.3 auditado**, com a camada visual **1.
 | Pasta/arquivo | Conteúdo |
 |---|---|
 | [`src/`](src/) | 34 arquivos para a raiz do projeto Apps Script do Web App |
-| [`planilha-grade/`](planilha-grade/README.md) | `Validacoes.gs`, para o projeto vinculado à planilha das secretarias; implantação separada |
+| [`planilha-grade/`](planilha-grade/README.md) | `Validacoes.gs` 1.1, para o projeto vinculado à planilha das secretarias; implantação separada ([documentação da planilha](../../docs/sistemas/planilha-grade-secretarias/README.md)) |
 | [`testes/`](testes/README.md) | simulador de Apps Script, testes de servidor e Chromium com dados sintéticos |
 | [`LICENCA_ICONES.txt`](LICENCA_ICONES.txt) | licença do catálogo Lucide Static 1.55.0 |
 

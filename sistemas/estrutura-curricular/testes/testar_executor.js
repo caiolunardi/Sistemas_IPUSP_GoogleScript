@@ -57,7 +57,8 @@ const EVIDENCIA_PADRAO = {
   'testar_etapa2_csv_unidade.js': 'evidencias_etapa2_csv_unidade.txt', 'testar_navegador_etapa3.js': 'evidencias_etapa3_ficha.txt',
   'testar_etapa4_salvamento.js': 'evidencias_etapa4_salvamento.txt', 'testar_etapa5_lotes.js': 'evidencias_etapa5_lotes.txt',
   'testar_etapa6_oferta.js': 'evidencias_etapa6_oferta.txt', 'testar_etapa7_trava_auditoria.js': 'evidencias_etapa7_trava_auditoria.txt',
-  'testar_etapa8_previa_envio.js': 'evidencias_etapa8_previa_envio.txt', 'testar_etapa9_auditoria_envio.js': 'evidencias_etapa9_auditoria_envio.txt'
+  'testar_etapa8_previa_envio.js': 'evidencias_etapa8_previa_envio.txt', 'testar_etapa9_auditoria_envio.js': 'evidencias_etapa9_auditoria_envio.txt',
+  'testar_validacoes_planilha.js': 'evidencias_validacoes_planilha.txt'
 };
 // O "node" falso. Chave do cenário: "<script>@<versão da fonte>" ("atual" sem DIR_SRC).
 const NODE_FALSO = `#!${process.execPath}
