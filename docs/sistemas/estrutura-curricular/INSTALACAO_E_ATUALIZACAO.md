@@ -7,7 +7,7 @@ Esta entrega publica código/documentação no Git. Não altera um projeto Apps 
 1. Guarde a versão da implantação ativa para retorno.
 2. **Substitua** o conteúdo de cinco arquivos: `AuditoriaPainel.gs`, `Codigo.gs`, `PainelAuditoria.html`, `PainelEstilos.html` e `EstruturaAjuda.html`. Nenhum arquivo novo; os outros 29 continuam iguais.
 3. Confira no `ID_INDEX` as chaves `SERVIDORES`, `PLANILHA_DOCENTES` e `PLANILHA_ALUNOS` (coluna C com o ID; Tipo `spreadsheet`, não conferido) e dê à conta que executa o Web App **acesso de leitura** às três planilhas.
-4. Rode `diagnosticarNomesAuditoria` no editor: para cada cadastro, mostra se abriu, a aba lida, o número de linhas e os títulos das colunas usadas (esperado: servidores A `E-MAIL`, B `NOME`, C `SETOR`; docentes e alunos B nome e D e-mail; alunos também E, e-mail secundário). Não registra nomes, e-mails nem IDs.
+4. Rode `diagnosticarNomesAuditoria` no editor: para cada cadastro, mostra se abriu, a aba lida, o número de linhas e os títulos das colunas usadas (esperado: servidores A `E-MAIL`, B `NOME`, C `SETOR`; docentes e alunos B nome e D e-mail; alunos também a coluna "eMail Secundario"; se ela faltar, `colunaNaoEncontrada`). Não registra nomes, e-mails nem IDs.
 5. Teste no `/dev` (rodapé **1.11.0**): na Auditoria da grade, pessoas com nome e e-mail; quem não está nos cadastros aparece como "Pessoa não cadastrada com acesso".
 6. Promova a implantação existente (nova versão).
 
@@ -56,7 +56,7 @@ Na primeira aba do índice, A–C são exatamente `Chave`, `Tipo`, `ID de Produ�
 | `AUDITORIA_GRADES_ANTERIORES` | pasta de auditorias | criar/acessar auditorias |
 | (1.11.0) `SERVIDORES` | cadastro de servidores e setores (A e-mail, B nome, C setor) | ler a primeira aba |
 | (1.11.0) `PLANILHA_DOCENTES` | cadastro de docentes (B nome, D e-mail) | ler a primeira aba |
-| (1.11.0) `PLANILHA_ALUNOS` | cadastro de alunos (B nome, D e-mail, E e-mail secundário) | ler a primeira aba |
+| (1.11.0) `PLANILHA_ALUNOS` | cadastro de alunos (B nome, D e-mail e a coluna "eMail Secundario", achada pelo título) | ler a primeira aba |
 
 Os recursos de envio/auditoria são abertos pelo serviço correspondente sem a mesma validação de Tipo das duas primeiras chaves. Use rótulos coerentes e confira diagnósticos. ID da estrutura tem cache de 600 s; permissões, 60 s.
 

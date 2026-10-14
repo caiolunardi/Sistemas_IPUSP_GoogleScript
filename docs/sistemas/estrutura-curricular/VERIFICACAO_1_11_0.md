@@ -8,7 +8,7 @@
 - Ordem de busca, pela chave no `ID_INDEX`, primeira aba, títulos na linha 1:
   1. `SERVIDORES`: A e-mail, B nome, C setor;
   2. `PLANILHA_DOCENTES`: D e-mail, B nome;
-  3. `PLANILHA_ALUNOS`: D e-mail ou E (e-mail secundário), B nome.
+  3. `PLANILHA_ALUNOS`: D e-mail ou o e-mail secundário, B nome. O e-mail secundário é achado pelo título "eMail Secundario" (sem acento, espaços ou maiúsculas): o diagnóstico real de 14/10/2026 mostrou que a coluna E é "ID da Pasta".
 - Fora dos três: **"Pessoa não cadastrada com acesso"**, com o e-mail embaixo e selo "Atenção".
 - Comparação de e-mail sem maiúsculas e sem espaços nas pontas; a busca das edições também acha pelo nome.
 
@@ -18,7 +18,7 @@ Decisão técnica, sem mudar o pedido: se um cadastro não abre (chave ausente, 
 
 | Arquivo | SHA-256 | Mudança |
 |---|---|---|
-| `AuditoriaPainel.gs` | `efd18b0fd3230c530fc6ed205f88291064471d859fbb6c46cac8af1e8256ccaa` | `PESSOAS_AUDITORIA`, `identificarPessoas_`, `lerCadastroDePessoas_`, `diagnosticarNomesAuditoria`; `obterAuditoriaGrade` devolve `identificacao` |
+| `AuditoriaPainel.gs` | `b78a18f57e20b59e957f28453f7027349f1e49426ddf7d0ca4a339bc84f08697` | `PESSOAS_AUDITORIA`, `identificarPessoas_`, `lerCadastroDePessoas_`, `diagnosticarNomesAuditoria`; `obterAuditoriaGrade` devolve `identificacao` |
 | `PainelAuditoria.html` | `859ff8fcec03df293d7627d0234419e6feb7fbfc941584d3b043f5dca247e944` | pessoa (nome, vínculo, e-mail) na última edição, "Marcada por", gráficos, filtro, coluna Quem e busca; aviso "Nomes incompletos" |
 | `PainelEstilos.html` | `d017b60fef526521f1513d1ab1705954ac13b0b96d165042d16955aa4c2de4ca` | `.pessoaAud*`, `.seloPessoaNaoCadastrada` (tokens de perigo), `.graficoBarras__quem`; rótulo do gráfico em coluna |
 | `EstruturaAjuda.html` | `5147e148a96badf9d454e8461c3ed1f94f7991a2e1afd52518427c15bbdb176f` | item `ajuda-auditoria-pessoas`; busca menciona nome |
@@ -32,7 +32,7 @@ Ambiente: Node 22, Playwright 1.56.1/Chromium, simulador `mockGoogle.js` (ganhou
 
 | Suíte | Resultado | Observação |
 |---|---|---|
-| `testar_painel_auditoria.js` | **25/25** | 19 anteriores + 6 novos (abaixo) |
+| `testar_painel_auditoria.js` | **26/26** | 19 anteriores + 7 novos (abaixo) |
 | `testar_auditoria_grade.js` | 19/19 | regressão da gravação da auditoria |
 | `testar_etapa9_auditoria_envio.js` | 8/8 | inclui `obterAuditoriaGrade` para admin e leitor |
 | `testar_etapa7_trava_auditoria.js` | 19/19 | |
@@ -47,13 +47,18 @@ Novos casos:
 3. Nenhum cadastro configurado: o painel abre, os três cadastros no aviso, o resto da auditoria intacto.
 4. Cache de 10 min: a segunda leitura não depende dos cadastros.
 5. `diagnosticarNomesAuditoria`: títulos das colunas usadas e número de linhas, sem nomes, e-mails nem IDs; recusa leitor.
-6. Chromium: "Pessoa não cadastrada com acesso" + "Atenção" + e-mail, dica com o nome; aviso "Nomes incompletos" e "nome não verificado".
+6. Alunos sem a coluna "eMail Secundario": busca só pela D, "ID da Pasta" nunca é lido como e-mail e o diagnóstico informa `colunaNaoEncontrada`.
+7. Chromium: "Pessoa não cadastrada com acesso" + "Atenção" + e-mail, dica com o nome; aviso "Nomes incompletos" e "nome não verificado".
 
 Nos testes existentes, conferido também: nome/vínculo/e-mail nos gráficos, na última edição e em "Marcada por"; filtro de pessoa pelo nome (valor = e-mail); busca pelo nome e pelo setor; coluna Quem com o nome. Visual 360/768/1280 px, claro e escuro: sem rolagem horizontal e contraste ≥ 4,5:1, agora incluindo `.pessoaAud__nome`, `.pessoaAud__detalhe`, `.graficoBarras__quem` e o selo "Atenção" (menor valor da seção: 5,01:1, inalterado).
 
 ## Para homologar
 
 1. Atualizar como em [Instalação](INSTALACAO_E_ATUALIZACAO.md#atualizar-um-web-app-1100-para-1110).
-2. `diagnosticarNomesAuditoria`: os três cadastros com `aberta: true` e os títulos esperados.
+2. `diagnosticarNomesAuditoria`: os três cadastros com `aberta: true` e os títulos esperados; em alunos, sem `colunaNaoEncontrada` (se aparecer, a planilha não tem a coluna "eMail Secundario" e só a D é usada).
+
+### Diagnóstico em produção (14/10/2026, antes da correção do e-mail secundário)
+
+Os três abriram, aba `Página1`: servidores 1 linha (A `E-MAIL`, B `NOME`, C `Setor`); docentes 81 (D `E-mail`, B `NOME`); alunos 536 (D `eMail`, B `Nome do Aluno`, e E = `ID da Pasta`, o que levou à busca do e-mail secundário pelo título).
 3. No `/dev`, Auditoria da grade: uma secretaria conhecida aparece com nome, setor e e-mail; um docente com "Docente"; um e-mail fora dos cadastros (ex.: uma conta de teste que abra a planilha) como "Pessoa não cadastrada com acesso".
 4. Registrar aqui data, versão da implantação e resultado.

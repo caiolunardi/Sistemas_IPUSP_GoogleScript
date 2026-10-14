@@ -497,8 +497,8 @@ function montarContexto(o, estado, planilhas, props) {
     /**
      * (1.11.0) Cadastros de pessoas (nome na auditoria), com as chaves no ID_INDEX:
      * SERVIDORES (A e-mail, B nome, C setor), PLANILHA_DOCENTES e PLANILHA_ALUNOS
-     * (B nome, D e-mail; alunos: E e-mail secundário). Dados fictícios.
-     * op: { servidores: [[email, nome, setor]], docentes: [[email, nome]], alunos: [[email, nome, email2]], semChaves: [] }
+     * (B nome, D e-mail; alunos: E "ID da Pasta" e F e-mail secundário). Dados fictícios.
+     * op: { servidores: [[email, nome, setor]], docentes: [[email, nome]], alunos: [[email, nome, email2]], semChaves: [], semEmailSecundario }
      */
     criarCadastrosPessoas: (op) => {
       op = op || {};
@@ -506,7 +506,9 @@ function montarContexto(o, estado, planilhas, props) {
       const fontes = [
         ['SERVIDORES', 'ID_SERVIDORES_TESTE', ['E-MAIL', 'NOME', 'SETOR'], (op.servidores || []).map(([e, n, st]) => [e, n, st || ''])],
         ['PLANILHA_DOCENTES', 'ID_DOCENTES_TESTE', ['N. USP', 'Nome', 'Departamento', 'E-mail'], (op.docentes || []).map(([e, n], i) => [String(9000 + i), n, 'Depto Fictício', e])],
-        ['PLANILHA_ALUNOS', 'ID_ALUNOS_TESTE', ['Número USP', 'Nome do Aluno', 'Ingresso', 'eMail', 'eMail Secundario'], (op.alunos || []).map(([e, n, e2], i) => [String(8000 + i), n, '2026/1', e, e2 || ''])]
+        // como a planilha real: E = "ID da Pasta"; o e-mail secundário vem depois (achado pelo título)
+        ['PLANILHA_ALUNOS', 'ID_ALUNOS_TESTE', ['Número USP', 'Nome do Aluno', 'Ingresso', 'eMail', 'ID da Pasta'].concat(op.semEmailSecundario ? [] : [' eMail  Secundário ']),
+          (op.alunos || []).map(([e, n, e2], i) => [String(8000 + i), n, '2026/1', e, 'PASTA_FICTICIA_' + i].concat(op.semEmailSecundario ? [] : [e2 || '']))]
       ];
       fontes.forEach(([chave, id, cab, linhas]) => {
         const ss = new Spreadsheet(estado, id, o.dono, 'Cadastro ' + chave);

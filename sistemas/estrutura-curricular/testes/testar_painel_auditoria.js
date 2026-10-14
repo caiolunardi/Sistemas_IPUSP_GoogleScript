@@ -184,7 +184,7 @@ function ambiente(nEdicoesExtras, op) {
     igual(d.identificacao.indisponiveis, []);
     igual(d.identificacao.pessoas[SEC_PSA], { nome: 'Servidora Fictícia Um', vinculo: 'servidor', setor: 'Secretaria do PSA' }, 'servidor (o homônimo nos docentes não vence)');
     igual(d.identificacao.pessoas[SEC_PSE], { nome: 'Docente Fictícia Dois', vinculo: 'docente', setor: '' }, 'docente, e-mail em maiúsculas e com espaços no cadastro');
-    igual(d.identificacao.pessoas[ALUNO], { nome: 'Aluno Fictício Três', vinculo: 'aluno', setor: '' }, 'aluno pelo e-mail secundário (coluna E)');
+    igual(d.identificacao.pessoas[ALUNO], { nome: 'Aluno Fictício Três', vinculo: 'aluno', setor: '' }, 'aluno pelo e-mail secundário (achado pelo título, depois de "ID da Pasta")');
     igual(d.identificacao.pessoas[INTRUSO], { nome: '', vinculo: 'nao_cadastrado', setor: '' }, 'fora dos três cadastros');
     verdade(!JSON.stringify(d).includes('Outra Pessoa Fictícia') && !JSON.stringify(d).includes('principal@usp.example'), 'só vão ao navegador as pessoas que aparecem na auditoria');
     verdade(!/ID_(SERVIDORES|DOCENTES|ALUNOS)_TESTE/.test(JSON.stringify(d)), 'sem IDs dos cadastros');
@@ -224,13 +224,25 @@ function ambiente(nEdicoesExtras, op) {
     const d = pedir(a.ctx.obterAuditoriaGrade({}));
     igual([d.identificacao.indisponiveis, d.identificacao.pessoas[SEC_PSE].nome], [[], 'Docente Fictícia Dois']);
   });
+  await teste('(1.11.0) cadastro de alunos sem a coluna "eMail Secundario": busca só pela D; "ID da Pasta" (E) nunca é tratado como e-mail; o diagnóstico avisa', () => {
+    const a = ambiente(0, { aberturasExtras: [ALUNO, 'principal@usp.example', 'PASTA_FICTICIA_0'] });
+    const alunos = a.planilhas.get('ID_ALUNOS_TESTE').getSheets()[0];
+    for (let r = 1; r <= alunos.getLastRow(); r++) alunos.set(r, 6, '');
+    a.trocarUsuario(LEITOR);
+    const d = pedir(a.ctx.obterAuditoriaGrade({}));
+    igual([d.identificacao.pessoas[ALUNO].vinculo, d.identificacao.pessoas['principal@usp.example'].nome], ['nao_cadastrado', 'Aluno Fictício Três']);
+    verdade(!('pasta_ficticia_0' in d.identificacao.pessoas), 'texto sem @ não é procurado');
+    a.trocarUsuario(ADMIN);
+    igual(pedir(a.ctx.diagnosticarNomesAuditoria())[2].colunaNaoEncontrada, ['eMail Secundario']);
+  });
   await teste('(1.11.0) diagnosticarNomesAuditoria: títulos das colunas usadas e número de linhas, sem nomes, e-mails nem IDs', () => {
     const a = ambiente(0, { semChaves: ['PLANILHA_DOCENTES'] });
     a.trocarUsuario(ADMIN);
     const r = pedir(a.ctx.diagnosticarNomesAuditoria());
     igual(r.map((x) => [x.chave, x.aberta]), [['SERVIDORES', true], ['PLANILHA_DOCENTES', false], ['PLANILHA_ALUNOS', true]]);
     igual([r[0].titulos, r[0].linhas], [{ A: 'E-MAIL', B: 'NOME', C: 'SETOR' }, 2]);
-    igual(r[2].titulos, { D: 'eMail', E: 'eMail Secundario', B: 'Nome do Aluno' });
+    igual(r[2].titulos, { D: 'eMail', F: 'eMail  Secundário', B: 'Nome do Aluno' }, 'e-mail secundário pelo título (sem acento/espaços/maiúsculas), não a coluna E');
+    verdade(!('colunaNaoEncontrada' in r[2]));
     const texto = JSON.stringify(r) + a.estado.logs.join('\n');
     verdade(!/@/.test(texto) && !/Fictíci/.test(texto) && !/ID_[A-Z]+_TESTE/.test(texto), texto.slice(0, 300));
     a.trocarUsuario(LEITOR);

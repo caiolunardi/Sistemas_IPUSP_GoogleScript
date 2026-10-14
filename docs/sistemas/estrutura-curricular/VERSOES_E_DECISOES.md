@@ -33,7 +33,7 @@ Fonte atual **1.11.0** (nome de quem aparece na auditoria), sobre a 1.10.0 e a b
 - acesso migrou para `PERMISSOES_DE_ACESSO`.
 - painel de auditoria apresenta informação processada e não fornece link para dados crus.
 - justificativa de não oferecimento permanece fora do sistema nesta versão.
-- (1.11.0) a auditoria continua gravando só o e-mail; o nome é procurado na hora de exibir, nesta ordem: servidores (A e-mail, B nome, C setor), docentes (D e-mail, B nome) e alunos (D ou E e-mail, B nome), sempre na primeira aba e com títulos na linha 1. Nome e e-mail ficam visíveis juntos. Cadastro que não abre não vira "não cadastrado": a pessoa aparece como "nome não verificado" e o painel avisa. Decisões do responsável funcional em 14/10/2026.
+- (1.11.0) a auditoria continua gravando só o e-mail; o nome é procurado na hora de exibir, nesta ordem: servidores (A e-mail, B nome, C setor), docentes (D e-mail, B nome) e alunos (D ou a coluna "eMail Secundario", achada pelo título; B nome), sempre na primeira aba e com títulos na linha 1. Nome e e-mail ficam visíveis juntos. Cadastro que não abre não vira "não cadastrado": a pessoa aparece como "nome não verificado" e o painel avisa. Decisões do responsável funcional em 14/10/2026.
 - sidebar é o modo em cada abertura; layout não é persistido. Tema continua com preferência local independente.
 - mesmo DOM/controladores nos dois layouts; sem duplicar formulários ou reconstruir o estado ao alternar.
 - glow/elevação limitados à navegação como exceção explícita solicitada, com movimento reduzido e toque respeitados.

@@ -23,7 +23,7 @@
   cada planilha, títulos na linha 1, chaves no ID_INDEX):
     SERVIDORES         A e-mail · B nome · C setor
     PLANILHA_DOCENTES  D e-mail · B nome
-    PLANILHA_ALUNOS    D e-mail (ou E, e-mail secundário) · B nome
+    PLANILHA_ALUNOS    D e-mail (ou a coluna de título "eMail Secundario") · B nome
   Fora das três: "Pessoa não cadastrada com acesso". Só vão ao navegador
   nome, vínculo e setor dos e-mails que aparecem na auditoria.
 =====================================================================*/
@@ -43,7 +43,8 @@ var PESSOAS_AUDITORIA = {
   FONTES: [
     { chave: 'SERVIDORES', vinculo: 'servidor', descricao: 'servidores', colsEmail: [1], colNome: 2, colSetor: 3 },
     { chave: 'PLANILHA_DOCENTES', vinculo: 'docente', descricao: 'docentes', colsEmail: [4], colNome: 2 },
-    { chave: 'PLANILHA_ALUNOS', vinculo: 'aluno', descricao: 'alunos', colsEmail: [4, 5], colNome: 2 }
+    // E-mail secundário pelo título (na planilha real, E é "ID da Pasta").
+    { chave: 'PLANILHA_ALUNOS', vinculo: 'aluno', descricao: 'alunos', colsEmail: [4], colNome: 2, titulosEmail: ['eMail Secundario'] }
   ],
   // Nome achado (ou "não cadastrado", com as três planilhas lidas) fica em cache por e-mail.
   CACHE_SEGUNDOS: 600,
@@ -278,6 +279,29 @@ function identificarPessoas_(emails) {
   return res;
 }
 
+/** Título de coluna comparável: sem acentos, espaços e maiúsculas ("eMail Secundario" → "emailsecundario"). */
+function tituloComparavel_(t) {
+  return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '').toLowerCase();
+}
+
+/**
+ * Colunas de e-mail de um cadastro: as fixas (colsEmail) e as achadas pelo
+ * título na linha 1 (titulosEmail). @return {{cols: number[], semTitulo: string[]}}
+ */
+function colunasDeEmail_(aba, fonte) {
+  var cols = fonte.colsEmail.slice(), semTitulo = [];
+  if (fonte.titulosEmail && fonte.titulosEmail.length) {
+    var largura = Math.max(1, aba.getLastColumn());
+    var cab = aba.getRange(1, 1, 1, largura).getDisplayValues()[0].map(tituloComparavel_);
+    fonte.titulosEmail.forEach(function (t) {
+      var i = cab.indexOf(tituloComparavel_(t));
+      if (i < 0) semTitulo.push(t);
+      else if (cols.indexOf(i + 1) < 0) cols.push(i + 1);
+    });
+  }
+  return { cols: cols, semTitulo: semTitulo };
+}
+
 /**
  * Mapa e-mail (minúsculo) → {nome, vinculo, setor} de um cadastro: primeira
  * aba, linha 2 em diante. E-mail repetido: vale a primeira linha com nome.
@@ -288,12 +312,13 @@ function lerCadastroDePessoas_(fonte) {
   var mapa = {};
   var n = aba.getLastRow() - 1;
   if (n < 1) return mapa;
-  var ultimaCol = Math.max.apply(null, fonte.colsEmail.concat([fonte.colNome, fonte.colSetor || 1]));
+  var colsEmail = colunasDeEmail_(aba, fonte).cols;
+  var ultimaCol = Math.max.apply(null, colsEmail.concat([fonte.colNome, fonte.colSetor || 1]));
   aba.getRange(2, 1, n, ultimaCol).getDisplayValues().forEach(function (l) {
     var nome = String(l[fonte.colNome - 1] || '').replace(/\s+/g, ' ').trim();
     if (!nome) return;
     var p = { nome: nome, vinculo: fonte.vinculo, setor: fonte.colSetor ? String(l[fonte.colSetor - 1] || '').replace(/\s+/g, ' ').trim() : '' };
-    fonte.colsEmail.forEach(function (c) {
+    colsEmail.forEach(function (c) {
       var k = normalizarEmail_(l[c - 1]);
       if (k && !mapa[k]) mapa[k] = p;
     });
@@ -306,17 +331,27 @@ function lerCadastroDePessoas_(fonte) {
  * mostra os títulos das colunas usadas e o número de linhas. Não registra
  * nomes, e-mails nem IDs.
  */
+/** 1 → "A", 27 → "AA". */
+function letraDaColuna_(c) {
+  var s = '';
+  for (; c > 0; c = Math.floor((c - 1) / 26)) s = String.fromCharCode(65 + (c - 1) % 26) + s;
+  return s;
+}
+
 function diagnosticarNomesAuditoria() {
   var r = executarComSeguranca_('diagnosticarNomesAuditoria', function () {
     exigirAdmin_();
     return PESSOAS_AUDITORIA.FONTES.map(function (fonte) {
       try {
         var aba = SpreadsheetApp.openById(idDoIndex_(fonte.chave)).getSheets()[0];
-        var cols = fonte.colsEmail.concat([fonte.colNome], fonte.colSetor ? [fonte.colSetor] : []);
+        var emails = colunasDeEmail_(aba, fonte);
+        var cols = emails.cols.concat([fonte.colNome], fonte.colSetor ? [fonte.colSetor] : []);
         var cab = aba.getRange(1, 1, 1, Math.max.apply(null, cols)).getDisplayValues()[0];
         var titulos = {};
-        cols.forEach(function (c) { titulos[String.fromCharCode(64 + c)] = String(cab[c - 1] || '').trim(); });
-        return { chave: fonte.chave, aberta: true, aba: aba.getName(), linhas: Math.max(0, aba.getLastRow() - 1), titulos: titulos };
+        cols.forEach(function (c) { titulos[letraDaColuna_(c)] = String(cab[c - 1] || '').trim(); });
+        var r = { chave: fonte.chave, aberta: true, aba: aba.getName(), linhas: Math.max(0, aba.getLastRow() - 1), titulos: titulos };
+        if (emails.semTitulo.length) r.colunaNaoEncontrada = emails.semTitulo;
+        return r;
       } catch (e) {
         return { chave: fonte.chave, aberta: false, motivo: String(e && e.message || e).replace(/[A-Za-z0-9_-]{25,}/g, '[…]') };
       }
