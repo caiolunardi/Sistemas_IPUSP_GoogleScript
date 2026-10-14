@@ -152,6 +152,10 @@ const SISTEMAS = [
      item de SISTEMAS que deva pertencer a ela.
   Nenhuma outra alteração é necessária.
 
+  Campo "iconeMenu" é o nome de um ícone de PainelIcones.html,
+  usado no menu lateral/abas. Sem ele (ou com um nome que não
+  existe lá), o menu mostra o emoji de "icone".
+
   Campo "descricaoEn" é opcional — só usado quando a
   categoria também tem conteúdo em inglês (hoje, só
   Intercambistas). Quando ausente, a categoria é exibida
@@ -161,24 +165,28 @@ const CATEGORIAS_SISTEMAS = {
   "matricula-disciplinas": {
     ordem: 1,
     icone: "📚",
+    iconeMenu: "book-open",
     titulo: "Matrícula e disciplinas",
     descricao: "Trancamentos e alterações nas disciplinas da sua matrícula."
   },
   "formacao-conclusao": {
     ordem: 2,
     icone: "🎓",
+    iconeMenu: "graduation-cap",
     titulo: "Formação e conclusão",
-    descricao: "Habilitações do curso e solicitação de colação de grau."
+    descricao: "Habilitações do curso, colação de grau e contagem de créditos."
   },
   "beneficios-servicos": {
     ordem: 3,
     icone: "🎫",
+    iconeMenu: "ticket",
     titulo: "Benefícios e serviços",
     descricao: "Solicitações relacionadas a serviços e benefícios estudantis."
   },
   "intercambistas": {
     ordem: 4,
     icone: "🌎",
+    iconeMenu: "globe",
     titulo: "Intercambistas / Exchange Students",
     descricao: "Solicitações de matrícula para estudantes intercambistas.",
     descricaoEn: "Enrollment requests for exchange students."
@@ -195,6 +203,36 @@ function obterCategoriasParaFrontend_() {
   return Object.keys(CATEGORIAS_SISTEMAS)
     .map(id => Object.assign({ id: id }, CATEGORIAS_SISTEMAS[id]))
     .sort((a, b) => a.ordem - b.ordem);
+}
+
+/*=====================================================
+  FERRAMENTAS — itens do painel que NÃO são formulários e
+  abrem uma janela no próprio painel (não navegam). Aparecem
+  na categoria indicada, depois dos formulários dela, e
+  entram na busca como os formulários. A janela de cada
+  ferramenta fica num arquivo HTML próprio, que registra a
+  função de abertura em FERRAMENTAS_ABRIR[id] (Painel.html).
+
+  Campos: id (estável), nome, descricao, icone (emoji),
+  categoria (chave de CATEGORIAS_SISTEMAS), selo (texto do
+  rótulo do card) e palavrasChave (só para a busca).
+=====================================================*/
+const FERRAMENTAS_PAINEL = [
+  {
+    id: "contagem-creditos",
+    nome: "Contagem de créditos",
+    descricao: "Escolha o seu currículo, informe os créditos e horas que você já tem e veja o que falta para se formar.",
+    icone: "🧮",
+    categoria: "formacao-conclusao",
+    selo: "Abre aqui no painel",
+    palavrasChave: "creditos faltam formar formatura conclusao curriculo calcular calculo contagem estagio horas"
+  }
+];
+
+// Mesmo mecanismo de obterCategoriasParaFrontend_: lido por scriptlet
+// na montagem da página, não é chamada de google.script.run.
+function obterFerramentasParaFrontend_() {
+  return FERRAMENTAS_PAINEL.map(f => Object.assign({}, f));
 }
 
 /*=====================================================
@@ -230,7 +268,9 @@ function obterCategoriasParaFrontend_() {
 // O ID da planilha mestre ID_INDEX fica em Script Properties, fora do Git.
 // A coluna A contém a chave estável, B o tipo e C o ID de produção.
 // A coluna D é reservada à homologação e nunca é usada por este painel.
-function obterIdPeriodos_() {
+// Genérica desde a contagem de créditos (chave REGRAS_CURRICULARES, ver
+// ContagemCreditos.gs); as mensagens para PERIODOS são as mesmas de antes.
+function obterIdDoIndice_(chave) {
   const indexId = PropertiesService.getScriptProperties().getProperty("ID_INDEX_SPREADSHEET_ID");
   if (!indexId) throw new Error("Configuração obrigatória ausente: ID_INDEX_SPREADSHEET_ID.");
   const index = SpreadsheetApp.openById(indexId);
@@ -243,18 +283,23 @@ function obterIdPeriodos_() {
   }
 
   const linhas = aba.getRange(2, 1, aba.getLastRow() - 1, 3).getDisplayValues();
-  let idPeriodos = null;
+  let idEncontrado = null;
   linhas.forEach(linha => {
-    if (String(linha[0]).trim() !== "PERIODOS") return;
-    if (idPeriodos !== null) throw new Error("A chave PERIODOS está duplicada na planilha ID_INDEX.");
-    if (String(linha[1]).trim() !== "spreadsheet") throw new Error("A chave PERIODOS deve ter o tipo spreadsheet.");
-    idPeriodos = String(linha[2]).trim();
-    if (!idPeriodos) throw new Error("A chave PERIODOS está sem ID de Produção na planilha ID_INDEX.");
+    if (String(linha[0]).trim() !== chave) return;
+    if (idEncontrado !== null) throw new Error(`A chave ${chave} está duplicada na planilha ID_INDEX.`);
+    if (String(linha[1]).trim() !== "spreadsheet") throw new Error(`A chave ${chave} deve ter o tipo spreadsheet.`);
+    idEncontrado = String(linha[2]).trim();
+    if (!idEncontrado) throw new Error(`A chave ${chave} está sem ID de Produção na planilha ID_INDEX.`);
   });
 
-  if (idPeriodos === null) throw new Error("A chave PERIODOS não foi encontrada na planilha ID_INDEX.");
-  return idPeriodos;
+  if (idEncontrado === null) throw new Error(`A chave ${chave} não foi encontrada na planilha ID_INDEX.`);
+  return idEncontrado;
 }
+
+function obterIdPeriodos_() {
+  return obterIdDoIndice_("PERIODOS");
+}
+
 // Em vez de depender do nome exato de uma aba (que já causou
 // problema — a aba se chama diferente do que o código esperava),
 // usamos sempre a PRIMEIRA aba da planilha, igual ao script do

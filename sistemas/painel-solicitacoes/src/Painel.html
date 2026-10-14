@@ -695,9 +695,89 @@ body{
     }
 }
 
+/*=================================
+   CATEGORIA ABERTA E BUSCA (menu lateral/abas)
+   O título da categoria escolhida no menu fica no topo da área
+   principal, no lugar do antigo "Formulários disponíveis". Mesmos
+   tokens dos cabeçalhos de categoria da v1.2.
+==================================*/
+
+.tituloArea{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin:4px 0 16px;
+}
+
+.tituloArea h1{
+    font-size:20px;
+    margin:0;
+    color:var(--gradip-text);
+}
+
+.tituloArea p{
+    margin:4px 0 0 0;
+    font-size:13.5px;
+    color:var(--gradip-text-muted);
+}
+
+.tituloArea .textoCategoriaEn{
+    margin-top:2px;
+}
+
+.grupoBusca + .grupoBusca{
+    margin-top:22px;
+}
+
+.grupoBusca h2{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    margin:0 0 10px 0;
+    color:var(--gradip-text);
+}
+
+.grupoBusca h2 .contadorCategoria{
+    font-weight:normal;
+}
+
+.rodapeArea{
+    margin-top:14px;
+}
+
+/* Card de ferramenta (ex.: contagem de créditos): mesmo visual do
+   card de formulário aberto, mas é um <button> que abre uma janela
+   no próprio painel em vez de navegar. */
+button.cardSistema{
+    font:inherit;
+    text-align:left;
+}
+
+.cardSistema:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.badgeStatusForm.ferramenta{
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
+}
+
+@media (max-width:480px){
+    .tituloArea{
+        align-items:flex-start;
+    }
+    .tituloArea h1{
+        font-size:18px;
+    }
+}
+
 </style>
 
 <?!= include_('PainelAjudaEstilos') ?>
+<?!= include_('PainelNavegacaoEstilos') ?>
+<?!= include_('PainelContagemEstilos') ?>
 
 <header id="headerSistema">
     <div class="logoEsquerda">
@@ -730,6 +810,32 @@ body{
 
 <div class="barraAzul"></div>
 
+<!-- Navegação por menu lateral ou abas (mesmo modelo do Painel dos
+     servidores). Cada item do menu é uma categoria; os itens são criados
+     pelo script do Painel a partir de CATEGORIAS_SISTEMAS (Codigo.gs).
+     O comportamento fica em PainelNavegacaoUI.html. -->
+<div class="painelNavegacaoModos">
+    <p class="painelNavegacaoModos__rotulo" id="painelModoRotulo">Navegação</p>
+    <div class="painelNavegacaoModos__grupo" role="group" aria-labelledby="painelModoRotulo">
+        <button type="button" class="painelModo" data-painel-modo="sidebar" data-icone="panel-left" aria-pressed="true"><span>Menu lateral</span></button>
+        <button type="button" class="painelModo" data-painel-modo="abas" data-icone="panels-top-left" aria-pressed="false"><span>Abas</span></button>
+    </div>
+    <span class="somenteLeitor" id="painelModoStatus" role="status" aria-live="polite"></span>
+</div>
+
+<div id="painelLayout" class="painelLayout" data-navegacao="sidebar">
+
+    <aside id="painelSidebar" class="painelSidebar" aria-label="Categorias de formulários">
+        <div class="painelSidebar__topo">
+            <p class="painelSidebar__titulo">Categorias</p>
+            <button type="button" id="painelMenuMovel" class="painelMenuMovel" aria-controls="painelMenu" aria-expanded="true">Recolher menu</button>
+        </div>
+        <nav id="painelMenu" class="painelMenu" aria-label="Categorias de formulários"></nav>
+        <div class="painelSidebar__apoio">
+            <button type="button" id="navAjuda" class="painelNavItem" data-icone="circle-help" aria-haspopup="dialog"><span class="painelNavTexto">Ajuda e perguntas frequentes</span></button>
+        </div>
+    </aside>
+
 <div id="conteudo">
 
     <div class="avisoLogin">
@@ -742,15 +848,16 @@ body{
         </div>
     </div>
 
-    <div class="cardResumo">
-        <h1>Formulários disponíveis</h1>
-        <p>Selecione o formulário que você precisa preencher</p>
+    <input type="text" class="caixaBusca" id="caixaBusca" placeholder="Buscar formulário em todas as categorias..." aria-label="Buscar formulário em todas as categorias" oninput="filtrarSistemas()">
+
+    <div id="listaSistemasContainer"></div>
+    <span class="somenteLeitor" id="statusBusca" role="status" aria-live="polite"></span>
+
+    <div class="rodapeArea">
         <button type="button" class="linkAjudaContextual" data-abrir-ajuda-secao="qual-formulario">Não sabe qual formulário escolher?</button>
     </div>
 
-    <input type="text" class="caixaBusca" id="caixaBusca" placeholder="Buscar formulário..." oninput="filtrarSistemas()">
-
-    <div id="listaSistemasContainer"></div>
+</div>
 
 </div>
 
@@ -776,16 +883,17 @@ body{
 // chamada assíncrona nova nem muda o contrato de obterSistemas().
 const CATEGORIAS_SISTEMAS = <?!= JSON.stringify(obterCategoriasParaFrontend_()) ?>;
 
+// Ferramentas do painel que não são formulários (ex.: contagem de
+// créditos). Mesma fonte de verdade: FERRAMENTAS_PAINEL em Codigo.gs.
+const FERRAMENTAS_PAINEL = <?!= JSON.stringify(obterFerramentasParaFrontend_()) ?>;
+
 let sistemasCarregados = [];
-let categoriaAberta = null; // id da categoria aberta no modo normal (fora de busca)
 let loadingTimer;
 
-// Estado TEMPORÁRIO — só existe enquanto o aluno está buscando: quais
-// categorias (com resultado) ele recolheu manualmente. Nunca escreve
-// em categoriaAberta, e é zerado toda vez que a busca é limpa — assim
-// o Painel continua restaurando sozinho o estado normal (categoria
-// aberta/fechada de antes de buscar) exatamente como antes.
-let categoriasRecolhidasNaBusca = new Set();
+// Categoria aberta na área principal (escolhida no menu lateral ou nas
+// abas). O painel sempre abre na primeira categoria. Durante a busca a
+// categoria continua guardada aqui: ao limpar a busca, ela volta.
+let categoriaSelecionada = CATEGORIAS_SISTEMAS.length ? CATEGORIAS_SISTEMAS[0].id : null;
 
 window.onload = function () {
     mostrarLoading("Carregando sistemas");
@@ -803,6 +911,11 @@ function receberSistemas(sistemas) {
 
 function filtrarSistemas() {
     renderizarPainel();
+    if (window.PainelNavegacao) window.PainelNavegacao.sincronizar();
+}
+
+function termoDeBusca() {
+    return document.getElementById("caixaBusca").value.trim();
 }
 
 // Normalização de texto só para a BUSCA do Painel (minúsculas + sem
@@ -812,129 +925,181 @@ function filtrarSistemas() {
 function normalizarTextoBusca(texto) {
     return String(texto || "")
         .toLowerCase()
-        .normalize("NFD").replace(/[̀-ͯ]/g, "");
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function sistemaCasaBusca(sistema, categoria, termoNormalizado) {
     const alvo = normalizarTextoBusca(sistema.nome) + " " +
                  normalizarTextoBusca(sistema.descricao || "") + " " +
+                 normalizarTextoBusca(sistema.palavrasChave || "") + " " +
                  normalizarTextoBusca(categoria.titulo);
     return alvo.includes(termoNormalizado);
 }
 
-// Clique no cabeçalho de uma categoria: alterna aberta/fechada no modo
-// normal (uma categoria aberta por vez — abrir uma fecha a anterior).
-// Durante busca os cabeçalhos não alternam: toda categoria com
-// resultado já aparece aberta, e como nunca escrevemos em
-// categoriaAberta nesse momento, ao limpar a busca o Painel volta
-// sozinho pro estado (aberto/fechado) de antes de buscar.
-function alternarCategoria(id) {
-    const termo = document.getElementById("caixaBusca").value.trim();
-    if (termo) return;
-    categoriaAberta = (categoriaAberta === id) ? null : id;
+// Itens de uma categoria, na ordem em que aparecem: os formulários (na
+// ordem de SISTEMAS) e depois as ferramentas da categoria.
+function itensDaCategoria(categoriaId) {
+    const formularios = sistemasCarregados.filter(s => s.categoria === categoriaId);
+    const ferramentas = FERRAMENTAS_PAINEL
+        .filter(f => f.categoria === categoriaId)
+        .map(f => Object.assign({ ferramenta: true }, f));
+    return formularios.concat(ferramentas);
+}
+
+/*-----------------------------------
+  Contrato com PainelNavegacaoUI.html
+  (menu lateral / abas). O menu só pergunta qual categoria está
+  aberta e pede para abrir outra; quem desenha é este script.
+-----------------------------------*/
+
+// Durante a busca nenhuma categoria fica marcada no menu: o resultado
+// mistura todas.
+function categoriaAtual() {
+    return termoDeBusca() ? null : categoriaSelecionada;
+}
+
+function selecionarCategoria(id) {
+    if (!CATEGORIAS_SISTEMAS.some(c => c.id === id)) return;
+    categoriaSelecionada = id;
+    // Escolher uma categoria encerra a busca, para a área principal
+    // mostrar exatamente o que foi escolhido.
+    document.getElementById("caixaBusca").value = "";
     renderizarPainel();
 }
 
-// Equivalente a alternarCategoria, mas pro modo de busca: em vez de
-// mexer em categoriaAberta (que é o estado "normal", de fora da
-// busca), guarda só localmente quais categorias o aluno recolheu
-// enquanto o termo atual está ativo. Categoria com resultado começa
-// sempre aberta; clicar recolhe, clicar de novo reabre.
-function alternarCategoriaNaBusca(id) {
-    if (categoriasRecolhidasNaBusca.has(id)) {
-        categoriasRecolhidasNaBusca.delete(id);
-    } else {
-        categoriasRecolhidasNaBusca.add(id);
-    }
-    renderizarPainel();
-}
+window.PainelSolicitacoes = Object.freeze({
+    categoriaAtual: categoriaAtual,
+    selecionarCategoria: selecionarCategoria
+});
 
-// Ponto único de renderização: agrupa sistemasCarregados por categoria,
-// na ordem de CATEGORIAS_SISTEMAS, e desenha os accordions.
+// Itens do menu: um botão por categoria, na ordem de
+// CATEGORIAS_SISTEMAS. Criados aqui, antes de PainelNavegacaoUI.html
+// carregar, que é quem liga os cliques, os ícones e os papéis ARIA.
+(function montarMenuCategorias() {
+    const menu = document.getElementById("painelMenu");
+    if (!menu) return;
+    CATEGORIAS_SISTEMAS.forEach(categoria => {
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "painelNavItem";
+        botao.id = "navCategoria-" + categoria.id;
+        botao.setAttribute("data-pagina", categoria.id);
+        if (categoria.iconeMenu) botao.setAttribute("data-icone", categoria.iconeMenu);
+        else botao.setAttribute("data-icone", "");
+        botao.setAttribute("data-icone-texto", categoria.icone || "📁");
+        botao.setAttribute("aria-controls", "conteudo");
+        const texto = document.createElement("span");
+        texto.className = "painelNavTexto";
+        texto.textContent = categoria.titulo;
+        botao.appendChild(texto);
+        menu.appendChild(botao);
+    });
+    const ajuda = document.getElementById("navAjuda");
+    if (ajuda) ajuda.addEventListener("click", () => painelAjudaAbrir());
+})();
+
+// Ponto único de renderização da área principal.
+//   - Sem busca: título da categoria escolhida + seus cards.
+//   - Com busca: resultados de TODAS as categorias, agrupados.
 function renderizarPainel() {
 
-    const termoBruto = document.getElementById("caixaBusca").value.trim();
-    const emBusca = termoBruto.length > 0;
-    const termoNormalizado = normalizarTextoBusca(termoBruto);
-
-    // Fora de busca, o recolhimento manual feito DURANTE uma busca não
-    // tem mais sentido — zera pra não vazar pra próxima busca nem pro
-    // estado normal (que é sempre regido só por categoriaAberta).
-    if (!emBusca) categoriasRecolhidasNaBusca.clear();
-
+    const termoBruto = termoDeBusca();
     const container = document.getElementById("listaSistemasContainer");
+    const status = document.getElementById("statusBusca");
     container.innerHTML = "";
 
-    const grupos = CATEGORIAS_SISTEMAS.map(categoria => {
-        let sistemas = sistemasCarregados.filter(s => s.categoria === categoria.id);
-        if (emBusca) {
-            sistemas = sistemas.filter(s => sistemaCasaBusca(s, categoria, termoNormalizado));
-        }
-        return { categoria: categoria, sistemas: sistemas };
-    });
+    if (termoBruto) {
+        renderizarBusca(container, status, normalizarTextoBusca(termoBruto));
+        return;
+    }
 
-    if (emBusca) {
+    if (status) status.textContent = "";
 
-        const totalEncontrado = grupos.reduce((soma, g) => soma + g.sistemas.length, 0);
+    const categoria = CATEGORIAS_SISTEMAS.find(c => c.id === categoriaSelecionada);
+    if (!categoria) return;
 
-        if (totalEncontrado === 0) {
-            const vazio = document.createElement("div");
-            vazio.className = "vazio";
-            vazio.textContent = "Nenhum formulário encontrado para essa busca.";
-            const dica = document.createElement("div");
-            dica.className = "vazioDica";
-            dica.textContent = "Tente outro termo ou consulte as categorias abaixo.";
-            vazio.appendChild(dica);
-            container.appendChild(vazio);
-            return;
-        }
+    container.appendChild(criarTituloArea(categoria));
 
-    } else {
+    const itens = itensDaCategoria(categoria.id);
+    if (itens.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum formulário nesta categoria no momento.";
+        container.appendChild(vazio);
+        return;
+    }
+    container.appendChild(criarListaCards(itens));
 
-        const aviso = document.createElement("div");
-        aviso.className = "avisoEscolhaCategoria";
-        aviso.textContent = "Escolha uma categoria para ver os formulários.";
-        container.appendChild(aviso);
+}
 
+function renderizarBusca(container, status, termoNormalizado) {
+
+    const grupos = CATEGORIAS_SISTEMAS.map(categoria => ({
+        categoria: categoria,
+        itens: itensDaCategoria(categoria.id).filter(s => sistemaCasaBusca(s, categoria, termoNormalizado))
+    })).filter(g => g.itens.length > 0);
+
+    const total = grupos.reduce((soma, g) => soma + g.itens.length, 0);
+    if (status) status.textContent = total === 0
+        ? "Nenhum formulário encontrado."
+        : (total === 1 ? "1 resultado encontrado." : `${total} resultados encontrados.`);
+
+    const titulo = document.createElement("div");
+    titulo.className = "tituloArea";
+    const textos = document.createElement("div");
+    const h1 = document.createElement("h1");
+    h1.textContent = "Resultados da busca";
+    const p = document.createElement("p");
+    p.textContent = "Em todas as categorias. Apague a busca para voltar à categoria escolhida no menu.";
+    textos.appendChild(h1);
+    textos.appendChild(p);
+    titulo.appendChild(textos);
+    container.appendChild(titulo);
+
+    if (total === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum formulário encontrado para essa busca.";
+        const dica = document.createElement("div");
+        dica.className = "vazioDica";
+        dica.textContent = "Tente outro termo ou escolha uma categoria no menu.";
+        vazio.appendChild(dica);
+        container.appendChild(vazio);
+        return;
     }
 
     grupos.forEach(grupo => {
-        if (emBusca && grupo.sistemas.length === 0) return; // categoria sem resultado some durante a busca
-        // Durante busca, toda categoria com resultado começa aberta,
-        // exceto a que o aluno já recolheu manualmente nesta mesma
-        // busca. Fora de busca, segue exatamente como antes.
-        const expandida = emBusca
-            ? !categoriasRecolhidasNaBusca.has(grupo.categoria.id)
-            : (grupo.categoria.id === categoriaAberta);
-        container.appendChild(criarSecaoCategoria(grupo.categoria, grupo.sistemas, expandida, emBusca));
+        const secao = document.createElement("section");
+        secao.className = "grupoBusca";
+        const idTitulo = "busca-categoria-" + grupo.categoria.id;
+        secao.setAttribute("aria-labelledby", idTitulo);
+        const h2 = document.createElement("h2");
+        h2.id = idTitulo;
+        const icone = document.createElement("span");
+        icone.setAttribute("aria-hidden", "true");
+        icone.textContent = grupo.categoria.icone || "📁";
+        const nome = document.createElement("span");
+        nome.textContent = grupo.categoria.titulo;
+        const contador = document.createElement("span");
+        contador.className = "contadorCategoria";
+        contador.textContent = grupo.itens.length === 1 ? "· 1 resultado" : `· ${grupo.itens.length} resultados`;
+        h2.appendChild(icone);
+        h2.appendChild(nome);
+        h2.appendChild(contador);
+        secao.appendChild(h2);
+        secao.appendChild(criarListaCards(grupo.itens));
+        container.appendChild(secao);
     });
 
 }
 
-// Monta o accordion de UMA categoria: cabeçalho clicável (sempre um
-// <button type="button">, nunca uma div com onclick — necessário pra
-// abrir/recolher funcionar naturalmente com teclado) + painel
-// recolhível com os cards dessa categoria.
-function criarSecaoCategoria(categoria, sistemas, expandida, emBusca) {
+// Título da categoria aberta: ícone, nome, descrição (e a linha em
+// inglês, quando a categoria tiver — hoje só Intercambistas) e o total
+// de formulários.
+function criarTituloArea(categoria) {
 
-    const secao = document.createElement("div");
-    secao.className = "categoriaSistemas";
-
-    const idPainel = "categoria-painel-" + categoria.id;
-    const idCabecalho = "categoria-cabecalho-" + categoria.id;
-
-    const cabecalho = document.createElement("button");
-    cabecalho.type = "button";
-    cabecalho.id = idCabecalho;
-    cabecalho.className = "cabecalhoCategoria";
-    cabecalho.setAttribute("aria-expanded", expandida ? "true" : "false");
-    cabecalho.setAttribute("aria-controls", idPainel);
-    // O cabeçalho é sempre clicável — fora de busca alterna
-    // categoriaAberta (estado normal); durante busca alterna só o
-    // recolhimento local desta busca, sem tocar em categoriaAberta.
-    cabecalho.onclick = emBusca
-        ? () => alternarCategoriaNaBusca(categoria.id)
-        : () => alternarCategoria(categoria.id);
+    const titulo = document.createElement("div");
+    titulo.className = "tituloArea";
 
     const icone = document.createElement("div");
     icone.className = "iconeCategoria";
@@ -942,89 +1107,85 @@ function criarSecaoCategoria(categoria, sistemas, expandida, emBusca) {
     icone.textContent = categoria.icone || "📁";
 
     const textos = document.createElement("div");
-    textos.className = "textoCategoria";
-
-    const tituloEl = document.createElement("strong");
-    tituloEl.textContent = categoria.titulo;
-    textos.appendChild(tituloEl);
+    const h1 = document.createElement("h1");
+    h1.textContent = categoria.titulo;
+    textos.appendChild(h1);
 
     if (categoria.descricao) {
-        const descEl = document.createElement("div");
-        descEl.textContent = categoria.descricao;
-        textos.appendChild(descEl);
+        const desc = document.createElement("p");
+        desc.textContent = categoria.descricao;
+        textos.appendChild(desc);
     }
-
-    // Segunda linha, em inglês, só quando a categoria a define
-    // (hoje só Intercambistas) — comportamento genérico, nada de
-    // "intercambistas" hardcoded aqui: qualquer categoria futura que
-    // ganhar descricaoEn no backend passa a exibir automaticamente.
     if (categoria.descricaoEn) {
-        const descEnEl = document.createElement("div");
-        descEnEl.className = "textoCategoriaEn";
-        descEnEl.textContent = categoria.descricaoEn;
-        textos.appendChild(descEnEl);
+        const descEn = document.createElement("p");
+        descEn.className = "textoCategoriaEn";
+        descEn.textContent = categoria.descricaoEn;
+        textos.appendChild(descEn);
     }
 
-    const meta = document.createElement("div");
-    meta.className = "metaCategoria";
+    titulo.appendChild(icone);
+    titulo.appendChild(textos);
+    return titulo;
 
-    const contador = document.createElement("div");
-    contador.className = "contadorCategoria";
-    // Durante busca, o contador reflete a quantidade FILTRADA (o que
-    // realmente está sendo mostrado nesta categoria), não o total
-    // cadastrado nela — por isso usa sistemas.length (já filtrado por
-    // renderizarPainel), nunca uma recontagem sobre sistemasCarregados.
-    if (emBusca) {
-        contador.textContent = sistemas.length === 1 ? "1 resultado" : `${sistemas.length} resultados`;
-    } else {
-        contador.textContent = sistemas.length === 1 ? "1 formulário" : `${sistemas.length} formulários`;
-    }
-    meta.appendChild(contador);
+}
 
-    const verFormularios = document.createElement("div");
-    verFormularios.className = "verFormularios";
-    const textoVer = document.createElement("span");
-    if (expandida) {
-        textoVer.textContent = "Recolher";
-    } else {
-        textoVer.textContent = emBusca ? "Ver resultados" : "Ver formulários";
-    }
-    const chevron = document.createElement("span");
-    chevron.className = "chevronCategoria";
-    chevron.textContent = "⌄";
-    chevron.setAttribute("aria-hidden", "true");
-    verFormularios.appendChild(textoVer);
-    verFormularios.appendChild(chevron);
-    meta.appendChild(verFormularios);
+function criarListaCards(itens) {
+    const lista = document.createElement("div");
+    lista.className = "listaSistemas";
+    itens.forEach(item => lista.appendChild(item.ferramenta ? criarCardFerramenta(item) : criarCardSistema(item)));
+    return lista;
+}
 
-    cabecalho.appendChild(icone);
-    cabecalho.appendChild(textos);
-    cabecalho.appendChild(meta);
+// Card de ferramenta: abre uma janela no próprio painel (não navega).
+function criarCardFerramenta(ferramenta) {
 
-    const painel = document.createElement("div");
-    painel.className = "painelCategoria";
-    painel.id = idPainel;
-    painel.setAttribute("role", "region");
-    painel.setAttribute("aria-labelledby", idCabecalho);
-    if (!expandida) painel.hidden = true;
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "cardSistema";
+    card.setAttribute("aria-haspopup", "dialog");
 
-    if (sistemas.length === 0) {
-        const vazioCategoria = document.createElement("div");
-        vazioCategoria.className = "vazio";
-        vazioCategoria.textContent = "Nenhum formulário nesta categoria no momento.";
-        painel.appendChild(vazioCategoria);
-    } else {
-        const lista = document.createElement("div");
-        lista.className = "listaSistemas";
-        sistemas.forEach(sistema => lista.appendChild(criarCardSistema(sistema)));
-        painel.appendChild(lista);
+    const icone = document.createElement("div");
+    icone.className = "iconeSistema";
+    icone.setAttribute("aria-hidden", "true");
+    icone.textContent = ferramenta.icone || "🧮";
+
+    const info = document.createElement("div");
+    info.className = "infoSistema";
+    const nomeEl = document.createElement("strong");
+    nomeEl.textContent = ferramenta.nome;
+    info.appendChild(nomeEl);
+    if (ferramenta.descricao) {
+        const descEl = document.createElement("div");
+        descEl.textContent = ferramenta.descricao;
+        info.appendChild(descEl);
     }
 
-    secao.appendChild(cabecalho);
-    secao.appendChild(painel);
+    const badge = document.createElement("div");
+    badge.className = "badgeStatusForm ferramenta";
+    badge.textContent = ferramenta.selo || "Abre aqui no painel";
 
-    return secao;
+    const seta = document.createElement("div");
+    seta.className = "setaSistema";
+    seta.setAttribute("aria-hidden", "true");
+    seta.textContent = "→";
 
+    card.appendChild(icone);
+    card.appendChild(info);
+    card.appendChild(badge);
+    card.appendChild(seta);
+
+    card.onclick = () => abrirFerramenta(ferramenta.id, card);
+    return card;
+
+}
+
+// Cada ferramenta registra sua função de abertura em
+// FERRAMENTAS_ABRIR (ex.: PainelContagemUI.html).
+const FERRAMENTAS_ABRIR = {};
+
+function abrirFerramenta(id, origem) {
+    const abrir = FERRAMENTAS_ABRIR[id];
+    if (typeof abrir === "function") abrir(origem);
 }
 
 // Cada card é montado só com createElement/textContent — nome,
@@ -1109,6 +1270,15 @@ function criarCardSistema(sistema) {
             if (sistema.proximaAbertura) msg += `\nReabre em ${sistema.proximaAbertura}.`;
             alert(msg);
         };
+        // Também pelo teclado (Enter/Espaço), como os cards abertos.
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.addEventListener("keydown", evento => {
+            if (evento.key === "Enter" || evento.key === " ") {
+                evento.preventDefault();
+                card.click();
+            }
+        });
     }
 
     return card;
@@ -1147,3 +1317,9 @@ function mostrarErro(erro) {
 </script>
 
 <?!= include_('PainelAjudaUI') ?>
+
+<?!= include_('PainelContagemMotor') ?>
+<?!= include_('PainelContagemUI') ?>
+
+<?!= include_('PainelIcones') ?>
+<?!= include_('PainelNavegacaoUI') ?>

@@ -1,0 +1,466 @@
+<style>
+/*=====================================================
+  CONTAGEM DE CRÉDITOS — estilos da janela
+  Prefixo "contagem" para não colidir com o Painel nem com a
+  Central de Ajuda. Só tokens GRADIP (claro/escuro acompanham o
+  tema ao vivo). z-index entre o loading (10000) e a Central de
+  Ajuda (11000), para a ajuda poder abrir por cima.
+=====================================================*/
+
+.contagemOverlay{
+    display:none;
+    position:fixed;
+    z-index:10500;
+    inset:0;
+    background:var(--gradip-overlay);
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 16px;
+    box-sizing:border-box;
+    overflow-y:auto;
+}
+
+.contagemOverlay.contagemAberta{
+    display:flex;
+}
+
+.contagemModal{
+    background:var(--gradip-surface-elevated);
+    border:1px solid var(--gradip-border);
+    border-radius:12px;
+    width:100%;
+    max-width:760px;
+    box-shadow:var(--gradip-shadow);
+    color:var(--gradip-text);
+    box-sizing:border-box;
+}
+
+.contagemCabecalho{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:16px 20px;
+    border-bottom:1px solid var(--gradip-border);
+}
+
+.contagemCabecalho h2{
+    margin:0;
+    font-size:17px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.contagemFechar{
+    min-width:44px;
+    min-height:44px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    background:transparent;
+    color:var(--gradip-text);
+    font:inherit;
+    font-size:18px;
+    cursor:pointer;
+}
+
+.contagemFechar:hover{
+    background:var(--gradip-surface-2);
+}
+
+.contagemCorpo{
+    padding:18px 20px 22px;
+}
+
+.contagemIntro{
+    margin:0 0 16px 0;
+    font-size:13.5px;
+    color:var(--gradip-text-muted);
+    line-height:1.5;
+}
+
+.contagemAviso{
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:13px;
+    line-height:1.45;
+    margin:0 0 16px 0;
+    color:var(--gradip-text);
+}
+
+.contagemAviso--atencao{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+}
+
+.contagemCampo{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-bottom:16px;
+}
+
+.contagemCampo label,
+.contagemRotulo{
+    font-size:14px;
+    font-weight:bold;
+    color:var(--gradip-text);
+}
+
+.contagemDica{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    line-height:1.4;
+}
+
+.contagemSelect,
+.contagemNumero{
+    min-height:44px;
+    box-sizing:border-box;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:6px;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+    font:inherit;
+    font-size:14px;
+    padding:8px 12px;
+}
+
+.contagemSelect{
+    width:100%;
+}
+
+.contagemNumero{
+    width:120px;
+    text-align:right;
+}
+
+.contagemSelect:focus-visible,
+.contagemNumero:focus-visible,
+.contagemFechar:focus-visible,
+.contagemBotao:focus-visible,
+.contagemCheck input:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.contagemInfoCurriculo{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:-4px 0 18px 0;
+}
+
+.contagemSelo{
+    font-size:12px;
+    padding:4px 10px;
+    border-radius:12px;
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
+    color:var(--gradip-text);
+}
+
+.contagemSecao{
+    border-top:1px solid var(--gradip-border);
+    padding-top:16px;
+    margin-top:4px;
+}
+
+.contagemSecao h3{
+    margin:0 0 4px 0;
+    font-size:15px;
+}
+
+.contagemSecao > .contagemDica{
+    margin:0 0 12px 0;
+}
+
+.contagemHabilitacao{
+    margin-top:8px;
+}
+
+.contagemHabilitacao > h3{
+    font-size:16px;
+    margin:0 0 12px 0;
+    color:var(--gradip-link);
+}
+
+.contagemSubsecao{
+    margin-top:14px;
+}
+
+.contagemSubsecao h4{
+    margin:0 0 4px 0;
+    font-size:14.5px;
+}
+
+.contagemSubsecao > .contagemDica{
+    margin:0 0 10px 0;
+}
+
+.contagemResultadoHab + .contagemResultadoHab{
+    margin-top:6px;
+}
+
+.contagemSubtitulo--hab{
+    font-size:15px;
+    color:var(--gradip-link);
+}
+
+.contagemLinha{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) auto;
+    align-items:center;
+    gap:6px 16px;
+    padding:10px 0;
+    border-bottom:1px dashed var(--gradip-border);
+}
+
+.contagemLinha:last-child{
+    border-bottom:none;
+}
+
+.contagemLinha .contagemExigido{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    margin-top:2px;
+}
+
+.contagemEntrada{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+}
+
+.contagemListaChecks{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    margin:6px 0 4px 0;
+}
+
+.contagemCheck{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    min-height:44px;
+    padding:4px 0;
+    box-sizing:border-box;
+    font-size:13.5px;
+    cursor:pointer;
+}
+
+.contagemCheck input{
+    width:20px;
+    height:20px;
+    margin:2px 0 0 0;
+    flex:0 0 auto;
+    accent-color:var(--gradip-primary);
+}
+
+.contagemCheck .contagemSigla{
+    font-weight:bold;
+}
+
+.contagemGrupo{
+    padding:10px 0 12px;
+    border-bottom:1px dashed var(--gradip-border);
+}
+
+.contagemGrupo:last-child{
+    border-bottom:none;
+}
+
+.contagemAcoes{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:18px;
+}
+
+.contagemBotao{
+    min-height:44px;
+    padding:10px 18px;
+    border-radius:8px;
+    border:1px solid var(--gradip-border-strong);
+    background:var(--gradip-surface);
+    color:var(--gradip-text);
+    font:inherit;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.contagemBotao--principal{
+    background:var(--gradip-primary);
+    border-color:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+}
+
+.contagemBotao--principal:hover{
+    background:var(--gradip-primary-hover);
+}
+
+.contagemBotao:not(.contagemBotao--principal):hover{
+    background:var(--gradip-surface-2);
+}
+
+/*---------------- RESULTADO ----------------*/
+
+.contagemResultado{
+    margin-top:22px;
+}
+
+.contagemResultado:empty{
+    display:none;
+}
+
+.contagemResumo{
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:14px;
+    border:1px solid var(--gradip-info-border);
+    background:var(--gradip-info-bg);
+}
+
+.contagemResumo h3{
+    margin:0;
+    font-size:16px;
+}
+
+.contagemResumo p{
+    margin:6px 0 0 0;
+    font-size:13.5px;
+    line-height:1.45;
+}
+
+.contagemResumo--ok{
+    background:var(--gradip-success-bg);
+    border-color:var(--gradip-success-border);
+}
+
+.contagemResumo--falta{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+}
+
+.contagemItens{
+    list-style:none;
+    margin:0;
+    padding:0;
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.contagemItem{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) auto;
+    gap:4px 14px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--gradip-border);
+    background:var(--gradip-surface);
+}
+
+.contagemItem:last-child{
+    border-bottom:none;
+}
+
+.contagemItem strong{
+    font-size:14px;
+}
+
+.contagemItem .contagemDetalhe{
+    grid-column:1 / -1;
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    line-height:1.4;
+}
+
+.contagemStatus{
+    align-self:start;
+    font-size:12px;
+    font-weight:bold;
+    padding:4px 10px;
+    border-radius:12px;
+    white-space:nowrap;
+}
+
+.contagemStatus--ok{
+    background:var(--gradip-success-bg);
+    color:var(--gradip-success);
+}
+
+.contagemStatus--falta{
+    background:var(--gradip-danger-bg);
+    color:var(--gradip-danger);
+}
+
+.contagemStatus--neutro{
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text);
+}
+
+.contagemSubtitulo{
+    font-size:14px;
+    margin:18px 0 8px 0;
+}
+
+.contagemCarregando,
+.contagemErro{
+    padding:24px 4px;
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:14px;
+}
+
+.contagemErro p{
+    margin:0 0 12px 0;
+}
+
+@media (max-width:480px){
+    .contagemOverlay{
+        padding:0;
+    }
+    .contagemModal{
+        border-radius:0;
+        min-height:100%;
+        border:none;
+    }
+    .contagemCorpo{
+        padding:16px 14px 22px;
+    }
+    .contagemCabecalho{
+        padding:12px 14px;
+    }
+    .contagemLinha{
+        grid-template-columns:minmax(0, 1fr);
+    }
+    .contagemNumero{
+        width:100%;
+        max-width:160px;
+    }
+    .contagemBotao{
+        flex:1 1 100%;
+    }
+    .contagemStatus{
+        white-space:normal;
+    }
+}
+
+@media print{
+    .contagemOverlay.contagemAberta{
+        position:static;
+        background:none;
+        padding:0;
+    }
+    .contagemAcoes,
+    .contagemFechar{
+        display:none !important;
+    }
+}
+</style>

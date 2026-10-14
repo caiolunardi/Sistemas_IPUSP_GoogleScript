@@ -28,3 +28,13 @@ O ZIP v1.2 aceito contém um ID literal da planilha de períodos em `Codigo.gs`.
 A consulta ao índice ocorre **fora** do `try/catch` do leitor de períodos. Falta de configuração, chave duplicada/ausente, tipo incorreto, cabeçalho divergente ou valor de produção vazio causa erro em vez de acionar o comportamento `fail-open` original. Fora da resolução do recurso, as regras de períodos e os links dos formulários são os mesmos. O backend original tinha SHA-256 `c2d6b5cfd7bce572e058ba5e6611a3dafe6cc2a2191a7cebad1b916f9bfa092f`; a fonte Git com o índice tem SHA-256 `e2a165975161fd844f0f680c03ecdfa96dda249c4a70b0cd5c2cfe30c2e7b85e`. Os outros oito arquivos continuam byte-idênticos ao ZIP aceito.
 
 A verificação local cobriu sintaxe JavaScript e cenários simulados de resolução válida, chave ausente/duplicada, tipo ou cabeçalho errado, coluna C vazia, propriedade ausente, uso exclusivo da coluna de produção e propagação de erro do índice. **A integração ao ID_INDEX não foi executada no Apps Script real.** Para adotá-la, configurar `ID_INDEX_SPREADSHEET_ID` no projeto, verificar `executeAs` e permissões, e repetir o smoke no `/exec`. A homologação visual da v1.2 original não se transfere automaticamente a esta mudança de backend.
+
+## Fonte v1.3 — menu lateral e contagem de créditos (14/10/2026)
+
+**Situação:** não implantada nem homologada no `/exec`. Mudaram `Codigo.gs`, `Painel.html`, `PainelAjuda.html` e `PainelAjudaUI.html`; são novos `ContagemCreditos.gs`, `PainelNavegacaoEstilos.html`, `PainelNavegacaoUI.html`, `PainelIcones.html`, `PainelContagemEstilos.html`, `PainelContagemMotor.html` e `PainelContagemUI.html`. Continuam iguais `GradipTema.html`, `GradipTemaControle.html`, `GradipMarcaIPUSP.html`, `GradipMarcaUSP.html` e `PainelAjudaEstilos.html`.
+
+Em `Codigo.gs`, a resolução do índice virou genérica (`obterIdDoIndice_(chave)`); `PERIODOS` mantém as mesmas mensagens de erro. Os sete formulários, destinos e regras de período não mudaram; as categorias ganharam ícone de menu e a descrição de Formação e conclusão menciona a contagem.
+
+Testes locais com dados fictícios ([como rodar](../../../sistemas/painel-solicitacoes/testes/README.md)): `testar_contagem.js` 36/36 e `testar_navegador.js` 184/184, cobrindo menu lateral, abas, busca, teclado, contagem, Central de Ajuda, três temas, contraste ≥ 4,5:1, 360/390/480/768 px e desktop, alvos ≥ 44 px e movimento reduzido.
+
+Para homologar: cadastrar `REGRAS_CURRICULARES` no `ID_INDEX`, rodar `diagnosticarContagemCreditos()` e conferir os critérios reconhecidos, testar a contagem com pelo menos um currículo real de cada habilitação e repetir o smoke do painel no `/exec`.

@@ -10,10 +10,18 @@ O painel é uma página de entrada para estudantes. Contém catálogo de formul�
 |---|---|---|
 | ID_INDEX | Google Sheets; índice mestre de recursos | ID fora do Git em `Script Properties["ID_INDEX_SPREADSHEET_ID"]`; requer leitura pela identidade de execução. |
 | PERIODOS | Chave do índice mestre | Linha única na primeira aba; A = `PERIODOS`, B = `spreadsheet`, C = ID de produção. A coluna D de homologação não é lida. |
+| REGRAS_CURRICULARES | Chave do índice mestre (v1.3) | Linha única na primeira aba, tipo `spreadsheet`. Planilha de Regras Curriculares, **somente leitura**; a identidade de execução precisa de leitura. |
 | FORMULARIOS_ALUNOS | Sete Web Apps de destino | URLs `/exec` preservadas como links apresentados aos alunos; URL não concede autorização. |
 | MARCA_USP_CLARA/ESCURA | PNG externo e SVG incorporado | Mesmo comportamento visual da v1.2. |
 
 O código não contém o ID literal da planilha de períodos nem o ID da planilha mestre. Também não utiliza `DriveApp`: a leitura do índice ocorre via `SpreadsheetApp.openById` com valor mantido nas Propriedades do script. Script Properties não protege o valor de editores autorizados do projeto.
+
+## Contagem de créditos (v1.3)
+
+- **Do servidor para o navegador:** apenas regras de currículos `ATIVO` (curso, habilitação, estrutura, requisitos, disciplinas, grupos, rótulos). Observações internas, IDs de planilha e rulesets em rascunho/inativos não são enviados. Não há dado pessoal nessas regras.
+- **Do aluno:** números de créditos e disciplinas marcadas ficam só no navegador, enquanto a página está aberta. Nada é enviado ao servidor, gravado em planilha, registrado em log ou guardado em `localStorage`.
+- **Cache:** as regras públicas ficam 5 minutos no `CacheService` do script; `diagnosticarContagemCreditos()` limpa o cache e registra só contagens e códigos de critérios.
+- **Falha:** sem a chave no índice, sem acesso à planilha ou com coluna faltando, a janela mostra mensagem de erro e o restante do painel continua funcionando.
 
 ## Comportamento de falha e acesso
 
@@ -23,7 +31,7 @@ O código não contém o ID literal da planilha de períodos nem o ID da planilh
 
 ## Verificação e governança
 
-A verificação local cobriu sintaxe, ausência de IDs literais, oito HTMLs idênticos ao ZIP e cenários simulados do índice; não acessou planilhas reais. Antes de implantar esta variante, cadastrar a propriedade, executar diagnóstico, testar no `/exec` e conferir a linha `PERIODOS` em produção sem publicar seu valor.
+Na v1.3, a verificação local usou apenas dados fictícios (curso `99999`, disciplinas `TST*`) e conferiu que observações internas e IDs não chegam ao navegador. A verificação anterior cobriu sintaxe, ausência de IDs literais, oito HTMLs idênticos ao ZIP e cenários simulados do índice; não acessou planilhas reais. Antes de implantar esta variante, cadastrar a propriedade, executar diagnóstico, testar no `/exec` e conferir a linha `PERIODOS` em produção sem publicar seu valor.
 
 - Base legal e retenção: **A VALIDAR INSTITUCIONALMENTE**.
 - Incidentes: seguir o [procedimento comum](../../seguranca/INCIDENTES.md) e o fluxo institucional.

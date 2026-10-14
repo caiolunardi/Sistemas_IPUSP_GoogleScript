@@ -55,6 +55,10 @@
             <span class="painelAjudaAtalhoIcone" aria-hidden="true">🌎</span>
             <span>Sou intercambista / I'm an exchange student</span>
           </button>
+          <button type="button" class="painelAjudaAtalho" data-ir-para="contagem-creditos">
+            <span class="painelAjudaAtalhoIcone" aria-hidden="true">🧮</span>
+            <span>Quero saber quantos créditos faltam</span>
+          </button>
           <button type="button" class="painelAjudaAtalho" data-ir-para="trancamento-exclusao">
             <span class="painelAjudaAtalhoIcone" aria-hidden="true">🔒</span>
             <span>Tenho dúvida entre trancamento e exclusão</span>
@@ -69,6 +73,7 @@
           <button type="button" class="painelAjudaMenuItem" data-ir-para="conta-usp">Conta USP e acesso</button>
           <button type="button" class="painelAjudaMenuItem" data-ir-para="intercambistas">Intercambistas / Exchange Students</button>
           <button type="button" class="painelAjudaMenuItem" data-ir-para="trancamento-exclusao">Trancamento x Exclusão</button>
+          <button type="button" class="painelAjudaMenuItem" data-ir-para="contagem-creditos">Contagem de créditos</button>
           <button type="button" class="painelAjudaMenuItem" data-ir-para="problemas">Problemas comuns</button>
           <button type="button" class="painelAjudaMenuItem" data-ir-para="faq">Perguntas frequentes</button>
           <button type="button" class="painelAjudaMenuItem" data-ir-para="sobre">Sobre o Painel</button>
@@ -80,16 +85,17 @@
       <section id="painelAjudaSecao-comece-aqui" class="painelAjudaSecao" data-secao-id="comece-aqui" hidden
                 data-busca="comece aqui como funciona passo a passo primeiros passos">
         <h3>Comece aqui</h3>
-        <p>O Painel de Solicitações reúne os formulários disponibilizados pelo Serviço de Graduação do Instituto de Psicologia. Agora eles aparecem organizados por assunto, em categorias que você pode abrir e fechar.</p>
+        <p>O Painel de Solicitações reúne os formulários disponibilizados pelo Serviço de Graduação do Instituto de Psicologia. Eles aparecem organizados por assunto, em categorias listadas no menu do lado esquerdo da tela (no celular, no topo, pelo botão "Outras categorias").</p>
         <p>O caminho é sempre o mesmo:</p>
         <ol>
-          <li>Escolha a categoria.</li>
+          <li>Escolha a categoria no menu.</li>
           <li>Localize o formulário.</li>
           <li>Confira se ele está aberto.</li>
           <li>Clique nele.</li>
           <li>Escolha sua conta @usp.br.</li>
           <li>Siga as instruções do formulário.</li>
         </ol>
+        <p>Se preferir, troque o menu lateral por abas no topo, em "Navegação". O painel sempre abre com o menu lateral.</p>
         <div class="painelAjudaNota">O Painel não envia a sua solicitação. Ele só leva você até o formulário certo — o envio acontece dentro do formulário.</div>
       </section>
 
@@ -141,6 +147,12 @@
           <p class="painelAjudaMapaCategoria">Categoria: Formação e conclusão</p>
         </div>
 
+        <div class="painelAjudaMapaItem" data-busca-item data-busca="quero saber quantos creditos faltam para me formar contagem">
+          <p class="painelAjudaMapaPergunta">"Quero saber quantos créditos ainda faltam para me formar"</p>
+          <p class="painelAjudaMapaResposta">→ Contagem de créditos (não é um formulário: abre no próprio painel)</p>
+          <p class="painelAjudaMapaCategoria">Categoria: Formação e conclusão</p>
+        </div>
+
       </section>
 
       <!-- ================= CATEGORIAS ================= -->
@@ -155,7 +167,7 @@
         </div>
         <div class="painelAjudaCard">
           <strong>🎓 Formação e conclusão</strong>
-          <p>Abertura de habilitação e colação de grau.</p>
+          <p>Abertura de habilitação, colação de grau e contagem de créditos.</p>
         </div>
         <div class="painelAjudaCard">
           <strong>🎫 Benefícios e serviços</strong>
@@ -166,6 +178,7 @@
           <p>Inclusão e exclusão de disciplinas para estudantes intercambistas.</p>
         </div>
 
+        <p>Clique numa categoria no menu para ver os formulários dela. A busca procura em todas as categorias de uma vez.</p>
         <p>A categoria é só uma forma de organizar a navegação — ela não representa nenhuma regra acadêmica.</p>
       </section>
 
@@ -267,6 +280,43 @@
         <div class="painelAjudaNota">Esta Central não entra em detalhes sobre as consequências acadêmicas de cada opção. Em caso de dúvida sobre qual escolher para a sua situação, procure o Serviço de Graduação.</div>
       </section>
 
+      <!-- ================= CONTAGEM DE CRÉDITOS ================= -->
+      <section id="painelAjudaSecao-contagem-creditos" class="painelAjudaSecao" data-secao-id="contagem-creditos" hidden
+                data-busca="contagem de creditos quantos creditos faltam formar formatura curriculo estagio horas simulacao">
+        <h3>Contagem de créditos</h3>
+        <p>Na categoria <strong>Formação e conclusão</strong>, o item <strong>Contagem de créditos</strong> mostra o que ainda falta para você se formar, de acordo com as regras do seu currículo.</p>
+        <ol>
+          <li>Marque as habilitações que você tem abertas (por exemplo, Psicólogo e Bacharelado). Cada uma ganha a sua própria contagem.</li>
+          <li>Se a habilitação tiver mais de uma estrutura curricular, escolha a sua (ela aparece no seu histórico escolar do Júpiter).</li>
+          <li>Preencha os créditos e horas que você já tem em cada habilitação, usando os totais do histórico. Campo em branco conta como zero.</li>
+          <li>Se aparecerem disciplinas obrigatórias ou grupos de disciplinas, marque o que você já cumpriu.</li>
+          <li>Clique em <strong>Ver o que falta para me formar</strong>.</li>
+        </ol>
+        <p>O resultado mostra, para cada exigência, se ela está cumprida ou quanto falta. Quando o seu currículo permite, créditos a mais de um tipo completam outro (por exemplo, eletivas a mais completando livres), e o resultado diz isso.</p>
+        <div class="painelAjudaNota">É uma simulação para você se planejar. Ela não substitui a análise do Serviço de Graduação no pedido de colação de grau. A conta é feita só no seu navegador: os números que você digita não são enviados nem guardados.</div>
+
+        <div class="painelAjudaCard" data-busca-item data-busca="minha habilitacao estrutura curriculo nao aparece na lista contagem">
+          <strong>A minha habilitação ou estrutura não aparece.</strong>
+          <p>A lista mostra só os currículos que já têm regras cadastradas e conferidas pelo Serviço de Graduação. Se o seu não aparece, procure o Serviço de Graduação.</p>
+        </div>
+        <div class="painelAjudaCard" data-busca-item data-busca="nao sei qual e o meu curriculo estrutura curricular">
+          <strong>Não sei qual é a minha estrutura curricular.</strong>
+          <p>As habilitações e a estrutura curricular aparecem no seu histórico escolar do Júpiter. Na dúvida, procure o Serviço de Graduação antes de usar o resultado.</p>
+        </div>
+        <div class="painelAjudaCard" data-busca-item data-busca="contagem diz que cumpri tudo posso pedir colacao">
+          <strong>A contagem diz que cumpri tudo. Já estou formado(a)?</strong>
+          <p>Não automaticamente. Confira os números no histórico e faça o Pedido de Colação de Grau no período de pedidos. Quem confirma é o Serviço de Graduação.</p>
+        </div>
+        <div class="painelAjudaCard" data-busca-item data-busca="confira com o servico de graduacao exigencia nao conferida">
+          <strong>Apareceu "Confira com o Serviço de Graduação".</strong>
+          <p>Algumas exigências do currículo não podem ser conferidas por aqui. Elas continuam valendo: tire a dúvida com o Serviço de Graduação.</p>
+        </div>
+        <div class="painelAjudaCard" data-busca-item data-busca="nao foi possivel carregar os curriculos erro contagem">
+          <strong>Apareceu "Não foi possível carregar os currículos".</strong>
+          <p>Tente de novo em alguns minutos pelo botão "Tentar de novo". Se continuar, avise o Serviço de Graduação.</p>
+        </div>
+      </section>
+
       <!-- ================= PROBLEMAS COMUNS ================= -->
       <section id="painelAjudaSecao-problemas" class="painelAjudaSecao" data-secao-id="problemas" hidden
                 data-busca="problemas comuns erro duvida ajuda arquivo login prazo busca">
@@ -274,7 +324,7 @@
 
         <div class="painelAjudaCard" data-busca-item data-busca="nao sei em qual categoria procurar">
           <strong>Não sei em qual categoria procurar.</strong>
-          <p>Use a busca no topo da tela, ou abra a seção "Qual formulário usar?" aqui na Ajuda — ela indica a categoria certa para cada necessidade.</p>
+          <p>Use a busca acima da lista de formulários (ela procura em todas as categorias), ou abra a seção "Qual formulário usar?" aqui na Ajuda — ela indica a categoria certa para cada necessidade.</p>
         </div>
 
         <div class="painelAjudaCard" data-busca-item data-busca="nao sei qual formulario escolher">
@@ -386,15 +436,15 @@
               <span>Como abrir uma categoria?</span>
               <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
             </button>
-            <div id="painelAjudaFaqResposta-3" class="painelAjudaFaqResposta" hidden>Toque ou clique no cabeçalho da categoria — ela expande mostrando os formulários dela.</div>
+            <div id="painelAjudaFaqResposta-3" class="painelAjudaFaqResposta" hidden>Toque ou clique no nome dela no menu (ou na aba, se você escolheu navegar por abas). Os formulários dela aparecem na área principal.</div>
           </div>
 
           <div class="painelAjudaFaqItem" data-busca-item data-busca="posso deixar mais de uma categoria aberta ao mesmo tempo">
             <button type="button" class="painelAjudaFaqPergunta" aria-expanded="false" aria-controls="painelAjudaFaqResposta-4">
-              <span>Posso deixar mais de uma categoria aberta?</span>
+              <span>Posso ver mais de uma categoria ao mesmo tempo?</span>
               <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
             </button>
-            <div id="painelAjudaFaqResposta-4" class="painelAjudaFaqResposta" hidden>No uso normal, só uma categoria fica aberta por vez, para manter a tela organizada. Durante uma busca, todas as categorias com resultado aparecem abertas ao mesmo tempo.</div>
+            <div id="painelAjudaFaqResposta-4" class="painelAjudaFaqResposta" hidden>No uso normal, a área principal mostra uma categoria por vez. Durante uma busca, aparecem os resultados de todas as categorias, separados por categoria.</div>
           </div>
 
           <div class="painelAjudaFaqItem" data-busca-item data-busca="como encontro rapidamente um formulario busca">
@@ -402,7 +452,7 @@
               <span>Como encontro rapidamente um formulário?</span>
               <span class="painelAjudaFaqChevron" aria-hidden="true">⌃</span>
             </button>
-            <div id="painelAjudaFaqResposta-5" class="painelAjudaFaqResposta" hidden>Use a caixa "Buscar formulário..." no topo da lista — ela busca por nome do formulário e por categoria.</div>
+            <div id="painelAjudaFaqResposta-5" class="painelAjudaFaqResposta" hidden>Use a caixa "Buscar formulário em todas as categorias..." acima da lista — ela busca por nome do formulário e por categoria, em todas as categorias.</div>
           </div>
 
           <div class="painelAjudaFaqItem" data-busca-item data-busca="o painel envia minha solicitacao">

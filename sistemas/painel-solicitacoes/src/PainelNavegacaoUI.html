@@ -1,0 +1,190 @@
+<script>
+/* Menu lateral / abas do Painel de Solicitações — adaptador de apresentação.
+   Mesmo modelo do Painel dos servidores (PainelNavegacaoUI.html de lá),
+   adaptado às categorias dos alunos. Carregado por último, depois do
+   script do Painel. Não lê nem grava dados e não chama google.script.run:
+   cada item do menu é uma categoria (CATEGORIAS_SISTEMAS, montada pelo
+   Painel) e só chama window.PainelSolicitacoes.selecionarCategoria. O
+   destaque do item atual é lido do próprio Painel (categoriaAtual), então
+   a busca e os links internos continuam valendo.
+   Sempre abre em "Menu lateral"; o modo escolhido não é persistido. */
+(function () {
+  'use strict';
+  if (window.PainelNavegacao) return;
+
+  var layout = document.getElementById('painelLayout');
+  var sidebar = document.getElementById('painelSidebar');
+  var menu = document.getElementById('painelMenu');
+  var conteudo = document.getElementById('conteudo');
+  var menuMovel = document.getElementById('painelMenuMovel');
+  var statusModo = document.getElementById('painelModoStatus');
+  var modelo = document.getElementById('painelIcones');
+  var painel = window.PainelSolicitacoes;
+  var estreito = window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
+  if (!layout || !menu || !conteudo || !painel) return;
+
+  var modo = 'sidebar';
+  var temporizador = null;
+
+  function itens() {
+    return Array.prototype.slice.call(menu.querySelectorAll('[data-pagina]'));
+  }
+
+  /*---------------- ÍCONES (decorativos) ----------------*/
+
+  document.querySelectorAll('[data-icone]').forEach(function (botao) {
+    if (!modelo || !modelo.content || botao.querySelector('.painelNavIcone')) return;
+    var svg = modelo.content.querySelector('[data-painel-icone="' + botao.getAttribute('data-icone') + '"]');
+    var span = document.createElement('span');
+    span.className = 'painelNavIcone';
+    span.setAttribute('aria-hidden', 'true');
+    if (svg) {
+      span.appendChild(svg.cloneNode(true));
+    } else if (botao.getAttribute('data-icone-texto')) {
+      // Categoria nova sem ícone do catálogo: usa o emoji da categoria.
+      span.textContent = botao.getAttribute('data-icone-texto');
+    } else {
+      return;
+    }
+    botao.insertBefore(span, botao.firstChild);
+  });
+
+  /*---------------- QUAL CATEGORIA ESTÁ ABERTA ----------------*/
+
+  /* Papéis ARIA conforme o modo: no menu lateral, aria-current="page";
+     nas abas, tablist/tab/tabpanel com tabindex itinerante. */
+  function sincronizar() {
+    var atual = painel.categoriaAtual();
+    var abas = modo === 'abas';
+    var selecionado = null;
+    itens().forEach(function (b) {
+      var ativo = b.getAttribute('data-pagina') === atual;
+      if (ativo) selecionado = b;
+      if (abas) {
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', ativo ? 'true' : 'false');
+        b.removeAttribute('aria-current');
+        b.tabIndex = ativo ? 0 : -1;
+      } else {
+        b.removeAttribute('role');
+        b.removeAttribute('aria-selected');
+        if (ativo) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+        b.tabIndex = 0;
+      }
+    });
+    // Durante a busca nenhuma categoria fica marcada: a primeira aba
+    // continua alcançável pelo teclado.
+    if (abas && !selecionado && itens().length) itens()[0].tabIndex = 0;
+    if (abas) {
+      menu.setAttribute('role', 'tablist');
+      menu.setAttribute('aria-orientation', 'horizontal');
+      conteudo.setAttribute('role', 'tabpanel');
+      if (selecionado) conteudo.setAttribute('aria-labelledby', selecionado.id);
+      else conteudo.removeAttribute('aria-labelledby');
+    } else {
+      menu.removeAttribute('role');
+      menu.removeAttribute('aria-orientation');
+      conteudo.removeAttribute('role');
+      conteudo.removeAttribute('aria-labelledby');
+    }
+    if (menuMovel) atualizarRotuloMovel();
+  }
+
+  /*---------------- IR PARA UMA CATEGORIA ----------------*/
+
+  function transicao() {
+    clearTimeout(temporizador);
+    conteudo.classList.remove('painelConteudo--transicao');
+    void conteudo.offsetWidth; // reinicia só a animação
+    conteudo.classList.add('painelConteudo--transicao');
+    temporizador = setTimeout(function () { conteudo.classList.remove('painelConteudo--transicao'); }, 200);
+  }
+
+  function irPara(pagina) {
+    var antes = painel.categoriaAtual();
+    painel.selecionarCategoria(pagina);
+    sincronizar();
+    if (antes !== pagina) transicao();
+    if (estreito && estreito.matches && modo === 'sidebar') recolher(true);
+    var topo = layout.getBoundingClientRect().top + window.pageYOffset;
+    if (window.pageYOffset > topo) window.scrollTo(0, topo);
+  }
+
+  itens().forEach(function (b) {
+    b.addEventListener('click', function () { irPara(b.getAttribute('data-pagina')); });
+  });
+
+  // Nas abas, setas/Home/End só movem o foco; Enter/Espaço abrem (clique nativo).
+  menu.addEventListener('keydown', function (e) {
+    if (modo !== 'abas' || ['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
+    var lista = itens();
+    var i = lista.indexOf(e.target.closest ? e.target.closest('[data-pagina]') : null);
+    if (i < 0) return;
+    var n = lista.length;
+    var proximo = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (i + (e.key === 'ArrowRight' ? 1 : n - 1)) % n;
+    e.preventDefault();
+    lista.forEach(function (b, k) { b.tabIndex = k === proximo ? 0 : -1; });
+    lista[proximo].focus();
+  });
+
+  /*---------------- MENU RECOLHÍVEL (telas estreitas) ----------------*/
+
+  // No celular o menu começa recolhido; o botão mostra a categoria aberta,
+  // para o aluno saber onde está sem abrir o menu.
+  function atualizarRotuloMovel() {
+    var recolhido = sidebar.getAttribute('data-recolhido') === 'true';
+    if (!recolhido) { menuMovel.textContent = 'Recolher menu'; return; }
+    var atual = painel.categoriaAtual();
+    var botao = atual ? menu.querySelector('[data-pagina="' + atual + '"] .painelNavTexto') : null;
+    menuMovel.textContent = botao ? 'Outras categorias' : 'Mostrar categorias';
+  }
+
+  function recolher(sim) {
+    sidebar.setAttribute('data-recolhido', sim ? 'true' : 'false');
+    menuMovel.setAttribute('aria-expanded', sim ? 'false' : 'true');
+    atualizarRotuloMovel();
+  }
+
+  menuMovel.addEventListener('click', function () {
+    recolher(sidebar.getAttribute('data-recolhido') !== 'true');
+  });
+
+  function ajustarLargura() {
+    recolher(!!(estreito && estreito.matches));
+  }
+  if (estreito) {
+    if (estreito.addEventListener) estreito.addEventListener('change', ajustarLargura);
+    else if (estreito.addListener) estreito.addListener(ajustarLargura);
+  }
+
+  /*---------------- MENU LATERAL x ABAS ----------------*/
+
+  function setModo(novo, anunciar) {
+    if (novo !== 'sidebar' && novo !== 'abas') return;
+    var foco = document.activeElement;
+    var mudou = modo !== novo;
+    modo = novo;
+    layout.setAttribute('data-navegacao', modo);
+    document.querySelectorAll('[data-painel-modo]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-painel-modo') === modo));
+    });
+    if (modo === 'abas') recolher(false); else ajustarLargura();
+    sincronizar();
+    if (foco && foco !== document.body && foco.getClientRects().length) foco.focus({ preventScroll: true });
+    if (mudou) transicao();
+    if (anunciar && statusModo) statusModo.textContent = modo === 'sidebar' ? 'Menu lateral ativado.' : 'Navegação por abas ativada.';
+  }
+
+  document.querySelectorAll('[data-painel-modo]').forEach(function (b) {
+    b.addEventListener('click', function () { setModo(b.getAttribute('data-painel-modo'), true); });
+  });
+
+  setModo('sidebar', false); // sempre abre no menu lateral
+  window.PainelNavegacao = Object.freeze({
+    sincronizar: sincronizar,
+    irPara: irPara,
+    getModo: function () { return modo; },
+    setModo: function (m) { setModo(m, true); }
+  });
+})();
+</script>

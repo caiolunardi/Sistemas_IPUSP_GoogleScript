@@ -1,0 +1,169 @@
+<script>
+/* Contagem de créditos — a conta.
+   Função pura, sem DOM e sem google.script.run: recebe o currículo (como
+   obterCurriculosContagem o devolve) e o que o aluno informou, e devolve o
+   resultado. Roda só no navegador: os números do aluno não vão ao servidor.
+   Os testes locais executam este mesmo arquivo no Node.
+
+   OPÇÕES (decisões de lógica do responsável funcional):
+     compensacao
+       "CURRICULO" — sobra de créditos eletivos cobre falta de livres só
+                     quando o currículo diz "Sim" em "Excedente de
+                     eletivas compensa créditos livres?".
+       "PLANILHA"  — como a planilha antiga do site: sobra de obrigatórias
+                     e de livres cobre falta de eletivas; qualquer sobra
+                     cobre falta de livres.
+       "NENHUMA"   — cada tipo de crédito é conferido sozinho.
+     vazioComoZero
+       true  — campo em branco conta como 0;
+       false — campo em branco deixa o requisito "não informado".
+*/
+var CONTAGEM_OPCOES_PADRAO = Object.freeze({
+  compensacao: "CURRICULO",
+  vazioComoZero: true
+});
+
+function calcularContagemCreditos(curriculo, entradas, opcoes) {
+
+  opcoes = Object.assign({}, CONTAGEM_OPCOES_PADRAO, opcoes || {});
+  entradas = entradas || {};
+  var valores = entradas.requisitos || {};
+  var marcadas = entradas.disciplinas || {};
+  var gruposInformados = entradas.grupos || {};
+
+  function numero(v) {
+    if (v === null || v === undefined) return null;
+    var t = String(v).trim().replace(",", ".");
+    if (t === "") return null;
+    var n = Number(t);
+    return isNaN(n) ? null : n;
+  }
+  function arred(n) { return Math.round(n * 100) / 100; }
+
+  /*---------- 1. Requisitos numéricos, cada um sozinho ----------*/
+
+  var requisitos = (curriculo.requisitos || []).map(function (r) {
+    var informado = numero(valores[r.id]);
+    var semValor = informado === null;
+    if (semValor && opcoes.vazioComoZero) informado = 0;
+
+    var item = {
+      id: r.id, rotulo: r.rotulo, descricao: r.descricao, unidade: r.unidade,
+      tipoCredito: r.tipoCredito, operador: r.operador, exigido: r.valor,
+      informado: semValor && !opcoes.vazioComoZero ? null : informado,
+      falta: 0, sobra: 0, compensado: 0, recebeuDe: [], cedeuPara: [],
+      situacao: ""
+    };
+
+    if (!r.operador || r.valor === null || r.valor === undefined) {
+      item.situacao = "SEM_CONTA";          // regra que o painel não sabe conferir
+    } else if (item.informado === null) {
+      item.situacao = "NAO_INFORMADO";
+    } else if (r.operador === ">=") {
+      item.falta = arred(Math.max(0, r.valor - informado));
+      item.sobra = arred(Math.max(0, informado - r.valor));
+      item.situacao = item.falta > 0 ? "FALTA" : "OK";
+    } else {
+      var ok = r.operador === ">" ? informado > r.valor
+        : r.operador === "<=" ? informado <= r.valor
+        : r.operador === "<" ? informado < r.valor
+        : informado === r.valor;
+      item.situacao = ok ? "OK" : "NAO_ATENDE";
+    }
+    return item;
+  });
+
+  /*---------- 2. Compensação entre tipos de crédito ----------*/
+
+  // Só entre requisitos de créditos obrigatórios, eletivos e livres com
+  // operador ">=" e já calculados.
+  function doTipo(tipo) {
+    return requisitos.filter(function (r) {
+      return r.tipoCredito === tipo && r.operador === ">=" && (r.situacao === "OK" || r.situacao === "FALTA");
+    })[0] || null;
+  }
+  var obrig = doTipo("OBRIGATORIA"), elet = doTipo("ELETIVA"), livre = doTipo("LIVRE");
+  var avisos = [];
+
+  function transferir(de, para, maximo) {
+    if (!de || !para) return 0;
+    var q = arred(Math.min(maximo === undefined ? Infinity : maximo, de.sobra - de.cedido, para.falta));
+    if (q <= 0) return 0;
+    de.cedido = arred(de.cedido + q);
+    para.falta = arred(para.falta - q);
+    para.compensado = arred(para.compensado + q);
+    para.recebeuDe.push({ de: de.rotulo, quantidade: q });
+    de.cedeuPara.push({ para: para.rotulo, quantidade: q });
+    if (para.falta <= 0) para.situacao = "OK_COMPENSADO";
+    return q;
+  }
+  [obrig, elet, livre].forEach(function (r) { if (r) r.cedido = 0; });
+
+  if (opcoes.compensacao === "CURRICULO") {
+    var regra = curriculo.excedenteEletivasCompensaLivres;
+    if (regra === "SIM") {
+      transferir(elet, livre);
+    } else if (regra === "" && elet && livre && elet.sobra > 0 && livre.falta > 0) {
+      avisos.push("O cadastro deste currículo não diz se créditos eletivos a mais completam os livres. A conta foi feita sem aproveitar essa sobra; confirme com o Serviço de Graduação.");
+    }
+  } else if (opcoes.compensacao === "PLANILHA") {
+    transferir(obrig, elet); transferir(livre, elet);
+    transferir(obrig, livre); transferir(elet, livre);
+  }
+  [obrig, elet, livre].forEach(function (r) { if (r) delete r.cedido; });
+
+  /*---------- 3. Disciplinas obrigatórias e grupos ----------*/
+
+  var disciplinas = (curriculo.disciplinas || []).map(function (d) {
+    return { sigla: d.sigla, nome: d.nome, cumprida: !!marcadas[d.sigla] };
+  });
+
+  var grupos = (curriculo.grupos || []).map(function (g) {
+    var g2 = { id: g.id, nome: g.nome, tipo: g.tipo, minimo: g.valorMinimo, unidade: g.unidade,
+      disciplinas: g.disciplinas, informado: null, falta: 0, situacao: "" };
+    if (g.valorMinimo === null || g.valorMinimo === undefined) {
+      g2.situacao = "SEM_CONTA";
+    } else if (g.tipo === "MIN_CREDITS") {
+      var n = numero(gruposInformados[g.id]);
+      if (n === null && opcoes.vazioComoZero) n = 0;
+      g2.informado = n;
+      if (n === null) g2.situacao = "NAO_INFORMADO";
+      else { g2.falta = arred(Math.max(0, g.valorMinimo - n)); g2.situacao = g2.falta > 0 ? "FALTA" : "OK"; }
+    } else if (g.tipo === "ONE_OF" || g.tipo === "MIN_COUNT") {
+      var feitas = (g.disciplinas || []).filter(function (d) { return !!marcadas[d.sigla]; }).length;
+      g2.informado = feitas;
+      g2.falta = Math.max(0, g.valorMinimo - feitas);
+      g2.situacao = g2.falta > 0 ? "FALTA" : "OK";
+    } else {
+      g2.situacao = "SEM_CONTA";
+    }
+    return g2;
+  });
+
+  /*---------- 4. Resumo ----------*/
+
+  var pendentes = requisitos.filter(function (r) { return r.situacao === "FALTA" || r.situacao === "NAO_ATENDE"; }).length +
+    disciplinas.filter(function (d) { return !d.cumprida; }).length +
+    grupos.filter(function (g) { return g.situacao === "FALTA"; }).length;
+  var naoInformados = requisitos.filter(function (r) { return r.situacao === "NAO_INFORMADO"; }).length +
+    grupos.filter(function (g) { return g.situacao === "NAO_INFORMADO"; }).length;
+  var semConta = requisitos.filter(function (r) { return r.situacao === "SEM_CONTA"; }).length +
+    grupos.filter(function (g) { return g.situacao === "SEM_CONTA"; }).length;
+
+  var situacao = pendentes > 0 ? "FALTA"
+    : (naoInformados > 0 ? "INCOMPLETO" : "CUMPRIDO");
+
+  return {
+    situacao: situacao,
+    pendentes: pendentes,
+    naoInformados: naoInformados,
+    semConta: semConta,
+    requisitos: requisitos,
+    disciplinas: disciplinas,
+    grupos: grupos,
+    avisos: avisos,
+    opcoes: opcoes
+  };
+
+}
+</script>

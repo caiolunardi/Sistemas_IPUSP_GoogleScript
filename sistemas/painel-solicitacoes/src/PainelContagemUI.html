@@ -1,0 +1,577 @@
+<!-- CONTAGEM DE CRÉDITOS — janela e comportamento.
+     Aberta pelo card "Contagem de créditos" (categoria Formação e
+     conclusão), via FERRAMENTAS_ABRIR["contagem-creditos"] (Painel.html).
+     Busca os currículos ATIVOS uma vez (obterCurriculosContagem) e faz a
+     conta no navegador com calcularContagemCreditos
+     (PainelContagemMotor.html): o que o aluno digita não sai do navegador
+     nem fica guardado depois de fechar a página. Todo texto vindo da
+     planilha de regras entra com textContent, nunca como HTML. -->
+<div id="contagemOverlay" class="contagemOverlay" hidden>
+  <div class="contagemModal" role="dialog" aria-modal="true" aria-labelledby="contagemTitulo">
+    <div class="contagemCabecalho">
+      <h2 id="contagemTitulo"><span aria-hidden="true">🧮</span> Contagem de créditos</h2>
+      <button type="button" class="contagemFechar" id="contagemFechar" aria-label="Fechar a contagem de créditos">✕</button>
+    </div>
+    <div class="contagemCorpo">
+      <p class="contagemIntro">Marque as habilitações que você tem abertas, preencha o que você já cumpriu e veja o que ainda falta para se formar. É uma <strong>simulação</strong> para você se planejar: ela não substitui a análise do Serviço de Graduação no pedido de colação de grau.</p>
+      <p class="contagemIntro"><button type="button" class="linkAjudaContextual" id="contagemAjuda">Como usar a contagem de créditos?</button></p>
+      <div id="contagemConteudo"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var overlay = document.getElementById('contagemOverlay');
+  var conteudo = document.getElementById('contagemConteudo');
+  var botaoFechar = document.getElementById('contagemFechar');
+  if (!overlay || !conteudo) return;
+
+  var curriculos = null;          // lista vinda do servidor (null = ainda não carregou)
+  var carregando = false;
+  // Habilitações marcadas (chave da habilitação, ver chaveHabilitacao) e,
+  // para cada uma, o currículo (ruleset) escolhido.
+  var marcadas = {};
+  var escolhidos = {};
+  var elementoAnterior = null;
+  var overflowAnterior = '';
+  // O que o aluno já digitou, por currículo, enquanto a página está aberta.
+  var rascunhos = {};
+
+  function el(tag, classe, texto) {
+    var e = document.createElement(tag);
+    if (classe) e.className = classe;
+    if (texto !== undefined && texto !== null) e.textContent = texto;
+    return e;
+  }
+
+  function formatarNumero(n) {
+    if (n === null || n === undefined) return '—';
+    return String(Math.round(n * 100) / 100).replace('.', ',');
+  }
+
+  function comUnidade(n, unidade) {
+    var u = String(unidade || '').trim();
+    return formatarNumero(n) + (u ? ' ' + u : '');
+  }
+
+  var NOMES_OPERADOR = { '>=': 'Mínimo exigido', '>': 'Precisa passar de', '=': 'Exatamente', '<=': 'No máximo', '<': 'Menos de' };
+
+  /*---------------- ABRIR / FECHAR ----------------*/
+
+  function abrir(origem) {
+    elementoAnterior = origem || document.activeElement;
+    overlay.hidden = false;
+    overlay.classList.add('contagemAberta');
+    overflowAnterior = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    if (curriculos === null) carregar(); else desenharFormulario();
+    botaoFechar.focus();
+  }
+
+  function fechar() {
+    overlay.classList.remove('contagemAberta');
+    overlay.hidden = true;
+    document.body.style.overflow = overflowAnterior;
+    if (elementoAnterior && elementoAnterior.focus && document.contains(elementoAnterior)) elementoAnterior.focus();
+  }
+
+  botaoFechar.addEventListener('click', fechar);
+
+  var botaoAjuda = document.getElementById('contagemAjuda');
+  if (botaoAjuda) botaoAjuda.addEventListener('click', function () {
+    if (typeof painelAjudaAbrirEIrPara === 'function') painelAjudaAbrirEIrPara('contagem-creditos');
+  });
+
+  // ESC fecha; Tab fica preso dentro da janela. Se a Central de Ajuda
+  // estiver aberta por cima, ela trata as próprias teclas.
+  document.addEventListener('keydown', function (e) {
+    if (overlay.hidden) return;
+    var ajuda = document.getElementById('painelAjudaOverlay');
+    if (ajuda && !ajuda.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); fechar(); return; }
+    if (e.key !== 'Tab') return;
+    var focaveis = Array.prototype.filter.call(
+      overlay.querySelectorAll('button, select, input, a[href], [tabindex]:not([tabindex="-1"])'),
+      function (x) { return !x.disabled && x.getClientRects().length; });
+    if (!focaveis.length) return;
+    var primeiro = focaveis[0], ultimo = focaveis[focaveis.length - 1];
+    if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+  }, true); // captura: roda antes da Central de Ajuda, que fecha só a si mesma no ESC
+
+  /*---------------- CARREGAR CURRÍCULOS ----------------*/
+
+  function carregar() {
+    if (carregando) return;
+    carregando = true;
+    conteudo.innerHTML = '';
+    conteudo.appendChild(el('div', 'contagemCarregando', 'Carregando os currículos…'));
+    google.script.run
+      .withSuccessHandler(function (r) {
+        carregando = false;
+        curriculos = (r && r.curriculos) || [];
+        desenharFormulario();
+      })
+      .withFailureHandler(function () {
+        carregando = false;
+        conteudo.innerHTML = '';
+        var erro = el('div', 'contagemErro');
+        erro.setAttribute('role', 'alert');
+        erro.appendChild(el('p', null, 'Não foi possível carregar os currículos agora. Tente de novo em alguns minutos.'));
+        var tentar = el('button', 'contagemBotao', 'Tentar de novo');
+        tentar.type = 'button';
+        tentar.addEventListener('click', carregar);
+        erro.appendChild(tentar);
+        conteudo.appendChild(erro);
+      })
+      .obterCurriculosContagem();
+  }
+
+  /*---------------- FORMULÁRIO ----------------*/
+
+  // Uma habilitação = mesmo código de curso + código de habilitação. Cada
+  // uma pode ter mais de um currículo ATIVO (estruturas diferentes).
+  function chaveHabilitacao(c) { return c.cursoCodigo + '|' + c.habilitacaoCodigo; }
+
+  function listarHabilitacoes() {
+    var mapa = {};
+    var lista = [];
+    curriculos.forEach(function (c) {
+      var k = chaveHabilitacao(c);
+      if (!mapa[k]) { mapa[k] = { chave: k, nome: c.habilitacaoNome || ('Habilitação ' + c.habilitacaoCodigo), curso: c.cursoCodigo, codigo: c.habilitacaoCodigo, curriculos: [] }; lista.push(mapa[k]); }
+      mapa[k].curriculos.push(c);
+    });
+    // Ordem do código da habilitação (no Júpiter: Psicólogo, Bacharelado, Licenciatura).
+    lista.sort(function (a, b) {
+      return a.curso.localeCompare(b.curso) || (Number(a.codigo) - Number(b.codigo)) || a.nome.localeCompare(b.nome, 'pt-BR');
+    });
+    return lista;
+  }
+
+  function curriculoPorId(id) {
+    return curriculos.filter(function (c) { return c.id === id; })[0] || null;
+  }
+
+  function desenharFormulario() {
+
+    conteudo.innerHTML = '';
+
+    if (!curriculos.length) {
+      conteudo.appendChild(el('div', 'contagemErro', 'Ainda não há currículos disponíveis para a contagem. Procure o Serviço de Graduação.'));
+      return;
+    }
+
+    var habilitacoes = listarHabilitacoes();
+    var cursos = {};
+    habilitacoes.forEach(function (h) { cursos[h.curso] = true; });
+    var variosCursos = Object.keys(cursos).length > 1;
+
+    var form = el('form');
+    form.noValidate = true;
+    form.setAttribute('aria-label', 'Contagem de créditos');
+
+    var grupoHab = el('div', 'contagemCampo');
+    grupoHab.setAttribute('role', 'group');
+    grupoHab.setAttribute('aria-labelledby', 'contagemHabTitulo');
+    var tituloHab = el('div', 'contagemRotulo', 'Quais habilitações você tem abertas?');
+    tituloHab.id = 'contagemHabTitulo';
+    grupoHab.appendChild(tituloHab);
+    var dicaHab = el('div', 'contagemDica', 'Marque todas as que você cursa. Para cada uma aparece uma contagem separada.');
+    grupoHab.appendChild(dicaHab);
+    var listaHab = el('div', 'contagemListaChecks');
+    habilitacoes.forEach(function (h) {
+      var label = el('label', 'contagemCheck');
+      var input = el('input');
+      input.type = 'checkbox';
+      input.setAttribute('data-habilitacao', h.chave);
+      input.checked = !!marcadas[h.chave];
+      input.addEventListener('change', function () {
+        guardarRascunhos();
+        marcadas[h.chave] = input.checked;
+        desenharBlocos(blocos, habilitacoes, variosCursos);
+        resultado.innerHTML = '';
+      });
+      label.appendChild(input);
+      label.appendChild(el('span', null, h.nome + (variosCursos ? ' (curso ' + h.curso + ')' : '')));
+      listaHab.appendChild(label);
+    });
+    grupoHab.appendChild(listaHab);
+    form.appendChild(grupoHab);
+
+    var blocos = el('div');
+    blocos.id = 'contagemBlocos';
+    form.appendChild(blocos);
+
+    var acoes = el('div', 'contagemAcoes');
+    var calcular = el('button', 'contagemBotao contagemBotao--principal', 'Ver o que falta para me formar');
+    calcular.type = 'submit';
+    var limpar = el('button', 'contagemBotao', 'Limpar');
+    limpar.type = 'button';
+    acoes.appendChild(calcular);
+    acoes.appendChild(limpar);
+    form.appendChild(acoes);
+
+    var resultado = el('div', 'contagemResultado');
+    resultado.id = 'contagemResultado';
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      guardarRascunhos();
+      var calculos = [];
+      habilitacoes.forEach(function (h) {
+        if (!marcadas[h.chave]) return;
+        var c = curriculoPorId(escolhidos[h.chave]);
+        calculos.push({ habilitacao: h, curriculo: c, resultado: c ? calcularContagemCreditos(c, lerEntradas(document.getElementById('contagemBloco-' + c.id))) : null });
+      });
+      desenharResultado(resultado, calculos);
+    });
+    limpar.addEventListener('click', function () {
+      form.querySelectorAll('input:not([data-habilitacao])').forEach(function (i) { if (i.type === 'checkbox') i.checked = false; else i.value = ''; });
+      rascunhos = {};
+      resultado.innerHTML = '';
+      var primeiro = form.querySelector('input:not([data-habilitacao])') || form.querySelector('input');
+      if (primeiro) primeiro.focus();
+    });
+
+    conteudo.appendChild(form);
+    conteudo.appendChild(resultado);
+    desenharBlocos(blocos, habilitacoes, variosCursos);
+  }
+
+  // Um bloco por habilitação marcada: escolha da estrutura (se houver
+  // mais de uma) e os campos do currículo escolhido.
+  function desenharBlocos(blocos, habilitacoes, variosCursos) {
+    blocos.innerHTML = '';
+    var algum = false;
+    habilitacoes.forEach(function (h) {
+      if (!marcadas[h.chave]) return;
+      algum = true;
+      if (h.curriculos.length === 1) escolhidos[h.chave] = h.curriculos[0].id;
+      else if (!curriculoPorId(escolhidos[h.chave]) || chaveHabilitacao(curriculoPorId(escolhidos[h.chave])) !== h.chave) escolhidos[h.chave] = '';
+
+      var bloco = el('section', 'contagemSecao contagemHabilitacao');
+      var idTitulo = 'contagemTituloHab-' + h.chave.replace(/[^\w-]/g, '_');
+      bloco.setAttribute('aria-labelledby', idTitulo);
+      var titulo = el('h3', null, h.nome + (variosCursos ? ' (curso ' + h.curso + ')' : ''));
+      titulo.id = idTitulo;
+      bloco.appendChild(titulo);
+
+      var area = el('div');
+      if (h.curriculos.length > 1) {
+        var campo = el('div', 'contagemCampo');
+        var idSel = 'contagemEstrutura-' + h.chave.replace(/[^\w-]/g, '_');
+        var rot = el('label', null, 'Sua estrutura curricular');
+        rot.htmlFor = idSel;
+        var sel = el('select', 'contagemSelect');
+        sel.id = idSel;
+        sel.setAttribute('data-estrutura', h.chave);
+        var vazio = el('option', null, 'Escolha a estrutura…');
+        vazio.value = '';
+        sel.appendChild(vazio);
+        h.curriculos.forEach(function (c) {
+          var o = el('option', null, c.estruturaCurricular || ('versão ' + c.versao));
+          o.value = c.id;
+          sel.appendChild(o);
+        });
+        sel.value = escolhidos[h.chave] || '';
+        campo.appendChild(rot);
+        campo.appendChild(sel);
+        campo.appendChild(el('div', 'contagemDica', 'Ela aparece no seu histórico escolar do Júpiter. Em caso de dúvida, procure o Serviço de Graduação.'));
+        bloco.appendChild(campo);
+        sel.addEventListener('change', function () {
+          guardarRascunhos();
+          escolhidos[h.chave] = sel.value;
+          desenharCurriculo(area, curriculoPorId(sel.value));
+          var r = document.getElementById('contagemResultado');
+          if (r) r.innerHTML = '';
+        });
+      }
+      bloco.appendChild(area);
+      desenharCurriculo(area, curriculoPorId(escolhidos[h.chave]));
+      blocos.appendChild(bloco);
+    });
+    if (!algum) blocos.appendChild(el('p', 'contagemDica', 'Marque pelo menos uma habilitação para começar.'));
+  }
+
+  function desenharCurriculo(area, c) {
+
+    area.innerHTML = '';
+    if (!c) return;
+    var rascunho = rascunhos[c.id] || { requisitos: {}, disciplinas: {}, grupos: {} };
+    area.id = 'contagemBloco-' + c.id;
+    var pref = c.id.replace(/[^\w-]/g, '_') + '-';
+
+    var info = el('div', 'contagemInfoCurriculo');
+    if (c.estruturaCurricular) info.appendChild(el('span', 'contagemSelo', 'Estrutura curricular: ' + c.estruturaCurricular));
+    if (c.semestresMinimos) info.appendChild(el('span', 'contagemSelo', 'Duração mínima: ' + c.semestresMinimos + ' semestres'));
+    if (c.semestresMaximos) info.appendChild(el('span', 'contagemSelo', 'Duração máxima: ' + c.semestresMaximos + ' semestres'));
+    if (c.excedenteEletivasCompensaLivres === 'SIM') info.appendChild(el('span', 'contagemSelo', 'Créditos eletivos a mais completam os livres'));
+    if (c.excedenteEletivasCompensaLivres === 'NAO') info.appendChild(el('span', 'contagemSelo', 'Créditos eletivos a mais não completam os livres'));
+    if (info.childNodes.length) area.appendChild(info);
+
+    /* Requisitos numéricos */
+    if (c.requisitos.length) {
+      var secaoReq = el('div', 'contagemSubsecao');
+      secaoReq.appendChild(el('h4', null, 'Créditos e horas que você já tem'));
+      secaoReq.appendChild(el('p', 'contagemDica', 'Use os totais desta habilitação no seu histórico escolar. Campo em branco conta como zero.'));
+      c.requisitos.forEach(function (r) {
+        var linha = el('div', 'contagemLinha');
+        var textos = el('div');
+        var idCampo = 'contagemReq-' + pref + r.id;
+        var lab = el('label', 'contagemRotulo', r.rotulo);
+        lab.htmlFor = idCampo;
+        textos.appendChild(lab);
+        var exig = r.valor === null || !r.operador
+          ? (r.descricao || 'Regra conferida pelo Serviço de Graduação.')
+          : (NOMES_OPERADOR[r.operador] + ': ' + comUnidade(r.valor, r.unidade) + (r.descricao && r.descricao !== r.rotulo ? ' · ' + r.descricao : ''));
+        var exigEl = el('div', 'contagemExigido', exig);
+        exigEl.id = idCampo + '-exigido';
+        textos.appendChild(exigEl);
+        var entrada = el('div', 'contagemEntrada');
+        var input = el('input', 'contagemNumero');
+        input.type = 'text';
+        input.inputMode = 'decimal';
+        input.autocomplete = 'off';
+        input.id = idCampo;
+        input.setAttribute('data-requisito', r.id);
+        input.setAttribute('aria-describedby', exigEl.id);
+        input.value = rascunho.requisitos[r.id] || '';
+        entrada.appendChild(input);
+        if (r.unidade) entrada.appendChild(el('span', null, r.unidade));
+        linha.appendChild(textos);
+        linha.appendChild(entrada);
+        secaoReq.appendChild(linha);
+      });
+      area.appendChild(secaoReq);
+    }
+
+    /* Disciplinas obrigatórias */
+    if (c.disciplinas.length) {
+      var secaoDisc = el('div', 'contagemSubsecao');
+      secaoDisc.setAttribute('role', 'group');
+      var tituloDisc = el('h4', null, 'Disciplinas obrigatórias');
+      tituloDisc.id = 'contagemTituloDisciplinas-' + pref;
+      secaoDisc.setAttribute('aria-labelledby', tituloDisc.id);
+      secaoDisc.appendChild(tituloDisc);
+      secaoDisc.appendChild(el('p', 'contagemDica', 'Marque as que você já cumpriu (aprovação ou aproveitamento).'));
+      var listaD = el('div', 'contagemListaChecks');
+      c.disciplinas.forEach(function (d) { listaD.appendChild(criarCheck(d, rascunho)); });
+      secaoDisc.appendChild(listaD);
+      area.appendChild(secaoDisc);
+    }
+
+    /* Grupos */
+    if (c.grupos.length) {
+      var secaoGr = el('div', 'contagemSubsecao');
+      secaoGr.appendChild(el('h4', null, 'Grupos de disciplinas'));
+      secaoGr.appendChild(el('p', 'contagemDica', 'Regras que valem para um conjunto de disciplinas.'));
+      c.grupos.forEach(function (g) {
+        var bloco = el('div', 'contagemGrupo');
+        bloco.setAttribute('role', 'group');
+        var legG = el('div', 'contagemRotulo', g.nome);
+        legG.id = 'contagemTituloGrupo-' + pref + g.id;
+        bloco.setAttribute('aria-labelledby', legG.id);
+        bloco.appendChild(legG);
+        bloco.appendChild(el('div', 'contagemDica', textoRegraGrupo(g)));
+        if (g.tipo === 'MIN_CREDITS') {
+          var entrada = el('div', 'contagemEntrada');
+          entrada.style.marginTop = '8px';
+          var idG = 'contagemGrupo-' + pref + g.id;
+          var labG = el('label', 'somenteLeitor', 'Créditos que você já tem no grupo ' + g.nome);
+          labG.htmlFor = idG;
+          var inputG = el('input', 'contagemNumero');
+          inputG.type = 'text';
+          inputG.inputMode = 'decimal';
+          inputG.autocomplete = 'off';
+          inputG.id = idG;
+          inputG.setAttribute('data-grupo', g.id);
+          inputG.value = rascunho.grupos[g.id] || '';
+          entrada.appendChild(labG);
+          entrada.appendChild(inputG);
+          entrada.appendChild(el('span', null, (g.unidade || 'créditos') + ' cursados entre:'));
+          bloco.appendChild(entrada);
+          if (g.disciplinas.length) bloco.appendChild(el('div', 'contagemDica', g.disciplinas.map(function (d) { return d.sigla + ' ' + d.nome; }).join(' · ')));
+        } else {
+          var lista = el('div', 'contagemListaChecks');
+          g.disciplinas.forEach(function (d) { lista.appendChild(criarCheck(d, rascunho)); });
+          bloco.appendChild(lista);
+        }
+        secaoGr.appendChild(bloco);
+      });
+      area.appendChild(secaoGr);
+    }
+
+    if (!c.requisitos.length && !c.disciplinas.length && !c.grupos.length) {
+      area.appendChild(el('p', 'contagemAviso', 'Este currículo ainda não tem exigências que possam ser conferidas por aqui. Procure o Serviço de Graduação.'));
+    }
+  }
+
+  function textoRegraGrupo(g) {
+    var n = g.valorMinimo;
+    if (n === null || n === undefined) return 'Regra conferida pelo Serviço de Graduação.';
+    if (g.tipo === 'ONE_OF') return n === 1 ? 'Cumpra pelo menos uma destas disciplinas.' : 'Cumpra pelo menos ' + n + ' destas disciplinas.';
+    if (g.tipo === 'MIN_COUNT') return n === 1 ? 'Cumpra pelo menos uma destas disciplinas.' : 'Cumpra pelo menos ' + n + ' destas disciplinas.';
+    if (g.tipo === 'MIN_CREDITS') return 'Some pelo menos ' + comUnidade(n, g.unidade || 'créditos') + ' entre estas disciplinas.';
+    return 'Regra conferida pelo Serviço de Graduação.';
+  }
+
+  // A mesma disciplina pode aparecer em mais de uma habilitação ou num
+  // grupo: as caixas ficam ligadas pela sigla (cursou uma vez, vale para
+  // todas).
+  function criarCheck(d, rascunho) {
+    var label = el('label', 'contagemCheck');
+    var input = el('input');
+    input.type = 'checkbox';
+    input.setAttribute('data-sigla', d.sigla);
+    input.checked = !!rascunho.disciplinas[d.sigla] || !!(conteudo.querySelector('input[data-sigla="' + d.sigla + '"]:checked'));
+    input.addEventListener('change', function () {
+      conteudo.querySelectorAll('input[data-sigla="' + d.sigla + '"]').forEach(function (outro) { outro.checked = input.checked; });
+    });
+    var texto = el('span');
+    texto.appendChild(el('span', 'contagemSigla', d.sigla));
+    if (d.nome) texto.appendChild(document.createTextNode(' — ' + d.nome));
+    label.appendChild(input);
+    label.appendChild(texto);
+    return label;
+  }
+
+  function lerEntradas(raiz) {
+    var e = { requisitos: {}, disciplinas: {}, grupos: {} };
+    if (!raiz) return e;
+    raiz.querySelectorAll('input[data-requisito]').forEach(function (i) { e.requisitos[i.getAttribute('data-requisito')] = i.value; });
+    raiz.querySelectorAll('input[data-grupo]').forEach(function (i) { e.grupos[i.getAttribute('data-grupo')] = i.value; });
+    raiz.querySelectorAll('input[data-sigla]').forEach(function (i) { if (i.checked) e.disciplinas[i.getAttribute('data-sigla')] = true; });
+    return e;
+  }
+
+  function guardarRascunhos() {
+    conteudo.querySelectorAll('[id^="contagemBloco-"]').forEach(function (area) {
+      rascunhos[area.id.slice('contagemBloco-'.length)] = lerEntradas(area);
+    });
+  }
+
+  /*---------------- RESULTADO ----------------*/
+
+  function desenharResultado(alvo, calculos) {
+
+    alvo.innerHTML = '';
+
+    var resumo = el('div', 'contagemResumo');
+    var titulo = el('h3');
+    titulo.tabIndex = -1;
+    titulo.id = 'contagemResultadoTitulo';
+    resumo.setAttribute('role', 'status');
+    resumo.appendChild(titulo);
+    alvo.appendChild(resumo);
+
+    if (!calculos.length) {
+      titulo.textContent = 'ℹ️ Marque pelo menos uma habilitação.';
+      titulo.focus();
+      return;
+    }
+    var semEstrutura = calculos.filter(function (k) { return !k.curriculo; });
+    if (semEstrutura.length) {
+      titulo.textContent = 'ℹ️ Escolha a estrutura curricular de: ' + semEstrutura.map(function (k) { return k.habilitacao.nome; }).join(', ') + '.';
+      titulo.focus();
+      return;
+    }
+
+    var pendentes = calculos.filter(function (k) { return k.resultado.situacao !== 'CUMPRIDO'; });
+    if (!pendentes.length) {
+      resumo.className += ' contagemResumo--ok';
+      titulo.textContent = calculos.length === 1
+        ? '✅ Pelos números informados, você cumpre o que esta habilitação exige.'
+        : '✅ Pelos números informados, você cumpre o que as habilitações marcadas exigem.';
+      resumo.appendChild(el('p', null, 'Confira os valores no seu histórico e, no período de pedidos, solicite a colação de grau. A decisão final é do Serviço de Graduação.'));
+    } else {
+      resumo.className += ' contagemResumo--falta';
+      titulo.textContent = '⏳ Ainda falta cumprir algumas exigências.';
+      var lista = el('p');
+      lista.textContent = calculos.map(function (k) {
+        var r = k.resultado;
+        var estado = r.situacao === 'CUMPRIDO' ? 'cumprido' : (r.pendentes === 1 ? 'falta 1 item' : 'faltam ' + r.pendentes + ' itens');
+        return k.habilitacao.nome + ': ' + estado;
+      }).join(' · ') + '.';
+      resumo.appendChild(lista);
+    }
+
+    calculos.forEach(function (k) { alvo.appendChild(blocoResultado(k)); });
+
+    alvo.appendChild(el('p', 'contagemDica', 'Simulação feita só no seu navegador, com os números que você digitou. Nada foi enviado ou guardado.'));
+    titulo.focus();
+  }
+
+  function blocoResultado(k) {
+    var r = k.resultado;
+    var secao = el('section', 'contagemResultadoHab');
+    var h = el('h4', 'contagemSubtitulo contagemSubtitulo--hab', k.habilitacao.nome + (k.curriculo.estruturaCurricular ? ' — estrutura ' + k.curriculo.estruturaCurricular : ''));
+    secao.appendChild(h);
+
+    r.avisos.forEach(function (a) { secao.appendChild(el('p', 'contagemAviso contagemAviso--atencao', a)); });
+
+    var lista = el('ul', 'contagemItens');
+    r.requisitos.forEach(function (q) {
+      var li = el('li', 'contagemItem');
+      li.appendChild(el('strong', null, q.rotulo));
+      var st = statusRequisito(q);
+      li.appendChild(el('span', 'contagemStatus contagemStatus--' + st.classe, st.texto));
+      li.appendChild(el('div', 'contagemDetalhe', detalheRequisito(q)));
+      lista.appendChild(li);
+    });
+
+    if (r.disciplinas.length) {
+      var faltam = r.disciplinas.filter(function (d) { return !d.cumprida; });
+      var li = el('li', 'contagemItem');
+      li.appendChild(el('strong', null, 'Disciplinas obrigatórias'));
+      li.appendChild(el('span', 'contagemStatus contagemStatus--' + (faltam.length ? 'falta' : 'ok'), faltam.length ? (faltam.length === 1 ? 'Falta 1 disciplina' : 'Faltam ' + faltam.length + ' disciplinas') : 'Cumprido'));
+      li.appendChild(el('div', 'contagemDetalhe', faltam.length ? 'Falta: ' + faltam.map(function (d) { return d.sigla + (d.nome ? ' — ' + d.nome : ''); }).join('; ') + '.' : 'Todas marcadas como cumpridas.'));
+      lista.appendChild(li);
+    }
+
+    r.grupos.forEach(function (g) {
+      var li = el('li', 'contagemItem');
+      li.appendChild(el('strong', null, g.nome));
+      var st = g.situacao === 'OK' ? { classe: 'ok', texto: 'Cumprido' }
+        : g.situacao === 'FALTA' ? { classe: 'falta', texto: g.tipo === 'MIN_CREDITS' ? 'Faltam ' + comUnidade(g.falta, g.unidade || 'créditos') : (g.falta === 1 ? 'Falta 1 disciplina' : 'Faltam ' + g.falta + ' disciplinas') }
+        : g.situacao === 'NAO_INFORMADO' ? { classe: 'neutro', texto: 'Não informado' }
+        : { classe: 'neutro', texto: 'Confira com o Serviço de Graduação' };
+      li.appendChild(el('span', 'contagemStatus contagemStatus--' + st.classe, st.texto));
+      li.appendChild(el('div', 'contagemDetalhe', textoRegraGrupo({ tipo: g.tipo, valorMinimo: g.minimo, unidade: g.unidade })));
+      lista.appendChild(li);
+    });
+
+    if (lista.childNodes.length) secao.appendChild(lista);
+    if (r.semConta > 0) secao.appendChild(el('p', 'contagemAviso', 'Algumas exigências não podem ser conferidas por aqui e estão marcadas "Confira com o Serviço de Graduação".'));
+    return secao;
+  }
+
+  function statusRequisito(q) {
+    switch (q.situacao) {
+      case 'OK': return { classe: 'ok', texto: 'Cumprido' };
+      case 'OK_COMPENSADO': return { classe: 'ok', texto: 'Cumprido com compensação' };
+      case 'FALTA': return { classe: 'falta', texto: 'Faltam ' + comUnidade(q.falta, q.unidade) };
+      case 'NAO_ATENDE': return { classe: 'falta', texto: 'Não atende' };
+      case 'NAO_INFORMADO': return { classe: 'neutro', texto: 'Não informado' };
+      default: return { classe: 'neutro', texto: 'Confira com o Serviço de Graduação' };
+    }
+  }
+
+  function detalheRequisito(q) {
+    if (q.situacao === 'SEM_CONTA') return q.descricao || 'Esta exigência é conferida pelo Serviço de Graduação.';
+    var partes = [];
+    partes.push((NOMES_OPERADOR[q.operador] || 'Exigido') + ': ' + comUnidade(q.exigido, q.unidade));
+    partes.push('você informou: ' + (q.informado === null ? '—' : comUnidade(q.informado, q.unidade)));
+    var texto = partes.join(' · ') + '.';
+    q.recebeuDe.forEach(function (t) { texto += ' ' + comUnidade(t.quantidade, q.unidade) + ' vieram da sobra de "' + t.de + '".'; });
+    q.cedeuPara.forEach(function (t) { texto += ' ' + comUnidade(t.quantidade, q.unidade) + ' a mais foram usados para completar "' + t.para + '".'; });
+    if (q.situacao === 'OK' && q.sobra > 0 && !q.cedeuPara.length) texto += ' Você tem ' + comUnidade(q.sobra, q.unidade) + ' a mais.';
+    return texto;
+  }
+
+  FERRAMENTAS_ABRIR['contagem-creditos'] = abrir;
+  window.PainelContagem = Object.freeze({ abrir: abrir, fechar: fechar });
+})();
+</script>
