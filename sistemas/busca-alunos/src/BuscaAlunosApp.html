@@ -4,19 +4,20 @@
 <base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Busca de Alunos</title>
+<title>Comunidade IPUSP</title>
 
 <!-- GRADIP UI — tema (Light/Dark/Sistema). Incluído o mais cedo
      possível, antes de qualquer <style> que consuma var(--gradip-...),
      e antes do iniciar()/google.script.run: o tema é 100% client-side
-     e não depende da lista de alunos. Isso minimiza o "flash" de tema
+     e não depende da lista de pessoas. Isso minimiza o "flash" de tema
      errado ao carregar a página. -->
 <?!= include_('GradipTema') ?>
 
 <style>
 
   /*=====================================================
-    BUSCA DE ALUNOS — estilos da página principal.
+    COMUNIDADE IPUSP (antiga Busca de Alunos) — estilos da página
+    principal.
 
     GRADIP UI v1.0: todas as cores literais do código original
     (#f5f5f5, #333, #005AA9, #d9d9d9, #eaf2fa, #fff1b8, #a33...) foram
@@ -298,7 +299,8 @@
     gap:12px;
   }
 
-  .cardAluno:hover{
+  /* v1.2: só o card que abre a ficha (aluno) reage ao mouse. */
+  button.cardAluno:hover{
     border-color:var(--gradip-link);
   }
 
@@ -351,7 +353,7 @@
 
   /* Erro: fundo + borda + texto semânticos de perigo (nada de pastel
      claro fixo no Escuro). O estado não depende só da cor: a mensagem
-     sempre começa com "Não consegui carregar a lista de alunos". */
+     sempre começa com "Não consegui carregar a lista de pessoas". */
   .vazio.erro{
     color:var(--gradip-danger);
     background:var(--gradip-danger-bg);
@@ -498,6 +500,55 @@
   .cardAluno .dadosAluno{ display:block; min-width:0; }
   .cardAluno .nomeAluno,
   .cardAluno .detalheAluno{ display:block; }
+
+  /*---------------- v1.2 — VÍNCULO no card ----------------
+    Selo com o texto do vínculo (Aluno, Docente, Servidor, Setor)
+    antes do nome. A cor só reforça: o texto é sempre visível.
+    Tokens semânticos de fundo/borda/texto de cada estado — os
+    mesmos nos dois temas, sem pastel fixo. */
+  .seloVinculo{
+    display:inline-block;
+    font-size:11.5px;
+    font-weight:bold;
+    line-height:1.3;
+    padding:1px 8px;
+    margin-right:8px;
+    border-radius:999px;
+    border:1px solid var(--gradip-border-strong);
+    background:var(--gradip-surface);
+    color:var(--gradip-text);
+    vertical-align:1px;
+  }
+  .seloVinculo--aluno{
+    background:var(--gradip-info-bg);
+    border-color:var(--gradip-info-border);
+    color:var(--gradip-link);
+  }
+  .seloVinculo--docente{
+    background:var(--gradip-success-bg);
+    border-color:var(--gradip-success-border);
+    color:var(--gradip-success);
+  }
+  .seloVinculo--servidor{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+    color:var(--gradip-warning);
+  }
+  .seloVinculo--setor{
+    border-style:dashed;
+  }
+
+  /* Aviso de cadastro que não pôde ser lido (os outros aparecem). */
+  .avisoCadastros[hidden]{ display:none; }
+  .avisoCadastros{
+    margin-top:10px;
+    padding:8px 12px;
+    font-size:12.5px;
+    color:var(--gradip-text);
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    border-radius:8px;
+  }
 
   .ingressoAluno{
     color:var(--gradip-text-muted);
@@ -792,7 +843,7 @@
     <div class="logoEsquerda">
       <?!= include_('GradipMarcaIPUSP') ?>
       <div class="textoCabecalho">
-        <h1><span aria-hidden="true">🔎 </span>Busca de Alunos</h1>
+        <h1><span aria-hidden="true">👥 </span>Comunidade IPUSP</h1>
         <p>Serviço de Graduação — Instituto de Psicologia</p>
       </div>
     </div>
@@ -813,9 +864,9 @@
   <main class="conteudo">
 
     <div class="cardBusca">
-      <label for="campoBusca" class="rotuloBusca">Buscar aluno</label>
+      <label for="campoBusca" class="rotuloBusca">Buscar pessoa</label>
       <input type="text" id="campoBusca" class="campoBusca" autocomplete="off"
-             placeholder="Digite parte do nome, o número USP ou o e-mail..." disabled>
+             placeholder="Digite parte do nome, o número USP, o e-mail ou o setor..." disabled>
       <div class="linhaFiltros">
         <label class="campoFiltro">Ano de ingresso
           <select id="filtroAno" class="seletorFiltro" disabled>
@@ -834,11 +885,12 @@
           <button type="button" id="botaoPdf" class="botaoSecundario" disabled>Exportar PDF</button>
         </div>
       </div>
-      <div id="infoBusca" class="infoBusca" aria-live="polite">Carregando lista de alunos...</div>
+      <div id="infoBusca" class="infoBusca" aria-live="polite">Carregando a lista de pessoas...</div>
+      <div id="avisoCadastros" class="avisoCadastros" role="status" hidden></div>
       <div class="ajudaContextualLinha">
         <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-como-buscar">Como buscar?</button>
         <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-ingresso">Filtrar e exportar por ingresso</button>
-        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-nao-encontrei">Não encontrou o aluno?</button>
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-nao-encontrei">Não encontrou a pessoa?</button>
       </div>
     </div>
 
@@ -875,11 +927,12 @@
 
 <!-- Script da busca. Na v1.0 era o script original sem alterações;
      a v1.1 acrescenta filtro por ingresso, exportação e ficha do
-     aluno (ver comentário no topo do bloco). O tema não depende dele. -->
+     aluno; a v1.2 junta docentes, servidores e setores (ver
+     comentário no topo do bloco). O tema não depende dele. -->
 <script>
 
   /*=====================================================
-    BUSCA DE ALUNOS — comportamento da página.
+    COMUNIDADE IPUSP — comportamento da página.
 
     v1.0: este bloco era o script original, byte-idêntico.
     v1.1 (pedido do Serviço de Graduação, 13/10/2026) acrescenta,
@@ -893,10 +946,16 @@
       - FICHA DO ALUNO: clicar num resultado abre um modal com
         todas as colunas da planilha (obterFichaAluno), editável
         para quem é editor da planilha (salvarFichaAluno).
-    A lista continua chegando numa única chamada
-    (listarAlunosParaBusca) e a filtragem continua no navegador.
+    v1.2 — COMUNIDADE IPUSP (14/10/2026): a mesma caixa de busca
+    procura também em docentes, servidores e setores. Cada card
+    ganha o selo do vínculo; só o card de aluno abre a ficha. O
+    filtro de ingresso, por definição, só traz alunos.
+    A lista continua chegando numa única chamada (agora
+    listarComunidadeParaBusca) e a filtragem continua no navegador.
   =====================================================*/
 
+  // Todas as pessoas carregadas (alunos, docentes, servidores e
+  // setores). O nome da variável vem da v1.1.
   let TODOS_ALUNOS = [];
   let CARREGOU = false;
 
@@ -909,6 +968,10 @@
   const filtroSemestre = document.getElementById("filtroSemestre");
   const botaoCsv = document.getElementById("botaoCsv");
   const botaoPdf = document.getElementById("botaoPdf");
+  const avisoCadastros = document.getElementById("avisoCadastros");
+
+  // v1.2: texto do selo de cada vínculo (também vai na exportação).
+  const VINCULOS = { aluno: "Aluno", docente: "Docente", servidor: "Servidor", setor: "Setor" };
 
   // Resultado que está na tela agora (já filtrado por texto, ano e
   // semestre) — é exatamente isso que os botões de exportação usam.
@@ -962,10 +1025,14 @@
   // v1.1: além do texto de busca, guarda ano e semestre de ingresso
   // já separados ("2024/1" → _ano "2024", _semestre "1"). Ingresso
   // fora do formato fica com _ano vazio e só aparece em "Todos os anos".
+  // v1.2: vale para qualquer pessoa (tipo ausente = aluno); setor
+  // entra no texto de busca; campos que o cadastro não tem ficam "".
   function prepararAluno_(aluno) {
-    const busca = normalizar_([aluno.nome, aluno.numeroUsp, aluno.email, aluno.emailSecundario].join(" "));
-    const partes = String(aluno.ingresso || "").trim().match(/^(\d{4})(?:\s*\/\s*(\d))?/);
-    return Object.assign({}, aluno, {
+    const tipo = VINCULOS[aluno.tipo] ? aluno.tipo : "aluno";
+    const completo = Object.assign({ numeroUsp: "", nome: "", ingresso: "", email: "", emailSecundario: "", setor: "" }, aluno, { tipo: tipo });
+    const busca = normalizar_([completo.nome, completo.numeroUsp, completo.email, completo.emailSecundario, completo.setor].join(" "));
+    const partes = tipo === "aluno" ? String(completo.ingresso || "").trim().match(/^(\d{4})(?:\s*\/\s*(\d))?/) : null;
+    return Object.assign(completo, {
       _busca: busca,
       _ano: partes ? partes[1] : "",
       _semestre: partes && partes[2] ? partes[2] : ""
@@ -1029,21 +1096,33 @@
 
     mostrando.forEach(aluno => {
 
-      // v1.1: o card é um <button> que abre a ficha do aluno.
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "cardAluno";
-      card.setAttribute("aria-haspopup", "dialog");
-      card.dataset.linha = String(aluno.linha);
-      card.addEventListener("click", () => abrirFicha_(aluno, card));
+      // v1.1: o card de aluno é um <button> que abre a ficha.
+      // v1.2: docente, servidor e setor não têm ficha — card estático.
+      const ehAluno = aluno.tipo === "aluno";
+      const card = document.createElement(ehAluno ? "button" : "div");
+      card.className = "cardAluno cardAluno--" + aluno.tipo;
+      card.dataset.tipo = aluno.tipo;
+      if (ehAluno) {
+        card.type = "button";
+        card.setAttribute("aria-haspopup", "dialog");
+        card.dataset.linha = String(aluno.linha);
+        card.addEventListener("click", () => abrirFicha_(aluno, card));
+      }
 
       const dados = document.createElement("span");
       dados.className = "dadosAluno";
 
       const nome = document.createElement("span");
       nome.className = "nomeAluno";
-      nome.innerHTML = destacar_(aluno.nome || "(sem nome cadastrado)", termos);
-      if (aluno.ingresso) {
+      const selo = document.createElement("span");
+      selo.className = "seloVinculo seloVinculo--" + aluno.tipo;
+      selo.textContent = VINCULOS[aluno.tipo];
+      const textoNome = document.createElement("span");
+      textoNome.className = "textoNome";
+      textoNome.innerHTML = destacar_(aluno.nome || "(sem nome cadastrado)", termos);
+      nome.appendChild(selo);
+      nome.appendChild(textoNome);
+      if (ehAluno && aluno.ingresso) {
         const ingresso = document.createElement("span");
         ingresso.className = "ingressoAluno";
         ingresso.textContent = "· ingresso " + aluno.ingresso;
@@ -1053,6 +1132,10 @@
       const detalhe = document.createElement("span");
       detalhe.className = "detalheAluno";
       const partesDetalhe = [];
+      // Setor do servidor (no card de setor, só se diferente do nome).
+      if (aluno.setor && (aluno.tipo === "servidor" || normalizar_(aluno.setor) !== normalizar_(aluno.nome))) {
+        partesDetalhe.push(destacar_(aluno.setor, termos));
+      }
       if (aluno.email) partesDetalhe.push(destacar_(aluno.email, termos));
       if (aluno.emailSecundario) partesDetalhe.push(destacar_(aluno.emailSecundario, termos) + " (secundário)");
       detalhe.innerHTML = partesDetalhe.length
@@ -1062,12 +1145,13 @@
       dados.appendChild(nome);
       dados.appendChild(detalhe);
 
-      const badge = document.createElement("span");
-      badge.className = "badgeUsp";
-      badge.innerHTML = aluno.numeroUsp ? destacar_(aluno.numeroUsp, termos) : "sem nº USP";
-
       card.appendChild(dados);
-      card.appendChild(badge);
+      if (ehAluno) {
+        const badge = document.createElement("span");
+        badge.className = "badgeUsp";
+        badge.innerHTML = aluno.numeroUsp ? destacar_(aluno.numeroUsp, termos) : "sem nº USP";
+        card.appendChild(badge);
+      }
       listaResultados.appendChild(card);
 
     });
@@ -1096,7 +1180,7 @@
       RESULTADO_ATUAL = [];
       atualizarExportacao_();
       listaResultados.innerHTML = "";
-      infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar ou escolha um ano de ingresso.`;
+      infoBusca.textContent = `${resumoCarga_()} — comece a digitar ou escolha um ano de ingresso.`;
       return;
     }
 
@@ -1105,16 +1189,30 @@
     atualizarExportacao_();
 
     if (resultado.length === 0) {
-      infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados.`;
+      infoBusca.textContent = `${resumoCarga_()}.`;
       renderizarVazio_(filtroAno.value
           ? "Nenhum aluno encontrado com esse filtro de ingresso e essa busca."
-          : "Nenhum aluno encontrado com esse nome, número USP ou e-mail.", false);
+          : "Nenhuma pessoa encontrada com esse nome, número USP, e-mail ou setor.", false);
       return;
     }
 
     infoBusca.textContent = `${resultado.length} resultado${resultado.length === 1 ? "" : "s"} encontrado${resultado.length === 1 ? "" : "s"}${descreverFiltro_()}.`;
     renderizarResultados_(resultado, termos);
 
+  }
+
+  // v1.2: "536 alunos, 81 docentes, 12 servidores e 3 setores carregados"
+  // (tipos sem ninguém não aparecem).
+  function resumoCarga_() {
+    const plural = { aluno: "alunos", docente: "docentes", servidor: "servidores", setor: "setores" };
+    const contagem = { aluno: 0, docente: 0, servidor: 0, setor: 0 };
+    TODOS_ALUNOS.forEach(p => { contagem[p.tipo]++; });
+    const partes = Object.keys(contagem)
+        .filter(t => contagem[t] > 0)
+        .map(t => `${contagem[t]} ${contagem[t] === 1 ? t : plural[t]}`);
+    if (!partes.length) return "Nenhuma pessoa carregada";
+    const texto = partes.length === 1 ? partes[0] : partes.slice(0, -1).join(", ") + " e " + partes[partes.length - 1];
+    return texto + (TODOS_ALUNOS.length === 1 ? " carregado" : " carregados");
   }
 
   // " · ingresso 2024 (1º semestre)" — texto do filtro ativo.
@@ -1139,23 +1237,30 @@
   /*-----------------------------------------------------
     EXPORTAÇÃO — sempre do RESULTADO_ATUAL inteiro.
   ------------------------------------------------------*/
+  // v1.2: Vínculo e Setor entram porque a lista pode misturar tipos.
   const COLUNAS_EXPORTACAO = [
-    ["Nome do Aluno", "nome"],
+    ["Vínculo", "vinculo"],
+    ["Nome", "nome"],
+    ["Setor", "setor"],
     ["Número USP", "numeroUsp"],
     ["Ingresso", "ingresso"],
-    ["eMail", "email"],
-    ["eMail Secundario", "emailSecundario"]
+    ["E-mail", "email"],
+    ["E-mail secundário", "emailSecundario"]
   ];
 
+  function valorExportacao_(pessoa, chave) {
+    return chave === "vinculo" ? VINCULOS[pessoa.tipo] : (pessoa[chave] || "");
+  }
+
   function nomeBaseArquivo_() {
-    const partes = ["alunos"];
+    const partes = [filtroAno.value ? "alunos" : "comunidade"];
     if (filtroAno.value) partes.push("ingresso-" + filtroAno.value + (filtroSemestre.value ? "-" + filtroSemestre.value : ""));
     if (campoBusca.value.trim()) partes.push("busca");
     return partes.join("_");
   }
 
   function tituloExportacao_() {
-    let titulo = "Alunos";
+    let titulo = filtroAno.value ? "Alunos" : "Comunidade IPUSP";
     if (filtroAno.value) titulo += ` — ingresso ${filtroAno.value}` + (filtroSemestre.value ? `/${filtroSemestre.value}` : "");
     if (campoBusca.value.trim()) titulo += ` — busca "${campoBusca.value.trim()}"`;
     return titulo;
@@ -1185,9 +1290,9 @@
   botaoCsv.addEventListener("click", () => {
     if (!RESULTADO_ATUAL.length) return;
     const linhas = [COLUNAS_EXPORTACAO.map(c => celulaCsv_(c[0])).join(";")];
-    RESULTADO_ATUAL.forEach(a => linhas.push(COLUNAS_EXPORTACAO.map(c => celulaCsv_(a[c[1]])).join(";")));
+    RESULTADO_ATUAL.forEach(a => linhas.push(COLUNAS_EXPORTACAO.map(c => celulaCsv_(valorExportacao_(a, c[1]))).join(";")));
     baixarArquivo_("﻿" + linhas.join("\r\n") + "\r\n", "text/csv;charset=utf-8", nomeBaseArquivo_() + ".csv");
-    infoBusca.textContent = `CSV gerado com ${RESULTADO_ATUAL.length} aluno${RESULTADO_ATUAL.length === 1 ? "" : "s"}.`;
+    infoBusca.textContent = `CSV gerado com ${RESULTADO_ATUAL.length} pessoa${RESULTADO_ATUAL.length === 1 ? "" : "s"}.`;
   });
 
   botaoPdf.addEventListener("click", () => {
@@ -1197,7 +1302,7 @@
     botaoPdf.textContent = "Gerando PDF...";
     const linhas = RESULTADO_ATUAL.map(a => {
       const l = {};
-      COLUNAS_EXPORTACAO.forEach(c => { l[c[1]] = a[c[1]] || ""; });
+      COLUNAS_EXPORTACAO.forEach(c => { l[c[1]] = valorExportacao_(a, c[1]); });
       return l;
     });
     google.script.run
@@ -1206,7 +1311,7 @@
           atualizarExportacao_();
           const bytes = Uint8Array.from(atob(arquivo.base64), c => c.charCodeAt(0));
           baixarArquivo_(new Blob([bytes], { type: "application/pdf" }), "application/pdf", arquivo.nome);
-          infoBusca.textContent = `PDF gerado com ${linhas.length} aluno${linhas.length === 1 ? "" : "s"}.`;
+          infoBusca.textContent = `PDF gerado com ${linhas.length} pessoa${linhas.length === 1 ? "" : "s"}.`;
         })
         .withFailureHandler(erro => {
           botaoPdf.textContent = textoOriginal;
@@ -1373,7 +1478,7 @@
     // devolve o foco a ele (ou ao card novo do mesmo aluno); se o aluno
     // saiu do filtro, ao campo de busca.
     const linhaGatilho = fichaGatilho && fichaGatilho.dataset ? fichaGatilho.dataset.linha : "";
-    const cardNovo = linhaGatilho ? listaResultados.querySelector(`.cardAluno[data-linha="${linhaGatilho}"]`) : null;
+    const cardNovo = linhaGatilho ? listaResultados.querySelector(`button.cardAluno[data-linha="${linhaGatilho}"]`) : null;
     if (fichaGatilho && document.body.contains(fichaGatilho)) fichaGatilho.focus();
     else if (cardNovo) cardNovo.focus();
     else campoBusca.focus();
@@ -1409,23 +1514,35 @@
     }
   });
 
+  // v1.2: um cadastro que não abriu não impede os outros — aviso
+  // fixo abaixo da busca, com o motivo devolvido pelo servidor.
+  function mostrarIndisponiveis_(indisponiveis) {
+    if (!indisponiveis || !indisponiveis.length) { avisoCadastros.hidden = true; avisoCadastros.textContent = ""; return; }
+    avisoCadastros.textContent = "Atenção: não consegui ler o cadastro de " +
+        indisponiveis.map(i => `${i.descricao} (${i.motivo})`).join("; ") +
+        ". As demais pessoas aparecem normalmente.";
+    avisoCadastros.hidden = false;
+  }
+
   function iniciar() {
     google.script.run
-        .withSuccessHandler(alunos => {
-          TODOS_ALUNOS = (alunos || []).map(prepararAluno_);
+        .withSuccessHandler(resposta => {
+          const dados = resposta || {};
+          TODOS_ALUNOS = (dados.pessoas || []).map(prepararAluno_);
           CARREGOU = true;
           campoBusca.disabled = false;
           filtroAno.disabled = false;
           montarFiltroAno_();
-          infoBusca.textContent = `${TODOS_ALUNOS.length} alunos carregados — comece a digitar ou escolha um ano de ingresso.`;
+          mostrarIndisponiveis_(dados.indisponiveis);
+          infoBusca.textContent = `${resumoCarga_()} — comece a digitar ou escolha um ano de ingresso.`;
           campoBusca.focus();
         })
         .withFailureHandler(erro => {
           infoBusca.textContent = "";
           const mensagem = (erro && erro.message) ? erro.message : String(erro);
-          renderizarVazio_("Não consegui carregar a lista de alunos: " + mensagem, true);
+          renderizarVazio_("Não consegui carregar a lista de pessoas: " + mensagem, true);
         })
-        .listarAlunosParaBusca();
+        .listarComunidadeParaBusca();
   }
 
   iniciar();

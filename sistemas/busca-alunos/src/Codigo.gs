@@ -1,12 +1,14 @@
 /*=====================================================
-  BUSCA DE ALUNOS — Serviço de Graduação (IPUSP)
+  COMUNIDADE IPUSP — Serviço de Graduação (IPUSP)
+  (antiga "Busca de Alunos"; nomes de arquivos e funções da
+  ficha/exportação mantidos para facilitar a atualização)
   Backend Apps Script
 
-  Ferramenta enxuta pra localizar um aluno rapidamente por nome
-  (parcial, em qualquer ordem), número USP ou e-mail. Criada
-  pra apoiar a triagem dos grupos de atendimento clínico, que
-  chegam da Psicologia Clínica com nomes incompletos e sem
-  número USP.
+  Ferramenta enxuta pra localizar rapidamente uma pessoa do
+  IPUSP — aluno, docente, servidor ou setor — por nome (parcial,
+  em qualquer ordem), número USP, e-mail ou setor. Nasceu pra
+  apoiar a triagem dos grupos de atendimento clínico, que chegam
+  da Psicologia Clínica com nomes incompletos e sem número USP.
 
   A planilha de alunos NUNCA é referenciada por ID fixo aqui —
   o ID de verdade é resolvido em tempo de execução a partir da
@@ -43,6 +45,21 @@
       conferência de permissão, de linha e de conflito);
     - EXPORTAÇÃO: gerarPdfListaAlunos (o CSV é feito no navegador).
 
+  v1.2 — COMUNIDADE IPUSP (pedido do Serviço de Graduação,
+  14/10/2026): a mesma caixa de busca passa a procurar também nos
+  cadastros de SERVIDORES e de DOCENTES (chaves SERVIDORES e
+  PLANILHA_DOCENTES no ID_INDEX, colunas pela posição — mesma
+  regra da auditoria da Estrutura Curricular 1.11.0):
+    - listarComunidadeParaBusca junta os três cadastros, cada
+      pessoa com "tipo" = aluno | docente | servidor | setor;
+      um cadastro que não abre não derruba os outros
+      (vai em "indisponiveis");
+    - "setor" = linha da planilha de servidores que é de um setor
+      (conta institucional), não de uma pessoa — ver ehSetor_;
+    - o PDF passa a ter as colunas Vínculo e Setor;
+    - ficha e edição continuam só para alunos;
+    - diagnóstico renomeado para diagnosticarComunidadeIPUSP.
+
   ARQUIVOS DO PROJETO (todos na raiz do Apps Script, nomes sem
   extensão no include_):
     Codigo.gs                  — este arquivo
@@ -63,6 +80,28 @@ const PROPRIEDADE_ID_INDICE = "ID_INDEX_SPREADSHEET_ID";
 const ABA_INDICE = "Página1";
 
 const CHAVE_PLANILHA_ALUNOS = "PLANILHA_ALUNOS";
+
+// v1.2: cadastros de servidores e de docentes. Primeira aba, títulos
+// na linha 1, dados da linha 2 em diante. Colunas pela POSIÇÃO
+// (A = 1), como na auditoria da Estrutura Curricular 1.11.0:
+//   SERVIDORES         A E-MAIL · B NOME · C Setor
+//   PLANILHA_DOCENTES  D E-mail · B NOME
+const CHAVE_PLANILHA_SERVIDORES = "SERVIDORES";
+const CHAVE_PLANILHA_DOCENTES = "PLANILHA_DOCENTES";
+const COLUNAS_SERVIDORES = { email: 1, nome: 2, setor: 3 };
+const COLUNAS_DOCENTES = { email: 4, nome: 2 };
+
+// A planilha de servidores também guarda contas de SETOR (e-mail
+// institucional de uma seção, sem pessoa). Uma linha é tratada como
+// setor quando (ver ehSetor_):
+//   - a coluna NOME está vazia (só e-mail e setor), ou
+//   - NOME é igual ao Setor (sem diferença de acento/caixa), ou
+//   - NOME começa com uma das palavras abaixo.
+// Para mudar a regra, edite só esta lista.
+const INICIOS_NOME_SETOR = [
+  "Setor", "Serviço", "Seção", "Secretaria", "Assistência", "Comissão",
+  "Departamento", "Diretoria", "Biblioteca", "Laboratório", "Coordenação", "Atendimento"
+];
 
 // Nomes EXATOS dos cabeçalhos na planilha de alunos (aba única).
 // Lidos por nome, não por posição de coluna — se alguém inserir ou
@@ -97,12 +136,12 @@ const MAXIMO_LINHAS_EXPORTACAO = 5000;
 
 // Template (e não HtmlOutput direto) porque BuscaAlunosApp.html usa
 // scriptlets <?!= include_('...') ?> pra trazer o tema e a ajuda.
-// Nenhum dado de aluno passa por aqui: a lista continua chegando só
-// pela chamada google.script.run.listarAlunosParaBusca().
+// Nenhum dado pessoal passa por aqui: a lista continua chegando só
+// pela chamada google.script.run.listarComunidadeParaBusca().
 function doGet() {
   return HtmlService.createTemplateFromFile("BuscaAlunosApp")
       .evaluate()
-      .setTitle("Busca de Alunos — Serviço de Graduação")
+      .setTitle("Comunidade IPUSP — Serviço de Graduação")
       .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
@@ -209,6 +248,107 @@ function listarAlunosParaBusca() {
 
   return alunos;
 
+}
+
+/*-----------------------------------------------------
+  v1.2 — COMUNIDADE: os três cadastros numa lista só, pra mesma
+  busca no navegador. Cada pessoa leva "tipo":
+    aluno    — planilha de alunos (mesmos campos de antes)
+    docente  — { linha, nome, email }
+    servidor — { linha, nome, email, setor }
+    setor    — idem, linha de setor da planilha de servidores
+  Só os campos usados na busca e no card vão ao navegador.
+
+  Cada cadastro é lido separadamente: se um não abrir (chave
+  ausente no ID_INDEX, sem permissão...), os outros aparecem e o
+  motivo vai em "indisponiveis" (sem IDs nem e-mails). Se NENHUM
+  abrir, o erro do primeiro (alunos) sobe como antes — é o caso
+  típico de configuração (propriedade ausente, ID_INDEX errado).
+------------------------------------------------------*/
+function listarComunidadeParaBusca() {
+
+  const fontes = [
+    { descricao: "alunos", ler: () => listarAlunosParaBusca().map(a => Object.assign({ tipo: "aluno" }, a)) },
+    { descricao: "docentes", ler: listarDocentes_ },
+    { descricao: "servidores", ler: listarServidores_ }
+  ];
+
+  const pessoas = [];
+  const indisponiveis = [];
+  let primeiroErro = null;
+
+  fontes.forEach(fonte => {
+    try {
+      fonte.ler().forEach(p => pessoas.push(p));
+    } catch (err) {
+      if (!primeiroErro) primeiroErro = err;
+      indisponiveis.push({ descricao: fonte.descricao, motivo: mensagemSegura_(err) });
+    }
+  });
+
+  if (indisponiveis.length === fontes.length) throw primeiroErro;
+  return { pessoas: pessoas, indisponiveis: indisponiveis };
+
+}
+
+function listarDocentes_() {
+  return lerCadastroPorPosicao_(CHAVE_PLANILHA_DOCENTES, COLUNAS_DOCENTES).map(l => ({
+    tipo: "docente", linha: l.linha, nome: l.nome, email: l.email
+  }));
+}
+
+function listarServidores_() {
+  return lerCadastroPorPosicao_(CHAVE_PLANILHA_SERVIDORES, COLUNAS_SERVIDORES).map(l => ({
+    tipo: ehSetor_(l.nome, l.setor) ? "setor" : "servidor",
+    linha: l.linha,
+    nome: l.nome || l.setor,
+    email: l.email,
+    setor: l.setor
+  }));
+}
+
+// Lê a primeira aba de um cadastro (via ID_INDEX), da linha 2 em
+// diante, só nas colunas pedidas. Linha sem nome e sem e-mail (e sem
+// setor) é ignorada. Espaços repetidos viram um só.
+function lerCadastroPorPosicao_(chave, colunas) {
+  const aba = SpreadsheetApp.openById(obterIdProducao_(chave)).getSheets()[0];
+  const total = aba.getLastRow() - 1;
+  if (total < 1) return [];
+  const campos = Object.keys(colunas);
+  const largura = Math.max.apply(null, campos.map(c => colunas[c]));
+  const valores = aba.getRange(2, 1, total, largura).getDisplayValues();
+  const lidas = [];
+  valores.forEach((linha, i) => {
+    const l = { linha: i + 2 };
+    campos.forEach(c => { l[c] = String(linha[colunas[c] - 1] || "").replace(/\s+/g, " ").trim(); });
+    if (l.nome || l.email || l.setor) lidas.push(l);
+  });
+  return lidas;
+}
+
+// Regra de "setor" — ver INICIOS_NOME_SETOR no topo.
+function ehSetor_(nome, setor) {
+  const n = comparavel_(nome);
+  if (!n) return true;
+  if (setor && n === comparavel_(setor)) return true;
+  return INICIOS_NOME_SETOR.some(p => {
+    const inicio = comparavel_(p);
+    return n === inicio || n.indexOf(inicio + " ") === 0;
+  });
+}
+
+// Minúsculas, sem acento e com espaços simples — só para comparar.
+function comparavel_(texto) {
+  return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+// Mensagem de erro sem IDs (sequências longas) nem e-mails, pra poder
+// ir ao navegador e ao log de diagnóstico.
+function mensagemSegura_(err) {
+  return limitar_(String(err && err.message || err)
+    .replace(/[A-Za-z0-9_-]{25,}/g, "[…]")
+    .replace(/\S+@\S+/g, "[e-mail]"), 300);
 }
 
 // Abre a planilha de alunos (via ID_INDEX) e devolve a aba única.
@@ -400,6 +540,7 @@ function salvarFichaAluno(pedido) {
     const valoresLinha = aba.getRange(linha, 1, 1, ultimaColuna).getValues()[0];
     ficha.alterados = alteracoes.length;
     ficha.resumo = {
+      tipo: "aluno",
       linha: linha,
       numeroUsp: String(valoresLinha[mapa.numeroUsp] || "").trim(),
       nome: String(valoresLinha[mapa.nome] || "").trim(),
@@ -462,20 +603,23 @@ function converterParaCelula_(novo, valorAnterior) {
   busca) — não lê a planilha de novo nem dá acesso a nada além do
   que a página já tem. Todo texto é escapado antes de virar HTML.
   Devolve { nome, base64 } pro navegador baixar.
+  v1.2: a lista pode misturar alunos, docentes, servidores e
+  setores — colunas Vínculo e Setor incluídas (vazias quando não
+  se aplicam); o nome da função foi mantido.
 ------------------------------------------------------*/
 function gerarPdfListaAlunos(pedido) {
 
   const p = pedido || {};
   const linhas = Array.isArray(p.linhas) ? p.linhas : [];
-  if (!linhas.length) throw new Error("Não há alunos na lista para exportar.");
+  if (!linhas.length) throw new Error("Não há pessoas na lista para exportar.");
   if (linhas.length > MAXIMO_LINHAS_EXPORTACAO) {
-    throw new Error(`A lista tem mais de ${MAXIMO_LINHAS_EXPORTACAO} alunos. Filtre por ano ou semestre antes de exportar.`);
+    throw new Error(`A lista tem mais de ${MAXIMO_LINHAS_EXPORTACAO} pessoas. Refine a busca ou filtre por ano antes de exportar.`);
   }
 
-  const titulo = limitar_(String(p.titulo || "Lista de alunos"), 200);
+  const titulo = limitar_(String(p.titulo || "Comunidade IPUSP"), 200);
   const geradoEm = Utilities.formatDate(new Date(), "America/Sao_Paulo", "dd/MM/yyyy 'às' HH:mm");
-  const colunas = ["Nome do Aluno", "Número USP", "Ingresso", "eMail", "eMail Secundario"];
-  const chaves = ["nome", "numeroUsp", "ingresso", "email", "emailSecundario"];
+  const colunas = ["Vínculo", "Nome", "Setor", "Número USP", "Ingresso", "E-mail", "E-mail secundário"];
+  const chaves = ["vinculo", "nome", "setor", "numeroUsp", "ingresso", "email", "emailSecundario"];
 
   const corpo = linhas.map((l, i) =>
     `<tr><td class="n">${i + 1}</td>${chaves.map(c => `<td>${escaparHtml_(limitar_(l && l[c], 300))}</td>`).join("")}</tr>`
@@ -490,13 +634,13 @@ function gerarPdfListaAlunos(pedido) {
     `th{background:#eff6ff;color:#00457f}td.n{color:#5f6b76;width:28px}` +
     `</style></head><body>` +
     `<h1>${escaparHtml_(titulo)}</h1>` +
-    `<p>Serviço de Graduação — Instituto de Psicologia da USP · ${linhas.length} aluno${linhas.length === 1 ? "" : "s"} · gerado em ${geradoEm}. Contém dados pessoais: uso restrito à finalidade da solicitação.</p>` +
+    `<p>Serviço de Graduação — Instituto de Psicologia da USP · ${linhas.length} pessoa${linhas.length === 1 ? "" : "s"} · gerado em ${geradoEm}. Contém dados pessoais: uso restrito à finalidade da solicitação.</p>` +
     `<table><thead><tr><th>#</th>${colunas.map(c => `<th>${escaparHtml_(c)}</th>`).join("")}</tr></thead><tbody>${corpo}</tbody></table>` +
     `</body></html>`;
 
   const pdf = Utilities.newBlob(html, "text/html", "lista.html").getAs("application/pdf");
   return {
-    nome: limitar_(String(p.nomeArquivo || "lista-alunos"), 120).replace(/[^\w.\-]+/g, "_") + ".pdf",
+    nome: limitar_(String(p.nomeArquivo || "comunidade-ipusp"), 120).replace(/[^\w.\-]+/g, "_") + ".pdf",
     base64: Utilities.base64Encode(pdf.getBytes())
   };
 
@@ -510,17 +654,18 @@ function escaparHtml_(texto) {
 
 /*=====================================================
   DIAGNÓSTICO — rode esta função manualmente pelo editor
-  do Apps Script (▶ Executar, com "diagnosticarBuscaAlunos"
+  do Apps Script (▶ Executar, com "diagnosticarComunidadeIPUSP"
   selecionado no menu de funções) depois de instalar ou
   mudar a configuração. Depois veja o resultado em
   Ver > Registros de execução.
 
   Registra SÓ informação de configuração (se a propriedade
-  existe, nome da aba do índice, se a chave foi resolvida,
-  cabeçalhos encontrados e QUANTOS alunos foram lidos) —
-  nunca IDs, nomes, números USP ou e-mails.
+  existe, nome da aba do índice, se cada chave foi resolvida,
+  títulos das colunas usadas e QUANTAS pessoas de cada tipo
+  foram lidas) — nunca IDs, nomes, números USP ou e-mails.
+  (Até a v1.1 chamava-se diagnosticarBuscaAlunos.)
 =====================================================*/
-function diagnosticarBuscaAlunos() {
+function diagnosticarComunidadeIPUSP() {
 
   const temPropriedade = !!PropertiesService.getScriptProperties().getProperty(PROPRIEDADE_ID_INDICE);
   Logger.log(`Propriedade ${PROPRIEDADE_ID_INDICE}: ${temPropriedade ? "configurada" : "AUSENTE — cadastre em Configurações do projeto → Propriedades do script"}`);
@@ -530,18 +675,48 @@ function diagnosticarBuscaAlunos() {
   const abaIndice = indice.getSheetByName(ABA_INDICE) || indice.getSheets()[0];
   Logger.log(`Aba lida no ID_INDEX: "${abaIndice.getName()}"${abaIndice.getName() === ABA_INDICE ? "" : ` (não existe "${ABA_INDICE}"; usada a primeira aba)`}`);
 
-  obterIdProducao_(CHAVE_PLANILHA_ALUNOS);
-  Logger.log(`Chave ${CHAVE_PLANILHA_ALUNOS}: encontrada no ID_INDEX`);
+  // Alunos: colunas pelo título.
+  try {
+    const abaAlunos = SpreadsheetApp.openById(obterIdProducao_(CHAVE_PLANILHA_ALUNOS)).getSheets()[0];
+    Logger.log(`Chave ${CHAVE_PLANILHA_ALUNOS}: encontrada no ID_INDEX`);
+    const cabecalho = abaAlunos.getLastColumn() > 0
+      ? abaAlunos.getRange(1, 1, 1, abaAlunos.getLastColumn()).getValues()[0]
+      : [];
+    Object.keys(CABECALHOS_ALUNOS).forEach(chave => {
+      const nomeColuna = CABECALHOS_ALUNOS[chave];
+      Logger.log(`Coluna "${nomeColuna}": ${cabecalho.map(c => String(c).trim()).indexOf(nomeColuna) === -1 ? "NÃO ENCONTRADA" : "ok"}`);
+    });
+  } catch (err) {
+    Logger.log(`Chave ${CHAVE_PLANILHA_ALUNOS}: NÃO DISPONÍVEL — ${mensagemSegura_(err)}`);
+  }
 
-  const abaAlunos = SpreadsheetApp.openById(obterIdProducao_(CHAVE_PLANILHA_ALUNOS)).getSheets()[0];
-  const cabecalho = abaAlunos.getLastColumn() > 0
-    ? abaAlunos.getRange(1, 1, 1, abaAlunos.getLastColumn()).getValues()[0]
-    : [];
-  Object.keys(CABECALHOS_ALUNOS).forEach(chave => {
-    const nomeColuna = CABECALHOS_ALUNOS[chave];
-    Logger.log(`Coluna "${nomeColuna}": ${cabecalho.map(c => String(c).trim()).indexOf(nomeColuna) === -1 ? "NÃO ENCONTRADA" : "ok"}`);
+  // Servidores e docentes: colunas pela posição; mostra o título de cada uma.
+  [[CHAVE_PLANILHA_SERVIDORES, COLUNAS_SERVIDORES], [CHAVE_PLANILHA_DOCENTES, COLUNAS_DOCENTES]].forEach(([chave, colunas]) => {
+    try {
+      const aba = SpreadsheetApp.openById(obterIdProducao_(chave)).getSheets()[0];
+      const largura = Math.max.apply(null, Object.keys(colunas).map(c => colunas[c]));
+      const cabecalho = aba.getRange(1, 1, 1, largura).getDisplayValues()[0];
+      const titulos = Object.keys(colunas)
+        .map(c => `${String.fromCharCode(64 + colunas[c])} (${c}) = "${String(cabecalho[colunas[c] - 1] || "").trim()}"`)
+        .join(" · ");
+      Logger.log(`Chave ${chave}: encontrada no ID_INDEX; aba "${aba.getName()}"; ${titulos}`);
+    } catch (err) {
+      Logger.log(`Chave ${chave}: NÃO DISPONÍVEL — ${mensagemSegura_(err)}`);
+    }
   });
 
-  Logger.log(`Alunos que seriam enviados à busca: ${listarAlunosParaBusca().length}`);
+  let resultado;
+  try {
+    resultado = listarComunidadeParaBusca();
+  } catch (err) {
+    Logger.log(`Nenhum cadastro pôde ser lido: ${mensagemSegura_(err)}`);
+    return;
+  }
+  const contagem = { aluno: 0, docente: 0, servidor: 0, setor: 0 };
+  resultado.pessoas.forEach(p => { contagem[p.tipo]++; });
+  Logger.log(`Pessoas que seriam enviadas à busca: ${contagem.aluno} alunos, ${contagem.docente} docentes, ${contagem.servidor} servidores, ${contagem.setor} setores`);
+  if (resultado.indisponiveis.length) {
+    Logger.log(`Cadastros indisponíveis: ${resultado.indisponiveis.map(i => i.descricao).join(", ")}`);
+  }
 
 }

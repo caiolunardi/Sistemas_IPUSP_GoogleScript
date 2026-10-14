@@ -1,5 +1,6 @@
-// Testes de navegador da Busca de Alunos (Chromium real via Playwright).
-// Simula google.script.run com 121 alunos sintéticos (nenhum dado real)
+// Testes de navegador da Comunidade IPUSP (antiga Busca de Alunos;
+// Chromium real via Playwright). Simula google.script.run com 122 alunos,
+// 2 docentes, 1 servidor e 1 setor sintéticos (nenhum dado real)
 // e confere busca, tema (Sistema/Claro/Escuro, persistência, mudança do
 // sistema com a página aberta), contraste WCAG, Central de Ajuda e
 // larguras de 360/390/480/768 px. Uso: node testar_navegador.js
@@ -15,13 +16,19 @@ const nomes=['Ana Paula da Silva','Cláudia Fernandes','João Teste','Luís Exem
 const alunos=[];for(let i=0;i<120;i++)alunos.push({linha:i+2,numeroUsp:String(9000000+i),nome:nomes[i%5]+' '+i,ingresso:(2021+i%4)+'/'+(1+(i>>2)%2),email:'aluno'+i+'@exemplo.invalid',emailSecundario:i%3?'':'sec'+i+'@exemplo.invalid'});
 alunos.push({linha:122,numeroUsp:'',nome:'',ingresso:'',email:'',emailSecundario:''});
 alunos.push({linha:123,numeroUsp:'9999999',nome:'Zeca Sem Ingresso',ingresso:'a definir',email:'zeca@exemplo.invalid',emailSecundario:''});
-// Backend simulado no navegador. modo: 'ok' (editor), 'leitor' (sem permissão de editar) ou 'erro'.
-const stub=(modo)=>`(function(){var DADOS=${JSON.stringify(alunos)};var MODO=${JSON.stringify(modo)};window.__chamadas=[];
+alunos.forEach(a=>a.tipo='aluno');
+const outros=[{tipo:'docente',linha:2,nome:'Roberto Docente Ficticio',email:'roberto.doc@exemplo.invalid'},{tipo:'docente',linha:3,nome:'Helena Professora Exemplo',email:'helena@exemplo.invalid'},
+ {tipo:'servidor',linha:2,nome:'Marcos Servidor Exemplo',email:'marcos@exemplo.invalid',setor:'Serviço de Graduação'},{tipo:'setor',linha:3,nome:'Serviço de Graduação',email:'graduacao@exemplo.invalid',setor:'Serviço de Graduação'}];
+// Backend simulado no navegador. modo: 'ok' (editor), 'leitor' (sem permissão de editar),
+// 'parcial' (cadastro de docentes indisponível) ou 'erro'.
+const stub=(modo)=>`(function(){var DADOS=${JSON.stringify(alunos)};var OUTROS=${JSON.stringify(outros)};var MODO=${JSON.stringify(modo)};window.__chamadas=[];
 function ficha(a){return {linha:a.linha,podeEditar:MODO==='ok',campos:[{titulo:'Número USP',valor:a.numeroUsp,editavel:true},{titulo:'Nome do Aluno',valor:a.nome,editavel:true},{titulo:'Ingresso',valor:a.ingresso,editavel:true},{titulo:'eMail',valor:a.email,editavel:true},{titulo:'ID da Pasta',valor:'pasta-'+a.linha,editavel:false},{titulo:'eMail Secundario',valor:a.emailSecundario,editavel:true}]}}
-var API={listarAlunosParaBusca:function(){if(MODO==='erro')throw new Error('Configuração obrigatória ausente: ID_INDEX_SPREADSHEET_ID.');return DADOS.map(function(a){return Object.assign({},a)})},
+var API={listarComunidadeParaBusca:function(){if(MODO==='erro')throw new Error('Configuração obrigatória ausente: ID_INDEX_SPREADSHEET_ID.');
+  var o=OUTROS.filter(function(x){return MODO!=='parcial'||x.tipo!=='docente'});
+  return {pessoas:DADOS.map(function(a){return Object.assign({},a)}).concat(o.map(function(a){return Object.assign({},a)})),indisponiveis:MODO==='parcial'?[{descricao:'docentes',motivo:'Não encontrei a chave "PLANILHA_DOCENTES" na planilha ID_INDEX.'}]:[]}},
  obterFichaAluno:function(r){var a=DADOS.find(function(x){return x.linha===r.linha});if(!a||a.numeroUsp!==r.numeroUsp)throw new Error('A planilha de alunos mudou');return ficha(a)},
  salvarFichaAluno:function(p){var a=DADOS.find(function(x){return x.linha===p.linha});var M={'Número USP':'numeroUsp','Nome do Aluno':'nome','Ingresso':'ingresso','eMail':'email','eMail Secundario':'emailSecundario'};
-  Object.keys(p.novos).forEach(function(k){if(k==='Ingresso'&&!/^\\d{4}\\/[12]$/.test(p.novos[k]))throw new Error('O ingresso deve estar no formato AAAA/S, por exemplo 2024/1 ou 2024/2.');a[M[k]]=p.novos[k]});var f=ficha(a);f.alterados=Object.keys(p.novos).length;f.resumo=Object.assign({},a);return f},
+  Object.keys(p.novos).forEach(function(k){if(k==='Ingresso'&&!/^\\d{4}\\/[12]$/.test(p.novos[k]))throw new Error('O ingresso deve estar no formato AAAA/S, por exemplo 2024/1 ou 2024/2.');a[M[k]]=p.novos[k]});var f=ficha(a);f.alterados=Object.keys(p.novos).length;f.resumo=Object.assign({},a);delete f.resumo.tipo;return f},
  gerarPdfListaAlunos:function(p){return {nome:p.nomeArquivo+'.pdf',base64:btoa('%PDF-1.4 '+p.linhas.length)}}};
 function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:function(x){s=x;return o},withFailureHandler:function(x){f=x;return o}};
  Object.keys(API).forEach(function(n){o[n]=function(arg){window.__chamadas.push([n,JSON.parse(JSON.stringify(arg===undefined?null:arg))]);setTimeout(function(){try{s(API[n](arg))}catch(e){f(e)}},40)}});return o}
@@ -35,14 +42,39 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   const ctx=await b.newContext({colorScheme:scheme,viewport:{width:1280,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await load(p,'ok');await p.waitForFunction(()=>!document.getElementById('campoBusca').disabled);
   chk(`[${scheme}] tema Sistema resolvido`,await p.evaluate(s=>document.documentElement.dataset.theme===s&&document.documentElement.dataset.themePreference==='system',scheme));
-  chk(`[${scheme}] info carregados`,(await p.textContent('#infoBusca')).includes('122 alunos carregados'));
+  chk(`[${scheme}] info carregados`,(await p.textContent('#infoBusca')).startsWith('122 alunos, 2 docentes, 1 servidor e 1 setor carregados'),await p.textContent('#infoBusca'));
+  chk(`[${scheme}] sem aviso de cadastro`,await p.$eval('#avisoCadastros',e=>e.hidden));
   await p.fill('#campoBusca','silva ana');await p.waitForTimeout(300);
   const n=await p.$$eval('.cardAluno',e=>e.length);chk(`[${scheme}] busca nome em qualquer ordem`,n===24,n);
   chk(`[${scheme}] destaque mark`,await p.$$eval('.cardAluno mark',e=>e.length)>0);
   await p.fill('#campoBusca','claudia');await p.waitForTimeout(300);chk(`[${scheme}] sem acento`,await p.$$eval('.cardAluno',e=>e.length)===24);
   await p.fill('#campoBusca','9000');await p.waitForTimeout(300);chk(`[${scheme}] limite 60`,(await p.textContent('#listaResultados')).includes('Mostrando os primeiros 60 de 120'));
   await p.fill('#campoBusca','sec3@');await p.waitForTimeout(300);chk(`[${scheme}] e-mail secundário`,(await p.textContent('#listaResultados')).includes('(secundário)'));
-  await p.fill('#campoBusca','zzzz');await p.waitForTimeout(300);chk(`[${scheme}] vazio`,(await p.textContent('#listaResultados')).includes('Nenhum aluno encontrado'));
+  await p.fill('#campoBusca','zzzz');await p.waitForTimeout(300);chk(`[${scheme}] vazio`,(await p.textContent('#listaResultados')).includes('Nenhuma pessoa encontrada'));
+  // ---------- v1.2: docentes, servidores e setores ----------
+  await p.fill('#campoBusca','graduacao');await p.waitForTimeout(300);
+  const gr=await p.$$eval('.cardAluno',e=>e.map(x=>({tag:x.tagName,tipo:x.dataset.tipo,selo:x.querySelector('.seloVinculo').textContent,nome:x.querySelector('.textoNome').textContent,det:x.querySelector('.detalheAluno').textContent,usp:!!x.querySelector('.badgeUsp')})));
+  chk(`[${scheme}] busca pelo setor: servidor e setor`,gr.length===2&&gr[0].selo==='Servidor'&&gr[1].selo==='Setor',JSON.stringify(gr));
+  chk(`[${scheme}] servidor mostra setor e e-mail`,gr[0].det.includes('Serviço de Graduação')&&gr[0].det.includes('marcos@exemplo.invalid'));
+  chk(`[${scheme}] setor não repete o nome no detalhe`,gr[1].nome==='Serviço de Graduação'&&gr[1].det==='graduacao@exemplo.invalid',gr[1].det);
+  chk(`[${scheme}] card não-aluno é estático e sem nº USP`,gr.every(x=>x.tag==='DIV'&&!x.usp));
+  chk(`[${scheme}] destaque no setor`,await p.$$eval('.cardAluno--servidor .detalheAluno mark',e=>e.length)>0);
+  const [dlg]=await Promise.all([p.waitForEvent('download'),p.click('#botaoCsv')]);
+  const csvg=fs.readFileSync(await dlg.path(),'utf8');
+  chk(`[${scheme}] CSV misto: vínculo e setor`,dlg.suggestedFilename()==='comunidade_busca.csv'&&csvg.includes('\r\nServidor;Marcos Servidor Exemplo;Serviço de Graduação;;;marcos@exemplo.invalid;\r\n')&&csvg.includes('\r\nSetor;Serviço de Graduação;Serviço de Graduação;'),JSON.stringify(csvg.slice(0,300)));
+  await p.fill('#campoBusca','roberto');await p.waitForTimeout(300);
+  chk(`[${scheme}] docente com selo`,(await p.$$eval('.cardAluno',e=>e.map(x=>x.querySelector('.seloVinculo').textContent+'|'+x.dataset.tipo))).join()==='Docente|docente');
+  await p.click('.cardAluno');await p.waitForTimeout(150);
+  chk(`[${scheme}] clicar no docente não abre ficha`,await p.evaluate(()=>document.getElementById('fichaOverlay').hidden&&!window.__chamadas.some(c=>c[0]==='obterFichaAluno')));
+  await p.fill('#campoBusca','exemplo.invalid ana paula 1');await p.waitForTimeout(300);
+  chk(`[${scheme}] aluno com selo Aluno e nº USP`,await p.$$eval('button.cardAluno',e=>e.length>0&&e.every(x=>x.querySelector('.seloVinculo').textContent==='Aluno'&&x.querySelector('.badgeUsp'))));
+  const selos=[];
+  for(const q of ['silva','roberto','graduacao']){await p.fill('#campoBusca',q);await p.waitForTimeout(300);
+   selos.push(...await p.evaluate(()=>{function bg(el){while(el){const c=getComputedStyle(el).backgroundColor;if(c&&!/rgba\(0, 0, 0, 0\)|transparent/.test(c))return c;el=el.parentElement}return 'rgb(255,255,255)'}
+    return ['aluno','docente','servidor','setor'].map(t=>{const e=document.querySelector('.seloVinculo--'+t);return e?[t,getComputedStyle(e).color,bg(e)]:null}).filter(Boolean)}));}
+  chk(`[${scheme}] selos dos 4 vínculos renderizados`,new Set(selos.map(x=>x[0])).size===4);
+  for(const [t,c,bgc] of selos){chk(`[${scheme}] contraste selo ${t}`,cr(c,bgc)>=4.5,cr(c,bgc).toFixed(2))}
+  await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`selos-${scheme}.png`});
   // contraste
   await p.fill('#campoBusca','silva');await p.waitForTimeout(300);
   const pares=await p.evaluate(()=>{function bg(el){while(el){const c=getComputedStyle(el).backgroundColor;if(c&&!/rgba\(0, 0, 0, 0\)|transparent/.test(c))return c;el=el.parentElement}return 'rgb(255,255,255)'}
@@ -54,7 +86,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   chk(`[${scheme}] marca visível certa`,await p.evaluate(s=>{const v=[...document.querySelectorAll('.cabecalho .gradip-logo-'+s)].every(e=>getComputedStyle(e).display!=='none');const o=s==='light'?'dark':'light';return v&&[...document.querySelectorAll('.cabecalho .gradip-logo-'+o)].every(e=>getComputedStyle(e).display==='none')},scheme));
   await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`desk-${scheme}.png`});
   // ajuda
-  await p.click('text=Não encontrou o aluno?');await p.waitForTimeout(200);
+  await p.click('text=Não encontrou a pessoa?');await p.waitForTimeout(200);
   chk(`[${scheme}] ajuda contextual abre seção`,await p.evaluate(()=>!document.querySelector('[data-gradip-help-overlay]').hidden&&document.activeElement.closest('section').id==='ajuda-nao-encontrei'));
   chk(`[${scheme}] scroll lock`,await p.evaluate(()=>document.body.style.overflow==='hidden'));
   await p.fill('#gradip-help-search','acentuacao');await p.waitForTimeout(100);chk(`[${scheme}] busca da ajuda por data-search`,(await p.textContent('[data-gradip-help-search-status]')).includes('1 resultado'));
@@ -64,7 +96,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   const faqC=await p.evaluate(()=>{const e=document.querySelector('#busca-faq-limite p');return [getComputedStyle(e).color,getComputedStyle(e.closest('.gradip-help-faq')).backgroundColor]});chk(`[${scheme}] contraste FAQ`,cr(...faqC)>=4.5,cr(...faqC).toFixed(2));
   await p.click('.linkAjudaInterno[data-gradip-help-target="ajuda-faq"]');await p.waitForTimeout(100);chk(`[${scheme}] link interno`,await p.evaluate(()=>document.activeElement.closest('section').id==='ajuda-faq'));
   await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`ajuda-${scheme}.png`});
-  await p.keyboard.press('Escape');chk(`[${scheme}] ESC fecha e devolve foco`,await p.evaluate(()=>document.querySelector('[data-gradip-help-overlay]').hidden&&document.activeElement.textContent==='Não encontrou o aluno?'&&document.body.style.overflow===''));
+  await p.keyboard.press('Escape');chk(`[${scheme}] ESC fecha e devolve foco`,await p.evaluate(()=>document.querySelector('[data-gradip-help-overlay]').hidden&&document.activeElement.textContent==='Não encontrou a pessoa?'&&document.body.style.overflow===''));
 
   // ---------- v1.1: filtro por ingresso ----------
   await p.fill('#campoBusca','');await p.dispatchEvent('#campoBusca','input');await p.waitForTimeout(200);
@@ -73,8 +105,9 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   chk(`[${scheme}] semestre desabilitado sem ano`,await p.$eval('#filtroSemestre',e=>e.disabled));
   chk(`[${scheme}] exportação desabilitada sem resultado`,await p.$eval('#botaoCsv',e=>e.disabled)&&await p.$eval('#botaoPdf',e=>e.disabled));
   await p.selectOption('#filtroAno','2022');await p.waitForTimeout(150);
+  chk(`[${scheme}] ano filtra só alunos`,await p.$$eval('.cardAluno',e=>e.every(x=>x.dataset.tipo==='aluno')));
   chk(`[${scheme}] ano sozinho lista a turma`,(await p.textContent('#infoBusca')).startsWith('30 resultados encontrados · ingresso 2022'),await p.textContent('#infoBusca'));
-  const nomesAno=await p.$$eval('.cardAluno .nomeAluno',e=>e.map(x=>x.firstChild.textContent));
+  const nomesAno=await p.$$eval('.cardAluno .textoNome',e=>e.map(x=>x.textContent));
   chk(`[${scheme}] turma em ordem alfabética`,nomesAno.join('|')===[...nomesAno].sort((a,b)=>a.localeCompare(b,'pt-BR')).join('|'));
   chk(`[${scheme}] card mostra ingresso`,(await p.textContent('.cardAluno')).includes('ingresso 2022/'));
   await p.selectOption('#filtroSemestre','2');await p.waitForTimeout(150);
@@ -86,7 +119,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   const [dl]=await Promise.all([p.waitForEvent('download'),p.click('#botaoCsv')]);
   const csv=fs.readFileSync(await dl.path(),'utf8');
   chk(`[${scheme}] CSV: nome do arquivo`,dl.suggestedFilename()==='alunos_ingresso-2022-2_busca.csv',dl.suggestedFilename());
-  chk(`[${scheme}] CSV: BOM, cabeçalho e linhas`,csv.charCodeAt(0)===0xfeff&&csv.slice(1).startsWith('Nome do Aluno;Número USP;Ingresso;eMail;eMail Secundario\r\n')&&csv.trim().split('\r\n').length===comb.length+1);
+  chk(`[${scheme}] CSV: BOM, cabeçalho e linhas`,csv.charCodeAt(0)===0xfeff&&csv.slice(1).startsWith('Vínculo;Nome;Setor;Número USP;Ingresso;E-mail;E-mail secundário\r\nAluno;')&&csv.trim().split('\r\n').length===comb.length+1);
   await p.fill('#campoBusca','');await p.dispatchEvent('#campoBusca','input');await p.selectOption('#filtroSemestre','');await p.selectOption('#filtroAno','2024');await p.waitForTimeout(200);
   const [dl2]=await Promise.all([p.waitForEvent('download'),p.click('#botaoCsv')]);
   const csv2=fs.readFileSync(await dl2.path(),'utf8');
@@ -96,7 +129,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   const pdf=fs.readFileSync(await dl3.path(),'latin1');
   const chamadaPdf=await p.evaluate(()=>window.__chamadas.filter(c=>c[0]==='gerarPdfListaAlunos').pop()[1]);
   chk(`[${scheme}] PDF baixado com toda a turma`,pdf.startsWith('%PDF')&&chamadaPdf.linhas.length===30&&chamadaPdf.titulo==='Alunos — ingresso 2024'&&dl3.suggestedFilename()==='alunos_ingresso-2024.pdf');
-  chk(`[${scheme}] PDF envia só as 5 colunas`,Object.keys(chamadaPdf.linhas[0]).sort().join()==='email,emailSecundario,ingresso,nome,numeroUsp');
+  chk(`[${scheme}] PDF envia só as 7 colunas`,Object.keys(chamadaPdf.linhas[0]).sort().join()==='email,emailSecundario,ingresso,nome,numeroUsp,setor,vinculo'&&chamadaPdf.linhas[0].vinculo==='Aluno');
   await p.selectOption('#filtroAno','');await p.waitForTimeout(100);
   chk(`[${scheme}] "Todos os anos" volta ao estado inicial`,(await p.$$eval('.cardAluno',e=>e.length))===0&&await p.$eval('#filtroSemestre',e=>e.disabled));
   await p.fill('#campoBusca','zeca');await p.waitForTimeout(250);
@@ -149,7 +182,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   await ctx.close();}
  // erro
  {const ctx=await b.newContext({colorScheme:'dark'});const p=await ctx.newPage();await load(p,'erro');await p.waitForSelector('.vazio.erro');
-  const t=await p.textContent('.vazio.erro');chk('estado de erro',t.startsWith('Não consegui carregar a lista de alunos'),t);
+  const t=await p.textContent('.vazio.erro');chk('estado de erro',t.startsWith('Não consegui carregar a lista de pessoas'),t);
   const c=await p.evaluate(()=>{const e=document.querySelector('.vazio.erro');return [getComputedStyle(e).color,getComputedStyle(e).backgroundColor]});chk('contraste erro dark',cr(...c)>=4.5,cr(...c).toFixed(2));await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-erro-dark.png')});await ctx.close();}
  // leitor (sem permissão de editar)
  {const ctx=await b.newContext({colorScheme:'light'});const p=await ctx.newPage();await load(p,'leitor');await p.waitForFunction(()=>!document.getElementById('campoBusca').disabled);
@@ -157,9 +190,15 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   chk('leitor: ficha só consulta',await p.$$eval('#fichaCampos input',e=>e.every(x=>x.readOnly))&&(await p.textContent('.fichaAviso')).includes('não alterar')&&await p.$eval('#fichaSalvar',e=>e.disabled));
   await ctx.close();}
 
+ // cadastro indisponível
+ for(const scheme of ['light','dark']){const ctx=await b.newContext({colorScheme:scheme});const p=await ctx.newPage();await load(p,'parcial');await p.waitForFunction(()=>!document.getElementById('campoBusca').disabled);
+  const av=await p.textContent('#avisoCadastros');chk(`[${scheme}] parcial: aviso visível com o motivo`,!(await p.$eval('#avisoCadastros',e=>e.hidden))&&av.includes('cadastro de docentes')&&av.includes('PLANILHA_DOCENTES'),av);
+  chk(`[${scheme}] parcial: demais carregados`,(await p.textContent('#infoBusca')).startsWith('122 alunos, 1 servidor e 1 setor carregados'),await p.textContent('#infoBusca'));
+  const ca=await p.evaluate(()=>{const e=document.getElementById('avisoCadastros');return [getComputedStyle(e).color,getComputedStyle(e).backgroundColor]});chk(`[${scheme}] parcial: contraste do aviso`,cr(...ca)>=4.5,cr(...ca).toFixed(2));
+  await ctx.close();}
  // mobile
  for(const w of [360,390,480,768]){for(const scheme of ['light','dark']){const ctx=await b.newContext({colorScheme:scheme,viewport:{width:w,height:800}});const p=await ctx.newPage();await load(p,'ok');await p.waitForFunction(()=>!document.getElementById('campoBusca').disabled);
-  await p.fill('#campoBusca','sec');await p.waitForTimeout(300);
+  await p.fill('#campoBusca','e');await p.waitForTimeout(300);
   const ov=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);chk(`[${w} ${scheme}] sem overflow horizontal`,ov<=0,ov);
   const alvo=await p.evaluate(()=>['.botaoAjuda','.gradip-theme-control__select','#campoBusca'].map(s=>document.querySelector(s).getBoundingClientRect().height));chk(`[${w} ${scheme}] alvos >=44px`,alvo.every(h=>h>=44),alvo.join(','));
   await p.click('.botaoAjuda');await p.waitForTimeout(150);const ov2=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);chk(`[${w} ${scheme}] ajuda sem overflow`,ov2<=0);
