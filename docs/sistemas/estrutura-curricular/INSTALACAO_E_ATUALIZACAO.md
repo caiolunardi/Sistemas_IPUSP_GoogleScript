@@ -5,7 +5,7 @@ Esta entrega publica código/documentação no Git. Não altera um projeto Apps 
 ## Atualizar um Web App 1.10.0 para 1.11.0
 
 1. Guarde a versão da implantação ativa para retorno.
-2. **Substitua** o conteúdo de cinco arquivos: `AuditoriaPainel.gs`, `Codigo.gs`, `PainelAuditoria.html`, `PainelEstilos.html` e `EstruturaAjuda.html`. Nenhum arquivo novo; os outros 29 continuam iguais.
+2. **Substitua** o conteúdo de oito arquivos: `AuditoriaPainel.gs`, `Codigo.gs`, `Esquema.gs`, `Gravacao.gs`, `Preparacao.gs`, `PainelAuditoria.html`, `PainelEstilos.html` e `EstruturaAjuda.html`. Nenhum arquivo novo; os outros 26 continuam iguais. `Esquema.gs`, `Gravacao.gs` e `Preparacao.gs` trazem a correção do "Cadastrar nova grade" ([incidente de 14/10](INCIDENTES_E_LICOES.md)): se um recomeço ficou pendente, a primeira abertura do painel por um administrador o termina.
 3. Confira no `ID_INDEX` as chaves `SERVIDORES`, `PLANILHA_DOCENTES` e `PLANILHA_ALUNOS` (coluna C com o ID; Tipo `spreadsheet`, não conferido) e dê à conta que executa o Web App **acesso de leitura** às três planilhas.
 4. Rode `diagnosticarNomesAuditoria` no editor: para cada cadastro, mostra se abriu, a aba lida, o número de linhas e os títulos das colunas usadas (esperado: servidores A `E-MAIL`, B `NOME`, C `SETOR`; docentes e alunos B nome e D e-mail; alunos também a coluna "eMail Secundario"; se ela faltar, `colunaNaoEncontrada`). Não registra nomes, e-mails nem IDs.
 5. Teste no `/dev` (rodapé **1.11.0**): na Auditoria da grade, pessoas com nome e e-mail; quem não está nos cadastros aparece como "Pessoa não cadastrada com acesso".

@@ -1021,7 +1021,11 @@ function recomecarPlanilha_(ss) {
   });
   var vazia = ss.getSheets().filter(function (a) { return a.getName().indexOf('_recomeco_') === 0; })[0];
   if (!vazia) vazia = ss.insertSheet('_recomeco_' + new Date().getTime(), 0);
-  ss.getSheets().forEach(function (a) { if (a !== vazia) ss.deleteSheet(a); });
+  // (1.11.0) Pelo ID: o Apps Script devolve um objeto novo a cada getSheets(), então
+  // "a !== vazia" era sempre verdadeiro, a aba vazia era apagada junto e a última
+  // aba dava "Não é possível remover todas as páginas de um documento".
+  var idVazia = vazia.getSheetId();
+  ss.getSheets().forEach(function (a) { if (a.getSheetId() !== idVazia) ss.deleteSheet(a); });
   garantirEstrutura_(ss);
   SpreadsheetApp.flush();
   removerMetadado_(ss, META_RECOMECO);

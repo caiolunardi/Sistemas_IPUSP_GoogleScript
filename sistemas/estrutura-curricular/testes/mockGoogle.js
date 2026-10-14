@@ -214,18 +214,28 @@ class Spreadsheet {
   // 1.6.3: localidade (pt_BR lê fórmulas com ";"); estado.semLocalidade simula falha na leitura
   getSpreadsheetLocale() { if (this.estado.semLocalidade) throw new Error('sem localidade'); return this.locale || 'en_US'; }
   getOwner() { return this.dono ? new User(this.dono) : null; }
-  getSheets() { return [...this.sheets]; }
-  getSheetByName(n) { return this.sheets.find((s) => s.name === n) || null; }
+  // (1.11.0) estado.abasComoNoGoogle: como no Apps Script, cada chamada devolve um objeto NOVO
+  // para a mesma aba (comparar abas com === / !== não funciona; só getSheetId()).
+  _aba(s) { return s && this.estado.abasComoNoGoogle ? new Proxy(s, {}) : s; }
+  getSheets() { return this.sheets.map((s) => this._aba(s)); }
+  getSheetByName(n) { return this._aba(this.sheets.find((s) => s.name === n) || null); }
   insertSheet(nome, indice) {
     pontoDeFalha(this.estado, { tipo: 'insertSheet', aba: nome });
-    if (this.getSheetByName(nome)) throw new Error('Já existe uma aba ' + nome);
+    if (this.sheets.some((x) => x.name === nome)) throw new Error('Já existe uma aba ' + nome);
     const s = new Sheet(this, nome);
     if (indice === undefined) this.sheets.push(s); else this.sheets.splice(indice, 0, s);
-    return s;
+    return this._aba(s);
   }
   getDeveloperMetadata() { pontoDeFalha(this.estado, { tipo: 'lerMetadados' }); return [...this.meta]; }
   addDeveloperMetadata(k, v) { pontoDeFalha(this.estado, { tipo: 'metadado', chave: k }); this.meta.push(new Metadado(this, k, String(v))); pontoDeFalha(this.estado, { tipo: 'metadadoDepois', chave: k }); return this; }
-  deleteSheet(s) { pontoDeFalha(this.estado, { tipo: 'deleteSheet', aba: s.name }); this.sheets = this.sheets.filter((x) => x !== s); }
+  deleteSheet(s) {
+    pontoDeFalha(this.estado, { tipo: 'deleteSheet', aba: s.name });
+    // (1.11.0) como no Google: a aba é achada pelo ID, e a última aba de uma planilha não pode ser apagada
+    const alvo = this.sheets.find((x) => x.getSheetId() === s.getSheetId());
+    if (!alvo) throw new Error('Aba não encontrada');
+    if (this.sheets.length === 1) throw new Error('Não é possível remover todas as páginas de um documento.');
+    this.sheets = this.sheets.filter((x) => x !== alvo);
+  }
   setActiveSheet(s) { this.ativa = s; return s; }
   moveActiveSheet(pos) {
     pontoDeFalha(this.estado, { tipo: 'moveActiveSheet', aba: this.ativa && this.ativa.name });
@@ -254,6 +264,8 @@ function criarAmbiente(opcoes) {
   // (novo contexto, cache vazio) sobre as MESMAS planilhas e Propriedades.
   if (o.reusar) return montarContexto(o, o.reusar.estado, o.reusar.planilhas, o.reusar.props);
   const estado = { escritas: 0, logs: [], erros: [], falhas: [], falhasLeitura: [], eventos: [], proximoIdAba: 1000, proximaCopia: 0, pastas: new Map(), acionadores: [] };
+  // (1.11.0) ABAS_COMO_NO_GOOGLE=1: todas as suítes com abas como no Apps Script (objetos novos a cada chamada).
+  if (process.env.ABAS_COMO_NO_GOOGLE) estado.abasComoNoGoogle = true;
   const planilhas = new Map();
 
   // ID_INDEX

@@ -19,7 +19,7 @@ Fonte atual **1.11.0** (nome de quem aparece na auditoria), sobre a 1.10.0 e a b
 | 1.9.0–1.9.2 | 07/10/2026, conforme pacote | Central de Ajuda, foco e correções de orientação sobre resultados parciais/envio |
 | 1.9.3 | 11/10/2026 | correção editorial: nem todas as etapas do envio foram concluídas; auditada localmente |
 | 1.10.0 | 11/10/2026 | sidebar padrão, alternância para abas, ícones de catálogo, glow/elevação e documentação completa; algoritmos preservados |
-| 1.11.0 | 14/10/2026 | auditoria da grade mostra nome, vínculo (setor, Docente, Aluno(a)) e e-mail de quem edita ou abre a planilha, pelos cadastros `SERVIDORES` → `PLANILHA_DOCENTES` → `PLANILHA_ALUNOS`; fora deles, "Pessoa não cadastrada com acesso" |
+| 1.11.0 | 14/10/2026 | auditoria da grade mostra nome, vínculo (setor, Docente, Aluno(a)) e e-mail de quem edita ou abre a planilha, pelos cadastros `SERVIDORES` → `PLANILHA_DOCENTES` → `PLANILHA_ALUNOS`; fora deles, "Pessoa não cadastrada com acesso". Correção: "Cadastrar nova grade" travava na última aba e o painel não abria (abas comparadas por objeto; agora pelo ID) |
 
 ## Decisões estruturais
 

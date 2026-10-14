@@ -160,6 +160,17 @@ function abaPorId_(ss, id) {
 }
 
 /**
+ * (1.11.0) Posição (0 = primeira) de uma aba na planilha, pelo ID; -1 se não
+ * existe. getSheets().indexOf(aba) não serve no Apps Script: cada chamada
+ * devolve objetos novos para as mesmas abas.
+ */
+function posicaoDaAba_(ss, aba) {
+  var id = aba.getSheetId();
+  var ids = ss.getSheets().map(function (s) { return s.getSheetId(); });
+  return ids.indexOf(id);
+}
+
+/**
  * Aba de dados EM USO. Com manifesto, é a do ID registrado (o nome pode
  * estar diferente durante a arrumação); sem manifesto (planilha ainda
  * não preparada), é a do nome.
@@ -527,9 +538,10 @@ function arrumarAbas_(ss, m) {
       if (!ativa) return;
       if (ativa.getName() !== nome) {
         var ocupante = ss.getSheetByName(nome);
-        if (ocupante && ocupante !== ativa) {
+        // (1.11.0) Abas comparadas pelo ID (cada chamada do Apps Script devolve um objeto novo).
+        if (ocupante && ocupante.getSheetId() !== ativa.getSheetId()) {
           var velha = ss.getSheetByName(PREFIXO_ANTERIOR + nome);
-          if (velha && velha !== ativa && !emUso[velha.getSheetId()]) ss.deleteSheet(velha);
+          if (velha && velha.getSheetId() !== ativa.getSheetId() && !emUso[velha.getSheetId()]) ss.deleteSheet(velha);
           ocupante.setName(PREFIXO_ANTERIOR + nome);
         }
         ativa.setName(nome);
@@ -550,7 +562,7 @@ function arrumarAbas_(ss, m) {
       var ativa = abaPorId_(ss, m.abas[nome]);
       if (!ativa) return;
       var pos = ORDEM_ABAS.indexOf(nome) + 1;
-      if (ss.getSheets().indexOf(ativa) + 1 !== pos) {
+      if (posicaoDaAba_(ss, ativa) + 1 !== pos) {
         ss.setActiveSheet(ativa);
         ss.moveActiveSheet(pos);
       }

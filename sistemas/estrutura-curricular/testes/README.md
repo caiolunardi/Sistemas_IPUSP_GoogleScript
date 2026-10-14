@@ -6,7 +6,9 @@
 node testar_painel_auditoria.js /caminho/grade_curricular.csv /caminho/disciplinas_unidade.csv
 ```
 
-26 testes (19 anteriores + 7 novos): ordem servidores → docentes → alunos, e-mail sem maiúsculas/espaços, e-mail secundário dos alunos pelo título (a coluna E real é "ID da Pasta"), "não cadastrado", cadastro sem chave ("sem confirmação" e aviso), cache, `diagnosticarNomesAuditoria`, e no Chromium nome/vínculo/e-mail nos gráficos, tabela, filtro, busca e coluna Quem, selo "Atenção" e contraste dos novos textos. Os cadastros são fictícios (`criarCadastrosPessoas` em `mockGoogle.js`). Resultado e limites em [VERIFICACAO_1_11_0.md](../../../docs/sistemas/estrutura-curricular/VERIFICACAO_1_11_0.md).
+26 testes (19 anteriores + 7 novos): ordem servidores → docentes → alunos, e-mail sem maiúsculas/espaços, e-mail secundário dos alunos pelo título (a coluna E real é "ID da Pasta"), "não cadastrado", cadastro sem chave ("sem confirmação" e aviso), cache, `diagnosticarNomesAuditoria`, e no Chromium nome/vínculo/e-mail nos gráficos, tabela, filtro, busca e coluna Quem, selo "Atenção" e contraste dos novos textos. Os cadastros são fictícios (`criarCadastrosPessoas` em `mockGoogle.js`).
+
+`node testar_recomeco_google.js` (só dados sintéticos): "Cadastrar nova grade" com abas como no Apps Script (objetos novos a cada `getSheets()`, última aba não pode ser apagada) — o defeito visto em produção em 14/10/2026. `ABAS_COMO_NO_GOOGLE=1` liga esse comportamento em qualquer suíte. Resultado e limites em [VERIFICACAO_1_11_0.md](../../../docs/sistemas/estrutura-curricular/VERIFICACAO_1_11_0.md).
 
 ## Verificação da interface 1.10.0
 

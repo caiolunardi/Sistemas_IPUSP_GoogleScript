@@ -52,6 +52,20 @@ Novos casos:
 
 Nos testes existentes, conferido também: nome/vínculo/e-mail nos gráficos, na última edição e em "Marcada por"; filtro de pessoa pelo nome (valor = e-mail); busca pelo nome e pelo setor; coluna Quem com o nome. Visual 360/768/1280 px, claro e escuro: sem rolagem horizontal e contraste ≥ 4,5:1, agora incluindo `.pessoaAud__nome`, `.pessoaAud__detalhe`, `.graficoBarras__quem` e o selo "Atenção" (menor valor da seção: 5,01:1, inalterado).
 
+## Correção: "Cadastrar nova grade" travado (14/10/2026)
+
+Em produção, depois de "Cadastrar nova grade", o painel passou a mostrar "erro inesperado" para todos. Registro: `Não é possível remover todas as páginas de um documento` em `recomecarPlanilha_` (Preparacao.gs). Causa: abas comparadas com `!==`; no Apps Script cada `getSheets()` devolve objetos novos, então a aba vazia era apagada junto e a última aba era recusada pelo Google. O recomeço ficava pendente e cada abertura tentava terminá-lo de novo. A mesma comparação por objeto invertia a ordem das abas numa base nova (`Esquema.gs`) e fazia mover abas sem necessidade (`Gravacao.gs`).
+
+| Arquivo | Mudança |
+|---|---|
+| `Preparacao.gs` | `recomecarPlanilha_` apaga as abas comparando `getSheetId()` |
+| `Gravacao.gs` | `posicaoDaAba_` (posição pelo ID); comparações de abas pelo ID na arrumação |
+| `Esquema.gs` | aba nova logo depois da anterior, pela posição do ID |
+
+Simulador: `ABAS_COMO_NO_GOOGLE=1` (ou `estado.abasComoNoGoogle`) devolve objetos novos a cada chamada, e apagar a última aba é sempre recusado, como no Google. `testar_recomeco_google.js`: **4/4** na fonte nova; na 1.10.0, 1/4, com o mesmo erro da produção e a ordem das abas invertida.
+
+Regressão, fonte nova no modo comum e com `ABAS_COMO_NO_GOOGLE=1` (resultados iguais nos dois): etapa1 17/17, etapa2 31/31, etapa4 39/39, etapa5 44/44 (1 pulado), etapa6 34/34 (1 pulado), etapa7 19/19, etapa8 26/26, etapa9 8/8, auditoria_grade 19/19. `testar_preparacao.js` 10/31 **não conclusivo**: depende do CSV real; as mesmas 21 falhas aparecem na fonte 1.10.0 com o CSV fictício.
+
 ## Para homologar
 
 1. Atualizar como em [Instalação](INSTALACAO_E_ATUALIZACAO.md#atualizar-um-web-app-1100-para-1110).

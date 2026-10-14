@@ -329,7 +329,7 @@ function garantirEstrutura_(ss) {
       // podem estar no meio; a posição absoluta não serve).
       var posicao = Math.min(indice, ss.getSheets().length);
       var anterior = indice > 0 ? ss.getSheetByName(ORDEM_ABAS[indice - 1]) : null;
-      if (anterior) posicao = ss.getSheets().indexOf(anterior) + 1;
+      if (anterior) posicao = posicaoDaAba_(ss, anterior) + 1;   // (1.11.0) pelo ID
       aba = ss.insertSheet(nome, posicao);
       resultado.criadas.push(nome);
     }

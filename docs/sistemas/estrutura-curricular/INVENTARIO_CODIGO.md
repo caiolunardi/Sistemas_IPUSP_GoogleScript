@@ -11,7 +11,7 @@
 | [`Configuracao.gs`](../../../sistemas/estrutura-curricular/src/Configuracao.gs) | servidor | propriedades, ID_INDEX e diagnóstico | byte idêntico |
 | [`Consulta.gs`](../../../sistemas/estrutura-curricular/src/Consulta.gs) | servidor | payload consistente do painel | byte idêntico |
 | [`EnvioGrade.gs`](../../../sistemas/estrutura-curricular/src/EnvioGrade.gs) | servidor | assinatura de conteúdo, backup e envio | byte idêntico |
-| [`Esquema.gs`](../../../sistemas/estrutura-curricular/src/Esquema.gs) | servidor | abas, colunas, formatos e preparação | byte idêntico |
+| [`Esquema.gs`](../../../sistemas/estrutura-curricular/src/Esquema.gs) | servidor | abas, colunas, formatos e preparação | (1.11.0) posição de aba nova pelo ID |
 | [`EstruturaAjuda.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjuda.html) | página | conteúdo estático da Central | (1.11.0) item "Nome de quem aparece" |
 | [`EstruturaAjudaEstilos.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjudaEstilos.html) | página | aparência da Central | byte idêntico |
 | [`EstruturaAjudaUI.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjudaUI.html) | página | busca, FAQ, foco e fechamento da Central | byte idêntico |
@@ -23,7 +23,7 @@
 | [`GradipMarcaUSP.html`](../../../sistemas/estrutura-curricular/src/GradipMarcaUSP.html) | página | marca USP por tema | byte idêntico |
 | [`GradipTema.html`](../../../sistemas/estrutura-curricular/src/GradipTema.html) | página | tokens, preferência Sistema/Claro/Escuro | byte idêntico |
 | [`GradipTemaControle.html`](../../../sistemas/estrutura-curricular/src/GradipTemaControle.html) | página | controle de preferência | byte idêntico |
-| [`Gravacao.gs`](../../../sistemas/estrutura-curricular/src/Gravacao.gs) | servidor | manifesto, diário, ativação e recuperação | byte idêntico |
+| [`Gravacao.gs`](../../../sistemas/estrutura-curricular/src/Gravacao.gs) | servidor | manifesto, diário, ativação e recuperação | (1.11.0) `posicaoDaAba_`; abas comparadas pelo ID |
 | [`Importacao.gs`](../../../sistemas/estrutura-curricular/src/Importacao.gs) | servidor | validação, prévia, revisão e confirmação | byte idêntico |
 | [`LeitorComum.html`](../../../sistemas/estrutura-curricular/src/LeitorComum.html) | página | formato do pacote e utilidades | byte idêntico |
 | [`LeitorCsv.html`](../../../sistemas/estrutura-curricular/src/LeitorCsv.html) | página | leitura CSV Júpiter | byte idêntico |
@@ -36,7 +36,7 @@
 | [`PainelImportacao.html`](../../../sistemas/estrutura-curricular/src/PainelImportacao.html) | página | leitura/conferência/prévia/gravação no cliente | byte idêntico |
 | [`PainelPreparacao.html`](../../../sistemas/estrutura-curricular/src/PainelPreparacao.html) | página | etapas, edição, lotes, Outros e envio | byte idêntico |
 | [`Planilha.gs`](../../../sistemas/estrutura-curricular/src/Planilha.gs) | servidor | leitura/escrita por título de coluna | byte idêntico |
-| [`Preparacao.gs`](../../../sistemas/estrutura-curricular/src/Preparacao.gs) | servidor | ajustes, Outros, seleção e pendências | byte idêntico |
+| [`Preparacao.gs`](../../../sistemas/estrutura-curricular/src/Preparacao.gs) | servidor | ajustes, Outros, seleção e pendências | (1.11.0) recomeço apaga abas pelo ID |
 | [`Utilidades.gs`](../../../sistemas/estrutura-curricular/src/Utilidades.gs) | servidor | respostas, texto seguro, datas e hash | byte idêntico |
 
 ## Ordem de composição
