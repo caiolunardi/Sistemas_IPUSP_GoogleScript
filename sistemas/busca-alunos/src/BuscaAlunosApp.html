@@ -287,20 +287,22 @@
     gap:8px;
   }
 
+  /* v1.3: o card é um contêiner com DOIS botões — a área de dados
+     (abre a ficha) e o selo do nº USP (copia o número). Por isso o
+     respiro interno saiu do card e foi para o botão da ficha. */
   .cardAluno{
     background:var(--gradip-surface);
     border:1px solid var(--gradip-border);
     border-radius:8px;
-    padding:12px 16px;
+    padding:0;
     box-shadow:var(--gradip-shadow);
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:12px;
+    gap:4px;
   }
 
-  /* v1.2: só o card que abre a ficha (aluno) reage ao mouse. */
-  button.cardAluno:hover{
+  .cardAluno:hover{
     border-color:var(--gradip-link);
   }
 
@@ -482,19 +484,70 @@
     cursor:not-allowed;
   }
 
-  /* O card agora abre a ficha do aluno: vira um <button> de verdade
-     (teclado e leitor de tela), sem mudar a aparência do original. */
-  button.cardAluno{
-    width:100%;
+  /* Área de dados do card: <button> de verdade (teclado e leitor de
+     tela) que abre a ficha — de qualquer vínculo desde a v1.3. */
+  button.abrirFicha{
+    flex:1 1 auto;
+    min-width:0;
+    background:none;
+    border:0;
+    border-radius:8px;
+    padding:12px 16px;
     font:inherit;
     color:inherit;
     text-align:left;
     cursor:pointer;
   }
 
-  button.cardAluno:focus-visible{
+  button.abrirFicha:focus-visible,
+  button.copiarUsp:focus-visible{
     outline:2px solid var(--gradip-focus);
     outline-offset:2px;
+  }
+
+  /* v1.3: selo do nº USP clicável — copia o número. O botão tem alvo
+     de 44 px; o selo visível continua do mesmo tamanho. */
+  button.copiarUsp{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:44px;
+    min-height:44px;
+    margin-right:10px;
+    padding:0 2px;
+    background:none;
+    border:0;
+    border-radius:20px;
+    font:inherit;
+    cursor:copy;
+  }
+  button.copiarUsp:hover .badgeUsp{
+    border-color:var(--gradip-link);
+  }
+  .badgeUsp.semUsp{
+    margin-right:16px;
+    background:var(--gradip-surface);
+    border-color:var(--gradip-border);
+    color:var(--gradip-text-muted);
+  }
+
+  /* Mensagem discreta "Número USP copiado..." (3 s). */
+  .avisoCopia[hidden]{ display:none; }
+  .avisoCopia{
+    position:fixed;
+    left:50%;
+    bottom:24px;
+    transform:translateX(-50%);
+    z-index:11000;
+    max-width:calc(100% - 32px);
+    padding:8px 14px;
+    font-size:13px;
+    color:var(--gradip-text);
+    background:var(--gradip-surface-elevated);
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    box-shadow:var(--gradip-shadow);
   }
 
   .cardAluno .dadosAluno{ display:block; min-width:0; }
@@ -788,6 +841,13 @@
     .dadosAluno{
       flex:1 1 100%;
     }
+    .cardAluno{
+      row-gap:0;
+    }
+    button.copiarUsp,
+    .badgeUsp.semUsp{
+      margin:0 0 6px 14px;
+    }
 
     /* v1.1: filtros ocupam a largura toda; exportação embaixo. */
     .campoFiltro{
@@ -900,14 +960,18 @@
 
   <div class="rodape">IPUSP — Assistência Acadêmica</div>
 
-  <!-- v1.1 — FICHA DO ALUNO. Os campos são montados por script a partir
-       das colunas da planilha (obterFichaAluno), sempre com
+  <!-- v1.1 — FICHA (do aluno; desde a v1.3, de qualquer vínculo). Os
+       campos são montados por script a partir das colunas da planilha
+       (obterFicha), sempre com
        createElement/value, nunca como HTML bruto. -->
+  <!-- v1.3: aviso discreto da cópia do nº USP. -->
+  <div id="avisoCopia" class="avisoCopia" role="status" aria-live="polite" hidden></div>
+
   <div id="fichaOverlay" class="fichaOverlay" hidden>
     <section id="fichaDialogo" class="fichaDialogo" role="dialog" aria-modal="true" aria-labelledby="fichaTitulo" tabindex="-1">
       <header class="fichaCabecalho">
         <div>
-          <p class="fichaRotuloTopo">Ficha do aluno</p>
+          <p id="fichaRotulo" class="fichaRotuloTopo">Ficha do aluno</p>
           <h2 id="fichaTitulo">Carregando...</h2>
         </div>
         <button type="button" id="fichaFechar" class="fichaFechar" aria-label="Fechar ficha"><span aria-hidden="true">×</span></button>
@@ -948,8 +1012,12 @@
         para quem é editor da planilha (salvarFichaAluno).
     v1.2 — COMUNIDADE IPUSP (14/10/2026): a mesma caixa de busca
     procura também em docentes, servidores e setores. Cada card
-    ganha o selo do vínculo; só o card de aluno abre a ficha. O
-    filtro de ingresso, por definição, só traz alunos.
+    ganha o selo do vínculo. O filtro de ingresso, por definição,
+    só traz alunos.
+    v1.3 (14/10/2026): a ficha abre para todos os vínculos
+    (obterFicha/salvarFicha, com o cadastro de cada um); pessoas
+    mostram o nº USP, que é copiado ao clicar no selo; o título da
+    ficha do docente leva Prof./Profª. calculado pelo servidor.
     A lista continua chegando numa única chamada (agora
     listarComunidadeParaBusca) e a filtragem continua no navegador.
   =====================================================*/
@@ -972,6 +1040,68 @@
 
   // v1.2: texto do selo de cada vínculo (também vai na exportação).
   const VINCULOS = { aluno: "Aluno", docente: "Docente", servidor: "Servidor", setor: "Setor" };
+
+  // v1.3: cadastro (planilha) de cada vínculo — servidor e setor estão
+  // na mesma planilha. Usado ao abrir e salvar a ficha.
+  const CADASTRO_DO_TIPO = { aluno: "alunos", docente: "docentes", servidor: "servidores", setor: "servidores" };
+  const ROTULO_FICHA = { aluno: "Ficha do aluno", docente: "Ficha do docente", servidor: "Ficha do servidor", setor: "Ficha do setor" };
+
+  // Identifica o card na lista (a linha sozinha repete entre planilhas).
+  function chavePessoa_(p) {
+    return CADASTRO_DO_TIPO[p.tipo] + ":" + p.linha;
+  }
+
+  // Setor sem NOME aparece pelo nome do setor.
+  function nomeExibido_(p) {
+    return p.nome || p.setor || "(sem nome cadastrado)";
+  }
+
+  /*-----------------------------------------------------
+    v1.3 — COPIAR Nº USP: clique no selo copia o número e mostra
+    "Número USP copiado para área de transferência" por 3 s. Usa a
+    API de área de transferência e, se o navegador (ou o iframe do
+    Apps Script) recusar, o método antigo com um campo temporário.
+  ------------------------------------------------------*/
+  const avisoCopia = document.getElementById("avisoCopia");
+  let temporizadorCopia = null;
+
+  function mostrarAvisoCopia_(texto) {
+    clearTimeout(temporizadorCopia);
+    avisoCopia.textContent = texto;
+    avisoCopia.hidden = false;
+    temporizadorCopia = setTimeout(() => { avisoCopia.hidden = true; avisoCopia.textContent = ""; }, 3000);
+  }
+
+  function copiarPorCampoTemporario_(texto) {
+    const campo = document.createElement("textarea");
+    campo.value = texto;
+    campo.setAttribute("readonly", "");
+    campo.style.position = "fixed";
+    campo.style.opacity = "0";
+    campo.style.left = "-9999px";
+    document.body.appendChild(campo);
+    const foco = document.activeElement;
+    campo.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    campo.remove();
+    if (foco && foco.focus) foco.focus();
+    return ok;
+  }
+
+  function copiarNumeroUsp_(numero) {
+    const texto = String(numero || "");
+    const sucesso = () => mostrarAvisoCopia_("Número USP copiado para área de transferência");
+    const falha = () => {
+      if (copiarPorCampoTemporario_(texto)) sucesso();
+      else mostrarAvisoCopia_("Não consegui copiar. Selecione o número e use Ctrl+C.");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(sucesso, falha);
+    } else {
+      falha();
+    }
+  }
 
   // Resultado que está na tela agora (já filtrado por texto, ano e
   // semestre) — é exatamente isso que os botões de exportação usam.
@@ -1096,21 +1226,21 @@
 
     mostrando.forEach(aluno => {
 
-      // v1.1: o card de aluno é um <button> que abre a ficha.
-      // v1.2: docente, servidor e setor não têm ficha — card estático.
+      // v1.3: o card é um contêiner com o botão da ficha (todos os
+      // vínculos) e, para pessoas, o botão que copia o nº USP — dois
+      // botões lado a lado, nunca um dentro do outro.
       const ehAluno = aluno.tipo === "aluno";
-      const card = document.createElement(ehAluno ? "button" : "div");
+      const card = document.createElement("div");
       card.className = "cardAluno cardAluno--" + aluno.tipo;
       card.dataset.tipo = aluno.tipo;
-      if (ehAluno) {
-        card.type = "button";
-        card.setAttribute("aria-haspopup", "dialog");
-        card.dataset.linha = String(aluno.linha);
-        card.addEventListener("click", () => abrirFicha_(aluno, card));
-      }
+      card.dataset.chave = chavePessoa_(aluno);
 
-      const dados = document.createElement("span");
-      dados.className = "dadosAluno";
+      const dados = document.createElement("button");
+      dados.type = "button";
+      dados.className = "dadosAluno abrirFicha";
+      dados.setAttribute("aria-haspopup", "dialog");
+      dados.dataset.chave = chavePessoa_(aluno);
+      dados.addEventListener("click", () => abrirFicha_(aluno, dados));
 
       const nome = document.createElement("span");
       nome.className = "nomeAluno";
@@ -1119,7 +1249,7 @@
       selo.textContent = VINCULOS[aluno.tipo];
       const textoNome = document.createElement("span");
       textoNome.className = "textoNome";
-      textoNome.innerHTML = destacar_(aluno.nome || "(sem nome cadastrado)", termos);
+      textoNome.innerHTML = destacar_(nomeExibido_(aluno), termos);
       nome.appendChild(selo);
       nome.appendChild(textoNome);
       if (ehAluno && aluno.ingresso) {
@@ -1146,11 +1276,24 @@
       dados.appendChild(detalhe);
 
       card.appendChild(dados);
-      if (ehAluno) {
+      // v1.3: nº USP de toda PESSOA (aluno, docente, servidor); setor não tem.
+      if (aluno.tipo !== "setor") {
         const badge = document.createElement("span");
         badge.className = "badgeUsp";
         badge.innerHTML = aluno.numeroUsp ? destacar_(aluno.numeroUsp, termos) : "sem nº USP";
-        card.appendChild(badge);
+        if (aluno.numeroUsp) {
+          const copiar = document.createElement("button");
+          copiar.type = "button";
+          copiar.className = "copiarUsp";
+          copiar.title = "Copiar número USP";
+          copiar.setAttribute("aria-label", `Copiar número USP ${aluno.numeroUsp}`);
+          copiar.addEventListener("click", () => copiarNumeroUsp_(aluno.numeroUsp));
+          copiar.appendChild(badge);
+          card.appendChild(copiar);
+        } else {
+          badge.classList.add("semUsp");
+          card.appendChild(badge);
+        }
       }
       listaResultados.appendChild(card);
 
@@ -1249,7 +1392,9 @@
   ];
 
   function valorExportacao_(pessoa, chave) {
-    return chave === "vinculo" ? VINCULOS[pessoa.tipo] : (pessoa[chave] || "");
+    if (chave === "vinculo") return VINCULOS[pessoa.tipo];
+    if (chave === "nome") return pessoa.nome || pessoa.setor || "";
+    return pessoa[chave] || "";
   }
 
   function nomeBaseArquivo_() {
@@ -1322,13 +1467,14 @@
   });
 
   /*-----------------------------------------------------
-    FICHA DO ALUNO (modal) — ESC fecha, Tab fica preso dentro,
+    FICHA (modal; alunos, docentes, servidores e setores) — ESC fecha, Tab fica preso dentro,
     o foco volta ao card que abriu e o scroll da página fica
     travado enquanto aberto (mesmo contrato da Central de Ajuda).
   ------------------------------------------------------*/
   const fichaOverlay = document.getElementById("fichaOverlay");
   const fichaDialogo = document.getElementById("fichaDialogo");
   const fichaTitulo = document.getElementById("fichaTitulo");
+  const fichaRotulo = document.getElementById("fichaRotulo");
   const fichaCampos = document.getElementById("fichaCampos");
   const fichaStatus = document.getElementById("fichaStatus");
   const fichaSalvar = document.getElementById("fichaSalvar");
@@ -1348,8 +1494,9 @@
     fichaOverflowAnterior = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     fichaOverlay.hidden = false;
-    FICHA = { aluno: aluno, linha: aluno.linha, campos: [], podeEditar: false };
-    fichaTitulo.textContent = aluno.nome || "(sem nome cadastrado)";
+    FICHA = { aluno: aluno, linha: aluno.linha, campos: [], podeEditar: false, tratamento: "" };
+    fichaRotulo.textContent = ROTULO_FICHA[aluno.tipo];
+    fichaTitulo.textContent = nomeExibido_(aluno);
     fichaCampos.innerHTML = "";
     fichaSalvar.disabled = true;
     definirStatusFicha_("Carregando a ficha...");
@@ -1357,20 +1504,34 @@
     google.script.run
         .withSuccessHandler(ficha => { if (FICHA && FICHA.aluno === aluno) preencherFicha_(ficha); })
         .withFailureHandler(erro => { if (FICHA && FICHA.aluno === aluno) definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro"); })
-        .obterFichaAluno({ linha: aluno.linha, numeroUsp: aluno.numeroUsp, nome: aluno.nome });
+        .obterFicha(referenciaFicha_(aluno));
+  }
+
+  // v1.3: o que o servidor precisa pra achar e conferir a linha
+  // (alunos: nº USP + nome; docentes e servidores: nome + e-mail).
+  function referenciaFicha_(p) {
+    return { cadastro: CADASTRO_DO_TIPO[p.tipo], linha: p.linha, numeroUsp: p.numeroUsp, nome: p.nome, email: p.email };
+  }
+
+  // Título da ficha: "Profª. Nome" para docentes com M / F preenchido.
+  function tituloFicha_() {
+    const nome = nomeExibido_(FICHA.aluno);
+    return FICHA.tratamento ? FICHA.tratamento + " " + nome : nome;
   }
 
   function preencherFicha_(ficha) {
     FICHA.linha = ficha.linha;
     FICHA.campos = ficha.campos;
     FICHA.podeEditar = !!ficha.podeEditar;
+    FICHA.tratamento = ficha.tratamento || "";
+    fichaTitulo.textContent = tituloFicha_();
     fichaCampos.innerHTML = "";
 
     const aviso = document.createElement("p");
     aviso.className = "fichaAviso" + (FICHA.podeEditar ? "" : " alerta");
     aviso.textContent = FICHA.podeEditar
         ? "Altere os campos necessários e clique em Salvar alterações. Só os campos modificados são gravados na planilha."
-        : "Sua conta pode consultar esta ficha, mas não alterar a planilha de alunos. Para editar, é preciso ser editor da planilha.";
+        : `Sua conta pode consultar esta ficha, mas não alterar a planilha de ${CADASTRO_DO_TIPO[FICHA.aluno.tipo]}. Para editar, é preciso ser editor da planilha.`;
     fichaCampos.appendChild(aviso);
 
     ficha.campos.forEach((campo, i) => {
@@ -1447,7 +1608,7 @@
           FICHA.aluno = atualizado;
           montarFiltroAno_();
           executarBusca_();
-          fichaTitulo.textContent = atualizado.nome || "(sem nome cadastrado)";
+          fichaRotulo.textContent = ROTULO_FICHA[atualizado.tipo];
           preencherFicha_(ficha);
           definirStatusFicha_("Alterações salvas na planilha.", "ok");
         })
@@ -1456,13 +1617,11 @@
           atualizarAlteracoesFicha_();
           definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro");
         })
-        .salvarFichaAluno({
+        .salvarFicha(Object.assign(referenciaFicha_(aluno), {
           linha: FICHA.linha,
-          numeroUsp: aluno.numeroUsp,
-          nome: aluno.nome,
           originais: alt.originais,
           novos: alt.novos
-        });
+        }));
   }
 
   function fecharFicha_() {
@@ -1477,8 +1636,8 @@
     // O card pode ter sido recriado pela busca depois de salvar:
     // devolve o foco a ele (ou ao card novo do mesmo aluno); se o aluno
     // saiu do filtro, ao campo de busca.
-    const linhaGatilho = fichaGatilho && fichaGatilho.dataset ? fichaGatilho.dataset.linha : "";
-    const cardNovo = linhaGatilho ? listaResultados.querySelector(`button.cardAluno[data-linha="${linhaGatilho}"]`) : null;
+    const chaveGatilho = fichaGatilho && fichaGatilho.dataset ? fichaGatilho.dataset.chave : "";
+    const cardNovo = chaveGatilho ? listaResultados.querySelector(`button.abrirFicha[data-chave="${chaveGatilho}"]`) : null;
     if (fichaGatilho && document.body.contains(fichaGatilho)) fichaGatilho.focus();
     else if (cardNovo) cardNovo.focus();
     else campoBusca.focus();

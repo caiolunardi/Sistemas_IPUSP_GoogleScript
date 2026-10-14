@@ -1,4 +1,4 @@
-# Manual de operação — Comunidade IPUSP (v1.2)
+# Manual de operação — Comunidade IPUSP (v1.3)
 
 Referência de uso, instalação e manutenção da Comunidade IPUSP, antiga Busca de Alunos (pasta `busca-alunos` e nomes de arquivo mantidos). A ajuda incorporada ao app está documentada em [AJUDA.md](AJUDA.md). Este manual descreve a fonte do Git, sem presumir que ela já esteja implantada.
 
@@ -7,17 +7,18 @@ Referência de uso, instalação e manutenção da Comunidade IPUSP, antiga Busc
 1. Abra o endereço `/exec` com a conta institucional @usp.br.
 2. Espere a mensagem "N alunos, N docentes, N servidores e N setores carregados — comece a digitar ou escolha um ano de ingresso." Campo e filtros ficam desabilitados até a lista chegar.
 3. Digite no campo **Buscar pessoa** qualquer combinação de partes do nome, do número USP, do e-mail (principal ou secundário) ou do setor, e/ou escolha um **Ano de ingresso** (só alunos).
-4. Confira o resultado: o selo **Aluno**, **Docente**, **Servidor** ou **Setor**, o nome em negrito e, embaixo, o e-mail. Alunos mostram também o ingresso, o e-mail secundário e o número USP à direita; servidores, o setor. Os trechos que combinaram ficam destacados.
-5. Clique num aluno para abrir a **ficha**. Cards de docente, servidor e setor não abrem ficha.
+4. Confira o resultado: o selo **Aluno**, **Docente**, **Servidor** ou **Setor**, o nome em negrito e, embaixo, os e-mails (e, no servidor, o setor). Alunos mostram também o ingresso. Pessoas (aluno, docente, servidor) mostram o número USP à direita; setores não. Os trechos que combinaram ficam destacados.
+5. Clique no **número USP** para copiá-lo: aparece por 3 segundos, embaixo da tela, "Número USP copiado para área de transferência". Se o navegador bloquear a cópia, a mensagem diz "Não consegui copiar..."; nesse caso, copie pela ficha.
+6. Clique no nome (ou Tab até o resultado e Enter) para abrir a **ficha**, de qualquer vínculo.
 
 ### De onde vem cada vínculo
 
 | Selo | Cadastro (chave no `ID_INDEX`) | Campos |
 |---|---|---|
 | Aluno | `PLANILHA_ALUNOS` | colunas pelo título (ver [Configuração](#configuração)) |
-| Docente | `PLANILHA_DOCENTES` | B nome, D e-mail |
-| Servidor | `SERVIDORES` | A e-mail, B nome, C setor |
-| Setor | `SERVIDORES` | linha com B vazio, B igual a C, ou B começando com uma palavra de `INICIOS_NOME_SETOR` (Setor, Serviço, Seção, Secretaria, Assistência, Comissão, Departamento, Diretoria, Biblioteca, Laboratório, Coordenação, Atendimento). Com B vazio, o card mostra o setor como nome. |
+| Docente | `PLANILHA_DOCENTES` | colunas pelo título: `N. USP`, `NOME`, `M / F`, `E-mail`, `eMail Secundario` (`TRATAMENTO` é ignorada) |
+| Servidor | `SERVIDORES` | colunas pelo título: `E-MAIL`, `NOME`, `Setor`, `N.USP`, `TIPO` = `SERVIDOR`, `eMail Secundario` |
+| Setor | `SERVIDORES` | mesma planilha, `TIPO` = `SETOR` (sem número USP). Com `TIPO` vazio vale a regra antiga: NOME vazio, igual ao Setor ou começando com uma palavra de `INICIOS_NOME_SETOR` (Setor, Serviço, Seção, Secretaria...). |
 
 A mesma pessoa aparece uma vez por cadastro em que estiver. Se um cadastro não abrir, os outros aparecem e um aviso amarelo abaixo da busca diz qual faltou e por quê.
 
@@ -52,20 +53,21 @@ A mesma pessoa aparece uma vez por cadastro em que estiver. Se um cadastro não 
 
 Os arquivos contêm dados pessoais: envie só a quem pediu, para a finalidade informada, e apague cópias desnecessárias.
 
-### Ficha do aluno e edição
+### Ficha e edição
 
-Só para alunos.
+Vale para alunos, docentes, servidores e setores; cada um é gravado na sua própria planilha.
 
-1. Clique no resultado com selo **Aluno** (ou Tab até ele e Enter). A ficha mostra **todas as colunas com título** da linha do aluno, na ordem da planilha.
-2. Quem é **editor da planilha de alunos** pode alterar os campos. O campo alterado fica marcado e o rodapé informa quantos campos mudaram.
-3. **Salvar alterações** grava só as células modificadas e mostra "Alterações salvas na planilha." A lista da página já passa a refletir o dado novo (o aluno pode sair do filtro atual, se o ingresso mudou).
+1. Clique no nome no resultado (ou Tab até ele e Enter). A ficha mostra **todas as colunas com título** da linha, na ordem da planilha. O rótulo diz "Ficha do aluno", "do docente", "do servidor" ou "do setor". Na de docente, o título vem com **Prof.** ou **Profª.**, calculado pelo campo `M / F`; a coluna `TRATAMENTO` não aparece.
+2. Quem é **editor da planilha daquele cadastro** pode alterar os campos. O campo alterado fica marcado e o rodapé informa quantos campos mudaram.
+3. **Salvar alterações** grava só as células modificadas e mostra "Alterações salvas na planilha." A lista da página já passa a refletir o dado novo (o aluno pode sair do filtro atual, se o ingresso mudou; mudar o `TIPO` troca o selo entre Servidor e Setor).
 4. **Fechar**, × ou Esc fecham. Com alteração não salva, a página pergunta antes de descartar.
 
 | Regra | Detalhe |
 |---|---|
-| Quem pode salvar | Conta identificada que esteja entre os editores (ou seja a dona) da planilha de alunos, individualmente. Compartilhamento só por grupo não é reconhecido. Os demais veem a ficha só para consulta, com aviso no topo. |
+| Quem pode salvar | Conta identificada que esteja entre os editores (ou seja a dona) da planilha daquele cadastro, individualmente. Compartilhamento só por grupo não é reconhecido. Os demais veem a ficha só para consulta, com aviso no topo. |
 | Somente leitura | `ID da Pasta` (usado por outro sistema) e qualquer célula com fórmula. Aparecem com borda tracejada e "(somente leitura)". |
-| Formatos | Número USP: só dígitos. Ingresso: `AAAA/1` ou `AAAA/2`. eMail e eMail Secundario: formato de e-mail (o secundário pode ficar vazio). Nome do Aluno: não vazio. Demais colunas: texto livre, até 500 caracteres. |
+| Formatos | Número USP (`Número USP`, `N. USP`, `N.USP`): só dígitos. Ingresso: `AAAA/1` ou `AAAA/2`. E-mails (principal e secundário): formato de e-mail ou vazio. Nome: não vazio. `M / F`: `M`, `F` ou vazio (gravado em maiúscula). `TIPO`: `SERVIDOR`, `SETOR` ou vazio (gravado em maiúscula). Demais colunas: texto livre, até 500 caracteres. |
+| Linha conferida por | Alunos: número USP + nome. Docentes e servidores: nome + e-mail. |
 | Conflito | Se o campo foi alterado por outra pessoa depois que a ficha abriu, a gravação é recusada. |
 | Linha mudou | Se a planilha foi ordenada ou teve linhas inseridas/apagadas depois que a página abriu, a ficha não abre ou não salva; recarregue a página. |
 | Tipo da célula | Número USP guardado como número continua número; o resto é gravado como texto, como digitado. |
@@ -84,12 +86,14 @@ Só para alunos.
 | "...Não encontrei a chave "PLANILHA_ALUNOS" na planilha ID_INDEX." | A chave não está no índice. | Incluir a linha no `ID_INDEX`. |
 | "...a coluna "ID de Produção" está vazia." | Linha da chave sem ID. | Preencher a coluna no `ID_INDEX`. |
 | "...precisa ter as colunas "Chave" e "ID de Produção"." | Títulos do índice diferentes. | Corrigir a linha 1 do `ID_INDEX`. |
-| "...A planilha de alunos precisa ter uma coluna "<título>"." | Título renomeado na planilha de alunos. | Restaurar o título exato ou ajustar `CABECALHOS_ALUNOS`. |
+| "...A planilha de alunos precisa ter uma coluna "<título>"." (ou de docentes, servidores) | Título obrigatório renomeado. Em alunos, os cinco títulos são obrigatórios; em docentes e servidores, só NOME e o e-mail principal. | Restaurar o título (acento, espaço e maiúscula não importam) ou ajustar `CABECALHOS_ALUNOS`/`CABECALHOS_DOCENTES`/`CABECALHOS_SERVIDORES`. |
 | Aviso "Atenção: não consegui ler o cadastro de docentes (…)" (ou servidores, alunos) | Aquele cadastro não abriu; os outros aparecem. O motivo vem entre parênteses, sem IDs. | Conferir a chave (`PLANILHA_DOCENTES`, `SERVIDORES`, `PLANILHA_ALUNOS`) no `ID_INDEX` e o acesso de leitura da conta que executa o Web App; rodar o diagnóstico. |
-| Card com selo Servidor que deveria ser Setor (ou o contrário) | A regra de setor não reconheceu a linha. | Na planilha de servidores, deixar NOME vazio ou igual ao Setor; ou ajustar `INICIOS_NOME_SETOR`. |
-| "Sua conta não tem permissão para alterar a planilha de alunos..." | Quem usa não é editor individual da planilha. | Dar acesso de editor à conta, ou seguir só consultando. |
-| "O campo "X" foi alterado por outra pessoa..." | Conflito de edição. | Fechar, reabrir o aluno e refazer. |
-| "A planilha de alunos mudou desde que esta página foi aberta..." | Linhas ordenadas/inseridas/apagadas. | Recarregar a página. |
+| Card com selo Servidor que deveria ser Setor (ou o contrário) | `TIPO` errado ou vazio. | Corrigir `TIPO` pela ficha (`SERVIDOR` ou `SETOR`). |
+| "O campo "M / F" aceita só M ou F" / "O campo "TIPO" aceita só SERVIDOR ou SETOR." | Valor fora do esperado. | Corrigir e salvar de novo. |
+| "Não consegui copiar. Selecione o número e use Ctrl+C." | O navegador bloqueou a cópia automática. | Copiar o número pela ficha. |
+| "Sua conta não tem permissão para alterar a planilha de alunos..." (ou docentes, servidores) | Quem usa não é editor individual da planilha. | Dar acesso de editor à conta, ou seguir só consultando. |
+| "O campo "X" foi alterado por outra pessoa..." | Conflito de edição. | Fechar, reabrir a ficha e refazer. |
+| "A planilha de ... mudou desde que esta página foi aberta..." | Linhas ordenadas/inseridas/apagadas. | Recarregar a página. |
 | "O ingresso deve estar no formato AAAA/S..." e similares | Valor fora do formato. | Corrigir o campo e salvar de novo. |
 | "Outra gravação está em andamento..." | Duas gravações ao mesmo tempo. | Esperar alguns segundos e salvar de novo. |
 | "Não consegui gerar o PDF: ...mais de 5000 pessoas..." | Lista grande demais para o PDF. | Refinar a busca, filtrar por ano/semestre ou usar CSV. |
@@ -103,7 +107,7 @@ A fonte está em [`sistemas/busca-alunos/src/`](../../../sistemas/busca-alunos/s
 ### Atualizar o Web App em uso
 
 1. Guarde a versão atual do projeto e anote a versão da implantação ativa.
-2. Substitua **`Codigo.gs`**, **`BuscaAlunosApp.html`** e **`BuscaAlunosAjuda.html`** (os nomes de arquivo continuam os mesmos na v1.2).
+2. Substitua **`Codigo.gs`**, **`BuscaAlunosApp.html`** e **`BuscaAlunosAjuda.html`** (os nomes de arquivo continuam os mesmos desde a v1.0).
 3. Vindo do código original, crie também os sete arquivos HTML na raiz do projeto:
 
 | Nome no editor (sem extensão) | Conteúdo |
@@ -139,13 +143,20 @@ No `ID_INDEX`, aba `Página1` (ou a primeira aba), linha 1 com os títulos `Chav
 
 Na planilha de alunos, a primeira aba precisa ter na linha 1 os títulos `Número USP`, `Nome do Aluno`, `Ingresso`, `eMail` e `eMail Secundario`, em qualquer posição (espaços nas pontas são ignorados). Linhas sem número USP e sem nome são ignoradas na busca. Na ficha aparecem todas as colunas com título; só as cinco acima vão para a lista e para as exportações.
 
-Nas planilhas de servidores e de docentes, lê-se a primeira aba, da linha 2 em diante, **pela posição** da coluna (títulos não conferidos): servidores A e-mail, B nome, C setor; docentes B nome, D e-mail. Se alguém inserir uma coluna antes delas, ajuste `COLUNAS_SERVIDORES`/`COLUNAS_DOCENTES` em `Codigo.gs`.
+Nas planilhas de servidores e de docentes (v1.3), também se lê a primeira aba **pelo título** das colunas, sem diferença de acento, espaço ou maiúscula:
 
-A conta que executa o Web App precisa **editar** a planilha de alunos (para gravar) e ler o `ID_INDEX` e as planilhas de servidores e de docentes. Quem vai editar pela página precisa ser editor individual da planilha de alunos.
+| Planilha | Obrigatórias | Opcionais (vazias se faltarem) | Só na ficha |
+|---|---|---|---|
+| Servidores (`SERVIDORES`) | `NOME`, `E-MAIL` | `Setor`, `N.USP`, `TIPO`, `eMail Secundario` | `ID da Pasta` (somente leitura) e demais colunas com título |
+| Docentes (`PLANILHA_DOCENTES`) | `NOME`, `E-mail` | `N. USP`, `M / F`, `eMail Secundario` | `ID da Pasta` (somente leitura) e demais colunas com título; `TRATAMENTO` é ignorada |
+
+`TRATAMENTO` deixou de ser usada: o app calcula Prof./Profª. a partir de `M / F`. A coluna pode ser apagada da planilha quando for conveniente (nenhum outro sistema do repositório a lê). A auditoria da Estrutura Curricular lê esses dois cadastros **pela posição** (servidores A e-mail, B nome, C setor; docentes B nome, D e-mail); o esquema atual é compatível, mas mover essas colunas exige ajustar `PESSOAS_AUDITORIA` lá.
+
+A conta que executa o Web App precisa **editar** as três planilhas (para gravar) e ler o `ID_INDEX`. Quem vai editar pela página precisa ser editor individual da planilha daquele cadastro.
 
 ## Diagnóstico
 
-No editor, selecione `diagnosticarComunidadeIPUSP` (até a v1.1, `diagnosticarBuscaAlunos`) e clique em **Executar**. Em **Registros de execução** aparecem: se a propriedade existe, qual aba do índice foi lida, se `PLANILHA_ALUNOS` foi encontrada e se cada coluna esperada existe; para `SERVIDORES` e `PLANILHA_DOCENTES`, a aba lida e o **título** das colunas usadas (esperado: A `E-MAIL`, B `NOME`, C `Setor`; B `NOME`, D `E-mail`), ou o motivo de não abrir; por fim, quantos alunos, docentes, servidores e setores seriam enviados. Nenhum ID, nome, número USP ou e-mail é registrado.
+No editor, selecione `diagnosticarComunidadeIPUSP` (até a v1.1, `diagnosticarBuscaAlunos`) e clique em **Executar**. Em **Registros de execução** aparecem: se a propriedade existe, qual aba do índice foi lida, para cada chave (`PLANILHA_ALUNOS`, `PLANILHA_DOCENTES`, `SERVIDORES`) se foi encontrada, a aba lida e cada coluna esperada ("ok", "NÃO ENCONTRADA (obrigatória)" ou "não encontrada (opcional)"), se `TRATAMENTO` ainda existe, ou o motivo de não abrir; por fim, quantos alunos, docentes, servidores e setores seriam enviados. Nenhum ID, nome, número USP ou e-mail é registrado.
 
 ## Conferência no `/dev` e no `/exec`
 
@@ -154,8 +165,9 @@ No editor, selecione `diagnosticarComunidadeIPUSP` (até a v1.1, `diagnosticarBu
 - [ ] Um docente conhecido aparece com selo **Docente**; um servidor com **Servidor** e o setor; um e-mail de setor com **Setor**.
 - [ ] Combobox de anos com todos os anos da coluna Ingresso; semestre filtra; turma em ordem alfabética.
 - [ ] CSV e PDF de um ano abrem corretamente, com acentos, e com a quantidade mostrada na tela.
-- [ ] Ficha abre com todas as colunas; `ID da Pasta` somente leitura.
-- [ ] Com conta editora: alterar um campo de teste, salvar, conferir na planilha e desfazer.
+- [ ] Ficha abre com todas as colunas para aluno, docente, servidor e setor; `ID da Pasta` somente leitura; docente com Prof./Profª. certo e sem `TRATAMENTO`.
+- [ ] Clique no número USP copia (colar num editor de texto) e mostra a mensagem por 3 segundos, sem abrir a ficha; setor sem número USP.
+- [ ] Com conta editora: alterar um campo de teste em cada cadastro (ex.: `eMail Secundario`), salvar, conferir na planilha e desfazer.
 - [ ] Com conta não editora: ficha só consulta e gravação recusada.
 - [ ] **Aparência**: Sistema, Claro e Escuro; recarregar mantém a escolha manual.
 - [ ] Marcas IPUSP e USP corretas nos dois temas.
@@ -164,11 +176,11 @@ No editor, selecione `diagnosticarComunidadeIPUSP` (até a v1.1, `diagnosticarBu
 
 ## Manutenção
 
-- **Coluna renomeada na planilha de alunos:** ajuste `CABECALHOS_ALUNOS` em `Codigo.gs` (só o texto do título).
+- **Coluna renomeada:** ajuste `CABECALHOS_ALUNOS`, `CABECALHOS_DOCENTES` ou `CABECALHOS_SERVIDORES` em `Codigo.gs` (só o texto do título).
 - **Outra coluna que não pode ser editada:** inclua o título em `COLUNAS_SOMENTE_LEITURA`.
 - **Planilha de alunos, servidores ou docentes trocada:** atualize a linha da chave no `ID_INDEX`; nenhum código muda.
-- **Coluna de servidores/docentes mudou de posição:** ajuste `COLUNAS_SERVIDORES`/`COLUNAS_DOCENTES` (A = 1). Se a Estrutura Curricular também lê esses cadastros (`PESSOAS_AUDITORIA`), ajuste lá na mesma rodada.
-- **Linha classificada errada como Setor/Servidor:** ajuste `INICIOS_NOME_SETOR` ou a própria linha na planilha.
+- **Coluna de servidores/docentes mudou de posição:** este app não muda (lê pelo título), mas a auditoria da Estrutura Curricular (`PESSOAS_AUDITORIA`) lê pela posição e precisa ser ajustada.
+- **Linha classificada errada como Setor/Servidor:** corrija `TIPO` na ficha.
 - **Texto da ajuda:** altere em `BuscaAlunosAjuda.html` e em [AJUDA.md](AJUDA.md) na mesma rodada; não renomeie IDs `ajuda-...` sem ajustar os gatilhos de `BuscaAlunosApp.html`.
 - **Tema, marcas e mecanismo da ajuda:** são cópias de arquivos comuns. Atualize a partir de `shared/` ou dos outros sistemas, sem editar só aqui.
 - **Limites:** `MAX_RESULTADOS` (60, em `BuscaAlunosApp.html`), `TAMANHO_MAXIMO_CAMPO` (500) e `MAXIMO_LINHAS_EXPORTACAO` (5.000, em `Codigo.gs`). A ajuda e este manual citam esses números e precisam ser revisados junto.

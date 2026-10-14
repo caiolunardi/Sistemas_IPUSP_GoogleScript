@@ -17,29 +17,40 @@ const alunos=[];for(let i=0;i<120;i++)alunos.push({linha:i+2,numeroUsp:String(90
 alunos.push({linha:122,numeroUsp:'',nome:'',ingresso:'',email:'',emailSecundario:''});
 alunos.push({linha:123,numeroUsp:'9999999',nome:'Zeca Sem Ingresso',ingresso:'a definir',email:'zeca@exemplo.invalid',emailSecundario:''});
 alunos.forEach(a=>a.tipo='aluno');
-const outros=[{tipo:'docente',linha:2,nome:'Roberto Docente Ficticio',email:'roberto.doc@exemplo.invalid'},{tipo:'docente',linha:3,nome:'Helena Professora Exemplo',email:'helena@exemplo.invalid'},
- {tipo:'servidor',linha:2,nome:'Marcos Servidor Exemplo',email:'marcos@exemplo.invalid',setor:'Serviço de Graduação'},{tipo:'setor',linha:3,nome:'Serviço de Graduação',email:'graduacao@exemplo.invalid',setor:'Serviço de Graduação'}];
+const outros=[{tipo:'docente',linha:2,numeroUsp:'9200001',nome:'Roberto Docente Ficticio',email:'roberto.doc@exemplo.invalid',emailSecundario:'',_genero:'M'},{tipo:'docente',linha:3,numeroUsp:'',nome:'Helena Professora Exemplo',email:'helena@exemplo.invalid',emailSecundario:'',_genero:'F'},
+ {tipo:'servidor',linha:2,numeroUsp:'9100001',nome:'Marcos Servidor Exemplo',email:'marcos@exemplo.invalid',emailSecundario:'',setor:'Serviço de Graduação',_tipo:'SERVIDOR'},{tipo:'setor',linha:3,numeroUsp:'',nome:'Serviço de Graduação',email:'graduacao@exemplo.invalid',emailSecundario:'',setor:'Serviço de Graduação',_tipo:'SETOR'}];
 // Backend simulado no navegador. modo: 'ok' (editor), 'leitor' (sem permissão de editar),
 // 'parcial' (cadastro de docentes indisponível) ou 'erro'.
 const stub=(modo)=>`(function(){var DADOS=${JSON.stringify(alunos)};var OUTROS=${JSON.stringify(outros)};var MODO=${JSON.stringify(modo)};window.__chamadas=[];
-function ficha(a){return {linha:a.linha,podeEditar:MODO==='ok',campos:[{titulo:'Número USP',valor:a.numeroUsp,editavel:true},{titulo:'Nome do Aluno',valor:a.nome,editavel:true},{titulo:'Ingresso',valor:a.ingresso,editavel:true},{titulo:'eMail',valor:a.email,editavel:true},{titulo:'ID da Pasta',valor:'pasta-'+a.linha,editavel:false},{titulo:'eMail Secundario',valor:a.emailSecundario,editavel:true}]}}
+var COLS={alunos:[['Número USP','numeroUsp'],['Nome do Aluno','nome'],['Ingresso','ingresso'],['eMail','email'],['ID da Pasta',null],['eMail Secundario','emailSecundario']],
+ docentes:[['N. USP','numeroUsp'],['NOME','nome'],['M / F','_genero'],['E-mail','email'],['ID da Pasta',null],['eMail Secundario','emailSecundario']],
+ servidores:[['E-MAIL','email'],['NOME','nome'],['Setor','setor'],['N.USP','numeroUsp'],['TIPO','_tipo'],['ID da Pasta',null],['eMail Secundario','emailSecundario']]};
+function lista(cad){return cad==='alunos'?DADOS:OUTROS.filter(function(x){return (cad==='docentes')===(x.tipo==='docente')})}
+function achar(r){var a=lista(r.cadastro).find(function(x){return x.linha===r.linha});if(!a)throw new Error('Não encontrei');var id=r.cadastro==='alunos'?['numeroUsp','nome']:['nome','email'];
+ id.forEach(function(k){if(String(a[k]||'')!==String(r[k]||''))throw new Error('A planilha de '+r.cadastro+' mudou')});return a}
+function ficha(cad,a){var f={cadastro:cad,linha:a.linha,podeEditar:MODO==='ok',campos:COLS[cad].map(function(c){return {titulo:c[0],valor:c[1]?String(a[c[1]]||''):'pasta-'+a.linha,editavel:!!c[1]}})};
+ if(cad==='docentes')f.tratamento=a._genero==='F'?'Profª.':a._genero==='M'?'Prof.':'';return f}
+function resumo(a){var r=Object.assign({},a);delete r._genero;delete r._tipo;if(a._tipo)r.tipo=a._tipo==='SETOR'?'setor':'servidor';if(r.tipo==='aluno')delete r.tipo;return r}
 var API={listarComunidadeParaBusca:function(){if(MODO==='erro')throw new Error('Configuração obrigatória ausente: ID_INDEX_SPREADSHEET_ID.');
   var o=OUTROS.filter(function(x){return MODO!=='parcial'||x.tipo!=='docente'});
-  return {pessoas:DADOS.map(function(a){return Object.assign({},a)}).concat(o.map(function(a){return Object.assign({},a)})),indisponiveis:MODO==='parcial'?[{descricao:'docentes',motivo:'Não encontrei a chave "PLANILHA_DOCENTES" na planilha ID_INDEX.'}]:[]}},
- obterFichaAluno:function(r){var a=DADOS.find(function(x){return x.linha===r.linha});if(!a||a.numeroUsp!==r.numeroUsp)throw new Error('A planilha de alunos mudou');return ficha(a)},
- salvarFichaAluno:function(p){var a=DADOS.find(function(x){return x.linha===p.linha});var M={'Número USP':'numeroUsp','Nome do Aluno':'nome','Ingresso':'ingresso','eMail':'email','eMail Secundario':'emailSecundario'};
-  Object.keys(p.novos).forEach(function(k){if(k==='Ingresso'&&!/^\\d{4}\\/[12]$/.test(p.novos[k]))throw new Error('O ingresso deve estar no formato AAAA/S, por exemplo 2024/1 ou 2024/2.');a[M[k]]=p.novos[k]});var f=ficha(a);f.alterados=Object.keys(p.novos).length;f.resumo=Object.assign({},a);delete f.resumo.tipo;return f},
+  return {pessoas:DADOS.map(function(a){return Object.assign({},a)}).concat(o.map(resumo)),indisponiveis:MODO==='parcial'?[{descricao:'docentes',motivo:'Não encontrei a chave "PLANILHA_DOCENTES" na planilha ID_INDEX.'}]:[]}},
+ obterFicha:function(r){return ficha(r.cadastro,achar(r))},
+ salvarFicha:function(p){var a=achar(p);var M={};COLS[p.cadastro].forEach(function(c){M[c[0]]=c[1]});
+  Object.keys(p.novos).forEach(function(k){if(k==='Ingresso'&&!/^\\d{4}\\/[12]$/.test(p.novos[k]))throw new Error('O ingresso deve estar no formato AAAA/S, por exemplo 2024/1 ou 2024/2.');
+   if(k==='M / F'&&!/^[MF]?$/i.test(p.novos[k]))throw new Error('O campo "M / F" aceita só M ou F (ou vazio).');a[M[k]]=k==='M / F'||k==='TIPO'?p.novos[k].toUpperCase():p.novos[k]});
+  var f=ficha(p.cadastro,a);f.alterados=Object.keys(p.novos).length;f.resumo=resumo(a);return f},
  gerarPdfListaAlunos:function(p){return {nome:p.nomeArquivo+'.pdf',base64:btoa('%PDF-1.4 '+p.linhas.length)}}};
 function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:function(x){s=x;return o},withFailureHandler:function(x){f=x;return o}};
  Object.keys(API).forEach(function(n){o[n]=function(arg){window.__chamadas.push([n,JSON.parse(JSON.stringify(arg===undefined?null:arg))]);setTimeout(function(){try{s(API[n](arg))}catch(e){f(e)}},40)}});return o}
 window.google={script:{get run(){return runner()}}};})();`;
 function lum(c){const m=c.match(/[\d.]+/g).map(Number);const a=m.slice(0,3).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*a[0]+.7152*a[1]+.0722*a[2]}
 function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
-async function load(p,modo){await p.route('http://busca.teste/**',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:html.replace('<head>','<head><script>'+stub(modo)+'</script>')}));await p.route('https://datagrad.sistemas.ip.usp.br/**',r=>r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="240" height="97"><rect width="240" height="97" fill="#00509d"/></svg>'}));await p.goto('http://busca.teste/');}
+// https = contexto seguro (API de área de transferência); http testa o método alternativo da cópia.
+async function load(p,modo,origem='https'){await p.route(origem+'://busca.teste/**',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:html.replace('<head>','<head><script>'+stub(modo)+'</script>')}));await p.route('https://datagrad.sistemas.ip.usp.br/**',r=>r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="240" height="97"><rect width="240" height="97" fill="#00509d"/></svg>'}));await p.goto(origem+'://busca.teste/');}
 let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}else{fail++;console.log('FALHA',n,extra)}};
 (async()=>{const b=await chromium.launch();
  for(const scheme of ['light','dark']){
-  const ctx=await b.newContext({colorScheme:scheme,viewport:{width:1280,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  const ctx=await b.newContext({colorScheme:scheme,viewport:{width:1280,height:900},permissions:['clipboard-read','clipboard-write']});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await load(p,'ok');await p.waitForFunction(()=>!document.getElementById('campoBusca').disabled);
   chk(`[${scheme}] tema Sistema resolvido`,await p.evaluate(s=>document.documentElement.dataset.theme===s&&document.documentElement.dataset.themePreference==='system',scheme));
   chk(`[${scheme}] info carregados`,(await p.textContent('#infoBusca')).startsWith('122 alunos, 2 docentes, 1 servidor e 1 setor carregados'),await p.textContent('#infoBusca'));
@@ -53,21 +64,50 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   await p.fill('#campoBusca','zzzz');await p.waitForTimeout(300);chk(`[${scheme}] vazio`,(await p.textContent('#listaResultados')).includes('Nenhuma pessoa encontrada'));
   // ---------- v1.2: docentes, servidores e setores ----------
   await p.fill('#campoBusca','graduacao');await p.waitForTimeout(300);
-  const gr=await p.$$eval('.cardAluno',e=>e.map(x=>({tag:x.tagName,tipo:x.dataset.tipo,selo:x.querySelector('.seloVinculo').textContent,nome:x.querySelector('.textoNome').textContent,det:x.querySelector('.detalheAluno').textContent,usp:!!x.querySelector('.badgeUsp')})));
+  const gr=await p.$$eval('.cardAluno',e=>e.map(x=>({tipo:x.dataset.tipo,selo:x.querySelector('.seloVinculo').textContent,nome:x.querySelector('.textoNome').textContent,det:x.querySelector('.detalheAluno').textContent,usp:x.querySelector('.copiarUsp')?x.querySelector('.copiarUsp').textContent:null,ficha:!!x.querySelector('button.abrirFicha')})));
   chk(`[${scheme}] busca pelo setor: servidor e setor`,gr.length===2&&gr[0].selo==='Servidor'&&gr[1].selo==='Setor',JSON.stringify(gr));
   chk(`[${scheme}] servidor mostra setor e e-mail`,gr[0].det.includes('Serviço de Graduação')&&gr[0].det.includes('marcos@exemplo.invalid'));
   chk(`[${scheme}] setor não repete o nome no detalhe`,gr[1].nome==='Serviço de Graduação'&&gr[1].det==='graduacao@exemplo.invalid',gr[1].det);
-  chk(`[${scheme}] card não-aluno é estático e sem nº USP`,gr.every(x=>x.tag==='DIV'&&!x.usp));
+  chk(`[${scheme}] servidor com nº USP copiável; setor sem nº USP`,gr[0].usp==='9100001'&&gr[1].usp===null&&!(await p.$('.cardAluno--setor .badgeUsp')),JSON.stringify(gr.map(x=>x.usp)));
+  chk(`[${scheme}] todos os cards abrem ficha`,gr.every(x=>x.ficha));
+  // copiar nº USP
+  await p.click('.cardAluno--servidor .copiarUsp');await p.waitForTimeout(150);
+  const copia=await p.evaluate(async()=>[await navigator.clipboard.readText(),document.getElementById('avisoCopia').textContent,document.getElementById('avisoCopia').hidden,document.getElementById('fichaOverlay').hidden]);
+  chk(`[${scheme}] clique no nº USP copia e avisa sem abrir ficha`,copia[0]==='9100001'&&copia[1]==='Número USP copiado para área de transferência'&&!copia[2]&&copia[3],JSON.stringify(copia));
+  const cAv=await p.evaluate(()=>{const e=document.getElementById('avisoCopia');return [getComputedStyle(e).color,getComputedStyle(e).backgroundColor,getComputedStyle(e).position]});chk(`[${scheme}] aviso da cópia: contraste e fixo`,cr(cAv[0],cAv[1])>=4.5&&cAv[2]==='fixed',cr(cAv[0],cAv[1]).toFixed(2));
+  await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`copia-${scheme}.png`});
+  await p.waitForTimeout(3100);chk(`[${scheme}] aviso some após 3 s`,await p.$eval('#avisoCopia',e=>e.hidden));
+  // ficha do servidor: TIPO → SETOR muda o selo
+  await p.click('.cardAluno--servidor .abrirFicha');await p.waitForSelector('#fichaCampos input');
+  chk(`[${scheme}] ficha do servidor`,(await p.textContent('#fichaRotulo'))==='Ficha do servidor'&&(await p.$$eval('#fichaCampos input',e=>e.length))===7);
+  await p.fill('#fichaCampos label:nth-of-type(5) input','setor');await p.click('#fichaSalvar');await p.waitForFunction(()=>document.getElementById('fichaStatus').classList.contains('ok'));
+  const chS=await p.evaluate(()=>window.__chamadas.filter(c=>c[0]==='salvarFicha').pop()[1]);
+  chk(`[${scheme}] salvar servidor envia cadastro e identidade`,chS.cadastro==='servidores'&&chS.nome==='Marcos Servidor Exemplo'&&chS.email==='marcos@exemplo.invalid'&&JSON.stringify(chS.novos)==='{"TIPO":"setor"}',JSON.stringify(chS));
+  chk(`[${scheme}] TIPO=SETOR troca o selo e o rótulo`,(await p.textContent('#fichaRotulo'))==='Ficha do setor'&&(await p.$$eval('.cardAluno--setor',e=>e.length))===2);
+  await p.fill('#fichaCampos label:nth-of-type(5) input','SERVIDOR');await p.click('#fichaSalvar');await p.waitForFunction(()=>document.getElementById('fichaStatus').classList.contains('ok')&&document.getElementById('fichaRotulo').textContent==='Ficha do servidor');
+  await p.click('#fichaCancelar');
+  chk(`[${scheme}] foco volta ao card do mesmo cadastro`,await p.evaluate(()=>document.activeElement.classList.contains('abrirFicha')&&document.activeElement.dataset.chave==='servidores:2'));
   chk(`[${scheme}] destaque no setor`,await p.$$eval('.cardAluno--servidor .detalheAluno mark',e=>e.length)>0);
   const [dlg]=await Promise.all([p.waitForEvent('download'),p.click('#botaoCsv')]);
   const csvg=fs.readFileSync(await dlg.path(),'utf8');
-  chk(`[${scheme}] CSV misto: vínculo e setor`,dlg.suggestedFilename()==='comunidade_busca.csv'&&csvg.includes('\r\nServidor;Marcos Servidor Exemplo;Serviço de Graduação;;;marcos@exemplo.invalid;\r\n')&&csvg.includes('\r\nSetor;Serviço de Graduação;Serviço de Graduação;'),JSON.stringify(csvg.slice(0,300)));
+  chk(`[${scheme}] CSV misto: vínculo e setor`,dlg.suggestedFilename()==='comunidade_busca.csv'&&csvg.includes('\r\nServidor;Marcos Servidor Exemplo;Serviço de Graduação;9100001;;marcos@exemplo.invalid;\r\n')&&csvg.includes('\r\nSetor;Serviço de Graduação;Serviço de Graduação;'),JSON.stringify(csvg.slice(0,300)));
   await p.fill('#campoBusca','roberto');await p.waitForTimeout(300);
   chk(`[${scheme}] docente com selo`,(await p.$$eval('.cardAluno',e=>e.map(x=>x.querySelector('.seloVinculo').textContent+'|'+x.dataset.tipo))).join()==='Docente|docente');
-  await p.click('.cardAluno');await p.waitForTimeout(150);
-  chk(`[${scheme}] clicar no docente não abre ficha`,await p.evaluate(()=>document.getElementById('fichaOverlay').hidden&&!window.__chamadas.some(c=>c[0]==='obterFichaAluno')));
+  await p.click('.cardAluno .abrirFicha');await p.waitForSelector('#fichaCampos input');
+  chk(`[${scheme}] ficha do docente com Prof. e sem TRATAMENTO`,(await p.textContent('#fichaTitulo'))==='Prof. Roberto Docente Ficticio'&&(await p.textContent('#fichaRotulo'))==='Ficha do docente'&&!(await p.textContent('#fichaCampos')).includes('TRATAMENTO'),await p.textContent('#fichaTitulo'));
+  chk(`[${scheme}] chamada obterFicha de docente`,await p.evaluate(()=>{const c=window.__chamadas.filter(c=>c[0]==='obterFicha').pop()[1];return c.cadastro==='docentes'&&c.linha===2&&c.email==='roberto.doc@exemplo.invalid'}));
+  await p.fill('#fichaCampos label:nth-of-type(3) input','f');await p.click('#fichaSalvar');await p.waitForFunction(()=>document.getElementById('fichaStatus').classList.contains('ok'));
+  chk(`[${scheme}] M / F = F vira Profª.`,(await p.textContent('#fichaTitulo'))==='Profª. Roberto Docente Ficticio');
+  await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`ficha-docente-${scheme}.png`});
+  await p.fill('#fichaCampos label:nth-of-type(3) input','X');await p.click('#fichaSalvar');await p.waitForFunction(()=>document.getElementById('fichaStatus').classList.contains('erro'));
+  chk(`[${scheme}] M / F inválido recusado`,(await p.textContent('#fichaStatus')).includes('só M ou F'));
+  await p.fill('#fichaCampos label:nth-of-type(3) input','M');await p.click('#fichaSalvar');await p.waitForFunction(()=>document.getElementById('fichaStatus').classList.contains('ok'));
+  await p.click('#fichaCancelar');
+  chk(`[${scheme}] docente com nº USP copiável`,(await p.textContent('.cardAluno--docente .copiarUsp'))==='9200001');
+  await p.fill('#campoBusca','helena');await p.waitForTimeout(300);
+  chk(`[${scheme}] pessoa sem nº USP mostra "sem nº USP" sem botão`,!(await p.$('.cardAluno--docente .copiarUsp'))&&(await p.textContent('.cardAluno--docente .badgeUsp.semUsp'))==='sem nº USP');
   await p.fill('#campoBusca','exemplo.invalid ana paula 1');await p.waitForTimeout(300);
-  chk(`[${scheme}] aluno com selo Aluno e nº USP`,await p.$$eval('button.cardAluno',e=>e.length>0&&e.every(x=>x.querySelector('.seloVinculo').textContent==='Aluno'&&x.querySelector('.badgeUsp'))));
+  chk(`[${scheme}] aluno com selo Aluno e nº USP`,await p.$$eval('.cardAluno--aluno',e=>e.length>0&&e.every(x=>x.querySelector('.seloVinculo').textContent==='Aluno'&&x.querySelector('.copiarUsp .badgeUsp'))));
   const selos=[];
   for(const q of ['silva','roberto','graduacao']){await p.fill('#campoBusca',q);await p.waitForTimeout(300);
    selos.push(...await p.evaluate(()=>{function bg(el){while(el){const c=getComputedStyle(el).backgroundColor;if(c&&!/rgba\(0, 0, 0, 0\)|transparent/.test(c))return c;el=el.parentElement}return 'rgb(255,255,255)'}
@@ -140,7 +180,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
 
   // ---------- v1.1: ficha do aluno ----------
   await p.fill('#campoBusca','9000005');await p.waitForTimeout(250);
-  await p.click('.cardAluno');await p.waitForSelector('#fichaCampos input');
+  await p.click('.cardAluno .abrirFicha');await p.waitForSelector('#fichaCampos input');
   chk(`[${scheme}] ficha abre com todas as colunas`,(await p.$$eval('#fichaCampos input',e=>e.length))===6&&(await p.textContent('#fichaTitulo'))==='Ana Paula da Silva 5');
   chk(`[${scheme}] ficha trava scroll e foca 1º campo`,await p.evaluate(()=>document.body.style.overflow==='hidden'&&document.activeElement===document.querySelector('#fichaCampos input')));
   chk(`[${scheme}] ID da Pasta somente leitura`,await p.$eval('#fichaCampos label:nth-of-type(5) input',e=>e.readOnly)&&(await p.textContent('#fichaCampos label:nth-of-type(5)')).includes('somente leitura'));
@@ -153,8 +193,8 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   for(const [s,c,bgc] of novos){const r=cr(c,bgc);chk(`[${scheme}] contraste ${s}`,r>=4.5,r.toFixed(2))}
   await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`ficha-${scheme}.png`});
   await p.click('#fichaSalvar');await p.waitForFunction(()=>document.getElementById('fichaStatus').classList.contains('ok'));
-  const chamadaSalvar=await p.evaluate(()=>window.__chamadas.filter(c=>c[0]==='salvarFichaAluno').pop()[1]);
-  chk(`[${scheme}] salvar envia só o campo alterado + original`,JSON.stringify(chamadaSalvar.novos)==='{"eMail":"nova5@exemplo.invalid"}'&&chamadaSalvar.originais.eMail==='aluno5@exemplo.invalid'&&chamadaSalvar.linha===7&&chamadaSalvar.numeroUsp==='9000005');
+  const chamadaSalvar=await p.evaluate(()=>window.__chamadas.filter(c=>c[0]==='salvarFicha').pop()[1]);
+  chk(`[${scheme}] salvar envia só o campo alterado + original`,JSON.stringify(chamadaSalvar.novos)==='{"eMail":"nova5@exemplo.invalid"}'&&chamadaSalvar.originais.eMail==='aluno5@exemplo.invalid'&&chamadaSalvar.linha===7&&chamadaSalvar.numeroUsp==='9000005'&&chamadaSalvar.cadastro==='alunos');
   chk(`[${scheme}] lista atualizada após salvar`,(await p.textContent('#listaResultados')).includes('nova5@exemplo.invalid'));
   // erro de validação
   await p.fill('#fichaCampos label:nth-of-type(3) input','2024-1');await p.click('#fichaSalvar');await p.waitForFunction(()=>document.getElementById('fichaStatus').classList.contains('erro'));
@@ -166,7 +206,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   p.once('dialog',d=>d.dismiss());await p.keyboard.press('Escape');await p.waitForTimeout(100);
   chk(`[${scheme}] ESC com pendência pergunta e mantém aberta se cancelar`,await p.evaluate(()=>!document.getElementById('fichaOverlay').hidden));
   p.once('dialog',d=>d.accept());await p.keyboard.press('Escape');await p.waitForTimeout(100);
-  chk(`[${scheme}] ESC fecha ficha, restaura scroll e foco`,await p.evaluate(()=>document.getElementById('fichaOverlay').hidden&&document.body.style.overflow===''&&document.activeElement.classList.contains('cardAluno')&&document.activeElement.dataset.linha==='7'));
+  chk(`[${scheme}] ESC fecha ficha, restaura scroll e foco`,await p.evaluate(()=>document.getElementById('fichaOverlay').hidden&&document.body.style.overflow===''&&document.activeElement.classList.contains('abrirFicha')&&document.activeElement.dataset.chave==='alunos:7'));
   await p.keyboard.press('Enter');await p.waitForSelector('#fichaCampos input');
   chk(`[${scheme}] Enter no card abre a ficha (teclado)`,await p.evaluate(()=>!document.getElementById('fichaOverlay').hidden));
   await p.click('#fichaCancelar');
@@ -185,8 +225,12 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   const t=await p.textContent('.vazio.erro');chk('estado de erro',t.startsWith('Não consegui carregar a lista de pessoas'),t);
   const c=await p.evaluate(()=>{const e=document.querySelector('.vazio.erro');return [getComputedStyle(e).color,getComputedStyle(e).backgroundColor]});chk('contraste erro dark',cr(...c)>=4.5,cr(...c).toFixed(2));await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-erro-dark.png')});await ctx.close();}
  // leitor (sem permissão de editar)
- {const ctx=await b.newContext({colorScheme:'light'});const p=await ctx.newPage();await load(p,'leitor');await p.waitForFunction(()=>!document.getElementById('campoBusca').disabled);
-  await p.fill('#campoBusca','9000001');await p.waitForTimeout(250);await p.click('.cardAluno');await p.waitForSelector('#fichaCampos input');
+ {const ctx=await b.newContext({colorScheme:'light'});const p=await ctx.newPage();await load(p,'leitor','http');await p.waitForFunction(()=>!document.getElementById('campoBusca').disabled);
+  await p.evaluate(()=>document.addEventListener('copy',()=>{window.__copiado=String(getSelection()||document.activeElement.value.slice(document.activeElement.selectionStart,document.activeElement.selectionEnd))}));
+  await p.fill('#campoBusca','roberto');await p.waitForTimeout(250);await p.click('.copiarUsp');await p.waitForTimeout(100);
+  const fb=await p.evaluate(()=>[typeof navigator.clipboard,window.__copiado,document.getElementById('avisoCopia').textContent]);
+  chk('cópia sem API de área de transferência (método alternativo)',fb[0]==='undefined'&&fb[1]==='9200001'&&fb[2]==='Número USP copiado para área de transferência',JSON.stringify(fb));
+  await p.fill('#campoBusca','9000001');await p.waitForTimeout(250);await p.click('.cardAluno .abrirFicha');await p.waitForSelector('#fichaCampos input');
   chk('leitor: ficha só consulta',await p.$$eval('#fichaCampos input',e=>e.every(x=>x.readOnly))&&(await p.textContent('.fichaAviso')).includes('não alterar')&&await p.$eval('#fichaSalvar',e=>e.disabled));
   await ctx.close();}
 
@@ -206,7 +250,8 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   await p.selectOption('#filtroAno','2023');await p.waitForTimeout(150);
   const ov3=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);chk(`[${w} ${scheme}] filtros sem overflow`,ov3<=0,ov3);
   const alvos2=await p.evaluate(()=>['#filtroAno','#filtroSemestre','#botaoCsv','#botaoPdf'].map(s=>document.querySelector(s).getBoundingClientRect().height));chk(`[${w} ${scheme}] filtros/exportar >=44px`,alvos2.every(h=>h>=44),alvos2.join(','));
-  await p.click('.cardAluno');await p.waitForSelector('#fichaCampos input');
+  const alvoUsp=await p.$eval('.copiarUsp',e=>{const r=e.getBoundingClientRect();return [r.width,r.height]});chk(`[${w} ${scheme}] nº USP copiável >=44px`,alvoUsp.every(x=>x>=44),alvoUsp.join('x'));
+  await p.click('.cardAluno .abrirFicha');await p.waitForSelector('#fichaCampos input');
   const fichaOv=await p.evaluate(()=>{const d=document.getElementById('fichaDialogo').getBoundingClientRect();return d.width<=innerWidth&&document.documentElement.scrollWidth<=document.documentElement.clientWidth});chk(`[${w} ${scheme}] ficha cabe na tela`,fichaOv);
   if(w===390)await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`m390-ficha-${scheme}.png`});
   await p.click('#fichaCancelar');await p.selectOption('#filtroAno','');

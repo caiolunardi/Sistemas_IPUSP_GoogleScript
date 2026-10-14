@@ -48,8 +48,7 @@
   v1.2 — COMUNIDADE IPUSP (pedido do Serviço de Graduação,
   14/10/2026): a mesma caixa de busca passa a procurar também nos
   cadastros de SERVIDORES e de DOCENTES (chaves SERVIDORES e
-  PLANILHA_DOCENTES no ID_INDEX, colunas pela posição — mesma
-  regra da auditoria da Estrutura Curricular 1.11.0):
+  PLANILHA_DOCENTES no ID_INDEX):
     - listarComunidadeParaBusca junta os três cadastros, cada
       pessoa com "tipo" = aluno | docente | servidor | setor;
       um cadastro que não abre não derruba os outros
@@ -57,8 +56,19 @@
     - "setor" = linha da planilha de servidores que é de um setor
       (conta institucional), não de uma pessoa — ver ehSetor_;
     - o PDF passa a ter as colunas Vínculo e Setor;
-    - ficha e edição continuam só para alunos;
     - diagnóstico renomeado para diagnosticarComunidadeIPUSP.
+
+  v1.3 (14/10/2026, novo esquema das planilhas de servidores e
+  docentes):
+    - servidores e docentes lidos pelo TÍTULO das colunas, como os
+      alunos (CABECALHOS_SERVIDORES, CABECALHOS_DOCENTES); servidor
+      ou setor pela coluna TIPO (regra antiga só se TIPO vazio);
+    - FICHA para os três cadastros: obterFicha / salvarFicha, com as
+      mesmas regras dos alunos (obterFichaAluno e salvarFichaAluno
+      continuam, só para alunos);
+    - número USP de docentes e servidores na lista (setor não tem);
+    - Prof./Profª. calculado pela coluna "M / F" (tratamentoDocente_);
+      a coluna TRATAMENTO, com fórmula, não é mais lida nem exibida.
 
   ARQUIVOS DO PROJETO (todos na raiz do Apps Script, nomes sem
   extensão no include_):
@@ -81,29 +91,13 @@ const ABA_INDICE = "Página1";
 
 const CHAVE_PLANILHA_ALUNOS = "PLANILHA_ALUNOS";
 
-// v1.2: cadastros de servidores e de docentes. Primeira aba, títulos
-// na linha 1, dados da linha 2 em diante. Colunas pela POSIÇÃO
-// (A = 1), como na auditoria da Estrutura Curricular 1.11.0:
-//   SERVIDORES         A E-MAIL · B NOME · C Setor
-//   PLANILHA_DOCENTES  D E-mail · B NOME
+// v1.2: cadastros de servidores (e setores) e de docentes, também
+// resolvidos pelo ID_INDEX. Primeira aba, títulos na linha 1, dados
+// da linha 2 em diante.
 const CHAVE_PLANILHA_SERVIDORES = "SERVIDORES";
 const CHAVE_PLANILHA_DOCENTES = "PLANILHA_DOCENTES";
-const COLUNAS_SERVIDORES = { email: 1, nome: 2, setor: 3 };
-const COLUNAS_DOCENTES = { email: 4, nome: 2 };
 
-// A planilha de servidores também guarda contas de SETOR (e-mail
-// institucional de uma seção, sem pessoa). Uma linha é tratada como
-// setor quando (ver ehSetor_):
-//   - a coluna NOME está vazia (só e-mail e setor), ou
-//   - NOME é igual ao Setor (sem diferença de acento/caixa), ou
-//   - NOME começa com uma das palavras abaixo.
-// Para mudar a regra, edite só esta lista.
-const INICIOS_NOME_SETOR = [
-  "Setor", "Serviço", "Seção", "Secretaria", "Assistência", "Comissão",
-  "Departamento", "Diretoria", "Biblioteca", "Laboratório", "Coordenação", "Atendimento"
-];
-
-// Nomes EXATOS dos cabeçalhos na planilha de alunos (aba única).
+// Nomes dos cabeçalhos na planilha de alunos (aba única).
 // Lidos por nome, não por posição de coluna — se alguém inserir ou
 // reordenar uma coluna lá, isso aqui não quebra.
 //
@@ -119,11 +113,69 @@ const CABECALHOS_ALUNOS = {
   emailSecundario: "eMail Secundario"
 };
 
-// Colunas exibidas na ficha do aluno, mas que NÃO podem ser
-// alteradas por este app (ex.: ID da Pasta é usado por outro
-// sistema pra achar a pasta do aluno no Drive — um erro de
-// digitação aqui quebraria esse vínculo). Comparação pelo título
-// exato da linha 1. Células com fórmula também ficam bloqueadas.
+// v1.3: servidores e docentes passam a ser lidos pelo TÍTULO, como os
+// alunos (esquema informado pelo Serviço de Graduação em 14/10/2026):
+//   SERVIDORES         A E-MAIL · B NOME · C Setor · D N.USP · E TIPO
+//                      (SERVIDOR ou SETOR) · F ID da Pasta · G eMail Secundario
+//   PLANILHA_DOCENTES  A N. USP · B NOME · C M / F · D E-mail ·
+//                      E TRATAMENTO (fórmula antiga, ignorada) ·
+//                      F ID da Pasta · G eMail Secundario
+// Títulos comparados sem acento, espaço nem maiúscula ("N. USP" =
+// "N.USP"). NOME e e-mail são obrigatórios; as demais colunas, se
+// faltarem, ficam vazias.
+const CABECALHOS_SERVIDORES = {
+  email: "E-MAIL",
+  nome: "NOME",
+  setor: "Setor",
+  numeroUsp: "N.USP",
+  tipo: "TIPO",
+  emailSecundario: "eMail Secundario"
+};
+const CABECALHOS_DOCENTES = {
+  numeroUsp: "N. USP",
+  nome: "NOME",
+  genero: "M / F",
+  email: "E-mail",
+  emailSecundario: "eMail Secundario"
+};
+
+// v1.3: os três cadastros que a busca e a ficha conhecem. "cadastro"
+// é o nome usado entre a página e o servidor (alunos, docentes,
+// servidores). "identidade" = campos conferidos pra ter certeza de que
+// a linha ainda é da mesma pessoa antes de abrir/salvar a ficha.
+// "ocultas" = colunas que nem aparecem na ficha.
+const CADASTROS = {
+  alunos: {
+    chave: CHAVE_PLANILHA_ALUNOS, nome: "alunos", singular: "aluno", cabecalhos: CABECALHOS_ALUNOS,
+    obrigatorios: Object.keys(CABECALHOS_ALUNOS), identidade: ["numeroUsp", "nome"], ocultas: []
+  },
+  docentes: {
+    chave: CHAVE_PLANILHA_DOCENTES, nome: "docentes", singular: "docente", cabecalhos: CABECALHOS_DOCENTES,
+    obrigatorios: ["nome", "email"], identidade: ["nome", "email"],
+    // O tratamento (Prof./Profª.) passa a ser feito pelo sistema a
+    // partir de "M / F" (ver tratamentoDocente_); a coluna antiga, com
+    // fórmula, deixa de ser usada e pode ser apagada da planilha.
+    ocultas: ["TRATAMENTO"]
+  },
+  servidores: {
+    chave: CHAVE_PLANILHA_SERVIDORES, nome: "servidores", singular: "servidor ou setor", cabecalhos: CABECALHOS_SERVIDORES,
+    obrigatorios: ["nome", "email"], identidade: ["nome", "email"], ocultas: []
+  }
+};
+
+// Planilhas antigas de servidores sem a coluna TIPO (ou com TIPO
+// vazio): a linha é tratada como SETOR quando NOME está vazio, é igual
+// ao Setor (sem diferença de acento/caixa) ou começa com uma das
+// palavras abaixo (ver ehSetor_). Com TIPO preenchido, vale o TIPO.
+const INICIOS_NOME_SETOR = [
+  "Setor", "Serviço", "Seção", "Secretaria", "Assistência", "Comissão",
+  "Departamento", "Diretoria", "Biblioteca", "Laboratório", "Coordenação", "Atendimento"
+];
+
+// Colunas exibidas na ficha, mas que NÃO podem ser alteradas por este
+// app (ex.: ID da Pasta é usado por outro sistema pra achar a pasta no
+// Drive — um erro de digitação aqui quebraria esse vínculo). Vale para
+// os três cadastros. Células com fórmula também ficam bloqueadas.
 const COLUNAS_SOMENTE_LEITURA = ["ID da Pasta"];
 
 // Limites de tamanho dos valores aceitos ao salvar e da exportação.
@@ -205,128 +257,118 @@ function obterIdProducao_(chave) {
 }
 
 /*-----------------------------------------------------
-  LEITURA DA PLANILHA DE ALUNOS — devolve a lista inteira já
-  pronta pra busca no cliente. Só os campos usados na busca, no
-  filtro por ingresso e no resultado (número USP, nome, ingresso,
-  e-mail e e-mail secundário) — nada de expor colunas internas
-  (ex.: ID da Pasta) que não têm uso aqui. A ficha completa de UM
-  aluno só é lida quando ele é aberto (ver obterFichaAluno).
+  LEITURA DOS CADASTROS — devolve a lista inteira já pronta pra
+  busca no cliente. Só os campos usados na busca, no filtro e no
+  card — nada de colunas internas (ex.: ID da Pasta) nem do gênero
+  dos docentes. A ficha completa de UMA pessoa só é lida quando ela
+  é aberta (ver obterFicha).
 
   v1.1: cada aluno passa a levar também "linha" (número da linha
   na planilha, usado pra abrir/salvar a ficha) e "ingresso".
+  v1.3: a mesma leitura serve aos três cadastros (lerCadastro_).
 ------------------------------------------------------*/
+
+// Lista só de alunos, no formato da v1.1 (sem "tipo"). Usada por
+// listarComunidadeParaBusca e mantida pública por compatibilidade.
 function listarAlunosParaBusca() {
-
-  const aba = obterAbaAlunos_();
-
-  const ultimaLinha = aba.getLastRow();
-  const ultimaColuna = aba.getLastColumn();
-  if (ultimaLinha < 2) return [];
-
-  const valores = aba.getRange(1, 1, ultimaLinha, ultimaColuna).getValues();
-  const mapa = mapearColunas_(valores[0]);
-
-  const alunos = [];
-  for (let i = 1; i < valores.length; i++) {
-
-    const linha = valores[i];
-    const numeroUsp = String(linha[mapa.numeroUsp] || "").trim();
-    const nome = String(linha[mapa.nome] || "").trim();
-
-    if (!numeroUsp && !nome) continue; // linha em branco
-
-    alunos.push({
-      linha: i + 1,
-      numeroUsp: numeroUsp,
-      nome: nome,
-      ingresso: String(linha[mapa.ingresso] || "").trim(),
-      email: String(linha[mapa.email] || "").trim(),
-      emailSecundario: String(linha[mapa.emailSecundario] || "").trim()
-    });
-
-  }
-
-  return alunos;
-
+  return lerCadastro_("alunos").map(item => {
+    const semTipo = Object.assign({}, item);
+    delete semTipo.tipo;
+    return semTipo;
+  });
 }
 
 /*-----------------------------------------------------
   v1.2 — COMUNIDADE: os três cadastros numa lista só, pra mesma
   busca no navegador. Cada pessoa leva "tipo":
-    aluno    — planilha de alunos (mesmos campos de antes)
-    docente  — { linha, nome, email }
-    servidor — { linha, nome, email, setor }
-    setor    — idem, linha de setor da planilha de servidores
-  Só os campos usados na busca e no card vão ao navegador.
+    aluno    — planilha de alunos
+    docente  — planilha de docentes
+    servidor — planilha de servidores, TIPO = SERVIDOR
+    setor    — planilha de servidores, TIPO = SETOR
+  (campos de cada um em itemDaLinha_).
 
   Cada cadastro é lido separadamente: se um não abrir (chave
-  ausente no ID_INDEX, sem permissão...), os outros aparecem e o
-  motivo vai em "indisponiveis" (sem IDs nem e-mails). Se NENHUM
-  abrir, o erro do primeiro (alunos) sobe como antes — é o caso
-  típico de configuração (propriedade ausente, ID_INDEX errado).
+  ausente no ID_INDEX, sem permissão, coluna obrigatória
+  faltando...), os outros aparecem e o motivo vai em
+  "indisponiveis" (sem IDs nem e-mails). Se NENHUM abrir, o erro do
+  primeiro (alunos) sobe como antes — é o caso típico de
+  configuração (propriedade ausente, ID_INDEX errado).
 ------------------------------------------------------*/
 function listarComunidadeParaBusca() {
-
-  const fontes = [
-    { descricao: "alunos", ler: () => listarAlunosParaBusca().map(a => Object.assign({ tipo: "aluno" }, a)) },
-    { descricao: "docentes", ler: listarDocentes_ },
-    { descricao: "servidores", ler: listarServidores_ }
-  ];
 
   const pessoas = [];
   const indisponiveis = [];
   let primeiroErro = null;
 
-  fontes.forEach(fonte => {
+  Object.keys(CADASTROS).forEach(nome => {
     try {
-      fonte.ler().forEach(p => pessoas.push(p));
+      lerCadastro_(nome).forEach(p => pessoas.push(p));
     } catch (err) {
       if (!primeiroErro) primeiroErro = err;
-      indisponiveis.push({ descricao: fonte.descricao, motivo: mensagemSegura_(err) });
+      indisponiveis.push({ descricao: CADASTROS[nome].nome, motivo: mensagemSegura_(err) });
     }
   });
 
-  if (indisponiveis.length === fontes.length) throw primeiroErro;
+  if (indisponiveis.length === Object.keys(CADASTROS).length) throw primeiroErro;
   return { pessoas: pessoas, indisponiveis: indisponiveis };
 
 }
 
-function listarDocentes_() {
-  return lerCadastroPorPosicao_(CHAVE_PLANILHA_DOCENTES, COLUNAS_DOCENTES).map(l => ({
-    tipo: "docente", linha: l.linha, nome: l.nome, email: l.email
-  }));
+// Lê a primeira aba de um cadastro inteiro. Linha em que todas as
+// colunas conhecidas estão vazias é ignorada.
+function lerCadastro_(nomeCadastro) {
+  const cadastro = obterCadastro_(nomeCadastro);
+  const aba = abrirCadastro_(cadastro);
+  const ultimaLinha = aba.getLastRow();
+  const ultimaColuna = aba.getLastColumn();
+  if (ultimaLinha < 2) return [];
+
+  const valores = aba.getRange(1, 1, ultimaLinha, ultimaColuna).getValues();
+  const mapa = mapearColunas_(valores[0], nomeCadastro);
+  const itens = [];
+  for (let i = 1; i < valores.length; i++) {
+    const vazia = Object.keys(mapa).every(campo => !valorCampo_(valores[i], mapa, campo));
+    if (vazia) continue;
+    itens.push(itemDaLinha_(nomeCadastro, mapa, valores[i], i + 1));
+  }
+  return itens;
 }
 
-function listarServidores_() {
-  return lerCadastroPorPosicao_(CHAVE_PLANILHA_SERVIDORES, COLUNAS_SERVIDORES).map(l => ({
-    tipo: ehSetor_(l.nome, l.setor) ? "setor" : "servidor",
-    linha: l.linha,
-    nome: l.nome || l.setor,
-    email: l.email,
-    setor: l.setor
-  }));
+// O que vai pro navegador de cada linha — e só isso.
+function itemDaLinha_(nomeCadastro, mapa, linhaValores, numeroLinha) {
+  const v = campo => valorCampo_(linhaValores, mapa, campo);
+  if (nomeCadastro === "alunos") {
+    return { tipo: "aluno", linha: numeroLinha, numeroUsp: v("numeroUsp"), nome: v("nome"),
+      ingresso: v("ingresso"), email: v("email"), emailSecundario: v("emailSecundario") };
+  }
+  if (nomeCadastro === "docentes") {
+    return { tipo: "docente", linha: numeroLinha, numeroUsp: v("numeroUsp"), nome: v("nome"),
+      email: v("email"), emailSecundario: v("emailSecundario") };
+  }
+  const tipo = tipoServidor_(v("tipo"), v("nome"), v("setor"));
+  return { tipo: tipo, linha: numeroLinha, numeroUsp: tipo === "setor" ? "" : v("numeroUsp"), nome: v("nome"),
+    email: v("email"), emailSecundario: v("emailSecundario"), setor: v("setor") };
 }
 
-// Lê a primeira aba de um cadastro (via ID_INDEX), da linha 2 em
-// diante, só nas colunas pedidas. Linha sem nome e sem e-mail (e sem
-// setor) é ignorada. Espaços repetidos viram um só.
-function lerCadastroPorPosicao_(chave, colunas) {
-  const aba = SpreadsheetApp.openById(obterIdProducao_(chave)).getSheets()[0];
-  const total = aba.getLastRow() - 1;
-  if (total < 1) return [];
-  const campos = Object.keys(colunas);
-  const largura = Math.max.apply(null, campos.map(c => colunas[c]));
-  const valores = aba.getRange(2, 1, total, largura).getDisplayValues();
-  const lidas = [];
-  valores.forEach((linha, i) => {
-    const l = { linha: i + 2 };
-    campos.forEach(c => { l[c] = String(linha[colunas[c] - 1] || "").replace(/\s+/g, " ").trim(); });
-    if (l.nome || l.email || l.setor) lidas.push(l);
-  });
-  return lidas;
+// Valor de um campo numa linha (texto, sem espaços nas pontas). Coluna
+// opcional ausente (índice -1) = vazio.
+function valorCampo_(linhaValores, mapa, campo) {
+  const i = mapa[campo];
+  if (i === undefined || i < 0) return "";
+  const valor = linhaValores[i];
+  return String(valor == null ? "" : valor).trim();
 }
 
-// Regra de "setor" — ver INICIOS_NOME_SETOR no topo.
+// TIPO da planilha de servidores: SETOR ou SERVIDOR. Vazio ou outro
+// valor → regra antiga pelo nome (ehSetor_).
+function tipoServidor_(tipo, nome, setor) {
+  const t = comparavel_(tipo);
+  if (t === "setor") return "setor";
+  if (t === "servidor") return "servidor";
+  return ehSetor_(nome, setor) ? "setor" : "servidor";
+}
+
+// Regra de "setor" sem a coluna TIPO — ver INICIOS_NOME_SETOR no topo.
 function ehSetor_(nome, setor) {
   const n = comparavel_(nome);
   if (!n) return true;
@@ -337,10 +379,25 @@ function ehSetor_(nome, setor) {
   });
 }
 
+// v1.3: Prof. / Profª. pela coluna "M / F" — substitui a fórmula da
+// coluna TRATAMENTO da planilha de docentes.
+function tratamentoDocente_(genero) {
+  const g = comparavel_(genero);
+  if (g === "f") return "Profª.";
+  if (g === "m") return "Prof.";
+  return "";
+}
+
 // Minúsculas, sem acento e com espaços simples — só para comparar.
 function comparavel_(texto) {
-  return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  return String(texto || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+// Título de coluna comparável: sem acento, sem NENHUM espaço e sem
+// maiúscula ("N. USP" = "N.USP"; "M / F" = "M/F").
+function tituloComparavel_(titulo) {
+  return comparavel_(titulo).replace(/ /g, "");
 }
 
 // Mensagem de erro sem IDs (sequências longas) nem e-mails, pra poder
@@ -351,71 +408,106 @@ function mensagemSegura_(err) {
     .replace(/\S+@\S+/g, "[e-mail]"), 300);
 }
 
-// Abre a planilha de alunos (via ID_INDEX) e devolve a aba única.
-function obterAbaAlunos_() {
-  const planilha = SpreadsheetApp.openById(obterIdProducao_(CHAVE_PLANILHA_ALUNOS));
-  return planilha.getSheets()[0]; // planilha de alunos tem uma aba única
+function obterCadastro_(nomeCadastro) {
+  if (!Object.prototype.hasOwnProperty.call(CADASTROS, nomeCadastro)) {
+    throw new Error("Cadastro desconhecido. Recarregue a página e tente de novo.");
+  }
+  return CADASTROS[nomeCadastro];
 }
 
-// Localiza cada coluna de CABECALHOS_ALUNOS pelo título (linha 1),
-// ignorando espaços nas pontas. Lança erro amigável se faltar alguma.
-function mapearColunas_(cabecalho) {
-  const titulos = cabecalho.map(t => String(t).trim());
+// Abre a planilha do cadastro (via ID_INDEX) e devolve a primeira aba.
+function abrirCadastro_(cadastro) {
+  const planilha = SpreadsheetApp.openById(obterIdProducao_(cadastro.chave));
+  return planilha.getSheets()[0];
+}
+
+// Mantida da v1.1.
+function obterAbaAlunos_() {
+  return abrirCadastro_(CADASTROS.alunos);
+}
+
+// Localiza cada coluna do cadastro pelo título (linha 1), sem
+// diferença de acento, espaço ou maiúscula. Coluna obrigatória
+// ausente → erro amigável; opcional ausente → -1.
+function mapearColunas_(cabecalho, nomeCadastro) {
+  const cadastro = obterCadastro_(nomeCadastro || "alunos");
+  const titulos = cabecalho.map(tituloComparavel_);
   const mapa = {};
-  Object.keys(CABECALHOS_ALUNOS).forEach(chave => {
-    const nomeColuna = CABECALHOS_ALUNOS[chave];
-    const indice = titulos.indexOf(nomeColuna);
-    if (indice === -1) {
-      throw new Error(`A planilha de alunos precisa ter uma coluna "${nomeColuna}".`);
+  Object.keys(cadastro.cabecalhos).forEach(campo => {
+    const nomeColuna = cadastro.cabecalhos[campo];
+    const indice = titulos.indexOf(tituloComparavel_(nomeColuna));
+    if (indice === -1 && cadastro.obrigatorios.indexOf(campo) !== -1) {
+      throw new Error(`A planilha de ${cadastro.nome} precisa ter uma coluna "${nomeColuna}".`);
     }
-    mapa[chave] = indice;
+    mapa[campo] = indice;
   });
   return mapa;
 }
 
 /*-----------------------------------------------------
-  FICHA DO ALUNO — leitura completa de UMA linha, pra montar o
-  modal de edição. Devolve todas as colunas com título na linha
-  1, na ordem da planilha, cada uma com:
+  FICHA — leitura completa de UMA linha de qualquer cadastro, pra
+  montar o modal de edição. Devolve todas as colunas com título
+  na linha 1, na ordem da planilha (menos as "ocultas" do
+  cadastro), cada uma com:
     titulo   — texto da linha 1
     valor    — valor como aparece na planilha (getDisplayValues)
     editavel — false para COLUNAS_SOMENTE_LEITURA e células com
                fórmula
-  A linha é conferida pelo número USP e pelo nome que o
-  navegador recebeu na lista: se alguém ordenou, inseriu ou
-  apagou linhas desde que a página abriu, a linha pode ser de
-  outro aluno — aí recusamos em vez de mostrar/editar o errado.
+  Docentes levam também "tratamento" (Prof./Profª.).
+
+  referencia = { cadastro: "alunos" | "docentes" | "servidores",
+                 linha, + campos de identidade do cadastro }
+  A linha é conferida pelos campos de "identidade" (alunos: número
+  USP e nome; docentes e servidores: nome e e-mail) que o navegador
+  recebeu na lista: se alguém ordenou, inseriu ou apagou linhas
+  desde que a página abriu, a linha pode ser de outra pessoa — aí
+  recusamos em vez de mostrar/editar o errado.
 ------------------------------------------------------*/
-function obterFichaAluno(referencia) {
-  const aba = obterAbaAlunos_();
-  const linha = conferirLinhaAluno_(aba, referencia);
-  return montarFicha_(aba, linha);
+function obterFicha(referencia) {
+  const ref = referencia || {};
+  const cadastro = obterCadastro_(ref.cadastro);
+  const aba = abrirCadastro_(cadastro);
+  const linha = conferirLinha_(ref.cadastro, aba, ref);
+  return montarFicha_(ref.cadastro, aba, linha);
 }
 
-function conferirLinhaAluno_(aba, referencia) {
+// Mantida da v1.1 (só alunos).
+function obterFichaAluno(referencia) {
+  return obterFicha(Object.assign({}, referencia, { cadastro: "alunos" }));
+}
 
+function conferirLinha_(nomeCadastro, aba, referencia) {
+
+  const cadastro = obterCadastro_(nomeCadastro);
   const ref = referencia || {};
   const linha = Number(ref.linha);
   if (!Number.isInteger(linha) || linha < 2 || linha > aba.getLastRow()) {
-    throw new Error("Não encontrei esse aluno na planilha. Recarregue a página e tente de novo.");
+    throw new Error(`Não encontrei esse ${cadastro.singular} na planilha. Recarregue a página e tente de novo.`);
   }
 
   const cabecalho = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
-  const mapa = mapearColunas_(cabecalho);
+  const mapa = mapearColunas_(cabecalho, nomeCadastro);
   const atual = aba.getRange(linha, 1, 1, cabecalho.length).getValues()[0];
 
-  const numeroUspAtual = String(atual[mapa.numeroUsp] || "").trim();
-  const nomeAtual = String(atual[mapa.nome] || "").trim();
-  if (numeroUspAtual !== String(ref.numeroUsp || "").trim() || nomeAtual !== String(ref.nome || "").trim()) {
-    throw new Error("A planilha de alunos mudou desde que esta página foi aberta (linhas ordenadas, inseridas ou editadas). Recarregue a página e abra o aluno de novo.");
+  const mudou = cadastro.identidade.some(campo =>
+    valorCampo_(atual, mapa, campo) !== String(ref[campo] == null ? "" : ref[campo]).trim());
+  if (mudou) {
+    throw new Error(`A planilha de ${cadastro.nome} mudou desde que esta página foi aberta (linhas ordenadas, inseridas ou editadas). Recarregue a página e abra a ficha de novo.`);
   }
 
   return linha;
 
 }
 
-function montarFicha_(aba, linha) {
+// Coluna oculta do cadastro (comparação sem acento/espaço/maiúscula).
+function colunaOculta_(cadastro, titulo) {
+  const t = tituloComparavel_(titulo);
+  return cadastro.ocultas.some(o => tituloComparavel_(o) === t);
+}
 
+function montarFicha_(nomeCadastro, aba, linha) {
+
+  const cadastro = obterCadastro_(nomeCadastro);
   const ultimaColuna = aba.getLastColumn();
   const cabecalho = aba.getRange(1, 1, 1, ultimaColuna).getDisplayValues()[0];
   const intervalo = aba.getRange(linha, 1, 1, ultimaColuna);
@@ -425,7 +517,7 @@ function montarFicha_(aba, linha) {
   const campos = [];
   cabecalho.forEach((tituloBruto, i) => {
     const titulo = String(tituloBruto).trim();
-    if (!titulo) return; // coluna sem título — ignorada
+    if (!titulo || colunaOculta_(cadastro, titulo)) return; // sem título ou oculta — ignorada
     campos.push({
       titulo: titulo,
       valor: exibidos[i],
@@ -433,12 +525,18 @@ function montarFicha_(aba, linha) {
     });
   });
 
-  return { linha: linha, campos: campos, podeEditar: usuarioPodeEditar_(aba) };
+  const ficha = { cadastro: nomeCadastro, linha: linha, campos: campos, podeEditar: usuarioPodeEditar_(aba) };
+  if (nomeCadastro === "docentes") {
+    const mapa = mapearColunas_(cabecalho, nomeCadastro);
+    ficha.tratamento = tratamentoDocente_(valorCampo_(exibidos, mapa, "genero"));
+  }
+  return ficha;
 
 }
 
 /*-----------------------------------------------------
-  QUEM PODE SALVAR — só quem é EDITOR da planilha de alunos.
+  QUEM PODE SALVAR — só quem é EDITOR da planilha daquele
+  cadastro (alunos, docentes ou servidores).
 
   O Web App pode estar implantado para executar como quem
   implantou; nesse caso o Sheets aceitaria a gravação de
@@ -470,29 +568,31 @@ function usuarioPodeEditar_(aba) {
   SALVAR FICHA — grava as alterações feitas no modal.
 
   pedido = {
-    linha, numeroUsp, nome — mesma referência de obterFichaAluno
+    cadastro, linha + identidade — mesma referência de obterFicha
     originais: { "<título>": "<valor exibido quando a ficha abriu>" }
     novos:     { "<título>": "<valor digitado>" }
   }
 
   Regras (todas validadas aqui, nunca só no navegador):
-    1. quem chama precisa ser editor da planilha;
-    2. a linha ainda precisa ser do mesmo aluno;
-    3. só colunas existentes, editáveis e sem fórmula;
+    1. quem chama precisa ser editor da planilha do cadastro;
+    2. a linha ainda precisa ser da mesma pessoa/setor;
+    3. só colunas existentes, editáveis, não ocultas e sem fórmula;
     4. cada coluna alterada precisa estar IGUAL ao "original" no
        momento da gravação — se outra pessoa mudou o mesmo campo
        nesse meio-tempo, recusamos em vez de sobrescrever;
-    5. formatos: Número USP só dígitos; Ingresso AAAA/1 ou
-       AAAA/2; e-mails com formato de e-mail (ou vazio no
-       secundário); nome não pode ficar vazio.
+    5. formatos (validarCampo_): número USP só dígitos; Ingresso
+       AAAA/1 ou AAAA/2; e-mails com formato de e-mail (ou vazio);
+       nome não pode ficar vazio; M / F só M ou F; TIPO só
+       SERVIDOR ou SETOR.
   Só as células que mudaram são escritas. LockService evita
-  duas gravações simultâneas na mesma planilha. Nada do conteúdo
-  é registrado em log.
+  duas gravações simultâneas. Nada do conteúdo é registrado em log.
   Devolve a ficha atualizada + o resumo pra lista de busca.
 ------------------------------------------------------*/
-function salvarFichaAluno(pedido) {
+function salvarFicha(pedido) {
 
   const p = pedido || {};
+  const nomeCadastro = p.cadastro;
+  const cadastro = obterCadastro_(nomeCadastro);
   const trava = LockService.getScriptLock();
   if (!trava.tryLock(15000)) {
     throw new Error("Outra gravação está em andamento. Aguarde alguns segundos e tente salvar de novo.");
@@ -500,14 +600,18 @@ function salvarFichaAluno(pedido) {
 
   try {
 
-    const aba = obterAbaAlunos_();
+    const aba = abrirCadastro_(cadastro);
     if (!usuarioPodeEditar_(aba)) {
-      throw new Error("Sua conta não tem permissão para alterar a planilha de alunos. Peça acesso de editor ao responsável pelo cadastro.");
+      throw new Error(`Sua conta não tem permissão para alterar a planilha de ${cadastro.nome}. Peça acesso de editor ao responsável pelo cadastro.`);
     }
 
-    const linha = conferirLinhaAluno_(aba, p);
+    const linha = conferirLinha_(nomeCadastro, aba, p);
     const ultimaColuna = aba.getLastColumn();
     const titulos = aba.getRange(1, 1, 1, ultimaColuna).getDisplayValues()[0].map(t => String(t).trim());
+    const mapa = mapearColunas_(titulos, nomeCadastro);
+    const campoDaColuna = {};
+    Object.keys(mapa).forEach(campo => { if (mapa[campo] >= 0) campoDaColuna[mapa[campo]] = campo; });
+
     const intervalo = aba.getRange(linha, 1, 1, ultimaColuna);
     const exibidos = intervalo.getDisplayValues()[0];
     const brutos = intervalo.getValues()[0];
@@ -519,41 +623,37 @@ function salvarFichaAluno(pedido) {
 
     Object.keys(novos).forEach(titulo => {
       const i = titulos.indexOf(titulo);
-      if (i === -1 || !titulo) throw new Error(`A coluna "${limitar_(titulo, 60)}" não existe na planilha de alunos.`);
-      const novo = limparValor_(novos[titulo]);
+      if (i === -1 || !titulo) throw new Error(`A coluna "${limitar_(titulo, 60)}" não existe na planilha de ${cadastro.nome}.`);
+      let novo = limparValor_(novos[titulo]);
       if (novo === limparValor_(originais[titulo])) return; // não mudou
-      if (COLUNAS_SOMENTE_LEITURA.indexOf(titulo) !== -1 || formulas[i]) {
+      if (COLUNAS_SOMENTE_LEITURA.indexOf(titulo) !== -1 || colunaOculta_(cadastro, titulo) || formulas[i]) {
         throw new Error(`A coluna "${titulo}" não pode ser alterada por aqui.`);
       }
       if (String(exibidos[i]) !== String(originais[titulo] == null ? "" : originais[titulo])) {
-        throw new Error(`O campo "${titulo}" foi alterado por outra pessoa enquanto a ficha estava aberta. Feche, abra o aluno de novo e refaça a alteração.`);
+        throw new Error(`O campo "${titulo}" foi alterado por outra pessoa enquanto a ficha estava aberta. Feche, abra a ficha de novo e refaça a alteração.`);
       }
-      validarCampo_(titulo, novo);
+      novo = validarCampo_(nomeCadastro, campoDaColuna[i], titulo, novo);
       alteracoes.push({ coluna: i + 1, valor: converterParaCelula_(novo, brutos[i]) });
     });
 
     alteracoes.forEach(a => aba.getRange(linha, a.coluna).setValue(a.valor));
     if (alteracoes.length) SpreadsheetApp.flush();
 
-    const ficha = montarFicha_(aba, linha);
-    const mapa = mapearColunas_(titulos);
+    const ficha = montarFicha_(nomeCadastro, aba, linha);
     const valoresLinha = aba.getRange(linha, 1, 1, ultimaColuna).getValues()[0];
     ficha.alterados = alteracoes.length;
-    ficha.resumo = {
-      tipo: "aluno",
-      linha: linha,
-      numeroUsp: String(valoresLinha[mapa.numeroUsp] || "").trim(),
-      nome: String(valoresLinha[mapa.nome] || "").trim(),
-      ingresso: String(valoresLinha[mapa.ingresso] || "").trim(),
-      email: String(valoresLinha[mapa.email] || "").trim(),
-      emailSecundario: String(valoresLinha[mapa.emailSecundario] || "").trim()
-    };
+    ficha.resumo = itemDaLinha_(nomeCadastro, mapa, valoresLinha, linha);
     return ficha;
 
   } finally {
     trava.releaseLock();
   }
 
+}
+
+// Mantida da v1.1 (só alunos).
+function salvarFichaAluno(pedido) {
+  return salvarFicha(Object.assign({}, pedido, { cadastro: "alunos" }));
 }
 
 // Remove caracteres de controle, espaços nas pontas e limita o tamanho.
@@ -568,22 +668,34 @@ function limitar_(texto, maximo) {
   return t.length > maximo ? t.slice(0, maximo) : t;
 }
 
-// Regras de formato das colunas conhecidas. Colunas não listadas
-// em CABECALHOS_ALUNOS só passam pela limpeza/limite de tamanho.
-function validarCampo_(titulo, valor) {
+// Regras de formato dos campos conhecidos do cadastro (campo = chave
+// de CABECALHOS_*; colunas fora deles só passam pela limpeza/limite).
+// Devolve o valor a gravar (M/F e TIPO em maiúsculas).
+function validarCampo_(nomeCadastro, campo, titulo, valor) {
   const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (titulo === CABECALHOS_ALUNOS.nome && !valor) {
-    throw new Error("O nome do aluno não pode ficar vazio.");
+  if (campo === "nome" && !valor) {
+    throw new Error(nomeCadastro === "alunos" ? "O nome do aluno não pode ficar vazio." : `O campo "${titulo}" não pode ficar vazio.`);
   }
-  if (titulo === CABECALHOS_ALUNOS.numeroUsp && valor && !/^\d{1,12}$/.test(valor)) {
+  if (campo === "numeroUsp" && valor && !/^\d{1,12}$/.test(valor)) {
     throw new Error("O número USP deve ter só dígitos.");
   }
-  if (titulo === CABECALHOS_ALUNOS.ingresso && valor && !/^\d{4}\/[12]$/.test(valor)) {
+  if (campo === "ingresso" && valor && !/^\d{4}\/[12]$/.test(valor)) {
     throw new Error("O ingresso deve estar no formato AAAA/S, por exemplo 2024/1 ou 2024/2.");
   }
-  if ((titulo === CABECALHOS_ALUNOS.email || titulo === CABECALHOS_ALUNOS.emailSecundario) && valor && !formatoEmail.test(valor)) {
+  if ((campo === "email" || campo === "emailSecundario") && valor && !formatoEmail.test(valor)) {
     throw new Error(`O valor de "${titulo}" não parece um e-mail válido.`);
   }
+  if (campo === "genero") {
+    const g = valor.toUpperCase();
+    if (g && g !== "M" && g !== "F") throw new Error(`O campo "${titulo}" aceita só M ou F (ou vazio).`);
+    return g;
+  }
+  if (campo === "tipo") {
+    const t = valor.toUpperCase();
+    if (t && t !== "SERVIDOR" && t !== "SETOR") throw new Error(`O campo "${titulo}" aceita só SERVIDOR ou SETOR.`);
+    return t;
+  }
+  return valor;
 }
 
 // Mantém o tipo da célula: se ela guardava um NÚMERO (ex.: Número USP
@@ -675,33 +787,26 @@ function diagnosticarComunidadeIPUSP() {
   const abaIndice = indice.getSheetByName(ABA_INDICE) || indice.getSheets()[0];
   Logger.log(`Aba lida no ID_INDEX: "${abaIndice.getName()}"${abaIndice.getName() === ABA_INDICE ? "" : ` (não existe "${ABA_INDICE}"; usada a primeira aba)`}`);
 
-  // Alunos: colunas pelo título.
-  try {
-    const abaAlunos = SpreadsheetApp.openById(obterIdProducao_(CHAVE_PLANILHA_ALUNOS)).getSheets()[0];
-    Logger.log(`Chave ${CHAVE_PLANILHA_ALUNOS}: encontrada no ID_INDEX`);
-    const cabecalho = abaAlunos.getLastColumn() > 0
-      ? abaAlunos.getRange(1, 1, 1, abaAlunos.getLastColumn()).getValues()[0]
-      : [];
-    Object.keys(CABECALHOS_ALUNOS).forEach(chave => {
-      const nomeColuna = CABECALHOS_ALUNOS[chave];
-      Logger.log(`Coluna "${nomeColuna}": ${cabecalho.map(c => String(c).trim()).indexOf(nomeColuna) === -1 ? "NÃO ENCONTRADA" : "ok"}`);
-    });
-  } catch (err) {
-    Logger.log(`Chave ${CHAVE_PLANILHA_ALUNOS}: NÃO DISPONÍVEL — ${mensagemSegura_(err)}`);
-  }
-
-  // Servidores e docentes: colunas pela posição; mostra o título de cada uma.
-  [[CHAVE_PLANILHA_SERVIDORES, COLUNAS_SERVIDORES], [CHAVE_PLANILHA_DOCENTES, COLUNAS_DOCENTES]].forEach(([chave, colunas]) => {
+  // v1.3: os três cadastros pelo título (obrigatórias e opcionais).
+  Object.keys(CADASTROS).forEach(nomeCadastro => {
+    const cadastro = CADASTROS[nomeCadastro];
     try {
-      const aba = SpreadsheetApp.openById(obterIdProducao_(chave)).getSheets()[0];
-      const largura = Math.max.apply(null, Object.keys(colunas).map(c => colunas[c]));
-      const cabecalho = aba.getRange(1, 1, 1, largura).getDisplayValues()[0];
-      const titulos = Object.keys(colunas)
-        .map(c => `${String.fromCharCode(64 + colunas[c])} (${c}) = "${String(cabecalho[colunas[c] - 1] || "").trim()}"`)
-        .join(" · ");
-      Logger.log(`Chave ${chave}: encontrada no ID_INDEX; aba "${aba.getName()}"; ${titulos}`);
+      const aba = abrirCadastro_(cadastro);
+      Logger.log(`Chave ${cadastro.chave}: encontrada no ID_INDEX; aba "${aba.getName()}"`);
+      const cabecalho = aba.getLastColumn() > 0
+        ? aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0].map(tituloComparavel_)
+        : [];
+      Object.keys(cadastro.cabecalhos).forEach(campo => {
+        const nomeColuna = cadastro.cabecalhos[campo];
+        const achou = cabecalho.indexOf(tituloComparavel_(nomeColuna)) !== -1;
+        const obrigatoria = cadastro.obrigatorios.indexOf(campo) !== -1;
+        Logger.log(`  ${cadastro.nome} — coluna "${nomeColuna}": ${achou ? "ok" : (obrigatoria ? "NÃO ENCONTRADA (obrigatória)" : "não encontrada (opcional; fica vazia)")}`);
+      });
+      cadastro.ocultas.forEach(o => {
+        if (cabecalho.indexOf(tituloComparavel_(o)) !== -1) Logger.log(`  ${cadastro.nome} — coluna "${o}": presente, mas não é mais usada pelo app (pode ser apagada)`);
+      });
     } catch (err) {
-      Logger.log(`Chave ${chave}: NÃO DISPONÍVEL — ${mensagemSegura_(err)}`);
+      Logger.log(`Chave ${cadastro.chave}: NÃO DISPONÍVEL — ${mensagemSegura_(err)}`);
     }
   });
 

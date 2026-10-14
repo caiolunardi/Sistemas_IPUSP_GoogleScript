@@ -1,6 +1,6 @@
-# Homologação — Comunidade IPUSP, antiga Busca de Alunos (v1.0 a v1.2)
+# Homologação — Comunidade IPUSP, antiga Busca de Alunos (v1.0 a v1.3)
 
-**Estado:** v1.2 verificada localmente em 14/10/2026; **homologação no `/exec` pendente** (v1.1 e v1.2). A v1.0 foi colada no Apps Script pelo responsável funcional em 13/10/2026 (primeiro erro de configuração resolvido: ID no lugar do nome da propriedade) e revelou que o título real da coluna é `eMail`, não `Tr eMail`; isso motivou a v1.1. Esta página registra as diferenças, os hashes e os testes. Ela não atesta a configuração da implantação.
+**Estado:** v1.3 verificada localmente em 14/10/2026; **homologação no `/exec` pendente** (v1.1 a v1.3). A v1.0 foi colada no Apps Script pelo responsável funcional em 13/10/2026 (primeiro erro de configuração resolvido: ID no lugar do nome da propriedade) e revelou que o título real da coluna é `eMail`, não `Tr eMail`; isso motivou a v1.1. Esta página registra as diferenças, os hashes e os testes. Ela não atesta a configuração da implantação.
 
 ## Base recebida
 
@@ -13,13 +13,13 @@ Dois arquivos do projeto Apps Script em uso, recebidos em 13/10/2026:
 
 Os originais **não** foram versionados: `Codigo.gs` continha o ID literal da planilha `ID_INDEX`.
 
-## Arquivos da fonte v1.2
+## Arquivos da fonte v1.3
 
-| Arquivo | SHA-256 v1.2 | Situação |
+| Arquivo | SHA-256 v1.3 | Situação |
 |---|---|---|
-| `Codigo.gs` | `cca5d9ca14f7a06e63c25ddd08d4b220b52117a7a389e072ec0112f4c6bb48fd` | alterado na v1.2 (v1.1: `01c7b7c2…4e`; v1.0: `dc55ff52…f8`) |
-| `BuscaAlunosApp.html` | `8c718c417b6ecb8c2a5c1ff350686c1cd7da754eca435399edd7846308047f39` | alterado na v1.2 (v1.1: `5d89b38e…d9`; v1.0: `0d3c388e…f8`) |
-| `BuscaAlunosAjuda.html` | `4729612978c75ee8a17b4c2427f3221e97df95f7e901d98a81878837f7bc6ada` | alterado na v1.2 (v1.1: `4f7268d6…bc`; v1.0: `44f9e224…64`) |
+| `Codigo.gs` | `02ca7e2b91706b17f3d6676a5c6a3f01e0bcc8199985453012c69a585a6fc0c0` | alterado na v1.3 (v1.2: `cca5d9ca…fd`; v1.1: `01c7b7c2…4e`; v1.0: `dc55ff52…f8`) |
+| `BuscaAlunosApp.html` | `4f5ac8473e0f3a56dbbf9e3593a38fda02e42a5436e11fcfa62159c5e65b91e1` | alterado na v1.3 (v1.2: `8c718c41…9f`; v1.1: `5d89b38e…d9`; v1.0: `0d3c388e…f8`) |
+| `BuscaAlunosAjuda.html` | `c96a4377ed02d4a94599bda8a726beefa183904e81baee82e7f133a013bc070b` | alterado na v1.3 (v1.2: `47296129…da`; v1.1: `4f7268d6…bc`; v1.0: `44f9e224…64`) |
 | `BuscaAlunosAjudaEstilos.html` | `4b34766ecf2a6f194c9d04dad4a8b0a6b5c6109a99946e9f5a8079ca586ad2c7` | igual à v1.0; byte-idêntico a `shared/ajuda/GradipAjudaEstilos.html` |
 | `BuscaAlunosAjudaUI.html` | `dc571371baf84152e99785a24dab393f6221563f4f497dd0d58ea883ed0592b3` | igual à v1.0; byte-idêntico a `shared/ajuda/GradipAjudaUI.html` |
 | `GradipTema.html` | `35ab5bdf248b7a4cfd2778d4cfdf26d338b8c05905dd1d65e406f9b3a832abae` | igual à v1.0; byte-idêntico às cópias do Painel de Solicitações e da Estrutura Curricular |
@@ -28,6 +28,25 @@ Os originais **não** foram versionados: `Codigo.gs` continha o ID literal da pl
 | `GradipMarcaUSP.html` | `7714a3fc7c5e5a384151ccb5d30c6342ad86481d15762d7b31a74defcc352734` | igual à v1.0; byte-idêntico às cópias dos dois sistemas |
 
 `GradipTema.html` é a cópia dos sistemas (com `--gradip-border-strong` corrigido para ≥ 3:1), não a de `shared/`, que ainda tem o valor anterior.
+
+## v1.3 — fichas de todos os vínculos e nº USP copiável
+
+Pedido do responsável funcional em 14/10/2026, com o novo esquema das planilhas: servidores A `E-MAIL`, B `NOME`, C `Setor`, D `N.USP`, E `TIPO` (`SERVIDOR`/`SETOR`), F `ID da Pasta`, G `eMail Secundario`; docentes A `N. USP`, B `NOME`, C `M / F`, D `E-mail`, E `TRATAMENTO` (fórmula), F `ID da Pasta`, G `eMail Secundario`. Pediu ficha editável para docentes, servidores e setores; número USP de toda pessoa no card; cópia do número ao clicar, com a mensagem "Número USP copiado para área de transferência" por 3 s; e sugeriu trocar a fórmula de `TRATAMENTO` pela concordância feita no sistema (aceito).
+
+**`Codigo.gs`**
+
+- `CADASTROS` (alunos, docentes, servidores) com `CABECALHOS_DOCENTES`/`CABECALHOS_SERVIDORES`; títulos comparados sem acento, espaço nem maiúscula (`tituloComparavel_`), também para alunos; obrigatórias: os cinco títulos de alunos, `NOME` e e-mail nos outros dois. Saíram `COLUNAS_SERVIDORES`, `COLUNAS_DOCENTES`, `lerCadastroPorPosicao_`, `listarDocentes_`, `listarServidores_`.
+- Leitura única `lerCadastro_` + `itemDaLinha_`; docentes e servidores ganham `numeroUsp` e `emailSecundario` (setor sem nº USP); vínculo pelo `TIPO`, com a regra antiga (`ehSetor_`) só para `TIPO` vazio. Gênero e `TRATAMENTO` não vão na lista.
+- Novas públicas `obterFicha(ref)` e `salvarFicha(pedido)` com `cadastro`; `obterFichaAluno`/`salvarFichaAluno` viraram atalhos. Identidade por cadastro (alunos: nº USP + nome; demais: nome + e-mail); permissão pela planilha do cadastro; `TRATAMENTO` oculta e bloqueada; validação de `M / F` e `TIPO` (gravados em maiúscula); ficha de docente com `tratamento` (`tratamentoDocente_`). `resumo` traz o `tipo` atualizado.
+- Diagnóstico confere as colunas dos três cadastros pelo título e avisa se `TRATAMENTO` ainda existe.
+
+**`BuscaAlunosApp.html`**
+
+- Card virou contêiner com dois botões irmãos: `button.abrirFicha` (dados; abre a ficha de qualquer vínculo; `data-chave` = `cadastro:linha`) e `button.copiarUsp` (selo do nº USP; alvo ≥ 44 px; `aria-label` "Copiar número USP …"). Pessoa sem número: "sem nº USP" sem botão; setor: nada.
+- `copiarNumeroUsp_`: `navigator.clipboard.writeText` e, se indisponível ou recusado (contexto não seguro, iframe), `execCommand("copy")` com campo temporário; aviso `#avisoCopia` (`role="status"`, tokens `surface-elevated`, `text`, `border-strong`) por 3 s; falha avisa para copiar pela ficha.
+- Ficha: rótulo por vínculo (`#fichaRotulo`), título com Prof./Profª. vindo do servidor, aviso de permissão com o nome do cadastro, chamadas `obterFicha`/`salvarFicha` com `cadastro` e identidade.
+
+**`BuscaAlunosAjuda.html`**: "Copiar o número USP", ficha para todos os vínculos, quem pode editar por cadastro, formatos de `M / F` e `TIPO`, "Prof. ou Profª. no título da ficha do docente"; FAQ "Por que clicar num docente... não abre nada?" substituída por "Cliquei no número USP e apareceu 'Não consegui copiar'"; FAQs de cópia, correção e Servidor/Setor atualizadas.
 
 ## v1.2 — Comunidade IPUSP
 
@@ -92,14 +111,20 @@ O backend não ficou byte-idêntico. Motivos e funções tocadas:
 - Em ≤ 480 px o selo do número USP desce para a linha de baixo.
 - Textos operacionais, IDs (`campoBusca`, `infoBusca`, `listaResultados`), rodapé e o bloco `<script>` inteiro foram preservados; o script é byte-idêntico ao original.
 
-## Verificação local (v1.1 e v1.2)
+## Verificação local (v1.1 a v1.3)
 
 Ambiente: Node 22 e Chromium (Playwright 1.56), com `SpreadsheetApp`, `PropertiesService`, `HtmlService`, `Session`, `LockService`, `Utilities` e `google.script.run` simulados; 122 alunos sintéticos com ingressos 2021–2024 e, na v1.2, 2 docentes, 1 servidor e 1 setor sintéticos. Scripts em [`sistemas/busca-alunos/testes/`](../../../sistemas/busca-alunos/testes/README.md).
 
-| Suíte | v1.0 | v1.1 | v1.2 |
-|---|---|---|---|
-| `testar_backend.js` | 11/11 | 33/33 | 40/40 |
-| `testar_navegador.js` | 94/94 | 195/195 | 233/233 |
+| Suíte | v1.0 | v1.1 | v1.2 | v1.3 |
+|---|---|---|---|---|
+| `testar_backend.js` | 11/11 | 33/33 | 40/40 | 51/51 |
+| `testar_navegador.js` | 94/94 | 195/195 | 233/233 | 268/268 |
+
+Cobertura acrescentada na v1.3:
+
+- **Backend:** esquema novo pelo título (títulos em outra ordem, sem `TIPO`); `TIPO` prevalece sobre o nome; setor sem nº USP; gênero/`TRATAMENTO`/`ID da Pasta` fora da lista; coluna obrigatória faltando em docentes → indisponível; ficha de docente sem `TRATAMENTO`, com Prof./Profª.; identidade nome + e-mail; cadastro desconhecido (inclusive `constructor`/`__proto__`); salvar docente (`M / F` em maiúscula, tratamento novo, resumo), validações de `M / F`, nome, e-mail, `TRATAMENTO` e `ID da Pasta` bloqueados; salvar servidor (`TIPO` → setor muda o resumo, `TIPO` inválido, nº USP numérico preservado, permissão da planilha de servidores); ficha de setor; nenhum log.
+- **Navegador (Claro e Escuro):** nº USP copiável em servidor e docente, ausente em setor, "sem nº USP" sem botão; clique copia (lido de volta da área de transferência), mostra a mensagem exata, não abre a ficha e some após 3 s; cópia pelo método alternativo em contexto sem API; ficha de servidor (7 colunas, `TIPO` → "Ficha do setor" e selo trocado, retorno de foco pelo `data-chave`); ficha de docente ("Prof." → "Profª." ao salvar `F`, `M / F` inválido recusado, sem `TRATAMENTO`); chamadas com `cadastro` e identidade.
+- **Contraste e alvo:** aviso da cópia 14,76:1 (Claro) e 13,33:1 (Escuro); botão do nº USP com 44 px de altura em 360–768 px.
 
 Cobertura acrescentada na v1.2:
 
@@ -120,8 +145,8 @@ Limites: PNG externo da marca USP simulado; sem planilhas reais, editor do Apps 
 ## Para homologar
 
 1. Instalar conforme o [manual](MANUAL_OPERACAO.md#instalar-ou-atualizar), cadastrar `ID_INDEX_SPREADSHEET_ID` e aceitar a nova autorização.
-2. Rodar `diagnosticarComunidadeIPUSP()` e conferir o registro (títulos esperados: servidores A `E-MAIL`, B `NOME`, C `Setor`; docentes B `NOME`, D `E-mail`).
+2. Rodar `diagnosticarComunidadeIPUSP()` e conferir o registro: todas as colunas "ok" nos três cadastros.
 3. Fazer a conferência do manual no `/dev` e, depois de promover, no `/exec`, nos três modos de tema e no celular, incluindo gravação com conta editora e recusa com conta não editora, e um CSV/PDF real de um ano.
-4. Conferir com o responsável funcional se os contatos de setor aparecem com o selo **Setor** (regra em `INICIOS_NOME_SETOR`).
+4. Conferir a cópia do nº USP dentro do `/exec` (o iframe do Apps Script pode exigir o método alternativo), a ficha e a gravação de um docente e de um servidor, e o selo **Setor** das linhas com `TIPO` = `SETOR`.
 5. Decidir o modelo de acesso pendente em [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md#4-web-app) e registrar `executeAs` e **Quem pode acessar**.
 6. Registrar aqui data, responsável funcional e resultado.

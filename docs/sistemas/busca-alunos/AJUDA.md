@@ -1,4 +1,4 @@
-# Ajuda — Comunidade IPUSP (texto-fonte da Central de Ajuda, v1.2)
+# Ajuda — Comunidade IPUSP (texto-fonte da Central de Ajuda, v1.3)
 
 > **Nota editorial.** Este é o texto-fonte da Central de Ajuda do app (`src/BuscaAlunosAjuda.html`), na mesma ordem, com os mesmos títulos e identificadores (`{#ajuda-…}`) usados pelos gatilhos contextuais. O padrão segue [docs/ajuda](../../ajuda/README.md) e o [modelo de conteúdo](../../ajuda/HELP_CONTENT_MODEL.md).
 >
@@ -6,7 +6,7 @@
 > - **Linguagem:** efeito para quem usa a página. Planilhas, IDs, propriedades do script e funções ficam no [manual](MANUAL_OPERACAO.md) e no [README do código](../../../sistemas/busca-alunos/README.md), não aqui.
 > - **Mecanismo:** `BuscaAlunosAjudaEstilos.html` e `BuscaAlunosAjudaUI.html` são byte-idênticos a `shared/ajuda/`. Abrir, buscar, navegar e expandir a FAQ não chamam o servidor.
 > - **Manutenção:** ao mudar um texto, mude-o nos dois lugares (aqui e em `BuscaAlunosAjuda.html`). Os "termos extras" são o `data-search` de cada item: a busca da Central procura neles **e** no texto visível.
-> - **Fonte dos fatos:** script de busca de `BuscaAlunosApp.html` (preservado do original) e `Codigo.gs`. Informações mutáveis citadas: limite de **60** resultados na tela (`MAX_RESULTADOS`), coluna somente leitura **ID da Pasta** (`COLUNAS_SOMENTE_LEITURA`), formato de ingresso **AAAA/S**, regra "só editores da planilha salvam", os quatro selos (`VINCULOS`) e o que é **Setor** (`INICIOS_NOME_SETOR`, explicado sem citar a regra). Não há contato nominal; a ajuda encaminha ao "responsável pelo sistema" e ao "responsável pelo cadastro", sem inventar canal.
+> - **Fonte dos fatos:** script de busca de `BuscaAlunosApp.html` (preservado do original) e `Codigo.gs`. Informações mutáveis citadas: limite de **60** resultados na tela (`MAX_RESULTADOS`), coluna somente leitura **ID da Pasta** (`COLUNAS_SOMENTE_LEITURA`), formato de ingresso **AAAA/S**, regra "só editores da planilha salvam", os quatro selos (`VINCULOS`), o que é **Setor** (campo TIPO), a mensagem de cópia do número USP (3 s), os formatos de `M / F` e `TIPO` e o tratamento Prof./Profª. Não há contato nominal; a ajuda encaminha ao "responsável pelo sistema" e ao "responsável pelo cadastro", sem inventar canal.
 
 ## Gatilhos contextuais
 
@@ -35,13 +35,13 @@ Esta página localiza rapidamente uma pessoa do Instituto (aluno, docente, servi
 
 1. Espere aparecer a mensagem com o total de pessoas carregadas.
 2. Digite no campo **Buscar pessoa** qualquer parte do nome, do número USP, do e-mail ou do setor.
-3. Os resultados aparecem enquanto você digita; cada um traz um selo dizendo se é **Aluno**, **Docente**, **Servidor** ou **Setor**. Clique num aluno para ver a ficha.
+3. Os resultados aparecem enquanto você digita; cada um traz um selo dizendo se é **Aluno**, **Docente**, **Servidor** ou **Setor**. Clique no resultado para ver a ficha; clique no número USP para copiá-lo.
 
 <sub>Termos extras da busca: rapido resumo passo como usar digitar</sub>
 
 ### O que mais dá para fazer
 
-Clique num aluno para abrir a [ficha completa](#ajuda-ficha) e, se você for editor da planilha de alunos, corrigir dados. Escolha um **Ano de ingresso** para ver e [exportar a turma](#ajuda-ingresso) em CSV ou PDF.
+Clique num resultado para abrir a [ficha completa](#ajuda-ficha) e, se você for editor do cadastro, corrigir dados. Escolha um **Ano de ingresso** para ver e [exportar a turma](#ajuda-ingresso) em CSV ou PDF.
 
 <sub>Termos extras da busca: o que da para fazer editar exportar lista ano ingresso ficha</sub>
 
@@ -87,9 +87,15 @@ Cada palavra separada por espaço precisa aparecer na mesma pessoa: no nome, no 
 
 ### O que cada resultado mostra
 
-Primeiro, o selo do vínculo; depois, em negrito, o nome. Embaixo, o e-mail (e, no servidor, o setor). Nos alunos aparecem também o ingresso, o e-mail marcado "(secundário)", se houver, e, à direita, o número USP.
+Primeiro, o selo do vínculo; depois, em negrito, o nome. Embaixo, o e-mail, o e-mail marcado "(secundário)", se houver, e, no servidor, o setor. Nos alunos aparece também o ingresso. À direita, o número USP de alunos, docentes e servidores (setores não têm).
 
 <sub>Termos extras da busca: card resultado nome email selo numero usp direita</sub>
+
+### Copiar o número USP
+
+Clique no número USP à direita do resultado (ou use Tab até ele e aperte Enter). Ele é copiado e aparece, embaixo da tela, por alguns segundos, a mensagem "Número USP copiado para área de transferência". Depois é só colar onde precisar.
+
+<sub>Termos extras da busca: copiar numero usp clicar area de transferencia colar ctrl c</sub>
 
 ### Selo Aluno, Docente, Servidor ou Setor
 
@@ -121,13 +127,13 @@ Com o campo vazio, aparece quantos alunos, docentes, servidores e setores foram 
 
 <sub>Termos extras da busca: contador quantos encontrados resultados alunos docentes servidores setores carregados total</sub>
 
-## Ficha do aluno e edição {#ajuda-ficha}
+## Ficha e edição {#ajuda-ficha}
 
 ### Abrir a ficha
 
-A ficha existe só para alunos. Clique no resultado com o selo **Aluno** (ou use Tab até ele e aperte Enter). Os resultados de docentes, servidores e setores mostram tudo o que a busca tem deles no próprio card e não abrem ficha. A ficha mostra todas as informações do aluno no cadastro, inclusive as que não aparecem na lista. Para fechar, use **Fechar**, o × ou a tecla Esc.
+Clique no nome ou no e-mail do resultado (ou use Tab até ele e aperte Enter). Funciona para alunos, docentes, servidores e setores. A ficha mostra todas as informações daquele cadastro, inclusive as que não aparecem na lista. Para fechar, use **Fechar**, o × ou a tecla Esc.
 
-<sub>Termos extras da busca: abrir ficha clicar aluno detalhes todos os dados modal docente servidor nao abre</sub>
+<sub>Termos extras da busca: abrir ficha clicar aluno docente servidor setor detalhes todos os dados modal</sub>
 
 ### Corrigir um dado
 
@@ -139,7 +145,7 @@ A ficha existe só para alunos. Clique no resultado com o selo **Aluno** (ou use
 
 ### Quem pode editar
 
-Só quem é editor da planilha de alunos. Para as demais contas a ficha abre só para consulta, com um aviso no topo. Se precisar editar, peça acesso de editor ao responsável pelo cadastro.
+Só quem é editor do cadastro daquela pessoa (de alunos, de docentes ou de servidores, que inclui os setores). Para as demais contas a ficha abre só para consulta, com um aviso no topo. Se precisar editar, peça acesso de editor ao responsável pelo cadastro.
 
 <sub>Termos extras da busca: quem pode editar permissao editor somente consulta nao consigo salvar campos bloqueados</sub>
 
@@ -151,9 +157,15 @@ Alguns campos, como o ID da Pasta, são usados por outros sistemas e não podem 
 
 ### Formatos aceitos
 
-Número USP: só dígitos. Ingresso: ano e semestre com barra, como 2024/1 ou 2024/2. E-mails: no formato nome@dominio. O nome não pode ficar vazio. Se algo estiver fora do formato, a ficha avisa e nada é gravado.
+Número USP: só dígitos. Ingresso: ano e semestre com barra, como 2024/1 ou 2024/2. E-mails: no formato nome@dominio. O nome não pode ficar vazio. Docentes, campo M / F: só M ou F. Servidores, campo TIPO: só SERVIDOR ou SETOR (é ele que define o selo). Se algo estiver fora do formato, a ficha avisa e nada é gravado.
 
-<sub>Termos extras da busca: formato ingresso 2024/1 numero usp digitos email invalido regra</sub>
+<sub>Termos extras da busca: formato ingresso 2024/1 numero usp digitos email invalido regra m f genero tipo servidor setor</sub>
+
+### Prof. ou Profª. no título da ficha do docente
+
+O título da ficha do docente já vem com **Prof.** ou **Profª.**, conforme o campo M / F. Para corrigir o tratamento, corrija o M / F e salve.
+
+<sub>Termos extras da busca: prof profa professora professor tratamento titulo docente genero masculino feminino</sub>
 
 ## Filtrar por ingresso e exportar {#ajuda-ingresso}
 
@@ -249,9 +261,9 @@ Uma causa comum é estar conectado no navegador com outra conta Google. Entre co
 
 <sub>Termos extras da busca: conta google errada login usp.br nao foi possivel abrir o arquivo acesso negado permissao</sub>
 
-### "Sua conta não tem permissão para alterar a planilha de alunos"
+### "Sua conta não tem permissão para alterar a planilha de..."
 
-A sua conta não está entre os editores da planilha de alunos (acesso dado só por grupo também não conta). Você continua podendo consultar e exportar. Para editar, peça acesso de editor individual ao responsável pelo cadastro.
+A sua conta não está entre os editores daquele cadastro (acesso dado só por grupo também não conta). Você continua podendo consultar e exportar. Para editar, peça acesso de editor individual ao responsável pelo cadastro.
 
 <sub>Termos extras da busca: sua conta nao tem permissao alterar planilha salvar bloqueado editor</sub>
 
@@ -317,13 +329,13 @@ Para manter a lista legível, a tela mostra no máximo 60 resultados. O total en
 
 ### Como copio o e-mail ou o número USP? {#busca-faq-copiar}
 
-Selecione o texto no resultado e copie normalmente (Ctrl+C, ou Cmd+C no Mac). Copie só o que for usar no atendimento.
+Para o número USP, basta clicar nele: ele é copiado e aparece a mensagem "Número USP copiado para área de transferência". Para o e-mail, selecione o texto na ficha e copie normalmente (Ctrl+C, ou Cmd+C no Mac). Copie só o que for usar no atendimento.
 
-<sub>Termos extras da busca: copiar e-mail numero colar selecionar</sub>
+<sub>Termos extras da busca: copiar e-mail numero usp colar selecionar clicar area de transferencia nao copiou</sub>
 
 ### Encontrei um dado errado. Posso corrigir por aqui? {#busca-faq-corrigir}
 
-De alunos, sim, se a sua conta for editora da planilha de alunos: abra a ficha, altere o campo e clique em **Salvar alterações**. Se a ficha abrir só para consulta, informe a correção ao responsável pelo cadastro de alunos no Serviço de Graduação. Dados de docentes, servidores e setores não são editados por aqui: informe a correção ao responsável por aquele cadastro.
+Sim, se a sua conta for editora daquele cadastro (alunos, docentes ou servidores): abra a ficha, altere o campo e clique em **Salvar alterações**. Se a ficha abrir só para consulta, informe a correção ao responsável pelo cadastro.
 
 <sub>Termos extras da busca: dado errado corrigir atualizar email nome errado desatualizado quem editar</sub>
 
@@ -347,15 +359,15 @@ Escolha o ano (e, se quiser, o semestre) em **Ano de ingresso**, deixe o campo d
 
 ### Qual a diferença entre Servidor e Setor? {#busca-faq-setor}
 
-**Servidor** é uma pessoa, com o setor onde trabalha embaixo do nome. **Setor** é o contato da própria seção (por exemplo, o e-mail de uma secretaria), útil quando não importa quem vai atender. Se um contato aparecer com o selo errado, avise o responsável pelo sistema.
+**Servidor** é uma pessoa, com o setor onde trabalha embaixo do nome. **Setor** é o contato da própria seção (por exemplo, o e-mail de uma secretaria), útil quando não importa quem vai atender. Se um contato aparecer com o selo errado, abra a ficha e corrija o campo TIPO (SERVIDOR ou SETOR).
 
 <sub>Termos extras da busca: setor o que e selo setor conta institucional secao email do setor diferente servidor</sub>
 
-### Por que clicar num docente ou servidor não abre nada? {#busca-faq-ficha-docente}
+### Cliquei no número USP e apareceu "Não consegui copiar". E agora? {#busca-faq-copiar-usp}
 
-A ficha e a edição existem só para alunos. Para docentes, servidores e setores, o card já mostra tudo o que a busca tem: nome, e-mail e, quando houver, o setor.
+Alguns navegadores bloqueiam a cópia automática. Abra a ficha (clique no nome), selecione o número no campo do número USP e use Ctrl+C (ou Cmd+C no Mac).
 
-<sub>Termos extras da busca: docente servidor nao abre ficha clicar nada acontece editar professor</sub>
+<sub>Termos extras da busca: clicar numero usp abre ficha nao copiou copiar mensagem nao apareceu</sub>
 
 ### Apareceu "foi alterado por outra pessoa" ou "a planilha mudou". O que faço? {#busca-faq-conflito}
 
