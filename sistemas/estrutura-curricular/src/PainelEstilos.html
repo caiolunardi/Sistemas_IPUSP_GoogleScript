@@ -613,6 +613,49 @@ p.campoFicha__dica { margin: 8px 0 0; }
 .linkPessoa:hover { color: var(--gradip-link-hover); }
 .graficoBarras__nome .linkPessoa { font-weight: bold; }
 @media (forced-colors: active) { .cartaoAud[aria-expanded="true"] { border-color: Highlight; } }
+/* (1.12.0) Panorama da grade: mais quatro cartões e os painéis deles */
+.panoramaTitulo { font-size: 17px; margin: 22px 0 10px; }
+.cartoesAuditoria--panorama { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.listaSimples { margin: 0; padding: 0 0 0 18px; display: grid; gap: 6px; }
+/* Mapa da semana: o número fica escrito em cada célula (a cor só reforça) */
+.mapaSemanaScroll { overflow-x: auto; max-width: 100%; }
+.mapaSemana { border-collapse: separate; border-spacing: 4px; margin: 0 auto 0 0; }
+.mapaSemana th { font-size: 13px; font-weight: bold; color: var(--gradip-text-muted); padding: 2px 4px; text-align: center; white-space: nowrap; }
+.mapaSemana th[scope="row"] { text-align: right; font-variant-numeric: tabular-nums; }
+.mapaSemana td { padding: 0; text-align: center; }
+.mapaSemana__celula, .mapaSemana__vazia {
+  display: inline-flex; align-items: center; justify-content: center; width: 64px; min-height: 40px; border-radius: 6px;
+  font: inherit; font-weight: bold; font-variant-numeric: tabular-nums;
+}
+.mapaSemana__vazia { color: var(--gradip-text-muted); background: var(--gradip-surface); border: 1px dashed var(--gradip-border); }
+.mapaSemana__celula { cursor: pointer; color: var(--gradip-text); border: 1px solid var(--gradip-border-strong); background: var(--gradip-surface-2); }
+.mapaSemana__celula--n2 { background: var(--gradip-info-bg); border-color: var(--gradip-info-border); }
+.mapaSemana__celula--n3 { background: var(--gradip-primary); color: var(--gradip-on-primary); border-color: var(--gradip-primary); }
+.mapaSemana__celula--n4 { background: var(--gradip-primary-hover); color: var(--gradip-on-primary); border-color: var(--gradip-primary-hover); }
+.mapaSemana__celula:hover { outline: 2px solid var(--gradip-link); outline-offset: 1px; }
+.mapaSemana__celula[aria-pressed="true"] { outline: 3px solid var(--gradip-text); outline-offset: 1px; text-decoration: underline; }
+.mapaSemana__legenda { margin: 8px 0 0; }
+.mapaSemana__detalhe { margin-top: 14px; padding: 12px 14px; border-radius: 8px; background: var(--gradip-surface-2); border: 1px solid var(--gradip-border); }
+.mapaSemana__detalheTitulo { margin: 0 0 8px; font-size: 15px; }
+/* Ritmo: colunas por dia, valor escrito em cima */
+.ritmoScroll { overflow-x: auto; max-width: 100%; padding-bottom: 4px; }
+.ritmo { list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; gap: 3px; min-height: 170px; }
+.ritmo__dia { flex: 1 0 36px; max-width: 52px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ritmo__valor { min-height: 18px; font-size: 12px; font-weight: bold; font-variant-numeric: tabular-nums; }
+.ritmo__trilho { flex: 1 1 auto; width: 100%; min-height: 110px; display: flex; align-items: flex-end; border-bottom: 1px solid var(--gradip-border-strong); }
+.ritmo__barra { display: block; width: 100%; background: var(--gradip-primary); border-radius: 4px 4px 0 0; }
+.ritmo__rotulo { font-size: 11.5px; color: var(--gradip-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* Por departamento */
+.departamentos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.departamentos__item { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--gradip-border); background: var(--gradip-surface); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.departamentos__topo { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.departamentos__posicao { font-weight: bold; color: var(--gradip-text-muted); font-variant-numeric: tabular-nums; }
+.departamentos__nome { font-weight: bold; font-size: 16px; min-height: 32px; }
+.departamentos__campos { margin-left: auto; font-size: 13px; }
+.departamentos__medidas { display: flex; flex-direction: column; gap: 6px; }
+.departamentos__rodape { margin: 0; }
+.medida__extra { font-weight: normal; color: var(--gradip-text-muted); }
+@media (forced-colors: active) { .ritmo__barra { background: CanvasText; } .mapaSemana__celula { border: 1px solid ButtonText; } }
 
 @media (max-width: 768px) {
   .cabecalho { padding: 8px 14px; }
@@ -647,6 +690,8 @@ p.campoFicha__dica { margin: 8px 0 0; }
   .cartaoAud { padding: 14px; }
   .cartaoAud[aria-expanded="true"] { padding: 13px; }
   .cartaoAud__valor { font-size: 24px; }
+  .mapaSemana__celula, .mapaSemana__vazia { width: 44px; min-height: 44px; }
+  .mapaSemana { border-spacing: 3px; }
   .tabelaAuditoria .auditoriaData, .tabelaAuditoria .auditoriaOnde { white-space: normal; }
   .campoFicha--largo { grid-column: auto; }
   .tabelaOferta th[scope="row"] { display: block; padding: 10px 12px 4px; }

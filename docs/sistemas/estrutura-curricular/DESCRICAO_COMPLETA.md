@@ -618,7 +618,7 @@ Erros: `SEMESTRE_INVALIDO` (semestre sem auditoria), `SEM_AUDITORIA` (nenhuma gr
 
 ### 14.3 O que a tela mostra (ordem atual)
 
-(1.12.0) Abaixo do topo, três cartões (**Preenchimento**, **Quem edita**, **Edições**) com os números principais; cada um abre e fecha o seu painel. Preenchimento contém os itens 2 e 3; Quem edita, o item 4; Edições, o item 5.
+(1.12.0) Abaixo do topo, três cartões (**Preenchimento**, **Quem edita**, **Edições**) com os números principais; cada um abre e fecha o seu painel. Preenchimento contém os itens 2 e 3; Quem edita, o item 4; Edições, o item 5. Abaixo, o **Panorama da grade** com mais quatro cartões: Mapa da semana (aulas por dia × hora), Ritmo (edições por dia), Por departamento (abas comparadas pela média dos três campos) e Sem movimento (sem edição nem campo preenchido); ver REGRAS 8.10.
 
 1. **Topo:** título, lista **Grade** (grade em preenchimento + anteriores; travada quando só há uma), botão **Atualizar**, hora da última atualização.
 2. **Não serão oferecidas** (1.8.0; só na grade em preenchimento): toda disciplina com "Será oferecida" = **NÃO** (com ou sem acento, maiúsculas ou não), com aba, **quem marcou e quando** (edição mais recente de "Será oferecida" com NÃO para aquele código, pela auditoria) e o selo **"Aguardando Justificativa"**. O departamento deve informar à Comissão de Graduação o motivo de não oferecer a disciplina naquele semestre; a justificativa chega **fora da planilha** (e-mail, ofício), e o painel **não** marca como recebida — o selo some só se a disciplina deixar de estar "NÃO".

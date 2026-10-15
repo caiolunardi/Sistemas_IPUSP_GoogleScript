@@ -693,6 +693,17 @@ A forma de consulta é este painel: não há link nem endereço da planilha de a
 - **Quem edita** mostra quantas pessoas editaram e quem mais edita. O detalhe traz os gráficos de quem mais abre e quem mais edita.
 - **Edições** mostra o total e a última edição. O detalhe é a lista completa, com busca e filtros.
 
+### Panorama da grade {#ajuda-auditoria-panorama}
+
+Abaixo dos três cartões, o "Panorama da grade" traz mais quatro, calculados com os mesmos dados da auditoria. Cada um abre o seu detalhe ao ser clicado.
+
+- **Mapa da semana**: quantas disciplinas têm aula em cada dia e hora, pelo dia, início e fim informados (as marcadas com NÃO ficam de fora). O número está escrito em cada célula; quanto mais escura, mais aulas ao mesmo tempo. Clique numa célula para ver quais disciplinas são. Quando o fim não está legível, vale o início mais os créditos-aula, como na planilha.
+- **Ritmo**: edições das secretarias por dia, desde o envio da grade (no máximo os últimos 60 dias). O cartão compara os últimos 7 dias com os 7 anteriores e avisa quando não há edições há 3 dias ou mais. Mostra quando o trabalho andou, não o esforço de cada pessoa.
+- **Por departamento**: as abas lado a lado, da que tem mais campos preenchidos para a que tem menos. "Campos preenchidos" é a média de Será oferecida, Docente e Dia e horário; **não** é a porcentagem de disciplinas prontas. Clique no nome da aba para abrir o preenchimento dela.
+- **Sem movimento**: disciplinas da grade sem nenhuma edição registrada e sem nenhum campo preenchido. Quando há mais de 5.000 edições, só as carregadas no painel entram na conta.
+
+Mapa da semana, Por departamento e Sem movimento só aparecem na grade em preenchimento; numa grade anterior fica só o Ritmo.
+
 ### "Não serão oferecidas" e "Aguardando Justificativa" {#ajuda-auditoria-justificativas}
 
 - Lista as disciplinas marcadas com NÃO em "Será oferecida", em todas as abas, com quem marcou e quando (pelo registro da auditoria; "sem registro na auditoria" quando não há).

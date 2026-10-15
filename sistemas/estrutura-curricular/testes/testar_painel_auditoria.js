@@ -272,7 +272,7 @@ function ambiente(nEdicoesExtras, op) {
       igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 1);
     });
     await teste('(1.12.0) três cartões fechados: Preenchimento, Quem edita e Edições, com os números principais; clique e teclado abrem e fecham o painel de cada um', async () => {
-      igual(await pagina.$$eval('.cartaoAud', (b) => b.map((x) => [x.querySelector('.cartaoAud__titulo').textContent, x.getAttribute('aria-expanded'), x.getAttribute('aria-controls')])),
+      igual(await pagina.$$eval('.cartoesAuditoria:not(.cartoesAuditoria--panorama) .cartaoAud', (b) => b.map((x) => [x.querySelector('.cartaoAud__titulo').textContent, x.getAttribute('aria-expanded'), x.getAttribute('aria-controls')])),
         [['Preenchimento', 'false', 'audPainel-preenchimento'], ['Quem edita', 'false', 'audPainel-pessoas'], ['Edições', 'false', 'audPainel-edicoes']]);
       verdade(await pagina.isHidden('#audPainel-preenchimento') && await pagina.isHidden('#audPainel-pessoas') && await pagina.isHidden('#audPainel-edicoes'), 'painéis fechados');
       const pre = (await pagina.textContent('#audCartao-preenchimento')).replace(/\s+/g, ' ').trim();
@@ -405,6 +405,48 @@ function ambiente(nEdicoesExtras, op) {
       verdade(await pagina.isVisible('#visaoAuditoria'));
       igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 2, 'não busca de novo ao voltar');
     });
+    await teste('(1.12.0) Panorama da grade: Mapa da semana, Ritmo, Por departamento e Sem movimento, fechados, com os números; cada um abre o seu detalhe', async () => {
+      const txt = async (sel) => (await pagina.textContent(sel)).replace(/\s+/g, ' ').trim();
+      igual(await pagina.$$eval('.cartoesAuditoria--panorama .cartaoAud', (b) => b.map((x) => [x.id, x.getAttribute('aria-expanded')])),
+        [['audCartao-semana', 'false'], ['audCartao-ritmo', 'false'], ['audCartao-departamentos', 'false'], ['audCartao-parados', 'false']]);
+      const sem = await txt('#audCartao-semana');
+      verdade(/1 aula no mapa/.test(sem) && /Horário mais cheio: Quarta, 8h \(1 disciplina\)/.test(sem), sem);
+      await pagina.click('#audCartao-semana');
+      igual(await pagina.$$eval('#audMapaSemana thead th', (t) => t.map((x) => x.textContent.trim()).slice(1)), ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'], 'sem sábado quando ninguém dá aula no sábado');
+      const cheias = await pagina.$$eval('#audMapaSemana [data-aud-semana]', (b) => b.map((x) => x.getAttribute('data-aud-semana') + '=' + x.textContent));
+      verdade(cheias.includes('qua|8=1') && cheias.every((c) => /^qua\|/.test(c)), 'aula de quarta a partir das 8h (fim pela fórmula: início + créditos-aula): ' + cheias);
+      await pagina.click('[data-aud-semana="qua|8"]');
+      verdade(/Quarta, 8h: 1 disciplina/.test(await txt('#audSemanaDetalhe')) && /PSA\d{4}/.test(await txt('#audSemanaDetalhe')) && /Docente Fictício Um/.test(await txt('#audSemanaDetalhe')), await txt('#audSemanaDetalhe'));
+      igual(await pagina.getAttribute('[data-aud-semana="qua|8"]', 'aria-pressed'), 'true');
+      igual(await pagina.evaluate(() => document.activeElement.getAttribute('data-aud-semana')), 'qua|8', 'foco volta à célula');
+      await pagina.click('[data-aud-semana="qua|8"]');
+      verdade(!(await pagina.$('#audSemanaDetalhe')), 'segundo clique esconde');
+      const rit = await txt('#audCartao-ritmo');
+      verdade(/\d+ edições em 7 dias/.test(rit), rit);
+      await pagina.click('#audCartao-ritmo');
+      const dias = await pagina.$$eval('#audRitmo li', (l) => l.map((x) => x.textContent.replace(/\s+/g, ' ').trim()));
+      verdade(dias.length >= 1 && dias.some((d) => /04\/10: 66 edições/.test(d)), JSON.stringify(dias));
+      verdade(/Dia com mais edições: 04\/10 \(66 edições\)/.test(await txt('#audPainel-ritmo')), await txt('#audPainel-ritmo'));
+      const dep = await txt('#audCartao-departamentos');
+      verdade(/Mais adiantado: PSA/.test(dep) && /50% dos campos preenchidos/.test(dep) && /Menos adiantado:/.test(dep), dep);
+      await pagina.click('#audCartao-departamentos');
+      const ordem = await pagina.$$eval('#audDepartamentos .departamentos__nome', (b) => b.map((x) => x.textContent));
+      igual(ordem[0], 'PSA');
+      verdade(/Será oferecida\s*50% \(1 de 2\)/.test(await txt('#audDepartamentos li:first-child')), await txt('#audDepartamentos li:first-child'));
+      await pagina.click('#audCartao-preenchimento');
+      verdade(await pagina.isHidden('#audPainel-preenchimento'), 'Preenchimento fechado');
+      await pagina.click('[data-aud-ir-aba="PSE"]');
+      verdade(await pagina.isVisible('#audPainel-preenchimento'), 'o departamento abre o Preenchimento');
+      igual(await pagina.getAttribute('[data-aud-aba="PSE"]', 'aria-pressed'), 'true');
+      igual(await pagina.evaluate(() => document.activeElement.getAttribute('data-aud-aba')), 'PSE');
+      const par = await txt('#audCartao-parados');
+      const n = Number(par.match(/(\d+) disciplinas? parada/)[1]);
+      await pagina.click('#audCartao-parados');
+      const linhas = await pagina.$$eval('#audTabelaParados tbody tr', (t) => t.map((x) => x.cells[0].textContent));
+      igual(linhas.length, n, 'cartão e tabela batem');
+      igual(n, Object.values(contagens(amb2, '1')).reduce((a, b) => a + b, 0) - 3, 'todas menos as 3 editadas (PSA linha 4, PSE linhas 4 e 5)');
+      verdade(!linhas.some((l) => /Fictícia PSA Um|Fictícia PSE Um/.test(l)), 'editadas ficam de fora: ' + linhas);
+    });
     await teste('nenhum erro de JavaScript; sem link da planilha para o leitor', async () => {
       igual(errosPagina, []);
       igual(await pagina.$$eval('#visaoAuditoria a[href]', (x) => x.length), 0);
@@ -426,7 +468,9 @@ function ambiente(nEdicoesExtras, op) {
           const fechado = await pg.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth, alturas: Array.from(document.querySelectorAll('.cartaoAud')).map((b) => b.getBoundingClientRect().height) }));
           verdade(fechado.sw <= fechado.iw && fechado.alturas.every((h) => h >= 44), tema + ' ' + largura + ' cartões fechados: ' + JSON.stringify(fechado));
           await pg.screenshot({ path: path.join(SAIDA, `${tema}-${largura}-auditoria-cartoes.png`) });
-          await abrirCartoes(pg);
+          await abrirCartoes(pg, ['preenchimento', 'pessoas', 'edicoes', 'semana', 'ritmo', 'departamentos', 'parados']);
+          // (1.12.0) os quatro níveis do mapa da semana, para medir o contraste de cada um
+          await pg.evaluate(() => { const td = document.querySelector('#audMapaSemana td'); [1, 2, 3, 4].forEach((n) => { const b = document.createElement('button'); b.className = 'mapaSemana__celula mapaSemana__celula--n' + n + ' teste-n' + n; b.textContent = '9'; td.appendChild(b); }); });
           const r = await pg.evaluate(() => {
             const cor = (c) => c.match(/\d+(\.\d+)?/g).map(Number);
             const lum = (rgb) => { const a = rgb.slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2]; };
@@ -436,7 +480,8 @@ function ambiente(nEdicoesExtras, op) {
               '.auditoriaAba__total', '.tabelaAuditoria .texto-suave', '[data-aud-historico]', '.mudanca__antes', '.mudanca__depois', '#audContagem', '.linkDisciplina',
               '.auditoriaAba__nao', '.seloJustificativa', '.graficoBarras__nome', '.graficoBarras__detalhe', '.graficoBarras__valor',
               '.graficoBarras__quem', '.pessoaAud__nome', '.pessoaAud__detalhe', '.seloPessoaNaoCadastrada',
-              '.cartaoAud__titulo', '.cartaoAud__valor', '.cartaoAud__detalhe', '.cartaoAud__acao', '.cartaoAud__alerta', '.cartaoAud .medida__rotulo', '.graficoBarras__nome .linkPessoa', '.linkPessoa--vinculo'];
+              '.cartaoAud__titulo', '.cartaoAud__valor', '.cartaoAud__detalhe', '.cartaoAud__acao', '.cartaoAud__alerta', '.cartaoAud .medida__rotulo', '.graficoBarras__nome .linkPessoa', '.linkPessoa--vinculo',
+              '.panoramaTitulo', '.mapaSemana th', '.mapaSemana__vazia', '.teste-n1', '.teste-n2', '.teste-n3', '.teste-n4', '.ritmo__valor', '.ritmo__rotulo', '.departamentos__nome', '.departamentos__campos', '.medida__extra', '.departamentos__rodape', '#audTabelaParados td'];
             // barra do gráfico contra o fundo do cartão: ≥ 3:1 (elemento gráfico)
             const barra = document.querySelector('.graficoBarras__barra');
             const lb = lum(cor(getComputedStyle(barra).backgroundColor)), lf = lum(fundo(barra.parentElement));

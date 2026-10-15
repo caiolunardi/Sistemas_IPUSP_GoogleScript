@@ -1,6 +1,6 @@
 # Estrutura Curricular e Grade Horária — 1.12.0
 
-**1.12.0 (15/10/2026):** migração das disciplinas para a planilha `DISCIPLINAS` (base única de disciplinas), rodada pelo editor ([base de disciplinas](BASE_DISCIPLINAS.md)). Na mesma versão, a **Auditoria da grade** passa a abrir com três cartões (Preenchimento, Quem edita, Edições) que abrem cada detalhe; nome e setor nos gráficos levam às edições daquela pessoa ou vínculo; novo filtro "Vínculo".
+**1.12.0 (15/10/2026):** migração das disciplinas para a planilha `DISCIPLINAS` (base única de disciplinas), rodada pelo editor ([base de disciplinas](BASE_DISCIPLINAS.md)). Na mesma versão, a **Auditoria da grade** passa a abrir com três cartões (Preenchimento, Quem edita, Edições) que abrem cada detalhe; nome e setor nos gráficos levam às edições daquela pessoa ou vínculo; novo filtro "Vínculo"; e o "Panorama da grade", com Mapa da semana, Ritmo, Por departamento e Sem movimento.
 
 **1.11.0 (14/10/2026):** a Auditoria da grade mostra o nome, o vínculo e o e-mail de quem edita ou abre a planilha das secretarias ([verificação](VERIFICACAO_1_11_0.md)). O resto é a 1.10.0, descrita a seguir.
 
