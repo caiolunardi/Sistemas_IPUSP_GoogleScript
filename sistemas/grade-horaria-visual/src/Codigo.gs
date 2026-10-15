@@ -1,6 +1,6 @@
 /*=====================================================
   GRADE HORÁRIA VISUAL — Serviço de Graduação (IPUSP)
-  Backend Apps Script (v2.0)
+  Backend Apps Script (v2.1)
 
   Página pública da grade horária dos alunos do IP. O projeto continua
   vinculado à planilha ORIGINAL da grade (a do link que todos já têm),
@@ -56,12 +56,16 @@ const COL = { codigo: 3, nome: 4, tipo: 5, modalidade: 6, oferecida: 7, docentes
 
 const DIAS_SEMANA = ["Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira"];
 
-// Cache (segundos): a grade atual muda enquanto as secretarias preenchem;
-// as cópias anteriores não mudam.
-const CACHE_GRADE_ATUAL = 120;
+// Cache (segundos). O CONTEÚDO da grade atual nunca vai para o cache: é
+// lido da planilha das secretarias a cada carregamento, para que uma
+// edição apareça no próximo F5. Só a referência a ela (qual planilha é e
+// de que semestre), que muda uma vez por semestre, fica guardada.
+// As cópias anteriores não mudam.
+const CACHE_REF_GRADE_ATUAL = 600;
 const CACHE_GRADE_ANTERIOR = 21600;
 const CACHE_LISTA_ANTERIORES = 600;
-const VERSAO_CACHE = "v2";
+const VERSAO_CACHE = "v3";
+const CHAVES_CACHE_MUTAVEIS = ["refAtual:" + VERSAO_CACHE, "anteriores:" + VERSAO_CACHE];
 
 /*=====================================================
   PÁGINA
@@ -121,14 +125,17 @@ function obterGrade(semestre) {
     throw new Error("Semestre inválido. Escolha uma grade da lista.");
   }
 
-  const chaveCache = "grade:" + VERSAO_CACHE + ":" + (ehAtual ? "atual" : pedido);
-  const emCache = lerCache_(chaveCache);
-  if (emCache) return emCache;
+  // Grade atual: sempre lida na hora (sem cache do conteúdo).
+  const chaveCache = ehAtual ? null : "grade:" + VERSAO_CACHE + ":" + pedido;
+  if (chaveCache) {
+    const emCache = lerCache_(chaveCache);
+    if (emCache) return emCache;
+  }
 
   let planilha;
   let semestreGrade;
   if (ehAtual) {
-    planilha = abrirPlanilha_(obterIdProducao_(CHAVE_GRADE_ATUAL), "a grade atual");
+    planilha = abrirPlanilha_(referenciaGradeAtual_().id, "a grade atual");
     semestreGrade = semestreDoNome_(planilha.getName());
   } else {
     const id = lerIndiceAnteriores_()[pedido];
@@ -144,10 +151,10 @@ function obterGrade(semestre) {
     atual: ehAtual,
     semestresIdeais: semestresIdeaisDaGrade_(semestreGrade, disciplinas),
     disciplinas: disciplinas,
-    lidaEm: Utilities.formatDate(new Date(), "America/Sao_Paulo", "dd/MM/yyyy 'às' HH:mm")
+    lidaEm: Utilities.formatDate(new Date(), "America/Sao_Paulo", "dd/MM/yyyy 'às' HH:mm:ss")
   };
 
-  gravarCache_(chaveCache, resultado, ehAtual ? CACHE_GRADE_ATUAL : CACHE_GRADE_ANTERIOR);
+  if (chaveCache) gravarCache_(chaveCache, resultado, CACHE_GRADE_ANTERIOR);
   return resultado;
 }
 
@@ -289,13 +296,24 @@ function lerIndiceAnteriores_() {
 
 /** Semestre da grade atual pelo nome do arquivo ("… 1º Semestre de 2027" → "2027/1"). */
 function semestreDaGradeAtual_() {
-  const chaveCache = "semestreAtual:" + VERSAO_CACHE;
+  return referenciaGradeAtual_().semestre;
+}
+
+/**
+ * Qual planilha é a grade atual → { id, semestre }. Guardada no cache do
+ * script (fica no servidor, nunca vai ao navegador) para não abrir o
+ * ID_INDEX a cada carregamento; só muda quando uma nova grade é
+ * cadastrada. diagnosticarGradeVisual() limpa.
+ */
+function referenciaGradeAtual_() {
+  const chaveCache = "refAtual:" + VERSAO_CACHE;
   const emCache = lerCache_(chaveCache);
-  if (emCache) return emCache.semestre;
-  const planilha = abrirPlanilha_(obterIdProducao_(CHAVE_GRADE_ATUAL), "a grade atual");
-  const semestre = semestreDoNome_(planilha.getName());
-  gravarCache_(chaveCache, { semestre: semestre }, CACHE_GRADE_ATUAL);
-  return semestre;
+  if (emCache && emCache.id) return emCache;
+  const id = obterIdProducao_(CHAVE_GRADE_ATUAL);
+  const planilha = abrirPlanilha_(id, "a grade atual");
+  const ref = { id: id, semestre: semestreDoNome_(planilha.getName()) };
+  gravarCache_(chaveCache, ref, CACHE_REF_GRADE_ATUAL);
+  return ref;
 }
 
 /*=====================================================
@@ -402,8 +420,6 @@ function diagnosticarGradeVisual() {
   Logger.log("  disciplinas na grade visual: " + disciplinas.length);
   const anteriores = lerIndiceAnteriores_();
   Logger.log("Grades anteriores no índice: " + (Object.keys(anteriores).sort(compararSemestresDesc_).join(", ") || "nenhuma"));
-  CacheService.getScriptCache().removeAll([
-    "grade:" + VERSAO_CACHE + ":atual", "anteriores:" + VERSAO_CACHE, "semestreAtual:" + VERSAO_CACHE
-  ]);
-  Logger.log("Cache da grade atual e da lista de anteriores limpo.");
+  CacheService.getScriptCache().removeAll(CHAVES_CACHE_MUTAVEIS);
+  Logger.log("Cache da referência à grade atual e da lista de anteriores limpo.");
 }

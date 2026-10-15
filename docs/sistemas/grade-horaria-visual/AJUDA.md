@@ -6,7 +6,7 @@
 > - **Linguagem:** efeito para quem usa a página. Planilhas, índices, IDs e funções ficam no [manual](MANUAL_OPERACAO.md), não aqui.
 > - **Mecanismo:** `GradeAjudaEstilos.html` e `GradeAjudaUI.html` são byte-idênticos a `shared/ajuda/`. Abrir, buscar, navegar e expandir a FAQ não chamam o servidor.
 > - **Manutenção:** ao mudar um texto, mude-o nos dois lugares (aqui e em `GradeAjuda.html`). Os "termos extras" são o `data-search` de cada item: a busca da Central procura neles **e** no texto visível.
-> - **Fatos mutáveis citados:** horários do quadro (**08:00–12:00** e **13:30–18:00**, de `criarGrade` em `GradeGrid.html`); cores (verde = obrigatória, azul = eletiva, rosa = livre); atraso de **alguns minutos** da grade atual (cache de 120 s em `Codigo.gs`); paridade dos botões; regras do que entra na grade (`disciplinaDaLinha_`). Não há contato nominal: a ajuda encaminha ao Serviço de Graduação e à secretaria do departamento.
+> - **Fatos mutáveis citados:** horários do quadro (**08:00–12:00** e **13:30–18:00**, de `criarGrade` em `GradeGrid.html`); cores (verde = obrigatória, azul = eletiva, rosa = livre); grade atual lida a cada carregamento, sem cache do conteúdo (`obterGrade` em `Codigo.gs`, v2.1); paridade dos botões; regras do que entra na grade (`disciplinaDaLinha_`). Não há contato nominal: a ajuda encaminha ao Serviço de Graduação e à secretaria do departamento.
 
 ## Gatilhos contextuais
 
@@ -193,7 +193,7 @@ O quadro vai das 08:00 às 12:00 e das 13:30 às 18:00. Uma disciplina que comec
 
 ### A grade atual pode mudar
 
-A grade atual é montada pelos departamentos e pode ser completada ou corrigida até o início do semestre. As mudanças aparecem aqui alguns minutos depois. Recarregue a página para ver a versão mais recente.
+A grade atual é montada pelos departamentos e pode ser completada ou corrigida até o início do semestre. Cada vez que a página é aberta ou recarregada, ela lê a planilha naquele momento: recarregue para ver a versão mais recente.
 
 *Termos extras:* grade atual em preenchimento incompleta mudando atualizacao provisoria
 
@@ -247,7 +247,7 @@ Não. Ela ajuda a visualizar os horários. Para matrícula, turmas e vagas, vale
 
 ### Um horário mudou e a grade ainda mostra o antigo. Por quê? {#grade-faq-atualizacao}
 
-A grade atual leva alguns minutos para refletir uma mudança. Espere um pouco e recarregue a página. O horário em que os dados foram lidos aparece acima do quadro.
+A grade atual é lida na hora, a cada vez que a página abre. Recarregue a página (F5) e confira o horário da leitura, que aparece acima do quadro. Se o horário for recente e o antigo continuar, a mudança ainda não foi feita na planilha do departamento.
 
 *Termos extras:* atualiza quando mudou demora minutos recarregar
 
