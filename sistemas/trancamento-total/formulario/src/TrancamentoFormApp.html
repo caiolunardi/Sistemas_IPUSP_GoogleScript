@@ -1,0 +1,676 @@
+<base target="_top">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f5f5f5;
+    color:#333;
+}
+
+#headerSistema{
+    background:white;
+    height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid #ddd;
+}
+
+.logoEsquerda{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.logoEsquerda img{
+    height:52px;
+}
+
+.logoUSP{
+    height:44px;
+}
+
+.tituloSistema{
+    font-size:17px;
+    font-weight:bold;
+    color:#222;
+}
+
+.subtituloSistema{
+    font-size:13px;
+    color:#666;
+    margin-top:2px;
+}
+
+.barraAzul{
+    height:6px;
+    background:#005AA9;
+}
+
+#conteudo{
+    max-width:760px;
+    margin:24px auto 60px auto;
+    padding:0 20px;
+}
+
+.cardResumo{
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:6px;
+    padding:18px 22px;
+    margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+
+.cardResumo h1{
+    font-size:18px;
+    margin:0;
+    color:#222;
+}
+
+.cardResumo p{
+    margin:4px 0 0 0;
+    font-size:13px;
+    color:#777;
+}
+
+.cartaoPrincipal{
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:8px;
+    padding:8px 24px 24px 24px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+
+.secao{
+    padding-top:22px;
+}
+
+.secao h3{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:#005AA9;
+    margin:0 0 14px 0;
+    border-bottom:2px solid #eaf2fa;
+    padding-bottom:8px;
+}
+
+.textoInformativo p{
+    font-size:13.5px;
+    line-height:1.6;
+    color:#444;
+    margin:0 0 12px 0;
+}
+
+.textoInformativo p:last-child{
+    margin-bottom:0;
+}
+
+.textoInformativo strong{
+    color:#222;
+}
+
+.textoInformativo a{
+    color:#005AA9;
+    word-break:break-all;
+}
+
+.textoInformativo ol{
+    margin:0 0 12px 0;
+    padding-left:22px;
+    font-size:13.5px;
+    line-height:1.6;
+    color:#444;
+}
+
+.campoEditavel{
+    margin-bottom:16px;
+}
+
+.campoEditavel:last-child{
+    margin-bottom:0;
+}
+
+.campoEditavel label{
+    display:block;
+    font-size:12px;
+    color:#666;
+    margin-bottom:4px;
+    font-weight:bold;
+}
+
+.campoEditavel .ajudaCampo{
+    display:block;
+    font-size:12px;
+    color:#999;
+    margin-bottom:6px;
+    font-weight:normal;
+}
+
+.campoEditavel input[type=text],
+.campoEditavel textarea{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid #ccc;
+    border-radius:4px;
+    font-size:14px;
+    font-family:inherit;
+    box-sizing:border-box;
+}
+
+.campoEditavel input[disabled]{
+    background:#f2f2f2;
+    color:#777;
+}
+
+.campoEditavel textarea{
+    min-height:85px;
+    resize:vertical;
+}
+
+.campoEditavel textarea#campoJustificativa{
+    min-height:180px;
+}
+
+.obrigatorio{
+    color:#b71c1c;
+}
+
+.caixaOpcoes{
+    border:1px solid #ccc;
+    border-radius:4px;
+    padding:6px 14px;
+}
+
+.itemCheckbox{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    font-size:14px;
+}
+
+.itemCheckbox input{
+    width:17px;
+    height:17px;
+}
+
+.avisoDocGerado{
+    font-size:11.5px;
+    color:#2e7d32;
+    margin-top:6px;
+}
+
+.avisoNaoEncontrado{
+    background:#fdf6e3;
+    border-left:4px solid #c9a227;
+    border-radius:4px;
+    padding:12px 16px;
+    font-size:13px;
+    color:#5c4a09;
+    margin-bottom:16px;
+}
+
+.avisoHistorico{
+    background:#eaf2fa;
+    border-left:4px solid #005AA9;
+    border-radius:4px;
+    padding:12px 16px;
+    font-size:13px;
+    color:#00335c;
+    margin-bottom:16px;
+}
+
+.avisoHistorico strong{
+    display:block;
+    margin-bottom:6px;
+    color:#003a66;
+}
+
+.avisoHistorico ul{
+    margin:0;
+    padding-left:18px;
+}
+
+.avisoHistorico li{
+    margin-bottom:3px;
+}
+
+.avisoHistorico .observacaoHistorico{
+    margin-top:8px;
+    font-size:12px;
+    color:#00335c;
+}
+
+.botaoPrimario{
+    width:100%;
+    padding:13px;
+    background:#005AA9;
+    color:white;
+    border:none;
+    border-radius:6px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:6px;
+    transition:.15s;
+}
+
+.botaoPrimario:hover{
+    background:#00468a;
+}
+
+.botaoPrimario:disabled{
+    background:#9fb8cc;
+    cursor:default;
+}
+
+.botaoVerde{
+    background:#2e7d32;
+}
+
+.botaoVerde:hover{
+    background:#245e27;
+}
+
+#telaBloqueada{
+    max-width:560px;
+    margin:80px auto;
+    padding:0 20px;
+    text-align:center;
+}
+
+#telaBloqueada .icone{
+    font-size:36px;
+    margin-bottom:14px;
+    color:#999;
+}
+
+#telaBloqueada h1{
+    font-size:18px;
+    color:#222;
+}
+
+#telaBloqueada p{
+    color:#666;
+    font-size:14px;
+    line-height:1.5;
+}
+
+#telaConfirmacao{
+    max-width:560px;
+    margin:80px auto;
+    padding:0 20px;
+    text-align:center;
+    display:none;
+}
+
+#telaConfirmacao .icone{
+    font-size:40px;
+    margin-bottom:14px;
+    color:#2e7d32;
+}
+
+#telaConfirmacao h1{
+    font-size:18px;
+    color:#222;
+}
+
+#telaConfirmacao p{
+    color:#666;
+    font-size:14px;
+    line-height:1.6;
+}
+
+#loadingOverlay{
+    display:flex;
+    position:fixed;
+    z-index:10000;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(255,255,255,0.9);
+    align-items:center;
+    justify-content:center;
+}
+
+#loadingBox{
+    background:white;
+    border-radius:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,.15);
+    padding:30px 40px;
+    text-align:center;
+}
+
+#loadingLogo{
+    height:46px;
+    margin-bottom:12px;
+}
+
+#loadingTitulo{
+    font-weight:bold;
+    color:#222;
+    font-size:15px;
+}
+
+#loadingTexto{
+    color:#777;
+    font-size:12px;
+    margin-top:4px;
+}
+
+</style>
+
+<header id="headerSistema">
+    <div class="logoEsquerda">
+        <img src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/logo_ip.png">
+        <div>
+            <div class="tituloSistema">Pedido de Trancamento Total de Matrícula</div>
+            <div class="subtituloSistema">IPUSP</div>
+        </div>
+    </div>
+    <img class="logoUSP" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/usp.png">
+</header>
+
+<div class="barraAzul"></div>
+
+<!-- TELA DE BLOQUEIO (não autenticado / erro) -->
+
+<div id="telaBloqueada" style="display:none;">
+    <div class="icone" id="iconeBloqueio">🔒</div>
+    <h1 id="tituloBloqueio">Login necessário</h1>
+    <p id="textoBloqueio">Não foi possível confirmar seu login institucional. Verifique se você está logado no navegador com o seu e-mail @usp.br e recarregue esta página.</p>
+</div>
+
+<!-- TELA DE CONFIRMAÇÃO (pós-envio) -->
+
+<div id="telaConfirmacao">
+    <div class="icone">✅</div>
+    <h1>Pedido enviado com sucesso</h1>
+    <p>O Serviço de Graduação atenderá o seu pedido de trancamento total de matrícula e enviará mensagem de confirmação para o seu e-mail USP.</p>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+
+<div id="conteudo" style="display:none;">
+
+    <div class="cardResumo">
+        <h1>Requerimento de Trancamento Total de Matrícula</h1>
+        <p>Instituto de Psicologia da USP</p>
+    </div>
+
+    <div class="cartaoPrincipal">
+
+        <div class="secao">
+            <h3>1. Sobre a solicitação</h3>
+            <div class="textoInformativo">
+                <p>De acordo com a <a href="https://legislacao.usp.br/?resolucao=resolucao-cog-no-3761-de-04-de-outubro-de-1990" target="_blank" rel="noopener noreferrer">Resolução CoG Nº 3761/1990</a>, alterada pelas Resoluções CoG 3973/1992, 4744/2000 e 4811/2000, entende-se por <strong>trancamento total de matrícula</strong> a interrupção das atividades escolares em todas as disciplinas em que o aluno estiver matriculado.</p>
+                <p>Mediante requerimento, o(a) aluno(a) poderá solicitar o trancamento total de matrícula em qualquer época do ano. Se a solicitação for feita durante o transcurso do período letivo, o trancamento total não poderá ser autorizado se o(a) aluno(a) não estiver matriculado ou se já se encontrar reprovado por faltas nas disciplinas cuja soma de créditos ultrapasse a 25% do total de créditos de sua matrícula no correspondente período letivo.</p>
+                <p>A soma total dos períodos de trancamento de matrícula não poderá ultrapassar a três anos, nas seguintes condições:</p>
+                <ol>
+                    <li>Até dois anos, sem necessidade de justificativa;</li>
+                    <li>Após o período mencionado na alínea anterior, até mais um ano, quando a solicitação for devidamente justificada e comprovada, a critério da Comissão de Graduação.</li>
+                    <li>Não é permitido trancamento total de matrícula ao(à) aluno(a) que não tenha obtido pelo menos 24 créditos em seu currículo, ressalvado os casos excepcionais, que serão julgados pela CG.</li>
+                </ol>
+                <p>O Trancamento Total de Matrícula será concedido o(à) aluno(a) que estiver matriculado(a) em disciplinas pedagógicas da Faculdade de Educação, relacionadas ao curso de sua Unidade de Origem, e gerará efeitos sobre a matrícula de ambas as unidades, observando-se as demais normas supracitadas.</p>
+                <p>O período em que o(a) aluno(a) estiver legalmente afastado(a), em virtude do trancamento total de matrícula, não será computado nos cálculos relativos ao cancelamento de matrícula.</p>
+                <p>O período em que o aluno estiver legalmente afastado, em virtude de trancamento total de matrícula, não será computado nos cálculos relativos ao cancelamento de matrícula previsto nos incisos III e IV do parágrafo 2º do art 75 e nos incisos I e II do art 76 do Regimento Geral.</p>
+                <p>Quando a solicitação de trancamento total de matrícula referir-se a impedimento por motivo de doença, a Unidade poderá solicitar, a critério da Comissão de Graduação, manifestação da Área Ambulatorial do Sistema de Saúde da USP <em>(acrescido pela Resolução CoG 3973/1992)</em>.</p>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h3>2. Identificação</h3>
+
+            <div class="campoEditavel">
+                <label>Nome Completo <span class="obrigatorio">*</span></label>
+                <input type="text" id="campoNome">
+                <div class="avisoDocGerado" id="avisoNome" style="display:none;">✓ Preenchido automaticamente</div>
+            </div>
+
+            <div class="campoEditavel">
+                <label>Número USP <span class="obrigatorio">*</span></label>
+                <input type="text" id="campoNUsp" inputmode="numeric">
+                <div class="avisoDocGerado" id="avisoNUsp" style="display:none;">✓ Preenchido automaticamente</div>
+            </div>
+
+            <div class="campoEditavel">
+                <label>Ano de Ingresso <span class="obrigatorio">*</span></label>
+                <input type="text" id="campoAnoIngresso" inputmode="numeric" maxlength="4" placeholder="Ex: 2022">
+                <div class="avisoDocGerado" id="avisoAno" style="display:none;">✓ Preenchido automaticamente — confira e corrija se necessário</div>
+            </div>
+
+            <div class="campoEditavel">
+                <label>E-mail para contato <span class="obrigatorio">*</span><span class="ajudaCampo">E-mail institucional preenchido automaticamente — edite se preferir outro e-mail de contato</span></label>
+                <input type="text" id="campoEmailContato">
+                <div class="avisoDocGerado" id="avisoEmailContato" style="display:none;">✓ Preenchido automaticamente com o seu e-mail USP</div>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h3>3. Justificativa</h3>
+            <div class="campoEditavel">
+                <label>Justificativa <span class="obrigatorio">*</span></label>
+                <textarea id="campoJustificativa" maxlength="4000"></textarea>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h3>4. Confirmação</h3>
+            <div class="campoEditavel">
+                <label>Está ciente de todas as informações pertinentes e confirma o trancamento total de matrícula a partir do semestre vigente? <span class="obrigatorio">*</span></label>
+                <div class="caixaOpcoes">
+                    <label class="itemCheckbox"><input type="radio" name="confirmacao" value="Sim"> SIM</label>
+                    <label class="itemCheckbox"><input type="radio" name="confirmacao" value="Não"> NÃO</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao">
+            <button class="botaoPrimario botaoVerde" id="btnEnviar" onclick="enviarSolicitacao()">✅ Enviar pedido</button>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- LOADING -->
+
+<div id="loadingOverlay">
+    <div id="loadingBox">
+        <img id="loadingLogo" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/logo_ip.png">
+        <div id="loadingTitulo">Pedido de Trancamento Total de Matrícula</div>
+        <div id="loadingTexto">Carregando<span id="loadingPontos"></span></div>
+    </div>
+</div>
+
+<script>
+
+let loadingTimer;
+let dadosIniciais = null;
+
+window.onload = function () {
+    mostrarLoading("Carregando seus dados");
+    google.script.run
+        .withSuccessHandler(receberDadosIniciais)
+        .withFailureHandler(mostrarErroCarregamento)
+        .obterDadosIniciais();
+};
+
+function receberDadosIniciais(dados) {
+
+    esconderLoading();
+    dadosIniciais = dados;
+
+    if (!dados.autenticado) {
+        mostrarBloqueio(
+            "🔒",
+            "Login necessário",
+            dados.mensagem || "Não foi possível confirmar seu login institucional. Verifique se você está logado no navegador com o seu e-mail @usp.br e recarregue esta página."
+        );
+        return;
+    }
+
+    document.getElementById("campoEmailContato").value = dados.email;
+    document.getElementById("avisoEmailContato").style.display = "block";
+
+    if (dados.encontrado) {
+        document.getElementById("campoNUsp").value = dados.nUsp;
+        document.getElementById("campoNome").value = dados.nome;
+        document.getElementById("campoAnoIngresso").value = dados.anoIngresso;
+        if (dados.nUsp) document.getElementById("avisoNUsp").style.display = "block";
+        if (dados.nome) document.getElementById("avisoNome").style.display = "block";
+        if (dados.anoIngresso) document.getElementById("avisoAno").style.display = "block";
+    } else {
+        const aviso = document.createElement("div");
+        aviso.className = "avisoNaoEncontrado";
+        aviso.textContent = "⚠️ Não encontramos automaticamente o seu registro de aluno. Preencha os campos abaixo manualmente.";
+        document.getElementById("conteudo").insertBefore(aviso, document.getElementById("conteudo").firstChild);
+    }
+
+    if (dados.historico && dados.historico.length > 0) {
+        montarAvisoHistorico(dados.historico);
+    }
+
+    document.getElementById("conteudo").style.display = "block";
+
+}
+
+// Monta via DOM (não innerHTML com dado externo) — a situação vem
+// da planilha de respostas, que pode ter texto digitado por
+// alguém da equipe, então não é tratada como HTML confiável.
+function montarAvisoHistorico(historico) {
+
+    const caixa = document.createElement("div");
+    caixa.className = "avisoHistorico";
+
+    const titulo = document.createElement("strong");
+    titulo.textContent = "ℹ️ Você já tem pedido(s) de trancamento registrado(s) anteriormente:";
+    caixa.appendChild(titulo);
+
+    const lista = document.createElement("ul");
+
+    historico.forEach(item => {
+        const li = document.createElement("li");
+        const partes = [item.situacao || "(sem status)"];
+        if (item.carimbo) partes.push(`(${item.carimbo})`);
+        li.textContent = partes.join(" ");
+        lista.appendChild(li);
+    });
+
+    caixa.appendChild(lista);
+
+    const rodape = document.createElement("div");
+    rodape.className = "observacaoHistorico";
+    rodape.textContent = "Você ainda pode enviar um novo pedido normalmente, se for o caso.";
+    caixa.appendChild(rodape);
+
+    document.getElementById("conteudo").insertBefore(caixa, document.getElementById("conteudo").firstChild);
+
+}
+
+function mostrarErroCarregamento(erro) {
+    esconderLoading();
+    mostrarBloqueio("⚠️", "Erro ao carregar", "Ocorreu um erro ao carregar o formulário: " + ((erro && erro.message) || erro));
+}
+
+// Tela de bloqueio genérica — usada tanto pra falha de login quanto
+// pra erro de configuração.
+function mostrarBloqueio(icone, titulo, texto) {
+    document.getElementById("iconeBloqueio").textContent = icone;
+    document.getElementById("tituloBloqueio").textContent = titulo;
+    document.getElementById("textoBloqueio").textContent = texto;
+    document.getElementById("telaBloqueada").style.display = "block";
+}
+
+//-----------------------------------
+// Envio
+//-----------------------------------
+
+function enviarSolicitacao() {
+
+    const nome = document.getElementById("campoNome").value.trim();
+    const nUsp = document.getElementById("campoNUsp").value.trim();
+    const anoIngresso = document.getElementById("campoAnoIngresso").value.trim();
+    const emailContato = document.getElementById("campoEmailContato").value.trim();
+    const justificativa = document.getElementById("campoJustificativa").value.trim();
+
+    if (!nome || !nUsp || !anoIngresso || !emailContato) {
+        alert("⚠️ Preencha nome, Nº USP, ano de ingresso e e-mail para contato antes de enviar.");
+        return;
+    }
+
+    if (!justificativa) {
+        alert("⚠️ Preencha a justificativa antes de enviar.");
+        return;
+    }
+
+    const confirmacaoEl = document.querySelector('input[name="confirmacao"]:checked');
+    if (!confirmacaoEl) {
+        alert('⚠️ Responda se está ciente das informações e confirma o trancamento total de matrícula.');
+        return;
+    }
+
+    if (confirmacaoEl.value !== "Sim") {
+        alert('⚠️ Só é possível enviar o pedido se você confirmar (SIM) estar ciente das informações e confirmar o trancamento total de matrícula.');
+        return;
+    }
+
+    const dados = {
+        nome: nome,
+        nUsp: nUsp,
+        anoIngresso: anoIngresso,
+        emailContato: emailContato,
+        justificativa: justificativa,
+        confirmacao: confirmacaoEl.value
+    };
+
+    document.getElementById("btnEnviar").disabled = true;
+    mostrarLoading("Enviando seu pedido");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            esconderLoading();
+            document.getElementById("conteudo").style.display = "none";
+            document.getElementById("telaConfirmacao").style.display = "block";
+        })
+        .withFailureHandler(erro => {
+            esconderLoading();
+            document.getElementById("btnEnviar").disabled = false;
+            alert("❌ Erro: " + ((erro && erro.message) || erro));
+        })
+        .registrarSolicitacao(dados);
+
+}
+
+//-----------------------------------
+// Loading
+//-----------------------------------
+
+function mostrarLoading(texto) {
+
+    if (loadingTimer) clearInterval(loadingTimer);
+
+    document.getElementById("loadingTitulo").textContent = "Pedido de Trancamento Total de Matrícula";
+    document.getElementById("loadingTexto").textContent = texto || "Carregando";
+    document.getElementById("loadingOverlay").style.display = "flex";
+
+    let pontos = 0;
+    loadingTimer = setInterval(() => {
+        pontos = (pontos + 1) % 4;
+        document.getElementById("loadingPontos").textContent = ".".repeat(pontos);
+    }, 350);
+
+}
+
+function esconderLoading() {
+    if (loadingTimer) clearInterval(loadingTimer);
+    document.getElementById("loadingOverlay").style.display = "none";
+}
+
+</script>
+
