@@ -58,6 +58,7 @@ Preenchido a partir de [`SYSTEM_SECURITY_TEMPLATE.md`](../../seguranca/SYSTEM_SE
 | (1.11.0) Cadastro de servidores | Google Sheets | linha `SERVIDORES`, coluna C | Não | leitura (primeira aba: A e-mail, B nome, C setor) |
 | (1.11.0) Cadastro de docentes | Google Sheets | linha `PLANILHA_DOCENTES`, coluna C | Não | leitura (primeira aba: B nome, D e-mail) |
 | (1.11.0) Cadastro de alunos | Google Sheets | linha `PLANILHA_ALUNOS`, coluna C | Não | leitura (primeira aba: B nome, D e-mail, coluna "eMail Secundario", achada pelo título; "ID da Pasta" não é lido); planilha **Restrita**, com dados pessoais de alunos |
+| (1.12.0) Base única de disciplinas | Google Sheets | linha `DISCIPLINAS`, coluna C | Não | edição pela identidade de execução (cria abas e regrava DISCIPLINAS, OFERTA_HABILITACAO, DICIONARIO e LEIA-ME; acrescenta em HISTORICO). Guarda o e-mail de quem criou/alterou cada linha (`criada_por`, `atualizada_por`, `registrado_por`): compartilhamento **Restrito**; outros apps devem ler só as colunas de que precisam |
 | Bibliotecas de leitura de PDF | JavaScript público (PDF.js 3.11.174; Tesseract.js 7.0.0 e núcleo 7.0.0) | fixas no código (`LeitorPdfFontes.html`, `LIBS`) | Sim | — (integridade por SRI `sha384`) |
 | Modelo de OCR em português | arquivo público `tessdata_fast` 4.1.0 (jsDelivr ou GitHub) | fixo no código | Sim | — (conferido por SHA-256 antes do uso) |
 | Marca USP (tema claro) | PNG público em `datagrad.sistemas.ip.usp.br` | fixo (`GradipMarcaUSP.html`, igual ao Painel de Solicitações) | Sim | — |

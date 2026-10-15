@@ -1,6 +1,6 @@
 # Versões e decisões — Estrutura Curricular e Grade Horária
 
-Fonte atual **1.11.0** (nome de quem aparece na auditoria), sobre a 1.10.0 e a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
+Fonte atual **1.12.0** (migração para a base única de disciplinas), sobre a 1.10.0 e a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
 
 | Versão | Data | Marco |
 |---|---|---|
@@ -20,6 +20,7 @@ Fonte atual **1.11.0** (nome de quem aparece na auditoria), sobre a 1.10.0 e a b
 | 1.9.3 | 11/10/2026 | correção editorial: nem todas as etapas do envio foram concluídas; auditada localmente |
 | 1.10.0 | 11/10/2026 | sidebar padrão, alternância para abas, ícones de catálogo, glow/elevação e documentação completa; algoritmos preservados |
 | 1.11.0 | 14/10/2026 | auditoria da grade mostra nome, vínculo (setor, Docente, Aluno(a)) e e-mail de quem edita ou abre a planilha, pelos cadastros `SERVIDORES` → `PLANILHA_DOCENTES` → `PLANILHA_ALUNOS`; fora deles, "Pessoa não cadastrada com acesso". Correção: "Cadastrar nova grade" travava na última aba e o painel não abria (abas comparadas por objeto; agora pelo ID) |
+| 1.12.0 | 15/10/2026 | `BaseDisciplinas.gs`: `simularMigracaoDisciplinas` e `migrarDisciplinasParaBaseUnica` copiam as disciplinas da estrutura (com os ajustes) para a planilha `DISCIPLINAS` (chave primária `disc_` + UUID, universo, oferta por habilitação, histórico). Painel e envio inalterados. Ver [BASE_DISCIPLINAS.md](BASE_DISCIPLINAS.md) |
 
 ## Decisões estruturais
 

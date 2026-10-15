@@ -531,6 +531,19 @@ function montarContexto(o, estado, planilhas, props) {
         if (!(op.semChaves || []).includes(chave)) idx.appendRow([chave, 'spreadsheet', id, '', '']);
       });
     },
+    /**
+     * Planilha DISCIPLINAS (base única de disciplinas), nova e com a aba
+     * padrão vazia, com a chave no ID_INDEX. op: { semChave, idDaChave }.
+     */
+    criarPlanilhaDisciplinas: (op) => {
+      op = op || {};
+      const ss = new Spreadsheet(estado, 'ID_DISCIPLINAS_TESTE', o.dono, 'DISCIPLINAS');
+      ss.insertSheet('Página1');
+      planilhas.set(ss.id, ss);
+      if (!op.semChave) planilhas.get('ID_INDEX_TESTE').getSheets()[0].appendRow(['DISCIPLINAS', 'spreadsheet', op.idDaChave || ss.id, '', '']);
+      return ss;
+    },
+    disciplinas: () => planilhas.get('ID_DISCIPLINAS_TESTE'),
     grade: () => planilhas.get('ID_GRADE_TESTE'),
     indiceGrades: () => planilhas.get('ID_INDICE_GRADES_TESTE'),
     fotografia: () => fotografarPersistencia(estado, planilhas, props),
