@@ -13,16 +13,17 @@ function sheet(name,vals){
   return s;
 }
 function run(props,files,opts={}){
-  const logs=[],cache={};
+  const logs=[],cache={},mails=[];
   const ctx={console,Date,Logger:{log:m=>logs.push(String(m))},
     PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k]||null})},
     CacheService:{getScriptCache:()=>({get:k=>cache[k]||null,put:(k,v)=>{cache[k]=v}})},
     SpreadsheetApp:{openById:id=>{if(!files[id])throw new Error('no access '+id);const f=files[id];return {getSheetByName:n=>f.find(s=>s.getName()===n)||null,getSheets:()=>f}}},
     Session:{getActiveUser:()=>({getEmail:()=>opts.usuario===undefined?'ana@usp.br':opts.usuario})},
     LockService:{getScriptLock:()=>({tryLock:()=>!opts.travaOcupada,releaseLock(){}})},
+    MailApp:{sendEmail:(to,assunto,corpo,o)=>{if(opts.falhaEmail)throw new Error('cota');mails.push({to,assunto,corpo,o})}},
     Utilities:{formatDate:()=>'02/03/2026 10:00'},
     HtmlService:{createTemplateFromFile:()=>({evaluate:()=>({setTitle(){return this},addMetaTag(){return this}})})}};
-  vm.createContext(ctx);vm.runInContext(fs.readFileSync(SRC+'Codigo.gs','utf8'),ctx);ctx.logs=logs;return ctx;
+  vm.createContext(ctx);vm.runInContext(fs.readFileSync(SRC+'Codigo.gs','utf8'),ctx);ctx.logs=logs;ctx.mails=mails;return ctx;
 }
 const PERG='Está ciente de todas as informações pertinentes e confirma o trancamento total de matrícula a partir do semestre vigente?';
 const CAB=['Situação','Carimbo de data/hora','Endereço de e-mail','Nome Completo','Número USP','Ano de Ingresso','E-mail para contato','Justificativa',PERG,'Registro ID','Versão'];
@@ -35,7 +36,7 @@ const J=x=>JSON.parse(JSON.stringify(x));
 let ok=0,fail=0;const t=(n,f)=>{try{f();ok++;console.log('ok',n)}catch(e){fail++;console.log('FALHA',n,e.stack.split('\n').slice(0,2).join(' '))}};
 
 t('carga: aluno achado pelo eMail Secundario, histórico só do próprio e-mail',()=>{const {c}=amb();const d=J(c.obterDadosIniciais());
-  assert.deepStrictEqual(d,{autenticado:true,encontrado:true,email:'ana@usp.br',nUsp:'9000001',nome:'Ana Teste',anoIngresso:'2023',historico:[{carimbo:'01/08/2025',situacao:'Concluído'}]})});
+  assert.deepStrictEqual(d,{autenticado:true,encontrado:true,email:'ana@usp.br',nUsp:'9000001',nome:'Ana Teste',anoIngresso:'2023',historico:[{carimbo:'01/08/2025',situacao:'Concluído',pendente:false}]})});
 t('carga: aluno pelo eMail principal',()=>{const {c}=amb({usuario:'Bruno@USP.br'});const d=c.obterDadosIniciais();assert.strictEqual(d.nome,'Bruno Ficticio');assert.strictEqual(d.anoIngresso,'2024');assert.strictEqual(d.historico.length,0)});
 t('carga: fora do domínio bloqueia',()=>{for(const u of ['','x@gmail.com','x@usp.br.evil.com','x@fakeusp.br']){const {c}=amb({usuario:u});assert.strictEqual(c.obterDadosIniciais().autenticado,false,u)}});
 t('carga: planilha de alunos fora do ar não bloqueia',()=>{const {c}=amb({},{files:{ALU:undefined}});const r=run({ID_INDEX_SPREADSHEET_ID:'IDX'},{IDX:[indice()],RESP:[respostas()]});const d=r.obterDadosIniciais();
@@ -50,7 +51,6 @@ t('validações',()=>{const {c}=amb();
   assert.throws(()=>c.registrarSolicitacao(pedido({confirmacao:'Não'})),/Só é possível/);
   assert.throws(()=>c.registrarSolicitacao(pedido({anoIngresso:'1999'})),/inválido/);
   assert.throws(()=>c.registrarSolicitacao(pedido({emailContato:'x'})),/inválido/);
-  assert.throws(()=>c.registrarSolicitacao(pedido({justificativa:'  '})),/vazia/);
   assert.throws(()=>c.registrarSolicitacao(pedido({justificativa:'a'.repeat(4001)})),/passou de 4000/);
   c.registrarSolicitacao(pedido({justificativa:'a'.repeat(4000)}))});
 t('sem login não grava',()=>{const {c,r}=amb({usuario:''});assert.throws(()=>c.registrarSolicitacao(pedido()),/NAO_AUTENTICADO/);assert.strictEqual(r.vals.length,3)});
@@ -61,4 +61,14 @@ t('sem propriedade do ID_INDEX: não grava',()=>{const c=run({},{});assert.throw
 t('coluna obrigatória ausente bloqueia',()=>{const r=respostas();r.vals[0][7]='Motivo';const {c}=amb({},{RESP:r});assert.throws(()=>c.registrarSolicitacao(pedido()),/Justificativa/)});
 t('log sem dados pessoais',()=>{const {c}=amb();c.obterDadosIniciais();c.registrarSolicitacao(pedido());assert(!c.logs.join().match(/Ana|usp\.br|9000001/))});
 t('sem ID literal de planilha',()=>{const s=fs.readFileSync(SRC+'Codigo.gs','utf8');assert(!/[A-Za-z0-9_-]{40,}/.test(s));assert(!/openById\(\s*["']/.test(s))});
+t('justificativa em branco é aceita',()=>{const {c,r}=amb();c.registrarSolicitacao(pedido({justificativa:'  '}));assert.strictEqual(r.vals[3][7],'');assert(/\(não informada\)/.test(c.mails[0].corpo))});
+t('recibo: login, cópia para contato diferente, noReply, sem apóstrofo',()=>{const {c}=amb();const res=c.registrarSolicitacao(pedido({nome:'=Ana Teste'}));
+  assert.strictEqual(res.reciboEnviado,true);const m=c.mails[0];assert.strictEqual(m.to,'ana@usp.br');assert.strictEqual(m.o.cc,'ana@exemplo.invalid');assert.strictEqual(m.o.noReply,true);
+  assert(/Nome: =Ana Teste/.test(m.corpo));assert(/Número USP: 9000001/.test(m.corpo));assert(!/<[a-z]/i.test(m.corpo))});
+t('recibo: sem cópia quando contato = login',()=>{const {c}=amb();c.registrarSolicitacao(pedido({emailContato:'ANA@usp.br'}));assert.strictEqual(c.mails[0].o.cc,undefined)});
+t('recibo falhou: pedido gravado mesmo assim',()=>{const {c,r}=amb({falhaEmail:true});const res=c.registrarSolicitacao(pedido());assert.strictEqual(res.reciboEnviado,false);assert.strictEqual(r.vals.length,4)});
+t('pedido pendente exige confirmação',()=>{const {c,r}=amb({usuario:'outro@usp.br'});assert.strictEqual(c.obterDadosIniciais().historico[0].pendente,true);
+  assert.throws(()=>c.registrarSolicitacao(pedido()),/PEDIDO_PENDENTE: .*01\/09\/2025/);assert.strictEqual(r.vals.length,3);
+  c.registrarSolicitacao(pedido({confirmarNovoPedido:true}));assert.strictEqual(r.vals.length,4)});
+t('pedido concluído não exige confirmação; o novo passa a exigir',()=>{const {c}=amb();c.registrarSolicitacao(pedido());assert.throws(()=>c.registrarSolicitacao(pedido()),/PEDIDO_PENDENTE/)});
 console.log(`\n${ok} ok, ${fail} falha(s)`);process.exit(fail?1:0);

@@ -1,7 +1,20 @@
 /*=====================================================
-  PEDIDO DE TRANCAMENTO TOTAL DE MATRÍCULA — V1.1
+  PEDIDO DE TRANCAMENTO TOTAL DE MATRÍCULA — V1.2
   (IPUSP)
   Backend Apps Script
+
+  v1.2 (15/10/2026, pedido do Serviço de Graduação):
+    - recibo por e-mail ao aluno logo depois do envio (para o
+      e-mail do login, com cópia para o e-mail de contato quando
+      for outro), enviado como "não responder";
+    - pedido pendente do mesmo e-mail exige confirmação
+      (confirmarNovoPedido) para enviar outro;
+    - justificativa opcional (até dois anos de trancamento não
+      precisa de justificativa, pela Resolução CoG 3761/1990);
+    - histórico devolve "pendente" em cada pedido e a página
+      passa a incluir tema GRADIP e Central de Ajuda (include_).
+    ATENÇÃO: o envio de e-mail pede uma nova autorização do
+    script (permissão de enviar e-mail como a conta que implanta).
 
   v1.1 (15/10/2026):
     - IDs de planilha fora do código: as duas planilhas são
@@ -296,44 +309,53 @@ function formatarCarimboExibicao_(valor) {
   }
 }
 
+// Mesmo critério do Gerenciador: pedido é concluído quando a
+// Situação contém "conclu"; qualquer outra coisa conta como pendente.
+function estaConcluido_(valorSituacao) {
+  return semAcento_(valorSituacao).toLowerCase().indexOf("conclu") !== -1;
+}
+
 function buscarHistoricoCompleto_(email) {
-
-  const resultados = [];
-
   try {
-
-    const aba = abrirAbaPorChave_(CHAVE_RESPOSTAS);
-
-    const mapa = mapearCabecalhosRespostas_(aba);
-
-    const colEmail = mapa[CABECALHOS_RESPOSTAS.email];
-    const colCarimbo = mapa[CABECALHOS_RESPOSTAS.carimbo];
-    const colSituacao = mapa[CABECALHOS_RESPOSTAS.situacao];
-
-    if (!colEmail) return resultados;
-
-    const ultimaLinha = aba.getLastRow();
-    if (ultimaLinha < 2) return resultados;
-
-    const ultimaColuna = aba.getLastColumn();
-    const dados = aba.getRange(2, 1, ultimaLinha - 1, ultimaColuna).getValues();
-    const alvo = email.trim().toLowerCase();
-
-    dados.forEach(linha => {
-
-      const emailLinha = String(linha[colEmail - 1] || "").trim().toLowerCase();
-      if (emailLinha !== alvo) return;
-
-      resultados.push({
-        carimbo: colCarimbo ? formatarCarimboExibicao_(linha[colCarimbo - 1]) : "",
-        situacao: colSituacao ? String(linha[colSituacao - 1] || "") : "(sem status registrado)"
-      });
-
-    });
-
+    return pedidosDoEmail_(abrirAbaPorChave_(CHAVE_RESPOSTAS), email);
   } catch (err) {
     Logger.log(`Falha ao buscar histórico de trancamento: ${err && err.message ? err.message : err}`);
+    return [];
   }
+}
+
+// Pedidos do e-mail (login) na aba de respostas: carimbo, situação e
+// se ainda está pendente. Só do próprio e-mail, nunca de outros.
+function pedidosDoEmail_(aba, email) {
+
+  const resultados = [];
+  const mapa = mapearCabecalhosRespostas_(aba);
+
+  const colEmail = mapa[CABECALHOS_RESPOSTAS.email];
+  const colCarimbo = mapa[CABECALHOS_RESPOSTAS.carimbo];
+  const colSituacao = mapa[CABECALHOS_RESPOSTAS.situacao];
+
+  if (!colEmail) return resultados;
+
+  const ultimaLinha = aba.getLastRow();
+  if (ultimaLinha < 2) return resultados;
+
+  const dados = aba.getRange(2, 1, ultimaLinha - 1, aba.getLastColumn()).getValues();
+  const alvo = email.trim().toLowerCase();
+
+  dados.forEach(linha => {
+
+    const emailLinha = String(linha[colEmail - 1] || "").trim().toLowerCase();
+    if (emailLinha !== alvo) return;
+
+    const situacao = colSituacao ? String(linha[colSituacao - 1] || "") : "";
+    resultados.push({
+      carimbo: colCarimbo ? formatarCarimboExibicao_(linha[colCarimbo - 1]) : "",
+      situacao: situacao || "(sem status registrado)",
+      pendente: !estaConcluido_(situacao)
+    });
+
+  });
 
   return resultados;
 
@@ -432,6 +454,48 @@ function validarSimNao_(valor, rotuloCampo) {
 }
 
 /*=====================================================
+  RECIBO POR E-MAIL (v1.2) — texto simples, sem HTML. Vai
+  para o e-mail do login; cópia para o e-mail de contato
+  quando for diferente. noReply: o aluno não responde para a
+  caixa do Serviço de Graduação.
+=====================================================*/
+
+function textoSemApostrofoInicial_(texto) {
+  // sanitizarTextoPlano_ põe ' antes de =,+,-,@ por causa da planilha;
+  // no e-mail, mostra o texto como o aluno digitou.
+  return String(texto || "").replace(/^'(?=[=+\-@])/, "");
+}
+
+function montarRecibo_(dados, quando) {
+  const linhas = [
+    `Olá, ${textoSemApostrofoInicial_(dados.nome).split(" ")[0]}.`,
+    "",
+    `Recebemos o seu pedido de trancamento total de matrícula em ${quando}.`,
+    "",
+    "Dados enviados:",
+    `- Nome: ${textoSemApostrofoInicial_(dados.nome)}`,
+    `- Número USP: ${dados.nUsp}`,
+    `- Ano de ingresso: ${dados.anoIngresso}`,
+    `- E-mail para contato: ${textoSemApostrofoInicial_(dados.emailContato)}`,
+    `- Justificativa: ${dados.justificativa ? textoSemApostrofoInicial_(dados.justificativa) : "(não informada)"}`,
+    "",
+    "Este e-mail é só o recibo do envio. O Serviço de Graduação vai analisar o pedido e mandar outra mensagem para o seu e-mail USP quando ele for processado.",
+    "",
+    "Mensagem automática, não responda.",
+    "Serviço de Graduação — Instituto de Psicologia da USP"
+  ];
+  return linhas.join("\n");
+}
+
+function enviarRecibo_(email, dados) {
+  const quando = Utilities.formatDate(new Date(), TIMEZONE, "dd/MM/yyyy 'às' HH:mm");
+  const opcoes = { name: "Serviço de Graduação — IPUSP", noReply: true };
+  const contato = String(textoSemApostrofoInicial_(dados.emailContato) || "").trim().toLowerCase();
+  if (contato && contato !== email) opcoes.cc = contato;
+  MailApp.sendEmail(email, "Recibo — Pedido de Trancamento Total de Matrícula", montarRecibo_(dados, quando), opcoes);
+}
+
+/*=====================================================
   GRAVAÇÃO DO PEDIDO
 =====================================================*/
 
@@ -469,8 +533,9 @@ function registrarSolicitacao(dados) {
   if (justificativaBruta.length > TAMANHO_MAXIMO_JUSTIFICATIVA) {
     throw new Error(`A justificativa passou de ${TAMANHO_MAXIMO_JUSTIFICATIVA} caracteres. Resuma o texto e envie de novo.`);
   }
+  // v1.2: opcional (pode ficar em branco).
   const justificativa = sanitizarTextoPlano_(justificativaBruta, TAMANHO_MAXIMO_JUSTIFICATIVA + 1);
-  if (!justificativa) throw new Error("A justificativa não pode ficar vazia.");
+  const confirmarNovoPedido = !!(dados && dados.confirmarNovoPedido);
 
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(15000)) {
@@ -500,6 +565,15 @@ function registrarSolicitacao(dados) {
       return coluna;
     };
 
+    // Conferido de novo aqui, dentro da trava: um pedido pode ter sido
+    // enviado (em outra aba, por exemplo) depois que a página abriu.
+    const pendentes = pedidosDoEmail_(aba, email).filter(p => p.pendente);
+    if (pendentes.length && !confirmarNovoPedido) {
+      const quando = pendentes[pendentes.length - 1].carimbo;
+      throw new Error("PEDIDO_PENDENTE: Você já tem um pedido de trancamento pendente" +
+        (quando ? `, enviado em ${quando}` : "") + ".");
+    }
+
     const colConfirmacao = colunaConfirmacao_(aba);
     const ultimaColuna = Math.max(aba.getLastColumn(), colConfirmacao);
 
@@ -522,10 +596,20 @@ function registrarSolicitacao(dados) {
     // sobrescreve uma linha criada por outro processo, como o Forms).
     aba.appendRow(valores);
 
-    return { sucesso: true };
-
   } finally {
     lock.releaseLock();
   }
+
+  // Recibo fora da trava. Se falhar, o pedido continua gravado: a
+  // página só avisa que o recibo não saiu.
+  let reciboEnviado = false;
+  try {
+    enviarRecibo_(email, { nome, nUsp, anoIngresso, emailContato, justificativa });
+    reciboEnviado = true;
+  } catch (err) {
+    Logger.log(`Falha ao enviar recibo de trancamento: ${err && err.message ? err.message : err}`);
+  }
+
+  return { sucesso: true, reciboEnviado: reciboEnviado };
 
 }

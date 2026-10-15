@@ -1,0 +1,204 @@
+<!--
+  PEDIDO DE TRANCAMENTO TOTAL — Central de Ajuda (conteúdo estático, v1.2).
+
+  Estrutura de shared/ajuda/GradipAjudaTemplate.html com o conteúdo real
+  deste formulário. Comportamento em TrancamentoFormAjudaUI.html e estilos
+  em TrancamentoFormAjudaEstilos.html (cópias byte-idênticas de
+  shared/ajuda/). Nenhuma chamada ao servidor.
+
+  Público: alunos. Não cita planilhas, IDs, funções nem detalhes de
+  implementação. Não repete o texto da resolução (está na seção 1 do
+  formulário) nem promete deferimento.
+
+  Texto-fonte: docs/sistemas/trancamento-total/AJUDA.md. Ao mudar um texto
+  aqui, mude também lá. Os IDs de seção (ajuda-...) são usados pelos
+  gatilhos de TrancamentoFormApp.html: não renomear sem ajustar os gatilhos.
+-->
+<div class="gradip-help-overlay" data-gradip-help-overlay hidden>
+  <section class="gradip-help-dialog" data-gradip-help-dialog role="dialog" aria-modal="true" aria-labelledby="gradip-help-title" tabindex="-1">
+    <header class="gradip-help-header">
+      <div><p class="gradip-help-eyebrow">Trancamento Total de Matrícula — IPUSP</p><h2 id="gradip-help-title">Central de Ajuda</h2></div>
+      <button type="button" class="gradip-help-close" data-gradip-help-close aria-label="Fechar ajuda"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="gradip-help-search-wrap">
+      <label for="gradip-help-search">Buscar na ajuda</label>
+      <input id="gradip-help-search" type="search" placeholder="Ex.: justificativa, recibo, login, número USP" autocomplete="off" data-gradip-help-search>
+      <p class="gradip-help-search-status" data-gradip-help-search-status aria-live="polite"></p>
+    </div>
+    <div class="gradip-help-layout">
+      <nav class="gradip-help-nav" aria-label="Seções da ajuda">
+        <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
+        <button type="button" data-gradip-help-target="ajuda-passo-a-passo">Como preencher</button>
+        <button type="button" data-gradip-help-target="ajuda-dados">Dados automáticos</button>
+        <button type="button" data-gradip-help-target="ajuda-justificativa">Justificativa</button>
+        <button type="button" data-gradip-help-target="ajuda-depois">Depois de enviar</button>
+        <button type="button" data-gradip-help-target="ajuda-pendente">Pedido já enviado</button>
+        <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
+        <button type="button" data-gradip-help-target="ajuda-aparencia">Aparência</button>
+        <button type="button" data-gradip-help-target="ajuda-faq">Perguntas frequentes</button>
+      </nav>
+      <main class="gradip-help-main" data-gradip-help-main>
+
+        <section id="ajuda-inicio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Comece aqui</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="para que serve objetivo trancar matricula interromper curso pedido requerimento">
+            <h4>Para que serve</h4>
+            <p>Este formulário envia ao Serviço de Graduação do Instituto de Psicologia o seu pedido de trancamento total de matrícula, isto é, a interrupção das atividades em todas as disciplinas em que você está matriculado. O envio é um pedido: as condições estão na seção <strong>1. Sobre a solicitação</strong> do formulário.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="resumo passos rapido como usar enviar">
+            <h4>Em quatro passos</h4>
+            <p>1. Leia a seção <strong>Sobre a solicitação</strong>.<br>2. Confira o nome, o número USP, o ano de ingresso e o e-mail para contato.<br>3. Escreva a justificativa, se for o seu caso.<br>4. Responda <strong>SIM</strong> na confirmação e clique em <strong>Enviar pedido</strong>.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="login conta usp entrar acesso email institucional">
+            <h4>Use a sua conta USP</h4>
+            <p>O formulário só abre para quem está conectado ao navegador com o e-mail <strong>@usp.br</strong>. O pedido fica registrado nesse e-mail.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-passo-a-passo" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Como preencher</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nome completo campo identificacao">
+            <h4>Nome completo</h4>
+            <p>Como consta no seu cadastro na USP.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="numero usp nusp n usp digitos">
+            <h4>Número USP</h4>
+            <p>Só os números. Pontos, traços e espaços são ignorados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="ano de ingresso entrada curso quatro digitos">
+            <h4>Ano de ingresso</h4>
+            <p>O ano em que você entrou no curso, com quatro dígitos (por exemplo, 2022).</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="email para contato outro email pessoal gmail">
+            <h4>E-mail para contato</h4>
+            <p>Já vem com o seu e-mail USP. Você pode trocar por outro que prefira; o recibo vai para o e-mail USP e, se você trocar, também para o e-mail de contato.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="confirmacao sim nao ciente semestre vigente">
+            <h4>Confirmação</h4>
+            <p>O pedido só pode ser enviado com <strong>SIM</strong>: você declara que leu as informações e confirma o trancamento total a partir do semestre vigente. Se não tiver certeza, não envie e tire suas dúvidas com o Serviço de Graduação antes.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="erro campo vermelho marcado corrigir nao envia">
+            <h4>Campos marcados em vermelho</h4>
+            <p>Ao clicar em <strong>Enviar pedido</strong>, o formulário confere os campos. Os que tiverem problema ficam marcados, com a explicação logo abaixo. Corrija e clique em Enviar de novo.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-dados" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Dados preenchidos automaticamente</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="preenchido automaticamente errado corrigir editar mudar nome ingresso">
+            <h4>Vieram errados</h4>
+            <p>Os dados com a marca <strong>✓ Preenchido automaticamente</strong> vêm do cadastro de alunos do Instituto. Você pode corrigi-los no próprio campo antes de enviar; vale o que estiver no formulário na hora do envio.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao encontramos registro em branco vazio manual">
+            <h4>Vieram em branco</h4>
+            <p>Se aparecer o aviso <strong>Não encontramos automaticamente o seu registro de aluno</strong>, preencha os campos à mão. Isso não impede o envio. Uma causa comum é estar conectado com um e-mail USP diferente do que consta no cadastro.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-justificativa" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Preciso de justificativa?</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="justificativa obrigatoria opcional motivo dois anos tres anos limite comprovacao comissao de graduacao">
+            <h4>Depende do tempo total de trancamento</h4>
+            <p>Pela regra da seção <strong>Sobre a solicitação</strong>, a soma de todos os seus períodos de trancamento pode chegar a dois anos sem justificativa. Para passar disso (até mais um ano), o pedido precisa ser justificado e comprovado, e a Comissão de Graduação decide. Nesse caso, explique o motivo no campo <strong>Justificativa</strong>.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="doenca saude motivo medico atestado">
+            <h4>Motivo de saúde</h4>
+            <p>Quando o pedido é por motivo de doença, a Comissão de Graduação pode pedir a manifestação do Sistema de Saúde da USP. Você pode citar o motivo na justificativa; não é preciso anexar nada neste formulário.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="limite caracteres tamanho texto longo contador">
+            <h4>Tamanho do texto</h4>
+            <p>A justificativa aceita até 4.000 caracteres. O contador abaixo do campo mostra quantos você já usou.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-depois" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Depois de enviar</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="recibo email confirmacao recebido copia">
+            <h4>Recibo por e-mail</h4>
+            <p>Logo depois do envio, você recebe no e-mail USP um recibo com os dados enviados (e uma cópia no e-mail de contato, se for outro). O recibo só confirma que o pedido chegou; não é a resposta do pedido. Ele é automático: não responda a essa mensagem.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="resposta resultado processado aprovado prazo quando">
+            <h4>Resposta do Serviço de Graduação</h4>
+            <p>O Serviço de Graduação analisa o pedido e envia outra mensagem para o seu e-mail USP quando ele for processado.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="acompanhar situacao status ver pedido pendente concluido">
+            <h4>Acompanhar a situação</h4>
+            <p>Abra este formulário de novo: no topo aparecem os seus pedidos anteriores, com a data de envio e a situação de cada um (<strong>Pendente</strong> ou <strong>Concluído</strong>).</p>
+          </article>
+        </section>
+
+        <section id="ajuda-pendente" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Já enviei um pedido</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="pedido pendente enviar outro de novo duplicado repetido novo pedido">
+            <h4>Pedido ainda pendente</h4>
+            <p>Se você já tem um pedido pendente, o formulário avisa antes do envio. Mandar outro pedido não agiliza o atendimento. Para enviar mesmo assim (por exemplo, para corrigir algum dado), marque a caixa <strong>Sei que já tenho um pedido pendente e quero enviar um novo mesmo assim</strong>.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-problemas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Problemas comuns</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="login necessario nao abre bloqueado cadeado conta google outra conta gmail pessoal">
+            <h4>Apareceu "Login necessário"</h4>
+            <p>Uma causa comum é estar conectado com uma conta Google pessoal (por exemplo, @gmail.com) em vez da conta @usp.br, ou com várias contas ao mesmo tempo. Tente: sair das outras contas ou abrir o link numa janela anônima, entrar só com o e-mail USP e recarregar a página.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="erro ao carregar nao carrega travado pagina em branco">
+            <h4>Apareceu "Erro ao carregar"</h4>
+            <p>Recarregue a página. Se o erro continuar, tente mais tarde. Persistindo, procure o Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao enviou erro ao enviar falhou pedido nao foi enviado">
+            <h4>Apareceu "O pedido não foi enviado"</h4>
+            <p>Leia a mensagem que aparece logo acima do botão: ela diz o que corrigir. Se falar em muitos pedidos ao mesmo tempo, aguarde alguns segundos e clique em Enviar de novo. Enquanto não aparecer a tela <strong>Pedido enviado com sucesso</strong>, o pedido não foi registrado.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="recibo nao chegou email nao recebi spam lixo eletronico">
+            <h4>O recibo não chegou</h4>
+            <p>Confira a caixa de spam ou lixo eletrônico do e-mail USP. Se a tela de envio disse que o recibo não pôde ser enviado, o pedido foi registrado mesmo assim. Para conferir, abra o formulário de novo e veja a lista de pedidos anteriores.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-aparencia" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Aparência</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="tema claro escuro sistema modo noturno dark cores">
+            <h4>Claro, Escuro ou Sistema</h4>
+            <p>Use o seletor <strong>Aparência</strong> no topo. <strong>Sistema</strong> acompanha a configuração do seu computador ou celular. A escolha fica salva só neste navegador.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-faq" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Perguntas frequentes</h3>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="aprovado automatico garantido deferido">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-aprovado">
+              <span>Enviar o pedido já tranca a minha matrícula?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-aprovado" class="gradip-help-faq-panel" hidden><p>Não. O envio registra o pedido; o Serviço de Graduação analisa e avisa o resultado pelo seu e-mail USP. As condições estão na seção <strong>Sobre a solicitação</strong>.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="quando vale semestre inicio efeito">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-quando">
+              <span>A partir de quando vale o trancamento?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-quando" class="gradip-help-faq-panel" hidden><p>O pedido feito por este formulário é de trancamento a partir do semestre vigente, como diz a pergunta de confirmação.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="alterar corrigir editar pedido enviado errado cancelar desistir">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-alterar">
+              <span>Posso alterar ou cancelar um pedido já enviado?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-alterar" class="gradip-help-faq-panel" hidden><p>Não pelo formulário. Procure o Serviço de Graduação do Instituto de Psicologia.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="quem ve meus dados privacidade justificativa sigilo outros alunos">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-dados">
+              <span>Quem vê o que eu escrevo?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-dados" class="gradip-help-faq-panel" hidden><p>O pedido vai para o Serviço de Graduação, que o usa para processar o trancamento. Neste formulário, cada aluno vê só os próprios pedidos.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="faculdade de educacao licenciatura disciplinas pedagogicas">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-fe">
+              <span>Estou matriculado em disciplinas da Faculdade de Educação. Preciso fazer outro pedido lá?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-fe" class="gradip-help-faq-panel" hidden><p>Pela regra da seção <strong>Sobre a solicitação</strong>, o trancamento total vale para a matrícula nas duas unidades. Em caso de dúvida, procure o Serviço de Graduação.</p></div>
+          </article>
+        </section>
+
+        <div class="gradip-help-no-results" data-gradip-help-no-results hidden><strong>Nenhum resultado encontrado.</strong><p>Tente outra palavra ou limpe a busca.</p></div>
+      </main>
+    </div>
+  </section>
+</div>
