@@ -31,7 +31,7 @@ A verificação local cobriu sintaxe JavaScript e cenários simulados de resolu�
 
 ## Fonte v1.3 — menu lateral e contagem de créditos (14/10/2026)
 
-**Situação:** não implantada nem homologada no `/exec`. Mudaram `Codigo.gs`, `Painel.html`, `PainelAjuda.html` e `PainelAjudaUI.html`; são novos `ContagemCreditos.gs`, `PainelNavegacaoEstilos.html`, `PainelNavegacaoUI.html`, `PainelIcones.html`, `PainelContagemEstilos.html`, `PainelContagemMotor.html` e `PainelContagemUI.html`. Continuam iguais `GradipTema.html`, `GradipTemaControle.html`, `GradipMarcaIPUSP.html`, `GradipMarcaUSP.html` e `PainelAjudaEstilos.html`.
+**Situação:** implantada no Apps Script em 15/10/2026 junto com a v1.4, segundo o responsável; a conferência no `/exec` não foi registrada aqui. Mudaram `Codigo.gs`, `Painel.html`, `PainelAjuda.html` e `PainelAjudaUI.html`; são novos `ContagemCreditos.gs`, `PainelNavegacaoEstilos.html`, `PainelNavegacaoUI.html`, `PainelIcones.html`, `PainelContagemEstilos.html`, `PainelContagemMotor.html` e `PainelContagemUI.html`. Continuam iguais `GradipTema.html`, `GradipTemaControle.html`, `GradipMarcaIPUSP.html`, `GradipMarcaUSP.html` e `PainelAjudaEstilos.html`.
 
 Em `Codigo.gs`, a resolução do índice virou genérica (`obterIdDoIndice_(chave)`); `PERIODOS` mantém as mesmas mensagens de erro. Os sete formulários, destinos e regras de período não mudaram; as categorias ganharam ícone de menu e a descrição de Formação e conclusão menciona a contagem.
 

@@ -1,8 +1,8 @@
 # Painel de Solicitações — alunos
 
-**Fonte v1.3 (14/10/2026, não implantada nem homologada no `/exec`):** menu lateral de categorias (padrão) com opção de abas, busca em todas as categorias e [Contagem de créditos](CONTAGEM_DE_CREDITOS.md) em Formação e conclusão. Requer a chave `REGRAS_CURRICULARES` no `ID_INDEX`.
+**v1.3 (14/10/2026, implantada em 15/10/2026 junto com a v1.4):** menu lateral de categorias (padrão) com opção de abas, busca em todas as categorias e [Contagem de créditos](CONTAGEM_DE_CREDITOS.md) em Formação e conclusão. Requer a chave `REGRAS_CURRICULARES` no `ID_INDEX`.
 
-**Fonte v1.4 (15/10/2026, não implantada):** link para a [Grade horária](../grade-horaria-visual/README.md) visual, como card de consulta no fim de "Matrícula e disciplinas" (selo "Consulta") e como atalho fixo no rodapé do menu lateral, acima da Ajuda. Os dois abrem em nova aba e sem AccountChooser, porque a grade é pública. O link fica em `FERRAMENTAS_PAINEL` (`Codigo.gs`).
+**v1.4 (15/10/2026, implantada no Apps Script em 15/10/2026, segundo o responsável):** link para a [Grade horária](../grade-horaria-visual/README.md) visual, como card de consulta no fim de "Matrícula e disciplinas" (selo "Consulta") e como atalho fixo no rodapé do menu lateral, acima da Ajuda. Os dois abrem em nova aba e sem AccountChooser, porque a grade é pública. O link fica em `FERRAMENTAS_PAINEL` (`Codigo.gs`).
 
 **Versão da interface:** GRADIP UI v1.2, aceita pelo responsável funcional em 25/09/2026 após conferência visual no Web App `/exec`. O [código Apps Script](../../../sistemas/painel-solicitacoes/README.md) está versionado. A fonte Git agora resolve a planilha de períodos pela chave `PERIODOS` no índice mestre `ID_INDEX`; essa integração ainda não foi homologada no `/exec`. O GitHub não informa qual versão está implantada no Apps Script.
 
