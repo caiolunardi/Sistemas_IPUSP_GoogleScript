@@ -54,9 +54,17 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
     chk(`${T} tema Sistema resolvido`, await p.evaluate(s => document.documentElement.dataset.theme === s, scheme));
     chk(`${T} abre no menu lateral`, await p.evaluate(() => document.getElementById('painelLayout').dataset.navegacao === 'sidebar' && document.querySelector('[data-painel-modo="sidebar"]').getAttribute('aria-pressed') === 'true'));
     chk(`${T} um item de menu por categoria, na ordem`, (await p.$$eval('#painelMenu [data-pagina]', e => e.map(x => x.getAttribute('data-pagina')).join())) === 'matricula-disciplinas,formacao-conclusao,beneficios-servicos,intercambistas');
-    chk(`${T} ícones no menu`, await p.$$eval('.painelNavIcone svg', e => e.length) === 7);
+    chk(`${T} ícones no menu`, await p.$$eval('.painelNavIcone svg', e => e.length) === 8);
     chk(`${T} primeira categoria aberta e marcada`, await p.getAttribute('#navCategoria-matricula-disciplinas', 'aria-current') === 'page' && (await p.textContent('.tituloArea h1')) === 'Matrícula e disciplinas');
-    chk(`${T} cards da categoria`, (await visiveis(p)).length === 3);
+    chk(`${T} cards da categoria`, (await visiveis(p)).length === 4);
+
+    // grade horária: card de consulta e atalho no menu, ambos em nova aba e sem AccountChooser
+    const grade = await p.evaluate(() => { const c = [...document.querySelectorAll('#listaSistemasContainer .cardSistema')].pop(); return c && { tag: c.tagName, nome: c.querySelector('strong').textContent, href: c.getAttribute('href'), target: c.target, rel: c.rel, selo: c.querySelector('.badgeStatusForm').textContent, aviso: c.textContent.includes('(abre em nova aba)') }; });
+    chk(`${T} card da grade horária no fim de Matrícula`, grade && grade.tag === 'A' && grade.nome === 'Grade horária' && grade.selo === 'Consulta' && grade.aviso, JSON.stringify(grade));
+    chk(`${T} card da grade abre em nova aba sem AccountChooser`, grade && grade.target === '_blank' && /noopener/.test(grade.rel) && /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(grade.href));
+    const atalho = await p.evaluate(() => { const a = document.getElementById('navAtalho-grade-horaria'); return a && { pai: a.parentNode.className, proximo: a.nextElementSibling && a.nextElementSibling.id, target: a.target, rel: a.rel, href: a.getAttribute('href'), icone: !!a.querySelector('.painelNavIcone svg'), nome: a.querySelector('.painelNavTexto').textContent }; });
+    chk(`${T} atalho da grade no rodapé do menu, acima da Ajuda`, atalho && atalho.pai === 'painelSidebar__apoio' && atalho.proximo === 'navAjuda' && atalho.icone && atalho.nome === 'Grade horária', JSON.stringify(atalho));
+    chk(`${T} atalho abre em nova aba com o mesmo link do card`, atalho && atalho.target === '_blank' && /noopener/.test(atalho.rel) && grade && atalho.href === grade.href);
 
     await p.click('#navCategoria-formacao-conclusao');
     const formacao = await visiveis(p);
@@ -69,9 +77,12 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
 
     // busca
     await p.fill('#caixaBusca', 'disciplinas');
-    chk(`${T} busca em todas as categorias`, (await p.$$eval('.grupoBusca h2', e => e.length)) === 2 && (await visiveis(p)).length === 4);
+    chk(`${T} busca em todas as categorias`, (await p.$$eval('.grupoBusca h2', e => e.length)) === 2 && (await visiveis(p)).length === 5);
     chk(`${T} nenhuma categoria marcada durante a busca`, await p.$$eval('#painelMenu [aria-current]', e => e.length) === 0);
-    chk(`${T} status anuncia resultados`, (await p.textContent('#statusBusca')) === '4 resultados encontrados.');
+    chk(`${T} status anuncia resultados`, (await p.textContent('#statusBusca')) === '5 resultados encontrados.');
+    await p.fill('#caixaBusca', 'horário');
+    chk(`${T} busca "horário" acha a grade`, (await visiveis(p)).join('|') === 'Grade horária', (await visiveis(p)).join('|'));
+    await p.fill('#caixaBusca', 'disciplinas');
     await p.fill('#caixaBusca', 'colacao');
     chk(`${T} busca sem acento`, (await visiveis(p)).join() === 'Pedido de Colação de Grau');
     await p.fill('#caixaBusca', 'quantos creditos faltam');

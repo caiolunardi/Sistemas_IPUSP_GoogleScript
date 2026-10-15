@@ -2,6 +2,8 @@
 
 **Fonte v1.3 (14/10/2026, não implantada nem homologada no `/exec`):** menu lateral de categorias (padrão) com opção de abas, busca em todas as categorias e [Contagem de créditos](CONTAGEM_DE_CREDITOS.md) em Formação e conclusão. Requer a chave `REGRAS_CURRICULARES` no `ID_INDEX`.
 
+**Fonte v1.4 (15/10/2026, não implantada):** link para a [Grade horária](../grade-horaria-visual/README.md) visual, como card de consulta no fim de "Matrícula e disciplinas" (selo "Consulta") e como atalho fixo no rodapé do menu lateral, acima da Ajuda. Os dois abrem em nova aba e sem AccountChooser, porque a grade é pública. O link fica em `FERRAMENTAS_PAINEL` (`Codigo.gs`).
+
 **Versão da interface:** GRADIP UI v1.2, aceita pelo responsável funcional em 25/09/2026 após conferência visual no Web App `/exec`. O [código Apps Script](../../../sistemas/painel-solicitacoes/README.md) está versionado. A fonte Git agora resolve a planilha de períodos pela chave `PERIODOS` no índice mestre `ID_INDEX`; essa integração ainda não foi homologada no `/exec`. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
@@ -27,6 +29,7 @@ Os arquivos em [`src/`](../../../sistemas/painel-solicitacoes/src) são `Codigo.
 | v1.1 | Tema GRADIP, ajuda e fluxos do painel; smoke funcional no `/exec`. Restaram miolos dos “p” preenchidos e USP azul sobre tarja branca no Escuro. |
 | v1.2 | `fill-rule:evenodd` nas duas variantes IPUSP; USP branca vetorial no Escuro e tarja removida; nome acessível da IPUSP escura corrigido. Aceita visualmente pelo responsável funcional. |
 | v1.3 (fonte, 14/10/2026) | Menu lateral e abas no padrão do Painel dos servidores (abre no menu lateral; recolhe em ≤ 900 px); categorias no menu e formulários no quadro principal; busca em todas as categorias com resultados agrupados; cards fechados acessíveis por teclado; [Contagem de créditos](CONTAGEM_DE_CREDITOS.md) por habilitação e currículo; seção nova na Central de Ajuda. Testes locais: 36 da contagem e 184 de navegador. |
+| v1.4 (fonte, 15/10/2026) | Grade horária: card de consulta em Matrícula e disciplinas e atalho no menu lateral, ambos em nova aba; encontrada pela busca ("horário", "sala", "grade"). Ícone Lucide `calendar-days`. Testes locais: 36 da contagem e 194 de navegador. |
 | Fonte no Git (antes da v1.3) | Oito HTMLs idênticos à v1.2; `Codigo.gs` consulta `ID_INDEX` pela chave `PERIODOS`. Exige `ID_INDEX_SPREADSHEET_ID` nas Propriedades do script. Não representa nova implantação homologada. |
 
 No pacote original v1.2, `Codigo.gs`, os três arquivos da Ajuda e os dois do tema eram byte-idênticos à v1.1; o bloco JavaScript funcional de `Painel.html` também era idêntico. Consulte [HOMOLOGACAO.md](HOMOLOGACAO.md) para os hashes e [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md) para limites da revisão de segurança.

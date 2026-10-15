@@ -216,6 +216,13 @@ function obterCategoriasParaFrontend_() {
   Campos: id (estável), nome, descricao, icone (emoji),
   categoria (chave de CATEGORIAS_SISTEMAS), selo (texto do
   rótulo do card) e palavrasChave (só para a busca).
+
+  Consulta externa (ex.: grade horária): em vez de janela,
+  o item leva "link" e abre essa página em NOVA aba, sem
+  passar pelo AccountChooser (a página é pública). Com
+  "atalhoMenu: true" ganha também um atalho fixo no rodapé
+  do menu lateral, acima da Ajuda, com o ícone "iconeMenu"
+  (catálogo de PainelIcones.html).
 =====================================================*/
 const FERRAMENTAS_PAINEL = [
   {
@@ -226,6 +233,18 @@ const FERRAMENTAS_PAINEL = [
     categoria: "formacao-conclusao",
     selo: "Abre aqui no painel",
     palavrasChave: "creditos faltam formar formatura conclusao curriculo calcular calculo contagem estagio horas"
+  },
+  {
+    id: "grade-horaria",
+    nome: "Grade horária",
+    descricao: "Consulte os dias, horários e salas das disciplinas do semestre. Abre em uma nova aba.",
+    icone: "🗓️",
+    categoria: "matricula-disciplinas",
+    selo: "Consulta",
+    link: "https://script.google.com/macros/s/AKfycbyP0zFypGaLUA4Qy73lnCeWMrPJNXE_02HCM-w8MuEJ83qZOTlgq-HiPl84RMIS7UtH/exec",
+    atalhoMenu: true,
+    iconeMenu: "calendar-days",
+    palavrasChave: "grade horaria horario horarios aula aulas sala salas semestre turma turmas disciplinas consulta"
   }
 ];
 

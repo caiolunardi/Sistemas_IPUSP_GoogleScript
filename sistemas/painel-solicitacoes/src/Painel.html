@@ -996,6 +996,32 @@ window.PainelSolicitacoes = Object.freeze({
     });
     const ajuda = document.getElementById("navAjuda");
     if (ajuda) ajuda.addEventListener("click", () => painelAjudaAbrir());
+
+    // Atalhos de consulta externa (FERRAMENTAS_PAINEL com link e
+    // atalhoMenu) no rodapé do menu, acima da Ajuda. Abrem em nova aba.
+    const apoio = ajuda ? ajuda.parentNode : null;
+    if (!apoio) return;
+    FERRAMENTAS_PAINEL.filter(f => f.link && f.atalhoMenu).forEach(f => {
+        const atalho = document.createElement("a");
+        atalho.className = "painelNavItem painelNavItem--externo";
+        atalho.id = "navAtalho-" + f.id;
+        atalho.href = f.link;
+        atalho.target = "_blank";
+        atalho.rel = "noopener noreferrer";
+        atalho.setAttribute("data-icone", f.iconeMenu || "");
+        atalho.setAttribute("data-icone-texto", f.icone || "🔗");
+        const texto = document.createElement("span");
+        texto.className = "painelNavTexto";
+        texto.textContent = f.nome;
+        const seta = document.createElement("span");
+        seta.className = "painelNavExterno";
+        seta.setAttribute("aria-hidden", "true");
+        seta.textContent = "↗";
+        atalho.appendChild(texto);
+        atalho.appendChild(seta);
+        atalho.appendChild(criarAvisoNovaAba());
+        apoio.insertBefore(atalho, ajuda);
+    });
 })();
 
 // Ponto único de renderização da área principal.
@@ -1137,12 +1163,22 @@ function criarListaCards(itens) {
 }
 
 // Card de ferramenta: abre uma janela no próprio painel (não navega).
+// Consulta externa (com "link", ex.: grade horária): é um <a> que abre
+// a página em nova aba, sem AccountChooser, porque ela é pública e o
+// aluno costuma consultá-la enquanto preenche um formulário.
 function criarCardFerramenta(ferramenta) {
 
-    const card = document.createElement("button");
-    card.type = "button";
+    const externo = Boolean(ferramenta.link);
+    const card = document.createElement(externo ? "a" : "button");
     card.className = "cardSistema";
-    card.setAttribute("aria-haspopup", "dialog");
+    if (externo) {
+        card.href = ferramenta.link;
+        card.target = "_blank";
+        card.rel = "noopener noreferrer";
+    } else {
+        card.type = "button";
+        card.setAttribute("aria-haspopup", "dialog");
+    }
 
     const icone = document.createElement("div");
     icone.className = "iconeSistema";
@@ -1159,6 +1195,7 @@ function criarCardFerramenta(ferramenta) {
         descEl.textContent = ferramenta.descricao;
         info.appendChild(descEl);
     }
+    if (externo) info.appendChild(criarAvisoNovaAba());
 
     const badge = document.createElement("div");
     badge.className = "badgeStatusForm ferramenta";
@@ -1167,16 +1204,24 @@ function criarCardFerramenta(ferramenta) {
     const seta = document.createElement("div");
     seta.className = "setaSistema";
     seta.setAttribute("aria-hidden", "true");
-    seta.textContent = "→";
+    seta.textContent = externo ? "↗" : "→";
 
     card.appendChild(icone);
     card.appendChild(info);
     card.appendChild(badge);
     card.appendChild(seta);
 
-    card.onclick = () => abrirFerramenta(ferramenta.id, card);
+    if (!externo) card.onclick = () => abrirFerramenta(ferramenta.id, card);
     return card;
 
+}
+
+// Texto só para leitor de tela: avisa que o link abre outra aba.
+function criarAvisoNovaAba() {
+    const aviso = document.createElement("span");
+    aviso.className = "somenteLeitor";
+    aviso.textContent = " (abre em nova aba)";
+    return aviso;
 }
 
 // Cada ferramenta registra sua função de abertura em
