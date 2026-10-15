@@ -176,6 +176,22 @@
 
 /* Item recuado (sub-item). No painel dos alunos não é usado hoje; mantido
    igual à cópia dos servidores para as duas evoluírem juntas. */
+/* Atalho de consulta externa (ex.: grade horária): é um <a> que abre
+   em nova aba; a seta ↗ fica à direita. */
+a.painelNavItem{
+    text-decoration:none;
+}
+
+.painelNavItem--externo + .painelNavItem{
+    margin-top:6px;
+}
+
+.painelNavExterno{
+    margin-left:auto;
+    padding-left:6px;
+    color:var(--gradip-link);
+}
+
 .painelNavItem--sub{
     width:calc(100% - 18px);
     margin-left:18px;

@@ -1,4 +1,6 @@
-# Painel de Solicitações dos alunos — fonte v1.3
+# Painel de Solicitações dos alunos — fonte v1.4
+
+**v1.4 (15/10/2026, ainda não implantada):** link da **Grade horária** visual, como card de consulta em "Matrícula e disciplinas" e atalho no rodapé do menu lateral, ambos em nova aba. Para instalar junto com a v1.3, substitua também `PainelNavegacaoEstilos.html` e `PainelIcones.html` (na lista da v1.3 eles já são arquivos novos). Para trocar o link da grade, edite o item `grade-horaria` de `FERRAMENTAS_PAINEL` em `Codigo.gs`.
 
 **v1.3 (14/10/2026, ainda não implantada nem homologada no `/exec`):** o painel abre com **menu lateral** de categorias (com opção de abas, no mesmo padrão do Painel dos servidores), a busca procura em todas as categorias e "Formação e conclusão" ganhou a **Contagem de créditos**, que lê as Regras Curriculares de cada currículo. Ver [contagem de créditos](../../docs/sistemas/painel-solicitacoes/CONTAGEM_DE_CREDITOS.md) e [testes locais](testes/README.md).
 
