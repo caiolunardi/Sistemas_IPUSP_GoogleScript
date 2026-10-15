@@ -291,6 +291,8 @@ function destinosDaFonte() {
     await p.waitForFunction(() => !/Carregando/.test(document.getElementById('auditoriaSituacao').textContent));
     await conferir('#visaoAuditoria .auditoriaTopo ' + g('ajuda-auditoria'), 'ajuda-auditoria');
     await conferir('#visaoAuditoria .auditoriaTopo ' + g('ajuda-secretarias'), 'ajuda-secretarias');
+    // (1.12.0) os gatilhos do conteúdo ficam nos painéis dos três cartões
+    for (const k of ['preenchimento', 'pessoas', 'edicoes']) await p.click('#audCartao-' + k);
     const dinamico = await p.evaluate(() => Array.from(document.querySelectorAll('#auditoriaConteudo [data-gradip-help-open]')).map((b) => b.getAttribute('data-gradip-help-open')));
     verdade(dinamico.length >= 1, 'gatilhos dentro do conteúdo da auditoria: ' + JSON.stringify(dinamico));
     await conferir('#auditoriaConteudo [data-gradip-help-open="' + dinamico[0] + '"]', dinamico[0]);

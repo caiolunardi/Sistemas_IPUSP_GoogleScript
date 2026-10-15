@@ -685,6 +685,14 @@ Ao marcar NÃO, o departamento precisa informar o motivo à **Comissão de Gradu
 
 A forma de consulta é este painel: não há link nem endereço da planilha de auditoria, para nenhum perfil.
 
+### Os três cartões {#ajuda-auditoria-cartoes}
+
+- A auditoria abre com três cartões de resumo: **Preenchimento**, **Quem edita** e **Edições**. Cada um mostra os números principais.
+- Clique num cartão (ou em "Ver detalhes") para abrir o detalhe logo abaixo; clique de novo ("Ocultar detalhes") para fechar. Os três podem ficar abertos ao mesmo tempo.
+- **Preenchimento** soma as abas: quantas disciplinas já têm "Será oferecida", "Docente" e "Dia e horário", e quantas não serão oferecidas. O detalhe traz as disciplinas que não serão oferecidas e o preenchimento por aba.
+- **Quem edita** mostra quantas pessoas editaram e quem mais edita. O detalhe traz os gráficos de quem mais abre e quem mais edita.
+- **Edições** mostra o total e a última edição. O detalhe é a lista completa, com busca e filtros.
+
 ### "Não serão oferecidas" e "Aguardando Justificativa" {#ajuda-auditoria-justificativas}
 
 - Lista as disciplinas marcadas com NÃO em "Será oferecida", em todas as abas, com quem marcou e quando (pelo registro da auditoria; "sem registro na auditoria" quando não há).
@@ -692,7 +700,7 @@ A forma de consulta é este painel: não há link nem endereço da planilha de a
 
 ### Preenchimento por aba {#ajuda-auditoria-preenchimento}
 
-- Um cartão por aba da planilha (PSA, PSC, PSE, PST, Interdepartamentais e Outras Unidades) mostra quantas disciplinas já têm **Será oferecida**, **Docente** e **Dia e horário** preenchidos.
+- No detalhe do cartão **Preenchimento**, um cartão por aba da planilha (PSA, PSC, PSE, PST, Interdepartamentais e Outras Unidades) mostra quantas disciplinas já têm **Será oferecida**, **Docente** e **Dia e horário** preenchidos.
 - Cada contagem é **por campo**: ela não diz que a disciplina está "completa" nem pronta, e não há uma porcentagem de disciplinas prontas.
 - Clique num cartão para ver a tabela da aba: cada disciplina com o que já foi informado e a última edição feita por uma secretaria.
 
@@ -702,7 +710,8 @@ A forma de consulta é este painel: não há link nem endereço da planilha de a
 
 ### "Quem mais abre" e "Quem mais edita" {#ajuda-auditoria-graficos}
 
-- Os gráficos mostram a **atividade registrada**: quantas vezes cada pessoa abriu a planilha das secretarias e quantas edições fez, com a data da última; as 10 primeiras aparecem. "ver edições" filtra a lista de edições por aquela pessoa.
+- Os gráficos mostram a **atividade registrada**: quantas vezes cada pessoa abriu a planilha das secretarias e quantas edições fez, com a data da última; as 10 primeiras aparecem. Ficam no detalhe do cartão **Quem edita**.
+- Clique no **nome** de uma pessoa para abrir as edições dela, como se ela tivesse sido escolhida no filtro de pessoa. Clique no **setor** (ou em "Docente", "Aluno(a)") para ver as edições de todas as pessoas daquele vínculo.
 - Aberturas só são registradas no navegador; o aplicativo do celular não registra aberturas. E-mails só aparecem para contas USP; os demais aparecem como não identificados.
 - Não são medida de produtividade nem prova de ausência de trabalho: uma pessoa pode preencher pelos colegas, combinar por outro meio ou abrir o arquivo de um jeito que não é registrado.
 
@@ -716,7 +725,7 @@ A forma de consulta é este painel: não há link nem endereço da planilha de a
 
 ### Edições: busca, filtros e limites {#ajuda-auditoria-edicoes}
 
-- A lista vai da edição mais recente para a mais antiga, 50 por vez ("Mostrar mais"). Há busca (código, disciplina, docente, campo, nome, e-mail…) e filtros por aba, pessoa e origem.
+- A lista vai da edição mais recente para a mais antiga, 50 por vez ("Mostrar mais"). Há busca (código, disciplina, docente, campo, nome, e-mail…) e filtros por aba, pessoa, vínculo (setor, docente, aluno) e origem. "Limpar" volta a mostrar tudo.
 - **Origem**: "Secretaria" são edições feitas na planilha; "Sistema" são eventos do próprio sistema, como o envio da grade e o encerramento de um semestre.
 - No máximo as **5.000 edições mais recentes** são carregadas; quando há mais, a contagem avisa ("as 5.000 mais recentes de …"). A lista e o histórico mostram o que foi carregado, não necessariamente tudo desde o início.
 - Colagens geram uma linha por célula, sem o valor anterior; colagens muito grandes viram uma linha-resumo. Mudanças feitas pela própria planilha (como apagar dia e início por conflito) e mudanças só de formatação não aparecem.

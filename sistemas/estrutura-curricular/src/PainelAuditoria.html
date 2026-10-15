@@ -23,6 +23,13 @@
   havia só o e-mail, aparece o nome em destaque e, embaixo, o setor,
   "Docente" ou "Aluno(a)" e o e-mail. Fora dos cadastros: "Pessoa não
   cadastrada com acesso", com selo de atenção.
+
+  (1.12.0) Tela mais limpa: três cartões de resumo (Preenchimento, Quem
+  edita, Edições). Cada cartão abre e fecha o seu painel (Não oferecidas
+  e Preenchimento no primeiro; gráficos no segundo; lista no terceiro);
+  todos começam fechados. Nos gráficos, o nome da pessoa e o setor (ou
+  "Docente", "Aluno(a)") são clicáveis: abrem as Edições já filtradas
+  pela pessoa ou pelo vínculo (filtro "Vínculo", novo).
 =====================================================================*/
 var Auditoria = (function () {
   'use strict';
@@ -40,9 +47,11 @@ var Auditoria = (function () {
     dados: null,
     carregando: false,
     aba: null,
-    filtros: { busca: '', aba: '', pessoa: '', origem: '' },
-    limite: POR_PAGINA
+    filtros: { busca: '', aba: '', pessoa: '', vinculo: '', origem: '' },
+    limite: POR_PAGINA,
+    abertos: { preenchimento: false, pessoas: false, edicoes: false }   // (1.12.0) cartões abertos
   };
+  var FILTROS_VAZIOS = function () { return { busca: '', aba: '', pessoa: '', vinculo: '', origem: '' }; };
 
   /*----------------------------------------------------------------
     Seções: Estrutura curricular / Auditoria da grade
@@ -79,7 +88,7 @@ var Auditoria = (function () {
       est.dados = dados;
       est.carregando = false;
       if (!mesmoSemestre) {
-        est.filtros = { busca: '', aba: '', pessoa: '', origem: '' };
+        est.filtros = FILTROS_VAZIOS();
         est.limite = POR_PAGINA;
         est.aba = null;
       }
@@ -121,17 +130,78 @@ var Auditoria = (function () {
   ----------------------------------------------------------------*/
   function renderizar() {
     var d = est.dados;
-    var html = '';
     // 1.8.0: sem link para a planilha de auditoria (o painel é a forma de consulta)
-    // Não oferecidas primeiro: é o que pede ação da Comissão de Graduação
-    html += d.andamento ? htmlNaoOferecidas() + htmlPreenchimento() :
+    // Não oferecidas primeiro (dentro de Preenchimento): é o que pede ação da Comissão de Graduação
+    var preench = d.andamento ? htmlNaoOferecidas() + htmlPreenchimento() :
       '<div class="alerta alerta--info"><div class="alerta__titulo">Grade encerrada</div><p>A grade de ' + esc(rotuloSemestre(d.semestre)) +
-      ' não está mais em preenchimento: a situação final dela está na cópia de segurança feita no envio da grade seguinte. Abaixo, todas as edições registradas.</p>' + gatilho('ajuda-auditoria-anteriores', 'Sobre as grades anteriores') + '</div>';
-    html = htmlAvisoCadastros() + html;
-    html += htmlGraficos();
-    html += htmlEdicoes();
-    $('auditoriaConteudo').innerHTML = html;
+      ' não está mais em preenchimento: a situação final dela está na cópia de segurança feita no envio da grade seguinte. As edições registradas estão no cartão "Edições".</p>' + gatilho('ajuda-auditoria-anteriores', 'Sobre as grades anteriores') + '</div>';
+    $('auditoriaConteudo').innerHTML = htmlAvisoCadastros() + htmlCartoes() +
+      htmlPainel('preenchimento', preench) + htmlPainel('pessoas', htmlGraficos()) + htmlPainel('edicoes', htmlEdicoes());
     sincronizarFiltros();
+  }
+
+  /*----------------------------------------------------------------
+    (1.12.0) Cartões de resumo: cada um abre e fecha o seu painel
+  ----------------------------------------------------------------*/
+  var ROTULO_CARTAO = { preenchimento: 'Preenchimento', pessoas: 'Quem edita', edicoes: 'Edições' };
+
+  /** Ícone do catálogo (template estruturaIcones), ou '' se não houver. */
+  function iconeHtml(nome, classe) {
+    var t = document.getElementById('estruturaIcones');
+    var svg = t && t.content ? t.content.querySelector('[data-estrutura-icone="' + nome + '"]') : null;
+    return svg ? '<span class="estruturaIcone' + (classe ? ' ' + classe : '') + '" aria-hidden="true">' + svg.outerHTML + '</span>' : '';
+  }
+
+  function plural(n, um, varios) { return n.toLocaleString('pt-BR') + ' ' + (n === 1 ? um : varios); }
+
+  function htmlCartao(chave, icone, valor, detalhes) {
+    var aberto = !!est.abertos[chave];
+    return '<button type="button" class="cartaoAud" id="audCartao-' + chave + '" data-aud-cartao="' + chave + '" aria-expanded="' + aberto + '" aria-controls="audPainel-' + chave + '">' +
+      '<span class="cartaoAud__topo">' + iconeHtml(icone, 'cartaoAud__icone') + '<span class="cartaoAud__titulo">' + esc(ROTULO_CARTAO[chave]) + '</span>' + iconeHtml('chevron-down', 'cartaoAud__seta') + '</span>' +
+      '<span class="cartaoAud__valor">' + valor + '</span>' + detalhes +
+      '<span class="cartaoAud__acao" data-aud-acao-cartao>' + (aberto ? 'Ocultar detalhes' : 'Ver detalhes') + '</span></button>';
+  }
+
+  function htmlCartoes() {
+    var d = est.dados, html = '<div class="cartoesAuditoria" role="group" aria-label="Resumo da auditoria">';
+    // Preenchimento: contagens por campo somando as abas (nunca "% pronta": ver a Ajuda)
+    if (d.andamento) {
+      var t = { total: 0, oferecida: 0, docente: 0, horario: 0, nao: 0 };
+      d.andamento.forEach(function (a) { var c = contarAba(a); Object.keys(t).forEach(function (k) { t[k] += c[k]; }); });
+      html += htmlCartao('preenchimento', 'list-checks', plural(t.total, '<span class="cartaoAud__unidade">disciplina</span>', '<span class="cartaoAud__unidade">disciplinas</span>'),
+        '<span class="cartaoAud__medidas">' + (t.total ? medida('Será oferecida', t.oferecida, t.total) + medida('Docente', t.docente, t.total) + medida('Dia e horário', t.horario, t.total) : '<span class="pequeno texto-suave">Nenhuma disciplina na grade.</span>') + '</span>' +
+        (t.nao ? '<span class="cartaoAud__alerta">' + plural(t.nao, 'não será oferecida', 'não serão oferecidas') + ' — aguardando justificativa</span>' : ''));
+    } else {
+      html += htmlCartao('preenchimento', 'list-checks', '<span class="cartaoAud__unidade">Grade encerrada</span>', '<span class="cartaoAud__detalhe">A situação final está na cópia de segurança.</span>');
+    }
+    // Quem edita
+    var pessoas = d.pessoas || [];
+    var top = pessoas[0];
+    html += htmlCartao('pessoas', 'users-round', plural(pessoas.length, '<span class="cartaoAud__unidade">pessoa editou</span>', '<span class="cartaoAud__unidade">pessoas editaram</span>'),
+      (d.aberturas ? '<span class="cartaoAud__detalhe">' + plural(d.totalAberturas || 0, 'abertura registrada', 'aberturas registradas') + ' da planilha</span>' : '') +
+      '<span class="cartaoAud__detalhe">' + (top ? 'Quem mais edita: <strong>' + esc(pessoa(top.email).nome) + '</strong> (' + plural(top.edicoes, 'edição', 'edições') + ')' : 'Nenhuma edição das secretarias ainda.') + '</span>');
+    // Edições
+    var ed = d.edicoes || [], ult = ed[0], total = d.totalEdicoes || ed.length;
+    html += htmlCartao('edicoes', 'history', plural(total, '<span class="cartaoAud__unidade">edição</span>', '<span class="cartaoAud__unidade">edições</span>'),
+      '<span class="cartaoAud__detalhe">' + (ult ? 'Última: ' + esc(ult[E.data]) + ' · ' + esc(ult[E.origem] === 'Sistema' ? 'Sistema' : pessoa(ult[E.email]).nome) : 'Nenhuma edição registrada nesta grade.') + '</span>' +
+      '<span class="cartaoAud__detalhe">Busca e filtros por aba, pessoa, vínculo e origem</span>');
+    return html + '</div>';
+  }
+
+  function htmlPainel(chave, conteudo) {
+    return '<div class="painelAud" id="audPainel-' + chave + '" role="region" aria-labelledby="audCartao-' + chave + '"' + (est.abertos[chave] ? '' : ' hidden') + '>' + conteudo + '</div>';
+  }
+
+  /** Abre ou fecha um cartão sem redesenhar o resto (o foco fica no cartão). */
+  function alternarCartao(chave, abrir) {
+    est.abertos[chave] = abrir === undefined ? !est.abertos[chave] : !!abrir;
+    var b = $('audCartao-' + chave), p = $('audPainel-' + chave);
+    if (b) {
+      b.setAttribute('aria-expanded', String(est.abertos[chave]));
+      var acao = b.querySelector('[data-aud-acao-cartao]');
+      if (acao) acao.textContent = est.abertos[chave] ? 'Ocultar detalhes' : 'Ver detalhes';
+    }
+    if (p) p.hidden = !est.abertos[chave];
   }
 
   /** (1.11.0) Algum cadastro de pessoas não abriu: quem não foi achado nos outros aparece só com o e-mail. */
@@ -300,10 +370,14 @@ var Auditoria = (function () {
     html += '<ol class="graficoBarras__lista" id="' + id + '">';
     mostrar.forEach(function (it) {
       var pct = Math.max(2, Math.round(it.n / max * 100));
-      var p = pessoa(it.email), quem = [p.vinculo, p.email].filter(preenchido).join(' · ');
+      var p = pessoa(it.email);
+      // (1.12.0) Nome e vínculo clicáveis: abrem as Edições filtradas
+      var nome = p.estado === 'sem_email' ? esc(p.nome) : '<button type="button" class="linkPessoa" data-aud-pessoa="' + esc(it.email) + '" aria-label="Ver as edições de ' + esc(rotuloPessoa(it.email)) + '">' + esc(p.nome) + '</button>';
+      var vinc = p.estado === 'cadastrada' && p.vinculo ? '<button type="button" class="linkPessoa linkPessoa--vinculo" data-aud-vinculo="' + esc(p.vinculo) + '" aria-label="Ver as edições de ' + esc(p.vinculo) + '">' + esc(p.vinculo) + '</button>' : esc(p.vinculo);
+      var quem = [vinc, esc(p.email)].filter(preenchido).join(' · ');
       html += '<li class="graficoBarras__item' + (p.estado === 'nao_cadastrada' ? ' graficoBarras__item--naoCadastrada' : '') + '" title="' + esc(rotuloPessoa(it.email) + ': ' + it.n + ' ' + unidade(it.n) + ' · última: ' + it.ultima) + '">' +
-        '<span class="graficoBarras__rotulo"><span class="graficoBarras__nome">' + esc(p.nome) + (p.estado === 'nao_cadastrada' ? ' ' + SELO_NAO_CADASTRADA : '') + '</span>' +
-        (quem ? '<span class="graficoBarras__quem">' + esc(quem) + '</span>' : '') +
+        '<span class="graficoBarras__rotulo"><span class="graficoBarras__nome">' + nome + (p.estado === 'nao_cadastrada' ? ' ' + SELO_NAO_CADASTRADA : '') + '</span>' +
+        (quem ? '<span class="graficoBarras__quem">' + quem + '</span>' : '') +
         '<span class="graficoBarras__detalhe">última: ' + esc(it.ultima) + (acao ? ' ' + acao(it.email) : '') + '</span></span>' +
         '<span class="graficoBarras__linha"><span class="graficoBarras__trilho" aria-hidden="true"><span class="graficoBarras__barra" style="width:' + pct + '%"></span></span>' +
         '<span class="graficoBarras__valor">' + it.n.toLocaleString('pt-BR') + '<span class="somenteLeitor"> ' + unidade(it.n) + '</span></span></span></li>';
@@ -319,13 +393,12 @@ var Auditoria = (function () {
     var ed = (d.pessoas || []).map(function (p) { return { email: p.email, n: p.edicoes, ultima: p.ultima }; });
     var totalEd = ed.reduce(function (s, p) { return s + p.n; }, 0);
     return '<section class="cartao secaoAuditoria" aria-labelledby="audPessoasTitulo"><h3 class="secaoAuditoria__titulo" id="audPessoasTitulo">Quem mais abre e quem mais edita</h3>' +
-      '<p class="pequeno texto-suave">Aberturas da planilha das secretarias no navegador (o aplicativo do celular não é registrado) e edições feitas nela, por pessoa.</p>' +
+      '<p class="pequeno texto-suave">Aberturas da planilha das secretarias no navegador (o aplicativo do celular não é registrado) e edições feitas nela, por pessoa. Clique no nome ou no setor para ver as edições.</p>' +
       '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-graficos', 'O que os gráficos mostram') + ' ' + gatilho('ajuda-auditoria-pessoas', 'Como os nomes são encontrados') + '</div>' +
       '<div class="graficosAuditoria">' +
       graficoBarras('audGrafAberturas', 'Quem mais abre a planilha', function (n) { return n === 1 ? 'abertura' : 'aberturas'; }, ab, d.totalAberturas,
         ab ? 'Nenhuma abertura registrada ainda.' : 'As aberturas passam a ser registradas quando o Serviço de Graduação ativar esse registro.') +
-      graficoBarras('audGrafEdicoes', 'Quem mais edita', function (n) { return n === 1 ? 'edição' : 'edições'; }, ed, totalEd, 'Nenhuma edição das secretarias registrada ainda.',
-        function (email) { return '· <button type="button" class="botao botao--texto graficoBarras__acao" data-aud-pessoa="' + esc(email) + '">ver edições</button>'; }) +
+      graficoBarras('audGrafEdicoes', 'Quem mais edita', function (n) { return n === 1 ? 'edição' : 'edições'; }, ed, totalEd, 'Nenhuma edição das secretarias registrada ainda.') +
       '</div></section>';
   }
 
@@ -337,6 +410,8 @@ var Auditoria = (function () {
 
   /** (1.11.0) Opções do filtro de pessoa: valor = e-mail, rótulo = nome (vínculo · e-mail), em ordem do rótulo. */
   function opcoesPessoas(emails, atual) {
+    // (1.12.0) pessoa escolhida num gráfico (ex.: só abriu a planilha) continua na lista mesmo sem edições
+    if (atual && emails.indexOf(atual) < 0) emails = emails.concat([atual]);
     var itens = emails.map(function (e) { return { v: e, r: rotuloPessoa(e) }; });
     itens.sort(function (a, b) { return a.r.localeCompare(b.r, 'pt-BR'); });
     return '<option value="">Todas</option>' + itens.map(function (it) {
@@ -346,12 +421,16 @@ var Auditoria = (function () {
 
   function htmlEdicoes() {
     var ed = est.dados.edicoes;
-    var abas = [], pessoas = [];
+    var abas = [], pessoas = [], vinculos = [];
     ed.forEach(function (l) {
       if (l[E.aba] && abas.indexOf(l[E.aba]) < 0) abas.push(l[E.aba]);
       if (l[E.origem] === 'Secretaria' && l[E.email] && pessoas.indexOf(l[E.email]) < 0) pessoas.push(l[E.email]);
     });
+    pessoas.forEach(function (e) { var v = pessoa(e); if (v.estado === 'cadastrada' && v.vinculo && vinculos.indexOf(v.vinculo) < 0) vinculos.push(v.vinculo); });
+    // (1.12.0) vínculo escolhido num gráfico continua na lista mesmo sem edições
+    if (est.filtros.vinculo && vinculos.indexOf(est.filtros.vinculo) < 0) vinculos.push(est.filtros.vinculo);
     abas.sort();
+    vinculos.sort(function (a, b) { return a.localeCompare(b, 'pt-BR'); });
     var f = est.filtros;
     var html = '<section class="cartao secaoAuditoria" aria-labelledby="audEdicoesTitulo"><h3 class="secaoAuditoria__titulo" id="audEdicoesTitulo">Edições</h3>' +
       '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-edicoes', 'Busca, origem e limite de edições') + '</div>' +
@@ -359,6 +438,7 @@ var Auditoria = (function () {
         '<div class="campo campo--busca"><label class="campo__rotulo" for="audBusca">Buscar</label><input type="search" id="audBusca" autocomplete="off" placeholder="Código, disciplina, docente, campo, nome, e-mail…" value="' + esc(f.busca) + '"></div>' +
         '<div class="campo"><label class="campo__rotulo" for="audFiltroAba">Aba</label><select id="audFiltroAba" data-aud-filtro="aba">' + opcoes(abas, f.aba, 'Todas') + '</select></div>' +
         '<div class="campo"><label class="campo__rotulo" for="audFiltroPessoa">Pessoa</label><select id="audFiltroPessoa" data-aud-filtro="pessoa">' + opcoesPessoas(pessoas, f.pessoa) + '</select></div>' +
+        '<div class="campo"><label class="campo__rotulo" for="audFiltroVinculo">Vínculo</label><select id="audFiltroVinculo" data-aud-filtro="vinculo">' + opcoes(vinculos, f.vinculo, 'Todos') + '</select></div>' +
         '<div class="campo"><label class="campo__rotulo" for="audFiltroOrigem">Origem</label><select id="audFiltroOrigem" data-aud-filtro="origem">' +
           '<option value="">Todas</option><option value="Secretaria"' + (f.origem === 'Secretaria' ? ' selected' : '') + '>Secretarias</option><option value="Sistema"' + (f.origem === 'Sistema' ? ' selected' : '') + '>Sistema</option></select></div>' +
         '<button type="button" class="botao botao--texto" data-aud-limpar>Limpar filtros</button>' +
@@ -373,6 +453,7 @@ var Auditoria = (function () {
     return est.dados.edicoes.filter(function (l) {
       if (f.aba && l[E.aba] !== f.aba) return false;
       if (f.pessoa && l[E.email] !== f.pessoa) return false;
+      if (f.vinculo && (l[E.origem] !== 'Secretaria' || pessoa(l[E.email]).vinculo !== f.vinculo)) return false;
       if (f.origem && l[E.origem] !== f.origem) return false;
       if (termo) {
         var quem = pessoa(l[E.email]);
@@ -466,6 +547,7 @@ var Auditoria = (function () {
       var alvo = ev.target.closest('button');
       if (!alvo) return;
       if (alvo.hasAttribute('data-aud-tentar')) { carregar(est.dados ? est.dados.semestre : undefined); return; }
+      if (alvo.hasAttribute('data-aud-cartao')) { alternarCartao(alvo.getAttribute('data-aud-cartao')); return; }
       if (alvo.hasAttribute('data-aud-aba')) {
         est.aba = alvo.getAttribute('data-aud-aba');
         var foco = est.aba;
@@ -475,16 +557,24 @@ var Auditoria = (function () {
         return;
       }
       if (alvo.hasAttribute('data-aud-historico')) { abrirHistorico(alvo.getAttribute('data-aud-historico')); return; }
-      if (alvo.hasAttribute('data-aud-pessoa')) {
-        est.filtros = { busca: '', aba: '', pessoa: alvo.getAttribute('data-aud-pessoa'), origem: '' };
+      if (alvo.hasAttribute('data-aud-pessoa') || alvo.hasAttribute('data-aud-vinculo')) {
+        // (1.12.0) Nome ou vínculo num gráfico: abre o cartão Edições já filtrado
+        est.filtros = FILTROS_VAZIOS();
+        if (alvo.hasAttribute('data-aud-pessoa')) est.filtros.pessoa = alvo.getAttribute('data-aud-pessoa');
+        else est.filtros.vinculo = alvo.getAttribute('data-aud-vinculo');
         est.limite = POR_PAGINA;
+        est.abertos.edicoes = true;
         renderizar();
         var t = $('audEdicoesTitulo');
-        if (t) { t.setAttribute('tabindex', '-1'); t.focus(); }
+        if (t) {
+          t.setAttribute('tabindex', '-1');
+          t.focus();
+          if (t.scrollIntoView) t.scrollIntoView({ block: 'start', behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        }
         return;
       }
       if (alvo.hasAttribute('data-aud-limpar')) {
-        est.filtros = { busca: '', aba: '', pessoa: '', origem: '' };
+        est.filtros = FILTROS_VAZIOS();
         est.limite = POR_PAGINA;
         renderizar();
         if ($('audBusca')) $('audBusca').focus();

@@ -1020,6 +1020,17 @@
             <p>A forma de consulta é este painel: não há link nem endereço da planilha de auditoria, para nenhum perfil.</p>
           </article>
 
+          <article class="centralAjuda__item" id="ajuda-auditoria-cartoes" data-gradip-help-search-item data-search="tres cartoes resumo preenchimento quem edita edicoes ver detalhes ocultar detalhes abrir fechar painel">
+            <h4 tabindex="-1">Os três cartões</h4>
+            <ul>
+              <li>A auditoria abre com três cartões de resumo: <strong>Preenchimento</strong>, <strong>Quem edita</strong> e <strong>Edições</strong>. Cada um mostra os números principais.</li>
+              <li>Clique num cartão (ou em "Ver detalhes") para abrir o detalhe logo abaixo; clique de novo ("Ocultar detalhes") para fechar. Os três podem ficar abertos ao mesmo tempo.</li>
+              <li><strong>Preenchimento</strong> soma as abas: quantas disciplinas já têm "Será oferecida", "Docente" e "Dia e horário", e quantas não serão oferecidas. O detalhe traz as disciplinas que não serão oferecidas e o preenchimento por aba.</li>
+              <li><strong>Quem edita</strong> mostra quantas pessoas editaram e quem mais edita. O detalhe traz os gráficos de quem mais abre e quem mais edita.</li>
+              <li><strong>Edições</strong> mostra o total e a última edição. O detalhe é a lista completa, com busca e filtros.</li>
+            </ul>
+          </article>
+
           <article class="centralAjuda__item" id="ajuda-auditoria-justificativas" data-gradip-help-search-item data-search="nao serao oferecidas aguardando justificativa quem marcou quando selo recebimento aprovacao comissao">
             <h4 tabindex="-1">"Não serão oferecidas" e "Aguardando Justificativa"</h4>
             <ul>
@@ -1031,7 +1042,7 @@
           <article class="centralAjuda__item" id="ajuda-auditoria-preenchimento" data-gradip-help-search-item data-search="preenchimento cartoes por aba sera oferecida docente dia e horario contagem tabela ultima edicao completa porcentagem">
             <h4 tabindex="-1">Preenchimento por aba</h4>
             <ul>
-              <li>Um cartão por aba da planilha (PSA, PSC, PSE, PST, Interdepartamentais e Outras Unidades) mostra quantas disciplinas já têm <strong>Será oferecida</strong>, <strong>Docente</strong> e <strong>Dia e horário</strong> preenchidos.</li>
+              <li>No detalhe do cartão <strong>Preenchimento</strong>, um cartão por aba da planilha (PSA, PSC, PSE, PST, Interdepartamentais e Outras Unidades) mostra quantas disciplinas já têm <strong>Será oferecida</strong>, <strong>Docente</strong> e <strong>Dia e horário</strong> preenchidos.</li>
               <li>Cada contagem é <strong>por campo</strong>: ela não diz que a disciplina está "completa" nem pronta, e não há uma porcentagem de disciplinas prontas.</li>
               <li>Clique num cartão para ver a tabela da aba: cada disciplina com o que já foi informado e a última edição feita por uma secretaria.</li>
             </ul>
@@ -1042,10 +1053,11 @@
             <p>"Histórico", na tabela, ou o código de uma disciplina na lista de edições abre uma janela com as edições daquela disciplina, da mais recente para a mais antiga — entre as edições carregadas no painel (veja o limite abaixo).</p>
           </article>
 
-          <article class="centralAjuda__item" id="ajuda-auditoria-graficos" data-gradip-help-search-item data-search="graficos quem mais abre quem mais edita aberturas navegador aplicativo celular nao registrado produtividade atividade registrada ver edicoes">
+          <article class="centralAjuda__item" id="ajuda-auditoria-graficos" data-gradip-help-search-item data-search="graficos quem mais abre quem mais edita aberturas navegador aplicativo celular nao registrado produtividade atividade registrada ver edicoes clicar nome setor vinculo">
             <h4 tabindex="-1">"Quem mais abre" e "Quem mais edita"</h4>
             <ul>
-              <li>Os gráficos mostram a <strong>atividade registrada</strong>: quantas vezes cada pessoa abriu a planilha das secretarias e quantas edições fez, com a data da última; as 10 primeiras aparecem. "ver edições" filtra a lista de edições por aquela pessoa.</li>
+              <li>Os gráficos mostram a <strong>atividade registrada</strong>: quantas vezes cada pessoa abriu a planilha das secretarias e quantas edições fez, com a data da última; as 10 primeiras aparecem. Ficam no detalhe do cartão <strong>Quem edita</strong>.</li>
+              <li>Clique no <strong>nome</strong> de uma pessoa para abrir as edições dela, como se ela tivesse sido escolhida no filtro de pessoa. Clique no <strong>setor</strong> (ou em "Docente", "Aluno(a)") para ver as edições de todas as pessoas daquele vínculo.</li>
               <li>Aberturas só são registradas no navegador; o aplicativo do celular não registra aberturas. E-mails só aparecem para contas USP; os demais aparecem como não identificados.</li>
               <li>Não são medida de produtividade nem prova de ausência de trabalho: uma pessoa pode preencher pelos colegas, combinar por outro meio ou abrir o arquivo de um jeito que não é registrado.</li>
             </ul>
@@ -1062,10 +1074,10 @@
             </ul>
           </article>
 
-          <article class="centralAjuda__item" id="ajuda-auditoria-edicoes" data-gradip-help-search-item data-search="edicoes lista busca filtros aba pessoa origem sistema secretaria mostrar mais 5000 mais recentes limite carregadas colagem resumo">
+          <article class="centralAjuda__item" id="ajuda-auditoria-edicoes" data-gradip-help-search-item data-search="edicoes lista busca filtros aba pessoa vinculo setor origem sistema secretaria mostrar mais 5000 mais recentes limite carregadas colagem resumo">
             <h4 tabindex="-1">Edições: busca, filtros e limites</h4>
             <ul>
-              <li>A lista vai da edição mais recente para a mais antiga, 50 por vez ("Mostrar mais"). Há busca (código, disciplina, docente, campo, nome, e-mail…) e filtros por aba, pessoa e origem.</li>
+              <li>A lista vai da edição mais recente para a mais antiga, 50 por vez ("Mostrar mais"). Há busca (código, disciplina, docente, campo, nome, e-mail…) e filtros por aba, pessoa, vínculo (setor, docente, aluno) e origem. "Limpar" volta a mostrar tudo.</li>
               <li><strong>Origem</strong>: "Secretaria" são edições feitas na planilha; "Sistema" são eventos do próprio sistema, como o envio da grade e o encerramento de um semestre.</li>
               <li>No máximo as <strong>5.000 edições mais recentes</strong> são carregadas; quando há mais, a contagem avisa ("as 5.000 mais recentes de …"). A lista e o histórico mostram o que foi carregado, não necessariamente tudo desde o início.</li>
               <li>Colagens geram uma linha por célula, sem o valor anterior; colagens muito grandes viram uma linha-resumo. Mudanças feitas pela própria planilha (como apagar dia e início por conflito) e mudanças só de formatação não aparecem.</li>

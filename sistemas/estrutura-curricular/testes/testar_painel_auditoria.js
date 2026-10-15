@@ -56,6 +56,12 @@ function comPrevia(a, semestre, ano, esperado) {
     return Object.assign({ semestre, ano }, esperado ? { esperado } : {}, r && r.ok ? { assinatura: r.dados.assinatura } : {});
   } finally { a.estado.falhas = falhas; }
 }
+// (1.12.0) A auditoria abre com três cartões fechados; abre os pedidos (padrão: os três).
+async function abrirCartoes(pg, chaves) {
+  for (const k of chaves || ['preenchimento', 'pessoas', 'edicoes']) {
+    if ((await pg.getAttribute('#audCartao-' + k, 'aria-expanded')) !== 'true') await pg.click('#audCartao-' + k);
+  }
+}
 const enviar = (amb, sem, ano) => pedir(amb.ctx.enviarGradeParaPreenchimento(comPrevia(amb, sem, ano, contagens(amb, sem))));
 
 /**
@@ -261,9 +267,35 @@ function ambiente(nEdicoesExtras, op) {
       verdade(await pagina.isHidden('#etapas'), 'sem etapas para o leitor');
       verdade(!chamadas.includes('obterAuditoriaGrade'), 'não pediu ainda');
       await pagina.click('#visao-auditoria');
-      await pagina.waitForSelector('.auditoriaAba');
+      await pagina.waitForSelector('.cartaoAud');
       verdade(await pagina.isHidden('#visaoEstrutura'), 'estrutura escondida');
       igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 1);
+    });
+    await teste('(1.12.0) três cartões fechados: Preenchimento, Quem edita e Edições, com os números principais; clique e teclado abrem e fecham o painel de cada um', async () => {
+      igual(await pagina.$$eval('.cartaoAud', (b) => b.map((x) => [x.querySelector('.cartaoAud__titulo').textContent, x.getAttribute('aria-expanded'), x.getAttribute('aria-controls')])),
+        [['Preenchimento', 'false', 'audPainel-preenchimento'], ['Quem edita', 'false', 'audPainel-pessoas'], ['Edições', 'false', 'audPainel-edicoes']]);
+      verdade(await pagina.isHidden('#audPainel-preenchimento') && await pagina.isHidden('#audPainel-pessoas') && await pagina.isHidden('#audPainel-edicoes'), 'painéis fechados');
+      const pre = (await pagina.textContent('#audCartao-preenchimento')).replace(/\s+/g, ' ').trim();
+      const total = Object.values(contagens(amb2, '1')).reduce((a, b) => a + b, 0);
+      verdade(new RegExp('^Preenchimento\\s*' + total + ' disciplinas').test(pre) && new RegExp('Será oferecida\\s*2 de ' + total).test(pre) && new RegExp('Docente\\s*1 de ' + total).test(pre) &&
+        /1 não será oferecida — aguardando justificativa/.test(pre) && /Ver detalhes$/.test(pre) && !/%/.test(pre), pre);
+      const pes = (await pagina.textContent('#audCartao-pessoas')).replace(/\s+/g, ' ').trim();
+      verdade(/2 pessoas editaram/.test(pes) && /4 aberturas registradas/.test(pes) && /Quem mais edita: Docente Fictícia Dois \(61 edições\)/.test(pes), pes);
+      const ed = (await pagina.textContent('#audCartao-edicoes')).replace(/\s+/g, ' ').trim();
+      verdade(/Edições\s*\d+ edições/.test(ed) && /Última: 04\/10\/2026 11:00:00 · Docente Fictícia Dois/.test(ed), ed);
+      await pagina.click('#audCartao-preenchimento');
+      igual(await pagina.getAttribute('#audCartao-preenchimento', 'aria-expanded'), 'true');
+      verdade(await pagina.isVisible('#audPainel-preenchimento') && await pagina.isVisible('.auditoriaAba') && await pagina.isVisible('#audNaoTitulo'), 'preenchimento por aba e "não serão oferecidas" no painel');
+      verdade(/Ocultar detalhes\s*$/.test(await pagina.textContent('#audCartao-preenchimento')));
+      igual(await pagina.evaluate(() => document.activeElement.id), 'audCartao-preenchimento', 'foco fica no cartão');
+      await pagina.keyboard.press('Enter');
+      verdade(await pagina.isHidden('#audPainel-preenchimento'), 'Enter fecha');
+      await pagina.keyboard.press('Space');
+      verdade(await pagina.isVisible('#audPainel-preenchimento'), 'Espaço abre');
+      await abrirCartoes(pagina, ['pessoas']);
+      verdade(await pagina.isVisible('#audGrafEdicoes') && await pagina.isHidden('#audPainel-edicoes'), 'cada cartão abre só o seu painel');
+      await abrirCartoes(pagina);
+      verdade(await pagina.isVisible('#audListaEdicoes'), 'os três abertos ao mesmo tempo');
     });
     await teste('cartões por aba com as contagens; tabela da aba escolhida com a situação e a última edição', async () => {
       const psa = await pagina.textContent('[data-aud-aba="PSA"]');
@@ -287,18 +319,36 @@ function ambiente(nEdicoesExtras, op) {
       verdade(/^PSE\d{4}/.test(linhas[0][0]) && linhas[0][1] === 'PSE' && linhas[0][2].indexOf(SEC_PSE) >= 0 && linhas[0][2].indexOf('Docente Fictícia Dois') === 0 && /Docente · /.test(linhas[0][2]) && linhas[0][3] === 'Aguardando Justificativa', JSON.stringify(linhas));
       verdade(/\(1\)/.test(await pagina.textContent('#audNaoTitulo')));
     });
-    await teste('(1.8.0) gráficos "Quem mais abre a planilha" e "Quem mais edita": barras do maior para o menor, valores em texto; "ver edições" filtra a lista', async () => {
+    await teste('(1.8.0) gráficos "Quem mais abre a planilha" e "Quem mais edita": barras do maior para o menor, valores em texto; (1.12.0) clicar no nome abre Edições filtrada pela pessoa', async () => {
       const ab = await pagina.$$eval('#audGrafAberturas .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__quem').textContent, x.querySelector('.graficoBarras__valor').firstChild.textContent, x.querySelector('.graficoBarras__barra').style.width]));
       igual(ab, [['Servidora Fictícia Um', 'Secretaria do PSA · ' + SEC_PSA, '3', '100%'], ['Docente Fictícia Dois', 'Docente · ' + SEC_PSE, '1', '33%']], '(1.11.0) nome; embaixo, vínculo · e-mail');
       verdade(/4 aberturas/.test(await pagina.textContent('#audGrafAberturasTitulo')));
       const ed = await pagina.$$eval('#audGrafEdicoes .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__valor').firstChild.textContent]));
       igual(ed, [['Docente Fictícia Dois', '61'], ['Servidora Fictícia Um', '5']]);
       verdade(/66 edições/.test(await pagina.textContent('#audGrafEdicoesTitulo')));
-      await pagina.click('[data-aud-pessoa="' + SEC_PSA + '"]');
+      verdade(!(await pagina.$('.graficoBarras__acao')), '(1.12.0) sem o botão "ver edições": o nome é o link');
+      await pagina.click('#audCartao-edicoes');
+      verdade(await pagina.isHidden('#audPainel-edicoes'), 'Edições fechada antes do clique no nome');
+      await pagina.click('#audGrafEdicoes [data-aud-pessoa="' + SEC_PSA + '"]');
+      verdade(await pagina.isVisible('#audPainel-edicoes'), '(1.12.0) o nome abre o cartão Edições');
+      igual(await pagina.getAttribute('#audCartao-edicoes', 'aria-expanded'), 'true');
+      igual(await pagina.evaluate(() => document.activeElement.id), 'audEdicoesTitulo', 'foco no título da lista');
       verdade(/^5 de \d+ edições/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
       igual(await pagina.inputValue('#audFiltroPessoa'), SEC_PSA);
       igual(await pagina.$$eval('#audFiltroPessoa option', (o) => o.map((x) => x.textContent)),
         ['Todas', 'Docente Fictícia Dois (Docente · ' + SEC_PSE + ')', 'Servidora Fictícia Um (Secretaria do PSA · ' + SEC_PSA + ')'], '(1.11.0) filtro pelo nome, valor = e-mail');
+    });
+    await teste('(1.12.0) clicar no setor ou vínculo filtra Edições por ele; filtro "Vínculo" na lista; "Limpar filtros" zera tudo', async () => {
+      await pagina.click('#audGrafEdicoes [data-aud-vinculo="Docente"]');
+      igual([await pagina.inputValue('#audFiltroVinculo'), await pagina.inputValue('#audFiltroPessoa')], ['Docente', ''], 'vínculo escolhido, pessoa limpa');
+      verdade(/^61 de/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
+      igual(await pagina.$$eval('#audFiltroVinculo option', (o) => o.map((x) => x.textContent)), ['Todos', 'Docente', 'Secretaria do PSA']);
+      await pagina.selectOption('#audFiltroVinculo', 'Secretaria do PSA');
+      verdade(/^5 de/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
+      await pagina.click('#audGrafAberturas [data-aud-vinculo="Secretaria do PSA"]');
+      verdade(/^5 de/.test(await pagina.textContent('#audContagem')), 'setor no gráfico de aberturas também filtra');
+      await pagina.click('[data-aud-limpar]');
+      igual(await pagina.inputValue('#audFiltroVinculo'), '');
     });
     await teste('edições: busca sem acento, filtros, "Mostrar mais" de 50 em 50, limpar filtros', async () => {
       await pagina.click('[data-aud-limpar]');
@@ -371,7 +421,12 @@ function ambiente(nEdicoesExtras, op) {
           const { pagina: pg, errosPagina: erros, contexto } = await abrirPainel(nav, { amb: ambV, largura, altura: 900, esquema: tema, latencia: 0 });
           await esperarCarregado(pg);
           await pg.click('#visao-auditoria');
-          await pg.waitForSelector('.auditoriaAba');
+          await pg.waitForSelector('.cartaoAud');
+          // (1.12.0) cartões fechados: largura e alvo de toque
+          const fechado = await pg.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth, alturas: Array.from(document.querySelectorAll('.cartaoAud')).map((b) => b.getBoundingClientRect().height) }));
+          verdade(fechado.sw <= fechado.iw && fechado.alturas.every((h) => h >= 44), tema + ' ' + largura + ' cartões fechados: ' + JSON.stringify(fechado));
+          await pg.screenshot({ path: path.join(SAIDA, `${tema}-${largura}-auditoria-cartoes.png`) });
+          await abrirCartoes(pg);
           const r = await pg.evaluate(() => {
             const cor = (c) => c.match(/\d+(\.\d+)?/g).map(Number);
             const lum = (rgb) => { const a = rgb.slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2]; };
@@ -379,8 +434,9 @@ function ambiente(nEdicoesExtras, op) {
             const razao = (el) => { const a = lum(cor(getComputedStyle(el).color)), b = lum(fundo(el)); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
             const alvos = ['.visoes__botao[aria-selected="true"]', '.visoes__botao[aria-selected="false"]', '#auditoriaSubtitulo', '.auditoriaAba[aria-pressed="true"] .medida__rotulo', '.auditoriaAba[aria-pressed="false"] .medida__valor',
               '.auditoriaAba__total', '.tabelaAuditoria .texto-suave', '[data-aud-historico]', '.mudanca__antes', '.mudanca__depois', '#audContagem', '.linkDisciplina',
-              '.auditoriaAba__nao', '.seloJustificativa', '.graficoBarras__nome', '.graficoBarras__detalhe', '.graficoBarras__valor', '.graficoBarras__acao',
-              '.graficoBarras__quem', '.pessoaAud__nome', '.pessoaAud__detalhe', '.seloPessoaNaoCadastrada'];
+              '.auditoriaAba__nao', '.seloJustificativa', '.graficoBarras__nome', '.graficoBarras__detalhe', '.graficoBarras__valor',
+              '.graficoBarras__quem', '.pessoaAud__nome', '.pessoaAud__detalhe', '.seloPessoaNaoCadastrada',
+              '.cartaoAud__titulo', '.cartaoAud__valor', '.cartaoAud__detalhe', '.cartaoAud__acao', '.cartaoAud__alerta', '.cartaoAud .medida__rotulo', '.graficoBarras__nome .linkPessoa', '.linkPessoa--vinculo'];
             // barra do gráfico contra o fundo do cartão: ≥ 3:1 (elemento gráfico)
             const barra = document.querySelector('.graficoBarras__barra');
             const lb = lum(cor(getComputedStyle(barra).backgroundColor)), lf = lum(fundo(barra.parentElement));
@@ -411,7 +467,7 @@ function ambiente(nEdicoesExtras, op) {
       const r = await abrirPainel(nav, { amb: a, largura: 1280, altura: 900, latencia: 0 });
       await esperarCarregado(r.pagina);
       await r.pagina.click('#visao-auditoria');
-      await r.pagina.waitForSelector('.auditoriaAba');
+      await r.pagina.waitForSelector('.cartaoAud');
       const aviso = await r.pagina.textContent('#auditoriaConteudo .alerta--aviso');
       verdade(/Nomes incompletos/.test(aviso) && /cadastro de alunos/.test(aviso), aviso);
       const intruso = await r.pagina.$$eval('#audGrafAberturas .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, (x.querySelector('.graficoBarras__quem') || {}).textContent]));
@@ -423,7 +479,7 @@ function ambiente(nEdicoesExtras, op) {
       const r2 = await abrirPainel(nav, { amb: b, largura: 1280, altura: 900, latencia: 0 });
       await esperarCarregado(r2.pagina);
       await r2.pagina.click('#visao-auditoria');
-      await r2.pagina.waitForSelector('.auditoriaAba');
+      await r2.pagina.waitForSelector('.cartaoAud');
       verdade(!(await r2.pagina.$('#auditoriaConteudo .alerta--aviso')), 'sem aviso com os três cadastros lidos');
       const item = await r2.pagina.$$eval('#audGrafAberturas .graficoBarras__item--naoCadastrada', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__quem').textContent, x.getAttribute('title')]));
       igual(item.length, 1);
@@ -439,7 +495,7 @@ function ambiente(nEdicoesExtras, op) {
     await teste('administrador: mesma seção, (1.8.0) sem link da planilha de auditoria; etapas continuam na estrutura', async () => {
       verdade(await r3.pagina.isVisible('#etapas'), 'etapas do admin');
       await r3.pagina.click('#visao-auditoria');
-      await r3.pagina.waitForSelector('.auditoriaAba');
+      await r3.pagina.waitForSelector('.cartaoAud');
       igual(await r3.pagina.$$eval('#visaoAuditoria a[href]', (x) => x.length), 0, 'nenhum link');
       verdade(!/Abrir a planilha de auditoria/.test(await r3.pagina.textContent('#visaoAuditoria')));
       igual(r3.errosPagina, []);
@@ -452,7 +508,7 @@ function ambiente(nEdicoesExtras, op) {
       verdade(/Não foi possível abrir a planilha de auditoria/.test(await r3.pagina.textContent('#auditoriaConteudo')));
       amb3.ctx.obterAuditoriaGrade = orig;
       await r3.pagina.click('[data-aud-tentar]');
-      await r3.pagina.waitForSelector('.auditoriaAba');
+      await r3.pagina.waitForSelector('.cartaoAud');
     });
     await r3.pagina.context().close();
   } finally {

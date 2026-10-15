@@ -580,6 +580,40 @@ p.campoFicha__dica { margin: 8px 0 0; }
 @media (min-width: 769px) { .tabelaAuditoria td.celPessoa { min-width: 220px; } }
 .seloPessoaNaoCadastrada { padding: 1px 8px; font-size: 12px; font-weight: bold; vertical-align: 1px; background: var(--gradip-danger-bg); border-color: var(--gradip-danger-border); color: var(--gradip-danger); }
 
+/* (1.12.0) Auditoria em três cartões: cada um é um botão que abre o painel dele logo abaixo.
+   Aberto: borda de 2 px na cor do link e seta girada (não só cor). */
+.cartoesAuditoria { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 0 0 14px; }
+.cartaoAud {
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; width: 100%; min-height: 44px; min-width: 0;
+  padding: 16px 18px; border-radius: 12px; text-align: left; font: inherit; cursor: pointer;
+  background: var(--gradip-surface); color: var(--gradip-text); border: 1px solid var(--gradip-border); box-shadow: var(--gradip-shadow);
+}
+.cartaoAud:hover { background: var(--gradip-surface-2); border-color: var(--gradip-border-strong); }
+.cartaoAud[aria-expanded="true"] { border: 2px solid var(--gradip-link); padding: 15px 17px; }
+.cartaoAud__topo { display: flex; align-items: center; gap: 10px; }
+.cartaoAud__icone { color: var(--gradip-link); }
+.cartaoAud__titulo { font-weight: bold; font-size: 16px; }
+.cartaoAud__seta { margin-left: auto; color: var(--gradip-text-muted); transition: transform .2s ease; }
+.cartaoAud[aria-expanded="true"] .cartaoAud__seta { transform: rotate(180deg); }
+.cartaoAud__valor { font-size: 28px; font-weight: bold; line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.cartaoAud__unidade { font-size: 15px; font-weight: bold; }
+.cartaoAud__detalhe { font-size: 13px; color: var(--gradip-text-muted); overflow-wrap: anywhere; }
+.cartaoAud__detalhe strong { color: var(--gradip-text); }
+.cartaoAud__medidas { display: flex; flex-direction: column; gap: 6px; }
+.cartaoAud__alerta { align-self: flex-start; font-size: 12.5px; font-weight: bold; color: var(--gradip-text); padding: 4px 8px; border-radius: 6px; background: var(--gradip-warning-bg); border: 1px solid var(--gradip-warning-border); }
+.cartaoAud__acao { margin-top: auto; padding-top: 2px; font-size: 13px; font-weight: bold; color: var(--gradip-link); text-decoration: underline; text-underline-offset: 2px; }
+.cartaoAud:hover .cartaoAud__acao { color: var(--gradip-link-hover); }
+.painelAud { margin: 0 0 14px; }
+.painelAud[hidden] { display: none; }
+/* Nome e setor clicáveis no gráfico "Quem edita" */
+.linkPessoa {
+  background: transparent; border: 0; padding: 0; margin: 0; font: inherit; color: var(--gradip-link); cursor: pointer; text-align: left;
+  text-decoration: underline; text-underline-offset: 2px; min-height: 24px; overflow-wrap: anywhere;
+}
+.linkPessoa:hover { color: var(--gradip-link-hover); }
+.graficoBarras__nome .linkPessoa { font-weight: bold; }
+@media (forced-colors: active) { .cartaoAud[aria-expanded="true"] { border-color: Highlight; } }
+
 @media (max-width: 768px) {
   .cabecalho { padding: 8px 14px; }
   .cabecalho__marca .marcaIpuspSvg { height: 42px; }
@@ -609,6 +643,10 @@ p.campoFicha__dica { margin: 8px 0 0; }
   .etapas__etapa { min-height: 52px; }
   .auditoriaTopo, .secaoAuditoria { padding: 14px; }
   .auditoriaAbas { grid-template-columns: 1fr 1fr; }
+  .cartoesAuditoria { grid-template-columns: 1fr; gap: 10px; }
+  .cartaoAud { padding: 14px; }
+  .cartaoAud[aria-expanded="true"] { padding: 13px; }
+  .cartaoAud__valor { font-size: 24px; }
   .tabelaAuditoria .auditoriaData, .tabelaAuditoria .auditoriaOnde { white-space: normal; }
   .campoFicha--largo { grid-column: auto; }
   .tabelaOferta th[scope="row"] { display: block; padding: 10px 12px 4px; }
