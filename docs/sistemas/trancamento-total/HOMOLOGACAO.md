@@ -82,3 +82,7 @@ node sistemas/trancamento-total/formulario/testes/testar_navegador.js  # 139 ok 
 - **Larguras:** 360, 390, 480, 768 e 1280 px, nos dois temas: sem rolagem horizontal, cabeçalho dentro da tela, alvos (Enviar, Ajuda, Aparência, opções, campos) ≥ 44 px, Central de Ajuda com fechar visível e sem rolagem horizontal.
 
 **Limites:** o backend simulado não reproduz o Apps Script real (autorização de e-mail, cota, `Session` no domínio). Falta conferir no `/exec`: nova autorização, recibo chegando (e não em spam), pedido aparecendo no gerenciador e no painel, e o PNG da marca USP (substituído por um retângulo nos testes).
+
+## Capturas
+
+Telas da v1.2 com dados fictícios, nos temas claro e escuro e em 360/768 px: [evidencias/1.2](evidencias/1.2/README.md).

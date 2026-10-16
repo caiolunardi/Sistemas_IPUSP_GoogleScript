@@ -11,3 +11,5 @@ Não copie esta pasta para o Apps Script. Os testes não acessam planilhas reais
 node testar_backend.js
 node testar_navegador.js [pasta-para-capturas]   # requer Playwright com Chromium
 ```
+
+As capturas versionadas ficam em [docs/sistemas/exclusao-disciplinas/evidencias/1.1](../../../../docs/sistemas/exclusao-disciplinas/evidencias/1.1/README.md). Sem rede, a marca USP do tema claro é servida por `assets/usp/logo-usp-preto.svg`.

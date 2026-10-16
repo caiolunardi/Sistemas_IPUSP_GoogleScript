@@ -87,3 +87,7 @@ node sistemas/exclusao-disciplinas/formulario/testes/testar_navegador.js  # 187 
 - **Larguras:** 360, 390, 480, 768 e 1280 px, nos dois temas: sem rolagem horizontal, cabeçalho e linhas de disciplina dentro da tela, alvos ≥ 44 px (inclusive código, nome, turma, Adicionar e Remover), Central de Ajuda sem rolagem horizontal.
 
 **Limites:** o backend simulado não reproduz o Apps Script real. Falta conferir no `/exec`: os títulos reais de A–T (o diagnóstico mostra), o recibo chegando, as linhas novas aparecendo no Painel dos servidores e no gerenciador (que passam a receber o carimbo como Data, como as respostas antigas do Google Forms, e `CÓDIGO - Nome` na coluna J), e o PNG da marca USP.
+
+## Capturas
+
+Telas da v1.1 com dados fictícios, nos temas claro e escuro e em 360/768 px: [evidencias/1.1](evidencias/1.1/README.md).

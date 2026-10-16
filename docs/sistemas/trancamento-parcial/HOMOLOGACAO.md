@@ -89,3 +89,7 @@ node sistemas/trancamento-parcial/formulario/testes/testar_navegador.js  # 173 o
 - **Larguras:** 360, 390, 480, 768 e 1280 px, nos dois temas: sem rolagem horizontal, cabeçalho e linhas de disciplina dentro da tela, alvos ≥ 44 px (inclusive código, nome, Adicionar e Remover), Central de Ajuda sem rolagem horizontal.
 
 **Limites:** o backend simulado não reproduz o Apps Script real. Falta conferir no `/exec`: nova autorização, recibo chegando, a aba e os títulos reais da DISCIPLINAS, um pedido aparecendo no gerenciador (que lê as disciplinas como texto e passa a receber `CÓDIGO - Nome` padronizado) e o PNG da marca USP.
+
+## Capturas
+
+Telas da v1.1 com dados fictícios, nos temas claro e escuro e em 360/768 px: [evidencias/1.1](evidencias/1.1/README.md).

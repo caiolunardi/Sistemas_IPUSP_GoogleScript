@@ -10,6 +10,9 @@ function carregarPlaywright(){try{return require('playwright')}catch(e){return r
 const {chromium}=carregarPlaywright();
 const SRC=path.join(__dirname,'..','src')+'/';
 const CAPTURAS=process.argv[2]||null;
+// Teste sem rede: o PNG da marca USP (tema claro) é servido pelo SVG
+// institucional do repositório, para as capturas mostrarem a marca real.
+const MARCA_USP_OFFLINE=fs.readFileSync(path.join(__dirname,'..','..','..','..','assets','usp','logo-usp-preto.svg'),'utf8');
 function build(){let h=fs.readFileSync(SRC+'ExclusaoApp.html','utf8');
   for(let k=0;k<3;k++)h=h.replace(/<\?!= include_\('(\w+)'\) \?>/g,(_,n)=>fs.readFileSync(SRC+n+'.html','utf8'));
   if(/<\?/.test(h))throw new Error('scriptlet sobrando');return h;}
@@ -39,7 +42,7 @@ function lum(c){const m=c.match(/[\d.]+/g).map(Number);const a=m.slice(0,3).map(
 function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
 async function abrir(ctx,cen){const p=await ctx.newPage();p.__errs=[];p.on('pageerror',e=>p.__errs.push(e.message));
   await p.route('https://form.teste/**',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:html.replace('<head>','<head><script>'+stub(CENARIOS[cen])+'</script>')}));
-  await p.route('https://datagrad.sistemas.ip.usp.br/**',r=>r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="240" height="97"><rect width="240" height="97" fill="#00509d"/></svg>'}));
+  await p.route('https://datagrad.sistemas.ip.usp.br/**',r=>r.fulfill({contentType:'image/svg+xml',body:MARCA_USP_OFFLINE}));
   await p.route('https://leginf.usp.br/**',r=>r.fulfill({body:'x'}));
   await p.goto('https://form.teste/');await p.waitForFunction(()=>document.getElementById('loadingOverlay').hidden);return p;}
 const esperarCatalogo=p=>p.waitForFunction(()=>window.__chamadas.some(c=>c[0]==='obterCatalogoDisciplinas')&&typeof catalogo!=='undefined'&&catalogo!==null);
