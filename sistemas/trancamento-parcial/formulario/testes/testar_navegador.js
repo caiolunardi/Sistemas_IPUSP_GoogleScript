@@ -13,10 +13,11 @@ const CAPTURAS=process.argv[2]||null;
 // Teste sem rede: o PNG da marca USP (tema claro) é servido pelo SVG
 // institucional do repositório, para as capturas mostrarem a marca real.
 const MARCA_USP_OFFLINE=fs.readFileSync(path.join(__dirname,'..','..','..','..','assets','usp','logo-usp-preto.svg'),'utf8');
-function build(){let h=fs.readFileSync(SRC+'TrancamentoParcialApp.html','utf8');
+function build(homologacao=false){let h=fs.readFileSync(SRC+'TrancamentoParcialApp.html','utf8');
+  h=h.replace(/<\? if \(homologacao\) \{ \?>([\s\S]*?)<\? \} \?>/,(_,c)=>homologacao?c:'');
   for(let k=0;k<3;k++)h=h.replace(/<\?!= include_\('(\w+)'\) \?>/g,(_,n)=>fs.readFileSync(SRC+n+'.html','utf8'));
   if(/<\?/.test(h))throw new Error('scriptlet sobrando');return h;}
-const html=build();
+const html=build(),htmlHomologacao=build(true);
 
 const PERIODO={semestre:1,ano:2026,horaFimTexto:'23h59',diaFimTexto:'17/04/2026',dataInicioTexto:'06/04/2026',dataFimTexto:'17/04/2026'};
 const BASE={autenticado:true,periodoAberto:true,periodo:PERIODO,encontrado:true,email:'ana@usp.br',nUsp:'9000001',nome:'Ana Teste Ficticia',historico:[],urlFormulario:'https://form.teste/exec'};
@@ -40,8 +41,8 @@ function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:fu
 window.google={script:{get run(){return runner()}}};})();`;
 function lum(c){const m=c.match(/[\d.]+/g).map(Number);const a=m.slice(0,3).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*a[0]+.7152*a[1]+.0722*a[2]}
 function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
-async function abrir(ctx,cen){const p=await ctx.newPage();p.__errs=[];p.on('pageerror',e=>p.__errs.push(e.message));
-  await p.route('https://form.teste/**',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:html.replace('<head>','<head><script>'+stub(CENARIOS[cen])+'</script>')}));
+async function abrir(ctx,cen,pagina=html){const p=await ctx.newPage();p.__errs=[];p.on('pageerror',e=>p.__errs.push(e.message));
+  await p.route('https://form.teste/**',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:pagina.replace('<head>','<head><script>'+stub(CENARIOS[cen])+'</script>')}));
   await p.route('https://datagrad.sistemas.ip.usp.br/**',r=>r.fulfill({contentType:'image/svg+xml',body:MARCA_USP_OFFLINE}));
   await p.route('https://leginf.usp.br/**',r=>r.fulfill({body:'x'}));
   await p.goto('https://form.teste/');await p.waitForFunction(()=>document.getElementById('loadingOverlay').hidden);return p;}
@@ -218,5 +219,19 @@ async function preencherBasico(p){await p.check('#campoCiencia');await p.fill('#
   if(CAPTURAS&&(w===360||w===768))await p.screenshot({path:path.join(CAPTURAS,`form-${w}-${scheme}.png`),fullPage:true});
   await ctx.close();}}
 
+
+ // Faixa do ambiente de homologação: só na cópia de testes, legível nos
+ // dois temas e sem rolagem lateral no celular.
+ for(const scheme of ['light','dark']){
+  const ctx=await b.newContext({colorScheme:scheme,viewport:{width:360,height:800}});const T=`[${scheme}]`;
+  let p=await abrir(ctx,'normal');chk(`${T} produção sem faixa de homologação`,(await p.$('.faixaHomologacao'))===null);await p.close();
+  p=await abrir(ctx,'normal',htmlHomologacao);
+  chk(`${T} homologação mostra a faixa com texto`,await visivel(p,'.faixaHomologacao')&&(await p.textContent('.faixaHomologacao')).includes('Ambiente de homologação'));
+  const [ct,cf,fundo]=await p.$eval('.faixaHomologacao',e=>{const s=getComputedStyle(e);return [s.color,getComputedStyle(e.querySelector('strong')).color,s.backgroundColor]});
+  chk(`${T} faixa com contraste AA`,cr(ct,fundo)>=4.5&&cr(cf,fundo)>=4.5,`${cr(ct,fundo).toFixed(2)} / ${cr(cf,fundo).toFixed(2)}`);
+  chk(`${T} faixa sem rolagem lateral em 360 px`,await p.evaluate(()=>document.documentElement.scrollWidth<=360));
+  chk(`${T} homologação sem erro de script`,p.__errs.length===0,p.__errs.join());
+  if(CAPTURAS)await p.screenshot({path:path.join(CAPTURAS,`homologacao-360-${scheme}.png`)});
+  await ctx.close();}
  await b.close();console.log(`\n${ok} ok, ${fail} falha(s)`);process.exit(fail?1:0);
 })().catch(e=>{console.error(e);process.exit(1)});

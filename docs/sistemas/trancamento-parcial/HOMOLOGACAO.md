@@ -93,3 +93,23 @@ node sistemas/trancamento-parcial/formulario/testes/testar_navegador.js  # 173 o
 ## Capturas
 
 Telas da v1.1 com dados fictícios, nos temas claro e escuro e em 360/768 px: [evidencias/1.1](evidencias/1.1/README.md).
+
+## v1.2 — ambiente de homologação (16/10/2026)
+
+Pedido do responsável funcional: testar no `/exec` sem tocar nas planilhas de produção. Numa cópia do projeto, a propriedade `AMBIENTE` = `homologacao` faz as chaves serem lidas na coluna `Homologação` do `ID_INDEX`; a página mostra uma faixa de aviso e o título e o assunto do recibo começam por `[HOMOLOGAÇÃO]`. Sem a propriedade, a produção funciona como na v1.1. Montagem e roteiro: [Ambiente de homologação](../AMBIENTE_DE_HOMOLOGACAO.md).
+
+Só dois arquivos mudaram; os demais continuam com os hashes da v1.1.
+
+| Arquivo | SHA-256 v1.2 |
+|---|---|
+| `Codigo.gs` | `3194f2dae451b7c3e25908a4c904ba5ddb11adb7facc7f50f9c417b8273f6dbb` |
+| `TrancamentoParcialApp.html` | `1424443dbf081b70c8c5397fee99c37c41eabceb0dd290e6835b94f1881585c8` |
+
+```bash
+node sistemas/trancamento-parcial/formulario/testes/testar_backend.js    # 40 ok (eram 36)
+node sistemas/trancamento-parcial/formulario/testes/testar_navegador.js  # 183 ok (eram 173)
+```
+
+- **Servidor:** com `AMBIENTE` = `homologacao` (com espaços e maiúsculas), só o `ID_INDEX` e as planilhas da coluna `Homologação` são abertos, o pedido é gravado e o assunto e o título levam `[HOMOLOGAÇÃO]`; célula `Homologação` vazia é erro sem cair na produção; valor desconhecido não abre nenhuma planilha de dados e marca a página; sem a propriedade, título e assunto não mudam.
+- **Navegador:** a faixa não existe em produção; na homologação aparece com texto (não só cor), contraste medido 13,84 e 4,71 no claro e 14,26 e 9,43 no escuro (texto e destaque sobre o fundo de aviso), sem rolagem lateral em 360 px e sem erro de JavaScript. [Capturas](evidencias/1.2/README.md).
+- **Ainda não testado no Google:** a cópia do projeto com `AMBIENTE`, a leitura da coluna real do `ID_INDEX` e o recibo com o prefixo.

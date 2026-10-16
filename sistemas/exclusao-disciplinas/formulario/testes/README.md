@@ -13,3 +13,5 @@ node testar_navegador.js [pasta-para-capturas]   # requer Playwright com Chromiu
 ```
 
 As capturas versionadas ficam em [docs/sistemas/exclusao-disciplinas/evidencias/1.1](../../../../docs/sistemas/exclusao-disciplinas/evidencias/1.1/README.md). Sem rede, a marca USP do tema claro é servida por `assets/usp/logo-usp-preto.svg`.
+
+Os dois scripts também conferem o [ambiente de homologação](../../../../docs/sistemas/AMBIENTE_DE_HOMOLOGACAO.md): leitura da coluna `Homologação` com `AMBIENTE` = `homologacao`, erro sem volta para a produção e a faixa de aviso na página.

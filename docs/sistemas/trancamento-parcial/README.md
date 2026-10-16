@@ -1,6 +1,6 @@
 # Trancamento Parcial de Matrícula
 
-**Versões:** formulário dos alunos **v1.1** (16/10/2026), sobre a v1.0 recebida no mesmo dia. O código está em [`sistemas/trancamento-parcial/`](../../../sistemas/trancamento-parcial/README.md) e foi verificado localmente; **a v1.1 ainda não foi homologada no `/exec`**. O gerenciador da equipe não está no repositório e fica parado por decisão do responsável funcional. O GitHub não informa qual versão está implantada no Apps Script.
+**Versões:** formulário dos alunos **v1.2** (16/10/2026), sobre a v1.1 e a v1.0 recebida no mesmo dia. O código está em [`sistemas/trancamento-parcial/`](../../../sistemas/trancamento-parcial/README.md) e foi verificado localmente; **a v1.2 ainda não foi homologada no `/exec`**. O gerenciador da equipe não está no repositório e fica parado por decisão do responsável funcional. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 
@@ -34,3 +34,4 @@ O aluno, logado com a conta `@usp.br`, pede o trancamento de matrícula em uma o
 |---|---|
 | v1.0 (em uso até 16/10/2026) | IDs de três planilhas literais; colunas por posição fixa (A–S); cadastro automático do aluno não encontrado; disciplina em texto livre ("sigla e nome"); ano de ingresso pedido; justificativa obrigatória e cortada em 4.000 caracteres sem aviso; erros em `alert`, mensagem técnica visível; sem tema nem ajuda. |
 | v1.1 | IDs pelo `ID_INDEX` (`PLANILHA_ALUNOS`, `TRANCAMENTO_PARCIAL_MATRICULA`, `PERIODOS`, `DISCIPLINAS`); disciplinas pelo código com o cadastro DISCIPLINAS; colunas pelo título; sem cadastro automático e sem ano de ingresso; justificativa opcional; recibo ao aluno; tema GRADIP e Central de Ajuda; validação no campo; tela de sucesso com as disciplinas. **Exige nova autorização do script** (envio de e-mail). |
+| v1.2 (16/10/2026) | [Ambiente de homologação](../AMBIENTE_DE_HOMOLOGACAO.md): numa cópia do projeto, a propriedade `AMBIENTE` = `homologacao` faz as chaves serem lidas na coluna `Homologação` do `ID_INDEX`, com faixa de aviso na página e `[HOMOLOGAÇÃO]` no título e no assunto do recibo. Sem a propriedade, nada muda. |

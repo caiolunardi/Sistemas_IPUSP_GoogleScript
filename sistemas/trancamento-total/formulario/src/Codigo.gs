@@ -1,7 +1,13 @@
 /*=====================================================
-  PEDIDO DE TRANCAMENTO TOTAL DE MATRÍCULA — V1.2
+  PEDIDO DE TRANCAMENTO TOTAL DE MATRÍCULA — V1.3
   (IPUSP)
   Backend Apps Script
+
+  v1.3 (16/10/2026): ambiente de homologação. Numa cópia do
+  projeto, a propriedade AMBIENTE = homologacao faz as chaves
+  serem lidas na coluna "Homologação" do ID_INDEX, com faixa de
+  aviso na página e "[HOMOLOGAÇÃO]" no título e no assunto do
+  recibo. Sem a propriedade, nada muda.
 
   v1.2 (15/10/2026, pedido do Serviço de Graduação):
     - recibo por e-mail ao aluno logo depois do envio (para o
@@ -62,13 +68,15 @@
 
   CONFIGURAÇÃO DO PROJETO:
     - Propriedades do script: ID_INDEX_SPREADSHEET_ID = ID da
-      planilha mestre ID_INDEX.
+      planilha mestre ID_INDEX; AMBIENTE = homologacao só na
+      cópia de testes.
     - No ID_INDEX (aba "Página1" ou a primeira; colunas
       "Chave" e "ID de Produção"): PLANILHA_ALUNOS e
       TRANCAMENTO_TOTAL_MATRICULA.
 =====================================================*/
 
 const PROPRIEDADE_ID_INDICE = "ID_INDEX_SPREADSHEET_ID";
+const PROPRIEDADE_AMBIENTE = "AMBIENTE"; // "producao" (padrão) ou "homologacao"
 const ABA_INDICE = "Página1";
 const CHAVE_ALUNOS = "PLANILHA_ALUNOS";
 const CHAVE_RESPOSTAS = "TRANCAMENTO_TOTAL_MATRICULA";
@@ -125,9 +133,11 @@ const COLUNA_CONFIRMACAO = 9;
 =====================================================*/
 
 function doGet(e) {
-  return HtmlService.createTemplateFromFile("TrancamentoFormApp")
+  const pagina = HtmlService.createTemplateFromFile("TrancamentoFormApp");
+  pagina.homologacao = prefixoAmbiente_() !== "";
+  return pagina
     .evaluate()
-    .setTitle("Pedido de Trancamento Total de Matrícula — IPUSP")
+    .setTitle(prefixoAmbiente_() + "Pedido de Trancamento Total de Matrícula — IPUSP")
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
@@ -147,13 +157,35 @@ function obterIdIndice_() {
   return String(id).trim();
 }
 
-// ID de Produção de uma chave (colunas achadas pelo título). Em cache
-// por 10 minutos: o formulário é aberto por muitos alunos e o índice
-// não precisa ser lido a cada acesso.
-function obterIdProducao_(chave) {
+// Ambiente do projeto. Sem a propriedade AMBIENTE (ou com "producao"),
+// as chaves são lidas na coluna "ID de Produção" do ID_INDEX. Com
+// "homologacao" (cópia do projeto só para testes), na coluna cujo
+// título começa por "Homologação". Valor desconhecido é erro: um erro
+// de digitação não pode mandar teste para a planilha de produção.
+function ambiente_() {
+  const valor = String(PropertiesService.getScriptProperties().getProperty(PROPRIEDADE_AMBIENTE) || "").trim().toLowerCase();
+  if (!valor || valor === "producao") return "producao";
+  if (valor === "homologacao") return "homologacao";
+  throw new Error(`Propriedade ${PROPRIEDADE_AMBIENTE} com valor desconhecido; use "producao" ou "homologacao".`);
+}
 
+function ehHomologacao_() {
+  return ambiente_() === "homologacao";
+}
+
+function chaveCacheId_(chave, homologacao) {
+  return (homologacao ? "idIndexHomologacao:" : "idIndex:") + chave;
+}
+
+// ID da planilha de uma chave no ambiente do projeto (colunas achadas
+// pelo título). Em cache por 10 minutos: o formulário é aberto por
+// muitos alunos. Na homologação não há volta para a produção: coluna
+// ou célula vazia é erro.
+function obterIdPlanilha_(chave) {
+
+  const homologacao = ehHomologacao_();
   const cache = CacheService.getScriptCache();
-  const chaveCache = "idIndex:" + chave;
+  const chaveCache = chaveCacheId_(chave, homologacao);
   const emCache = cache.get(chaveCache);
   if (emCache) return emCache;
 
@@ -164,15 +196,18 @@ function obterIdProducao_(chave) {
 
   const titulos = valores[0].map(t => String(t).trim());
   const colChave = titulos.indexOf("Chave");
-  const colId = titulos.indexOf("ID de Produção");
+  const nomeColuna = homologacao ? "Homologação" : "ID de Produção";
+  const colId = homologacao
+    ? titulos.findIndex(t => semAcento_(t).toLowerCase().startsWith("homologacao"))
+    : titulos.indexOf("ID de Produção");
   if (colChave === -1 || colId === -1) {
-    throw new Error('A planilha ID_INDEX precisa ter as colunas "Chave" e "ID de Produção".');
+    throw new Error(`A planilha ID_INDEX precisa ter as colunas "Chave" e "${nomeColuna}".`);
   }
 
   for (let i = 1; i < valores.length; i++) {
     if (String(valores[i][colChave]).trim() === chave) {
       const id = String(valores[i][colId] || "").trim();
-      if (!id) throw new Error(`A chave "${chave}" está cadastrada no ID_INDEX, mas a coluna "ID de Produção" está vazia.`);
+      if (!id) throw new Error(`A chave "${chave}" está cadastrada no ID_INDEX, mas a coluna "${nomeColuna}" está vazia.`);
       cache.put(chaveCache, id, 600);
       return id;
     }
@@ -182,8 +217,13 @@ function obterIdProducao_(chave) {
 
 }
 
+// Prefixo do título da página e do assunto do recibo na homologação.
+function prefixoAmbiente_() {
+  try { return ehHomologacao_() ? "[HOMOLOGAÇÃO] " : ""; } catch (err) { return "[CONFIGURAÇÃO INVÁLIDA] "; }
+}
+
 function abrirAbaPorChave_(chave) {
-  return SpreadsheetApp.openById(obterIdProducao_(chave)).getSheets()[0];
+  return SpreadsheetApp.openById(obterIdPlanilha_(chave)).getSheets()[0];
 }
 
 function semAcento_(texto) {
@@ -492,7 +532,7 @@ function enviarRecibo_(email, dados) {
   const opcoes = { name: "Serviço de Graduação — IPUSP", noReply: true };
   const contato = String(textoSemApostrofoInicial_(dados.emailContato) || "").trim().toLowerCase();
   if (contato && contato !== email) opcoes.cc = contato;
-  MailApp.sendEmail(email, "Recibo — Pedido de Trancamento Total de Matrícula", montarRecibo_(dados, quando), opcoes);
+  MailApp.sendEmail(email, prefixoAmbiente_() + "Recibo — Pedido de Trancamento Total de Matrícula", montarRecibo_(dados, quando), opcoes);
 }
 
 /*=====================================================

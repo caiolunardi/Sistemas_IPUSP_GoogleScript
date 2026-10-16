@@ -32,7 +32,7 @@ function run(props,files,opts={}){
     MailApp:{sendEmail:(to,assunto,corpo,o)=>{if(opts.falhaEmail)throw new Error('cota');mails.push({to,assunto,corpo,o})}},
     ScriptApp:{getService:()=>({getUrl:()=>'https://form.teste/exec'})},
     Utilities:{formatDate:(d,tz,f)=>fmtBR(d,f),parseDate:(t)=>parseBR(t),getUuid:()=>'uuid-'+(++uuid)},
-    HtmlService:{createTemplateFromFile:()=>({evaluate:()=>({setTitle(){return this},addMetaTag(){return this}})})}};
+    HtmlService:{createTemplateFromFile:()=>{const t={evaluate:()=>({setTitle(x){t.titulo=x;return this},addMetaTag(){return this}})};ctx.pagina=t;return t}}};
   ctx.cache=cache;
   vm.createContext(ctx);vm.runInContext(fs.readFileSync(SRC+'Codigo.gs','utf8'),ctx);ctx.logs=logs;ctx.mails=mails;return ctx;
 }
@@ -154,4 +154,17 @@ t('diagnóstico: tudo OK, aberto, títulos A–T, sem dados pessoais nem IDs',()
 t('diagnóstico: sem propriedade e sem chave apontam o passo',()=>{const c=run({},{},{agora:ABERTO});assert(/ERRO  Propriedade ID_INDEX_SPREADSHEET_ID/.test(c.diagnosticarConfiguracao()));
   const i=sheet('Página1',[['Chave','Tipo','ID de Produção'],['PLANILHA_ALUNOS','spreadsheet','ALU']]);const c2=run({ID_INDEX_SPREADSHEET_ID:'IDX'},{IDX:[i],ALU:[alunos()]},{agora:ABERTO});const r=c2.diagnosticarConfiguracao();
   assert(/ERRO  Chave EXCLUSAO_DISCIPLINAS no ID_INDEX e acesso à planilha — Não encontrei a chave "EXCLUSAO_DISCIPLINAS"/.test(r),r);assert(/OK    Chave PLANILHA_ALUNOS/.test(r))});
+// Ambiente de homologação (propriedade AMBIENTE numa cópia do projeto).
+const idxHomolog=(vazio=false)=>sheet('Página1',indice().vals.map((l,i)=>i?[...l,vazio?'':'H_'+l[2]]:[...l,'Homologação (cópias de teste)']));
+const ambHomolog=(props,idx)=>{const r=respostas();const ab=[];const c=run(Object.assign({ID_INDEX_SPREADSHEET_ID:'IDX'},props),{IDX:[idx],H_ALU:[alunos()],H_RESP:[sheet('Outra aba',[['a']]),r],H_PER:[periodos()],H_DISC:disciplinas()},{agora:ABERTO,aberturas:ab});return {c,r,ab}};
+const soHomolog=ab=>ab.every(id=>id==='IDX'||id.startsWith('H_'));
+t('homologação: lê a coluna Homologação, nunca abre a produção, avisa no assunto e na página',()=>{const {c,r,ab}=ambHomolog({AMBIENTE:' Homologacao '},idxHomolog());
+  const antes=r.vals.length;c.obterDadosIniciais();c.registrarSolicitacao(pedido());assert(r.vals.length>antes);assert(ab.length>1&&soHomolog(ab),ab.join());
+  assert(/^\[HOMOLOGAÇÃO\] Recibo/.test(c.mails[0].assunto),c.mails[0].assunto);c.doGet();assert.strictEqual(c.pagina.homologacao,true);assert(/^\[HOMOLOGAÇÃO\] /.test(c.pagina.titulo))});
+t('homologação: célula vazia é erro, sem cair na produção',()=>{const {c,r,ab}=ambHomolog({AMBIENTE:'homologacao'},idxHomolog(true));const antes=r.vals.length;
+  assert.throws(()=>c.registrarSolicitacao(pedido()));assert.strictEqual(r.vals.length,antes);assert(soHomolog(ab),ab.join());assert(c.logs.some(l=>/coluna "Homologação" está vazia/.test(l)),c.logs.join())});
+t('AMBIENTE desconhecido é erro e não abre nenhuma planilha de dados',()=>{const {c,ab}=ambHomolog({AMBIENTE:'homolog'},idxHomolog());
+  assert.throws(()=>c.registrarSolicitacao(pedido()));assert(ab.every(id=>id==='IDX'),ab.join());c.doGet();assert.strictEqual(c.pagina.homologacao,true);assert(/CONFIGURAÇÃO INVÁLIDA/.test(c.pagina.titulo))});
+t('produção: sem AMBIENTE, coluna Homologação é ignorada e nada muda no título e no assunto',()=>{const {c}=amb();c.registrarSolicitacao(pedido());
+  assert(/^Recibo/.test(c.mails[0].assunto));c.doGet();assert.strictEqual(c.pagina.homologacao,false);assert(!/\[/.test(c.pagina.titulo))});
 console.log(`\n${ok} ok, ${fail} falha(s)`);process.exit(fail?1:0);

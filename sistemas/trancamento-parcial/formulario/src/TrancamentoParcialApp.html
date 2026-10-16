@@ -790,6 +790,19 @@
 
 </style>
 
+<style>
+  /* Faixa do ambiente de homologação (só aparece na cópia de testes). */
+  .faixaHomologacao{
+    background:var(--gradip-warning-bg);
+    border-bottom:2px solid var(--gradip-warning-border);
+    color:var(--gradip-text);
+    padding:10px 16px;
+    text-align:center;
+    font-size:.95rem;
+  }
+  .faixaHomologacao strong{ color:var(--gradip-warning); }
+</style>
+
 <?!= include_('TrancamentoParcialAjudaEstilos') ?>
 
 </head>
@@ -816,6 +829,11 @@
   </header>
 
   <div class="barraAzul"></div>
+  <? if (homologacao) { ?>
+  <div class="faixaHomologacao" role="note">
+    <strong>Ambiente de homologação.</strong> Endereço só para testes da equipe: pedidos enviados aqui não valem como solicitação.
+  </div>
+  <? } ?>
 
   <!-- TELA DE BLOQUEIO (sem login / fora do período / erro ao carregar) -->
   <section id="telaBloqueada" class="telaCentral" tabindex="-1" aria-labelledby="tituloBloqueio" hidden>

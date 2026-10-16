@@ -41,6 +41,10 @@ Depois:
 3. **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar.** O link do formulário continua o mesmo.
 4. Teste com a sua conta durante um período aberto (ou com o tipo Contínuo temporariamente): digite um código do cadastro, um código inventado com nome, envie, confira o recibo e a linha na planilha, e apague a linha de teste.
 
+## Ambiente de homologação
+
+Para testar no `/exec` sem tocar nas planilhas de produção, use uma cópia do projeto com a propriedade `AMBIENTE` = `homologacao` e as planilhas de teste na coluna `Homologação` do `ID_INDEX`. Passo a passo em [Ambiente de homologação](../AMBIENTE_DE_HOMOLOGACAO.md). O projeto de produção não recebe essa propriedade.
+
 ## Uso no dia a dia
 
 O formulário não precisa de operação: abre e fecha pelas datas da planilha de Períodos (editadas no Painel dos servidores), e os pedidos chegam como `pendente` com as disciplinas no formato `CÓDIGO - Nome`. Nenhum e-mail é enviado para a equipe.

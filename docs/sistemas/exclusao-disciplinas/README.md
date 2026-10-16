@@ -1,6 +1,6 @@
 # Exclusão de Disciplinas
 
-**Versões:** formulário dos alunos **v1.1** (16/10/2026), sobre a v1.0 recebida no mesmo dia. O código está em [`sistemas/exclusao-disciplinas/`](../../../sistemas/exclusao-disciplinas/README.md) e foi verificado localmente; **a v1.1 ainda não foi homologada no `/exec`**. O gerenciador da equipe não está no repositório e fica parado por decisão do responsável funcional. O GitHub não informa qual versão está implantada no Apps Script.
+**Versões:** formulário dos alunos **v1.2** (16/10/2026), sobre a v1.1 e a v1.0 recebida no mesmo dia. O código está em [`sistemas/exclusao-disciplinas/`](../../../sistemas/exclusao-disciplinas/README.md) e foi verificado localmente; **a v1.2 ainda não foi homologada no `/exec`**. O gerenciador da equipe não está no repositório e fica parado por decisão do responsável funcional. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 
@@ -66,3 +66,4 @@ Por isso a ordem das colunas é a mesma da v1.0 e não pode mudar sem mudar os t
 |---|---|
 | v1.0 (em uso até 16/10/2026) | IDs de três planilhas literais; e-mail digitável e gravado como veio da página; busca de aluno pública por qualquer e-mail; período só conferido na abertura, aberto em caso de erro; cadastro automático do aluno; disciplina em texto livre ("sigla e/ou nome"); mais de 6 disciplinas cortadas em silêncio; recibo com resposta para gradip@usp.br; erro só no fim da página; sem tema nem ajuda. |
 | v1.1 | IDs pelo `ID_INDEX` (`PLANILHA_ALUNOS`, `EXCLUSAO_DISCIPLINAS`, `PERIODOS`, `DISCIPLINAS`); identidade só pela sessão `@usp.br`; período fechado em caso de erro e conferido no envio; disciplinas pelo código e turma livre; pedidos anteriores e aviso de disciplina já pendente; sem cadastro automático; fórmula neutralizada; recibo "não responder"; tema GRADIP, Central de Ajuda e validação no campo; `diagnosticarConfiguracao()`. Mesmas colunas da v1.0. |
+| v1.2 (16/10/2026) | [Ambiente de homologação](../AMBIENTE_DE_HOMOLOGACAO.md): numa cópia do projeto, a propriedade `AMBIENTE` = `homologacao` faz as chaves serem lidas na coluna `Homologação` do `ID_INDEX`, com faixa de aviso na página e `[HOMOLOGAÇÃO]` no título e no assunto do recibo. Sem a propriedade, nada muda. |

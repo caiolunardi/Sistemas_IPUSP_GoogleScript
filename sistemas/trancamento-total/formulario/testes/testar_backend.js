@@ -17,12 +17,12 @@ function run(props,files,opts={}){
   const ctx={console,Date,Logger:{log:m=>logs.push(String(m))},
     PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k]||null})},
     CacheService:{getScriptCache:()=>({get:k=>cache[k]||null,put:(k,v)=>{cache[k]=v}})},
-    SpreadsheetApp:{openById:id=>{if(!files[id])throw new Error('no access '+id);const f=files[id];return {getSheetByName:n=>f.find(s=>s.getName()===n)||null,getSheets:()=>f}}},
+    SpreadsheetApp:{openById:id=>{opts.aberturas&&opts.aberturas.push(id);if(!files[id])throw new Error('no access '+id);const f=files[id];return {getSheetByName:n=>f.find(s=>s.getName()===n)||null,getSheets:()=>f}}},
     Session:{getActiveUser:()=>({getEmail:()=>opts.usuario===undefined?'ana@usp.br':opts.usuario})},
     LockService:{getScriptLock:()=>({tryLock:()=>!opts.travaOcupada,releaseLock(){}})},
     MailApp:{sendEmail:(to,assunto,corpo,o)=>{if(opts.falhaEmail)throw new Error('cota');mails.push({to,assunto,corpo,o})}},
     Utilities:{formatDate:()=>'02/03/2026 10:00'},
-    HtmlService:{createTemplateFromFile:()=>({evaluate:()=>({setTitle(){return this},addMetaTag(){return this}})})}};
+    HtmlService:{createTemplateFromFile:()=>{const t={evaluate:()=>({setTitle(x){t.titulo=x;return this},addMetaTag(){return this}})};ctx.pagina=t;return t}}};
   vm.createContext(ctx);vm.runInContext(fs.readFileSync(SRC+'Codigo.gs','utf8'),ctx);ctx.logs=logs;ctx.mails=mails;return ctx;
 }
 const PERG='Está ciente de todas as informações pertinentes e confirma o trancamento total de matrícula a partir do semestre vigente?';
@@ -71,4 +71,17 @@ t('pedido pendente exige confirmação',()=>{const {c,r}=amb({usuario:'outro@usp
   assert.throws(()=>c.registrarSolicitacao(pedido()),/PEDIDO_PENDENTE: .*01\/09\/2025/);assert.strictEqual(r.vals.length,3);
   c.registrarSolicitacao(pedido({confirmarNovoPedido:true}));assert.strictEqual(r.vals.length,4)});
 t('pedido concluído não exige confirmação; o novo passa a exigir',()=>{const {c}=amb();c.registrarSolicitacao(pedido());assert.throws(()=>c.registrarSolicitacao(pedido()),/PEDIDO_PENDENTE/)});
+// Ambiente de homologação (propriedade AMBIENTE numa cópia do projeto).
+const idxHomolog=(vazio=false)=>sheet('Página1',indice().vals.map((l,i)=>i?[...l,vazio?'':'H_'+l[2]]:[...l,'Homologação (cópias de teste)']));
+const ambHomolog=(props,idx)=>{const r=respostas();const ab=[];const c=run(Object.assign({ID_INDEX_SPREADSHEET_ID:'IDX'},props),{IDX:[idx],H_ALU:[alunos()],H_RESP:[r]},{aberturas:ab});return {c,r,ab}};
+const soHomolog=ab=>ab.every(id=>id==='IDX'||id.startsWith('H_'));
+t('homologação: lê a coluna Homologação, nunca abre a produção, avisa no assunto e na página',()=>{const {c,r,ab}=ambHomolog({AMBIENTE:' Homologacao '},idxHomolog());
+  const antes=r.vals.length;c.obterDadosIniciais();c.registrarSolicitacao(pedido());assert(r.vals.length>antes);assert(ab.length>1&&soHomolog(ab),ab.join());
+  assert(/^\[HOMOLOGAÇÃO\] Recibo/.test(c.mails[0].assunto),c.mails[0].assunto);c.doGet();assert.strictEqual(c.pagina.homologacao,true);assert(/^\[HOMOLOGAÇÃO\] /.test(c.pagina.titulo))});
+t('homologação: célula vazia é erro, sem cair na produção',()=>{const {c,r,ab}=ambHomolog({AMBIENTE:'homologacao'},idxHomolog(true));const antes=r.vals.length;
+  assert.throws(()=>c.registrarSolicitacao(pedido()));assert.strictEqual(r.vals.length,antes);assert(soHomolog(ab),ab.join());assert(c.logs.some(l=>/coluna "Homologação" está vazia/.test(l)),c.logs.join())});
+t('AMBIENTE desconhecido é erro e não abre nenhuma planilha de dados',()=>{const {c,ab}=ambHomolog({AMBIENTE:'homolog'},idxHomolog());
+  assert.throws(()=>c.registrarSolicitacao(pedido()));assert(ab.every(id=>id==='IDX'),ab.join());c.doGet();assert.strictEqual(c.pagina.homologacao,true);assert(/CONFIGURAÇÃO INVÁLIDA/.test(c.pagina.titulo))});
+t('produção: sem AMBIENTE, coluna Homologação é ignorada e nada muda no título e no assunto',()=>{const {c}=amb();c.registrarSolicitacao(pedido());
+  assert(/^Recibo/.test(c.mails[0].assunto));c.doGet();assert.strictEqual(c.pagina.homologacao,false);assert(!/\[/.test(c.pagina.titulo))});
 console.log(`\n${ok} ok, ${fail} falha(s)`);process.exit(fail?1:0);

@@ -38,6 +38,10 @@ Depois:
 2. **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar.** O link do formulário continua o mesmo.
 3. Teste com a sua própria conta: abra o link, envie um pedido de teste, confira o recibo e apague a linha de teste da planilha.
 
+## Ambiente de homologação
+
+Para testar no `/exec` sem tocar nas planilhas de produção, use uma cópia do projeto com a propriedade `AMBIENTE` = `homologacao` e as planilhas de teste na coluna `Homologação` do `ID_INDEX`. Passo a passo em [Ambiente de homologação](../AMBIENTE_DE_HOMOLOGACAO.md). O projeto de produção não recebe essa propriedade.
+
 ## Uso no dia a dia
 
 O formulário não precisa de operação: os pedidos chegam à planilha como `pendente` e aparecem no gerenciador e no painel do Serviço de Graduação. Nenhum e-mail é enviado para a equipe; o recibo vai só para o aluno, como não responder.

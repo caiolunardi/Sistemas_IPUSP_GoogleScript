@@ -39,6 +39,10 @@ Depois:
 3. **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar.** O link do formulário continua o mesmo, e o Painel de Solicitações não precisa mudar.
 4. Teste com a sua conta durante um período aberto: um código do cadastro e um inventado com nome, envie, confira o recibo, as linhas na planilha (mesmo Pedido ID) e o selo no Painel dos servidores; depois apague as linhas de teste.
 
+## Ambiente de homologação
+
+Para testar no `/exec` sem tocar nas planilhas de produção, use uma cópia do projeto com a propriedade `AMBIENTE` = `homologacao` e as planilhas de teste na coluna `Homologação` do `ID_INDEX`. Passo a passo em [Ambiente de homologação](../AMBIENTE_DE_HOMOLOGACAO.md). O projeto de produção não recebe essa propriedade.
+
 ## Uso no dia a dia
 
 O formulário não precisa de operação: abre e fecha pelas datas da tela "Formulário de Exclusão de Disciplinas" do Painel dos servidores. As linhas chegam com a Situação (T) vazia, o que o Painel conta como pendente. Nenhum e-mail é enviado para a equipe.

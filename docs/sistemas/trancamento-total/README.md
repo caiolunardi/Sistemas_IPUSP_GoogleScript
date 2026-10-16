@@ -1,6 +1,6 @@
 # Trancamento Total de Matrícula
 
-**Versões:** formulário dos alunos **v1.2** (15/10/2026), sobre a v1.1 (IDs pelo `ID_INDEX`) e a v1.0 recebida em 15/10/2026; gerenciador da equipe **v1.1** no repositório, **não implantada** (o responsável funcional pediu para deixá-lo parado por enquanto). O código está em [`sistemas/trancamento-total/`](../../../sistemas/trancamento-total/README.md) e foi verificado localmente; **a v1.2 do formulário ainda não foi homologada no `/exec`**. O GitHub não informa qual versão está implantada no Apps Script.
+**Versões:** formulário dos alunos **v1.3** (16/10/2026), sobre a v1.2 (recibo e confirmação), a v1.1 (IDs pelo `ID_INDEX`) e a v1.0 recebida em 15/10/2026; gerenciador da equipe **v1.1** no repositório, **não implantada** (o responsável funcional pediu para deixá-lo parado por enquanto). O código está em [`sistemas/trancamento-total/`](../../../sistemas/trancamento-total/README.md) e foi verificado localmente; **a v1.3 do formulário ainda não foi homologada no `/exec`**. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 
@@ -36,3 +36,4 @@ São dois Web Apps sobre a mesma planilha de respostas:
 | v1.0 (em uso até 15/10/2026) | IDs das duas planilhas literais no código; alunos pelas colunas A–D; cores fixas, sem tema nem ajuda; erros em `alert`; justificativa obrigatória e cortada em 4.000 caracteres sem aviso. |
 | v1.1 | IDs pelo `ID_INDEX` (`PLANILHA_ALUNOS`, `TRANCAMENTO_TOTAL_MATRICULA`); alunos pelo título, com e-mail secundário; planilha de alunos fora do ar não bloqueia; confirmação pelo título; `appendRow`; justificativa longa recusada com mensagem; trava ocupada e erro de configuração com mensagens claras. |
 | v1.2 | Recibo por e-mail ao aluno; confirmação para enviar com pedido pendente; justificativa opcional; texto das regras revisado; tema GRADIP e Central de Ajuda; validação no próprio campo e contador da justificativa. **Exige nova autorização do script** (envio de e-mail). |
+| v1.3 (16/10/2026) | [Ambiente de homologação](../AMBIENTE_DE_HOMOLOGACAO.md): numa cópia do projeto, a propriedade `AMBIENTE` = `homologacao` faz as chaves serem lidas na coluna `Homologação` do `ID_INDEX`, com faixa de aviso na página e `[HOMOLOGAÇÃO]` no título e no assunto do recibo. Sem a propriedade, nada muda. |
