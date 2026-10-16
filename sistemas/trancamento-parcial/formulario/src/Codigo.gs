@@ -1,7 +1,10 @@
 /*=====================================================
-  PEDIDO DE TRANCAMENTO PARCIAL DE MATRÍCULA — V1.1
+  PEDIDO DE TRANCAMENTO PARCIAL DE MATRÍCULA — V1.1.1
   (IPUSP)
   Backend Apps Script
+
+  v1.1.1 (16/10/2026): diagnosticarConfiguracao(), para rodar no
+  editor e ver qual passo da configuração falha.
 
   v1.1 (16/10/2026, pedido do Serviço de Graduação), sobre a
   v1.0 em uso:
@@ -913,5 +916,72 @@ function registrarSolicitacao(dados) {
     reciboEnviado: reciboEnviado,
     disciplinas: disciplinas.map(d => `${d.codigo} - ${d.nome}`)
   };
+
+}
+
+/*=====================================================
+  DIAGNÓSTICO (v1.1.1) — rodar no editor: selecione
+  diagnosticarConfiguracao e clique em Executar. O resultado
+  sai em "Registro de execução": cada passo da configuração
+  com OK ou o erro. Só nomes de chave e coluna, sem dados
+  pessoais nem IDs. Não grava nada e não usa o cache.
+=====================================================*/
+
+function diagnosticarConfiguracao() {
+
+  const linhas = [];
+  const passo = (nome, fn) => {
+    try {
+      const r = fn();
+      linhas.push(`OK    ${nome}${r ? " — " + r : ""}`);
+      return true;
+    } catch (err) {
+      linhas.push(`ERRO  ${nome} — ${mensagemDe_(err)}`);
+      return false;
+    }
+  };
+
+  CacheService.getScriptCache().removeAll([
+    "idIndex:" + CHAVE_ALUNOS, "idIndex:" + CHAVE_RESPOSTAS, "idIndex:" + CHAVE_PERIODOS,
+    "idIndex:" + CHAVE_DISCIPLINAS, CACHE_CATALOGO + ":n"
+  ]);
+
+  const temIndice = passo(`Propriedade ${PROPRIEDADE_ID_INDICE}`, () => { obterIdIndice_(); return "definida"; });
+
+  if (temIndice) {
+    [CHAVE_PERIODOS, CHAVE_ALUNOS, CHAVE_RESPOSTAS, CHAVE_DISCIPLINAS].forEach(chave => {
+      passo(`Chave ${chave} no ID_INDEX e acesso à planilha`, () => {
+        const planilha = abrirPlanilhaPorChave_(chave);
+        return `abas: ${planilha.getSheets().map(a => a.getName()).join(", ")}`;
+      });
+    });
+
+    passo(`Linha "${IDENTIFICACAO_PERIODOS}" em Períodos`, () => {
+      const linha = buscarLinhaPeriodo_();
+      if (!linha) throw new Error("não encontrada na coluna A da primeira aba");
+      const mostra = v => Object.prototype.toString.call(v) === "[object Date]" ? `Data(${formatarData_(v, "dd/MM/yyyy HH:mm")})` : JSON.stringify(v);
+      return `tipo ${mostra(linha[2])}; 1º sem. ${mostra(linha[3])} ${mostra(linha[4])} a ${mostra(linha[5])} ${mostra(linha[6])}; ` +
+        `2º sem. ${mostra(linha[7])} ${mostra(linha[8])} a ${mostra(linha[9])} ${mostra(linha[10])}`;
+    });
+
+    passo("Período agora", () => {
+      const p = verificarPeriodo_();
+      return p.aberto ? `ABERTO (${p.semestre || "contínuo"}º semestre, até ${p.diaFimTexto} ${p.horaFimTexto})` : `FECHADO — ${p.motivo}`;
+    });
+
+    passo("Títulos da planilha de respostas", () => {
+      const { titulos, mapa } = mapearCabecalhosRespostas_(abrirAbaPorChave_(CHAVE_RESPOSTAS));
+      const esperados = Object.keys(CABECALHOS_RESPOSTAS).map(k => CABECALHOS_RESPOSTAS[k]);
+      for (let i = 1; i <= MAX_DISCIPLINAS; i++) esperados.push(PREFIXO_TITULO_DISCIPLINA + i);
+      const faltando = esperados.filter(t => !mapa[t]);
+      if (faltando.length) throw new Error(`faltam: ${faltando.join(" | ")}`);
+      return `ciência na coluna ${colunaCiencia_(titulos)}`;
+    });
+
+    passo("Cadastro de disciplinas", () => `${montarCatalogo_().disciplinas.length} disciplinas`);
+  }
+
+  Logger.log("Diagnóstico do Trancamento Parcial:\n" + linhas.join("\n"));
+  return linhas.join("\n");
 
 }

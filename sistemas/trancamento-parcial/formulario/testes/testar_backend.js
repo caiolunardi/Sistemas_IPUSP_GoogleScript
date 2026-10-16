@@ -24,7 +24,7 @@ function run(props,files,opts={}){
     Date:opts.agora?class extends Date{constructor(...a){a.length?super(...a):super(opts.agora)}}:Date,
     PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k]||null})},
     CacheService:{getScriptCache:()=>({get:k=>k in cache?cache[k]:null,put:(k,v)=>{cache[k]=v},
-      getAll:ks=>{const o={};ks.forEach(k=>{if(k in cache)o[k]=cache[k]});return o},putAll:o=>{Object.assign(cache,o)}})},
+      getAll:ks=>{const o={};ks.forEach(k=>{if(k in cache)o[k]=cache[k]});return o},putAll:o=>{Object.assign(cache,o)},removeAll:ks=>ks.forEach(k=>delete cache[k])})},
     SpreadsheetApp:{openById:id=>{opts.aberturas&&opts.aberturas.push(id);if(!files[id])throw new Error('no access '+id);const f=files[id];return {getSheetByName:n=>f.find(s=>s.getName()===n)||null,getSheets:()=>f}}},
     Session:{getActiveUser:()=>({getEmail:()=>opts.usuario===undefined?'ana@usp.br':opts.usuario})},
     LockService:{getScriptLock:()=>({tryLock:()=>!opts.travaOcupada,releaseLock(){}})},
@@ -142,4 +142,10 @@ t('log sem dados pessoais',()=>{const {c}=amb({falhaEmail:true});c.obterDadosIni
   const {c:c2}=amb({},{files:{ALU:undefined,DISC:undefined}});c2.obterDadosIniciais();c2.registrarSolicitacao(pedido({disciplinas:[{codigo:'X1234',nome:'n'}]}));
   assert(!c.logs.concat(c2.logs).join().match(/Ana|usp\.br|9000001|Motivo/))});
 t('sem ID literal de planilha nem openById com texto',()=>{const s=fs.readFileSync(SRC+'Codigo.gs','utf8');assert(!/[A-Za-z0-9_-]{40,}/.test(s));assert(!/openById\(\s*["']/.test(s))});
+t('diagnóstico: tudo OK, aberto, sem dados pessoais nem IDs',()=>{const {c}=amb();const r=c.diagnosticarConfiguracao();
+  assert(!/ERRO/.test(r),r);assert(/Período agora — ABERTO \(1º semestre/.test(r),r);assert(/4 disciplinas/.test(r));assert(/ciência na coluna 4/.test(r));assert(/1º sem\. "06\/04\/2026" "08:00"/.test(r),r);
+  assert(!/\b(ALU|RESP|PER|DISC|IDX)\b|Ana|9000001/.test(r.replace(/abas: [^\n]*/g,'')),r)});
+t('diagnóstico: sem propriedade e sem chave apontam o passo',()=>{const c=run({},{},{agora:ABERTO});assert(/ERRO  Propriedade ID_INDEX_SPREADSHEET_ID/.test(c.diagnosticarConfiguracao()));
+  const i=sheet('Página1',[['Chave','Tipo','ID de Produção'],['PLANILHA_ALUNOS','spreadsheet','ALU']]);const c2=run({ID_INDEX_SPREADSHEET_ID:'IDX'},{IDX:[i],ALU:[alunos()]},{agora:ABERTO});const r=c2.diagnosticarConfiguracao();
+  assert(/ERRO  Chave PERIODOS no ID_INDEX e acesso à planilha — Não encontrei a chave "PERIODOS"/.test(r),r);assert(/OK    Chave PLANILHA_ALUNOS/.test(r))});
 console.log(`\n${ok} ok, ${fail} falha(s)`);process.exit(fail?1:0);
