@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedido de Trancamento Parcial de Matrícula — IPUSP</title>
+
+<!-- GRADIP UI — tema (Sistema/Claro/Escuro). Incluído antes de qualquer
+     <style> e antes da carga de dados: o tema é só do navegador e não
+     depende do servidor, o que evita o "flash" do tema errado. -->
+<?!= include_('GradipTema') ?>
+
+<style>
+
+  /*=====================================================
+    PEDIDO DE TRANCAMENTO PARCIAL — v1.1 (tema GRADIP + Central
+    de Ajuda + disciplinas pelo código). Todas as cores vêm dos
+    tokens de GradipTema.html; Claro e Escuro saem do mesmo CSS.
+    Base visual igual à do formulário de Trancamento Total v1.2.
+  =====================================================*/
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
+  }
+
+  [hidden]{ display:none !important; }
+
+  /*---------------- CABEÇALHO (padrão GRADIP) ----------------*/
+
+  .cabecalho{
+    background:var(--gradip-header-bg);
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid var(--gradip-border);
+    gap:12px;
+  }
+
+  .logoEsquerda{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    min-width:0;
+  }
+
+  .logoEsquerda .marcaIpuspSvg{
+    height:52px;
+    flex:0 0 auto;
+  }
+
+  .textoCabecalho{ min-width:0; }
+
+  .cabecalho h1{
+    margin:0;
+    font-size:17px;
+    font-weight:bold;
+    color:var(--gradip-text);
+  }
+
+  .cabecalho p{
+    margin:2px 0 0 0;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+  }
+
+  .cabecalhoDireita{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+  }
+
+  .logoUSP{
+    height:44px;
+    width:auto;
+    flex:0 0 auto;
+  }
+
+  .logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+    padding:4px 6px;
+  }
+
+  .botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+  }
+
+  .botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+  }
+
+  .botaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .barraAzul{
+    height:6px;
+    background:var(--gradip-header-accent);
+  }
+
+  /*---------------- CONTEÚDO ----------------*/
+
+  .conteudo{
+    max-width:760px;
+    margin:24px auto 60px auto;
+    padding:0 20px;
+  }
+
+  .cardResumo,
+  .cartaoPrincipal{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+  }
+
+  .cardResumo{
+    padding:18px 22px;
+    margin-bottom:16px;
+  }
+
+  .cardResumo h2{
+    font-size:18px;
+    margin:0;
+    color:var(--gradip-text);
+  }
+
+  .cardResumo p{
+    margin:4px 0 0 0;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+  }
+
+  .cartaoPrincipal{
+    padding:8px 24px 24px 24px;
+  }
+
+  .secao{ padding-top:22px; }
+
+  .secao h3{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--gradip-link);
+    margin:0 0 14px 0;
+    border-bottom:2px solid var(--gradip-border);
+    padding-bottom:8px;
+  }
+
+  .textoInformativo p,
+  .textoInformativo ol{
+    font-size:14px;
+    line-height:1.6;
+    color:var(--gradip-text);
+    margin:0 0 12px 0;
+  }
+
+  .textoInformativo ol{ padding-left:22px; }
+
+  .textoInformativo p:last-child{ margin-bottom:0; }
+
+  .textoInformativo a{
+    color:var(--gradip-link);
+    overflow-wrap:anywhere;
+  }
+
+  .textoInformativo a:hover{ color:var(--gradip-link-hover); }
+
+  .textoInformativo a:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  /* Gatilhos de ajuda contextual (abrem a Central na seção certa). */
+  .ajudaContextualLinha{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px 18px;
+    margin-top:10px;
+  }
+
+  .linkAjudaContextual{
+    display:inline-block;
+    background:none;
+    border:none;
+    padding:15px 4px;
+    margin:-15px -4px;
+    font:inherit;
+    font-size:12.5px;
+    font-weight:bold;
+    text-decoration:underline;
+    cursor:pointer;
+    color:var(--gradip-link);
+  }
+
+  .linkAjudaContextual:hover{ color:var(--gradip-link-hover); }
+
+  .linkAjudaContextual:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:-10px;
+  }
+
+  .secao .ajudaContextualLinha{
+    margin:-4px 0 14px 0;
+  }
+
+  /*---------------- CAMPOS ----------------*/
+
+  .campoEditavel{ margin-bottom:18px; }
+  .campoEditavel:last-child{ margin-bottom:0; }
+
+  .campoEditavel label,
+  .campoEditavel legend{
+    display:block;
+    font-size:13px;
+    color:var(--gradip-text);
+    margin-bottom:6px;
+    font-weight:bold;
+    padding:0;
+  }
+
+  .ajudaCampo{
+    display:block;
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    margin:-2px 0 6px 0;
+    line-height:1.45;
+  }
+
+  .opcional{
+    font-weight:normal;
+    color:var(--gradip-text-muted);
+  }
+
+  .campoEditavel input[type=text],
+  .campoEditavel input[type=email],
+  .campoEditavel textarea{
+    width:100%;
+    min-height:44px;
+    padding:10px 12px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    font-size:15px;
+    font-family:inherit;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+  }
+
+  .campoEditavel input::placeholder,
+  .campoEditavel textarea::placeholder{
+    /* --gradip-input-placeholder fica abaixo de 4,5:1 no Claro;
+       --gradip-text-muted passa nos dois temas (mesmo ajuste dos
+       outros sistemas). */
+    color:var(--gradip-text-muted);
+  }
+
+  .campoEditavel input:hover,
+  .campoEditavel textarea:hover{
+    border-color:var(--gradip-link);
+  }
+
+  .campoEditavel input:focus-visible,
+  .campoEditavel textarea:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:1px;
+  }
+
+  .campoEditavel textarea{
+    min-height:85px;
+    resize:vertical;
+    line-height:1.5;
+  }
+
+  .campoEditavel textarea#campoJustificativa{ min-height:160px; }
+
+  .campoEditavel [aria-invalid="true"]{
+    border-color:var(--gradip-danger);
+    box-shadow:inset 4px 0 0 var(--gradip-danger);
+  }
+
+  .contador{
+    margin-top:6px;
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    text-align:right;
+  }
+
+  .contador.perto{
+    color:var(--gradip-warning);
+    font-weight:bold;
+  }
+
+  .obrigatorio{ color:var(--gradip-danger); }
+
+  .avisoPreenchido{
+    font-size:12.5px;
+    color:var(--gradip-success);
+    margin-top:6px;
+  }
+
+  .erroCampo{
+    font-size:13px;
+    color:var(--gradip-danger);
+    font-weight:bold;
+    margin-top:6px;
+  }
+
+  fieldset.campoEditavel{
+    border:0;
+    margin:0 0 18px 0;
+    padding:0;
+    min-width:0;
+  }
+
+  fieldset legend{ line-height:1.45; }
+
+  .caixaOpcoes{
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    padding:2px 14px;
+    background:var(--gradip-input-bg);
+  }
+
+  .caixaOpcoes[aria-invalid="true"]{
+    border-color:var(--gradip-danger);
+    box-shadow:inset 4px 0 0 var(--gradip-danger);
+  }
+
+  .itemOpcao,
+  .campoEditavel label.itemOpcao{
+    display:flex;
+    margin:0;
+    align-items:center;
+    gap:10px;
+    min-height:44px;
+    font-size:15px;
+    cursor:pointer;
+    color:var(--gradip-input-text);
+  }
+
+  .itemOpcao input{
+    width:18px;
+    height:18px;
+    margin:0;
+    accent-color:var(--gradip-primary);
+    flex:0 0 auto;
+  }
+
+  .itemOpcao input:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  /*---------------- AVISOS (padrão de alerta GRADIP) ----------------*/
+
+  .alerta{
+    border:1px solid;
+    border-left-width:4px;
+    border-radius:8px;
+    padding:12px 16px;
+    font-size:14px;
+    line-height:1.5;
+    margin-bottom:16px;
+    color:var(--gradip-text);
+  }
+
+  .alerta strong.tituloAlerta{
+    display:block;
+    margin-bottom:6px;
+  }
+
+  .alerta ul{
+    margin:0;
+    padding-left:18px;
+  }
+
+  .alerta li{ margin-bottom:3px; }
+
+  .alerta p{ margin:8px 0 0 0; }
+
+  .alerta--aviso{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+  }
+  .alerta--aviso .tituloAlerta{ color:var(--gradip-warning); }
+
+  .alerta--info{
+    background:var(--gradip-info-bg);
+    border-color:var(--gradip-info-border);
+  }
+  .alerta--info .tituloAlerta{ color:var(--gradip-link); }
+
+  .alerta--erro{
+    background:var(--gradip-danger-bg);
+    border-color:var(--gradip-danger-border);
+  }
+  .alerta--erro .tituloAlerta{ color:var(--gradip-danger); }
+
+  .alerta--sucesso{
+    background:var(--gradip-success-bg);
+    border-color:var(--gradip-success-border);
+  }
+  .alerta--sucesso .tituloAlerta{ color:var(--gradip-success); }
+
+  .alerta:focus{ outline:none; }
+  .alerta:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  /* Selo de situação dos pedidos anteriores: texto + cor. */
+  .seloSituacao{
+    display:inline-block;
+    font-size:12px;
+    font-weight:bold;
+    padding:2px 8px;
+    border-radius:12px;
+    border:1px solid;
+    margin-right:6px;
+  }
+  .seloSituacao.pendente{
+    color:var(--gradip-warning);
+    border-color:var(--gradip-warning-border);
+    background:var(--gradip-surface);
+  }
+  .seloSituacao.concluido{
+    color:var(--gradip-success);
+    border-color:var(--gradip-success-border);
+    background:var(--gradip-surface);
+  }
+
+
+  /*---------------- BOTÃO ----------------*/
+
+  .botaoPrimario{
+    width:100%;
+    min-height:48px;
+    padding:12px 16px;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+    border:1px solid transparent;
+    border-radius:8px;
+    font:inherit;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:6px;
+  }
+
+  .botaoPrimario:hover{ background:var(--gradip-primary-hover); }
+
+  .botaoPrimario:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .botaoPrimario:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+    cursor:not-allowed;
+  }
+
+  /*---------------- TELAS DE BLOQUEIO / CONFIRMAÇÃO ----------------*/
+
+  .telaCentral{
+    max-width:600px;
+    margin:60px auto;
+    padding:28px 24px;
+    text-align:center;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+  }
+
+  .telaCentral .icone{
+    font-size:38px;
+    margin-bottom:10px;
+  }
+
+  .telaCentral h2{
+    font-size:19px;
+    margin:0 0 8px 0;
+    color:var(--gradip-text);
+  }
+
+  .telaCentral p{
+    color:var(--gradip-text);
+    font-size:15px;
+    line-height:1.6;
+    margin:8px 0 0 0;
+  }
+
+  .telaCentral p.secundario{
+    color:var(--gradip-text-muted);
+    font-size:14px;
+  }
+
+  .telaCentral .ajudaContextualLinha{
+    justify-content:center;
+    margin-top:16px;
+  }
+
+  .telaCentral:focus{ outline:none; }
+
+  /*---------------- CARREGANDO ----------------*/
+
+  #loadingOverlay{
+    display:flex;
+    position:fixed;
+    z-index:9000;
+    inset:0;
+    background:var(--gradip-overlay);
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  }
+
+  #loadingBox{
+    background:var(--gradip-surface-elevated);
+    color:var(--gradip-text);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:26px 36px;
+    text-align:center;
+    max-width:100%;
+  }
+
+  #loadingTitulo{
+    font-weight:bold;
+    font-size:15px;
+  }
+
+  #loadingTexto{
+    color:var(--gradip-text-muted);
+    font-size:13px;
+    margin-top:6px;
+  }
+
+  .rodape{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:12px;
+    padding:0 0 30px 0;
+  }
+
+  /*---------------- DISCIPLINAS (v1.1) ----------------*/
+
+  .listaDisciplinas{
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+
+  .linhaDisciplina{
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    background:var(--gradip-surface-2);
+    padding:12px 14px 14px 14px;
+    margin-bottom:12px;
+  }
+
+  .linhaDisciplina[aria-invalid="true"],
+  .linhaDisciplina.comErro{
+    border-color:var(--gradip-danger);
+    box-shadow:inset 4px 0 0 var(--gradip-danger);
+  }
+
+  .topoDisciplina{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+  }
+
+  .tituloDisciplina{
+    font-size:13px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    margin:0;
+  }
+
+  .botaoRemover{
+    background:none;
+    border:1px solid transparent;
+    border-radius:8px;
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    color:var(--gradip-danger);
+    text-decoration:underline;
+    cursor:pointer;
+    min-height:44px;
+    padding:0 10px;
+    margin:-10px -8px -10px 0;
+  }
+
+  .botaoRemover:hover{ background:var(--gradip-danger-bg); }
+
+  .botaoRemover:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:-2px;
+  }
+
+  .gradeDisciplina{
+    display:grid;
+    grid-template-columns:minmax(120px, 170px) 1fr;
+    gap:10px 12px;
+  }
+
+  .gradeDisciplina .campoEditavel{ margin:0; }
+
+  .gradeDisciplina .campoEditavel label{ font-size:12.5px; }
+
+  .campoCodigo input{
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-family:"Courier New", Courier, monospace;
+    font-weight:bold;
+  }
+
+  .campoEditavel input[readonly]{
+    background:var(--gradip-surface);
+    border-style:dashed;
+    color:var(--gradip-text);
+  }
+
+  .statusDisciplina{
+    font-size:12.5px;
+    line-height:1.45;
+    margin-top:8px;
+    color:var(--gradip-text-muted);
+  }
+
+  .statusDisciplina:empty{ display:none; }
+
+  .statusDisciplina.encontrada{ color:var(--gradip-success); }
+  .statusDisciplina.naoEncontrada{ color:var(--gradip-warning); font-weight:bold; }
+
+  .linhaDisciplina .erroCampo{ margin-top:8px; }
+
+  .botaoSecundario{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    min-height:44px;
+    padding:8px 16px;
+    background:var(--gradip-surface);
+    color:var(--gradip-link);
+    border:1px solid var(--gradip-link);
+    border-radius:8px;
+    font:inherit;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    text-decoration:none;
+  }
+
+  .botaoSecundario:hover{
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link-hover);
+  }
+
+  .botaoSecundario:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .limiteDisciplinas{ margin:8px 0 0 0; }
+
+  .botaoSecundario[hidden]{ display:none !important; }
+
+  .acoesConfirmacao{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin-top:18px;
+  }
+
+  .listaEnviadas{
+    text-align:left;
+    display:inline-block;
+    margin:10px auto 0 auto;
+    padding-left:22px;
+    font-size:14px;
+    line-height:1.6;
+    color:var(--gradip-text);
+  }
+
+  .alerta .discAnteriores{
+    display:block;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+    margin-top:2px;
+  }
+
+  .campoEditavel legend.legendaDeclaracao{
+    font-weight:normal;
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:12px;
+  }
+
+  .campoEditavel input.emailLogin{
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text);
+  }
+
+
+  /*---------------- RESPONSIVO ----------------*/
+
+  @media (max-width:640px){
+    .cabecalho{
+      flex-wrap:wrap;
+      padding:10px 12px;
+      row-gap:8px;
+    }
+    .logoEsquerda{
+      gap:8px;
+      flex:1 1 100%;
+    }
+    .logoEsquerda .marcaIpuspSvg{ height:38px; }
+    .logoUSP{ height:32px; }
+    .logoUSPWrap{ padding:2px 3px; margin-left:auto; }
+    .cabecalho h1{ font-size:14px; }
+    .cabecalho p{ font-size:11.5px; }
+    .cabecalhoDireita{
+      gap:8px;
+      flex:1 1 100%;
+    }
+  }
+
+  @media (max-width:480px){
+    .botaoAjuda .textoAjuda{ display:none; }
+    .botaoAjuda{
+      padding:8px;
+      border-radius:50%;
+    }
+    .gradip-theme-control{ gap:0; }
+    .gradip-theme-control__select{
+      padding:0 26px 0 8px;
+      font-size:12px;
+    }
+    .conteudo{
+      margin-top:16px;
+      padding:0 12px;
+    }
+    .cardResumo{ padding:14px; }
+    .cartaoPrincipal{ padding:4px 14px 18px 14px; }
+    .telaCentral{
+      margin:24px 12px;
+      padding:22px 16px;
+    }
+    .gradeDisciplina{ grid-template-columns:1fr; }
+    .linhaDisciplina{ padding:10px 12px 12px 12px; }
+    .acoesConfirmacao .botaoSecundario{ width:100%; }
+  }
+
+</style>
+
+<?!= include_('TrancamentoParcialAjudaEstilos') ?>
+
+</head>
+<body>
+
+  <header class="cabecalho">
+    <div class="logoEsquerda">
+      <?!= include_('GradipMarcaIPUSP') ?>
+      <div class="textoCabecalho">
+        <h1>Pedido de Trancamento Parcial de Matrícula</h1>
+        <p>Serviço de Graduação — Instituto de Psicologia</p>
+      </div>
+    </div>
+    <div class="cabecalhoDireita">
+      <?!= include_('GradipTemaControle') ?>
+      <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
+        <span aria-hidden="true">❓</span>
+        <span class="textoAjuda">Ajuda</span>
+      </button>
+      <span class="logoUSPWrap">
+        <?!= include_('GradipMarcaUSP') ?>
+      </span>
+    </div>
+  </header>
+
+  <div class="barraAzul"></div>
+
+  <!-- TELA DE BLOQUEIO (sem login / fora do período / erro ao carregar) -->
+  <section id="telaBloqueada" class="telaCentral" tabindex="-1" aria-labelledby="tituloBloqueio" hidden>
+    <div class="icone" id="iconeBloqueio" aria-hidden="true">🔒</div>
+    <h2 id="tituloBloqueio">Login necessário</h2>
+    <p id="textoBloqueio">Não foi possível confirmar seu login institucional. Verifique se você está logado no navegador com o seu e-mail @usp.br e recarregue esta página.</p>
+    <div class="ajudaContextualLinha">
+      <button type="button" class="linkAjudaContextual" id="ajudaBloqueio" data-gradip-help-open="ajuda-problemas">Como resolver?</button>
+    </div>
+  </section>
+
+  <!-- TELA DE CONFIRMAÇÃO (depois do envio) -->
+  <section id="telaConfirmacao" class="telaCentral" tabindex="-1" aria-labelledby="tituloConfirmacao" hidden>
+    <div class="icone" aria-hidden="true">✅</div>
+    <h2 id="tituloConfirmacao">Pedido enviado com sucesso</h2>
+    <p>O Serviço de Graduação atenderá o seu pedido de trancamento parcial de matrícula em até 10 (dez) dias úteis e enviará mensagem de confirmação para o seu e-mail USP.</p>
+    <ol id="listaEnviadas" class="listaEnviadas" aria-label="Disciplinas enviadas"></ol>
+    <p id="textoRecibo" class="secundario"></p>
+    <div class="acoesConfirmacao">
+      <a class="botaoSecundario" target="_top" href="https://script.google.com/a/macros/usp.br/s/AKfycbx7l6oYJ8uI3ujGU_x-l51Py0DV5c0loCjYW9bFpmINrri_BbhE-uXInJeqg8-DKj3hxg/exec">Voltar para a página de formulários</a>
+      <a class="botaoSecundario" id="linkNovoPedido" target="_top" href="#" hidden>Enviar nova solicitação</a>
+    </div>
+    <div class="ajudaContextualLinha">
+      <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece agora?</button>
+    </div>
+  </section>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main id="conteudo" class="conteudo" hidden>
+
+    <div id="avisos"></div>
+
+    <div class="cardResumo">
+      <h2 id="tituloResumo">Trancamento parcial de matrícula</h2>
+      <p>Instituto de Psicologia da USP</p>
+      <div class="ajudaContextualLinha">
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-passo-a-passo">Como preencher?</button>
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-disciplinas">Como informo as disciplinas?</button>
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece depois?</button>
+      </div>
+    </div>
+
+    <form id="formularioPedido" class="cartaoPrincipal" novalidate>
+
+      <div class="secao">
+        <h3>1. Sobre a solicitação</h3>
+        <div class="textoInformativo">
+          <p><strong>FORMULÁRIO VÁLIDO SOMENTE PARA ALUNOS(AS) DO INSTITUTO DE PSICOLOGIA DA USP</strong></p>
+          <p><strong>IMPORTANTE:</strong></p>
+          <p>
+            - Este formulário estará disponível até às <span id="spanHoraFim">-</span> do dia <span id="spanDiaFim">-</span>.<br>
+            - O seu pedido de trancamento de matrícula em disciplina(s) será atendido em até 10 (dez) dias úteis. O Serviço de Graduação enviará mensagem (para o seu e-mail USP) confirmando o trancamento.<br>
+            - Informe corretamente o(s) código(s) (sigla) da(s) disciplina(s) que deseja trancar; o nome aparece automaticamente.<br>
+            - Até o prazo limite para o trancamento, você poderá preencher o formulário quantas vezes for necessário.<br>
+            - Caso tranque matrícula em optativas livres e eletivas, não há necessidade de cursá-las posteriormente.<br>
+            - Lembramos que a/o estudante deverá permanecer matriculada/o em, no mínimo, 12 créditos-aula, conforme previsto no <strong><a href="https://leginf.usp.br/?resolucao=consolidada-resolucao-no-3745-de-19-de-outubro-de-1990" target="_blank" rel="noopener noreferrer">Regimento Geral da USP</a></strong>.
+          </p>
+          <p><strong>MUITO IMPORTANTE:</strong></p>
+          <p>
+            - Não serão aceitos pedidos de trancamento parcial de matrícula fora do prazo.<br>
+            - Considerando o prazo de atendimento mencionado acima, entre os dias <span id="spanDataInicioMuitoImportante">-</span> e <span id="spanDataFimMuitoImportante">-</span>, acesse o seu histórico escolar para conferir se o trancamento foi cadastrado, conforme solicitado.
+          </p>
+        </div>
+      </div>
+
+      <div class="secao">
+        <h3>2. Declaração de ciência</h3>
+        <fieldset class="campoEditavel" aria-describedby="textoDeclaracao erroCiencia">
+          <legend class="legendaDeclaracao" id="textoDeclaracao">Declaro estar ciente de que logo após o encerramento do período de trancamento parcial de matrícula (entre os dias <span id="spanDataInicioDeclaracao">-</span> e <span id="spanDataFimDeclaracao">-</span>), deverei acessar o meu histórico escolar para ter ciência sobre as disciplinas nas quais permanecerei matriculado(a). Declaro, ainda, estar ciente de que, após o cadastramento, esta ação é irreversível.</legend>
+          <div class="caixaOpcoes" id="caixaCiencia">
+            <label class="itemOpcao"><input type="checkbox" id="campoCiencia"> Ciente <span class="obrigatorio" aria-hidden="true">*</span></label>
+          </div>
+          <div class="erroCampo" id="erroCiencia" hidden></div>
+        </fieldset>
+      </div>
+
+      <div class="secao">
+        <h3>3. Identificação</h3>
+        <div class="ajudaContextualLinha">
+          <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-dados">Meus dados vieram errados ou em branco</button>
+        </div>
+
+        <div class="campoEditavel">
+          <label for="campoEmail">E-mail USP</label>
+          <span class="ajudaCampo" id="ajudaEmail">É o e-mail do seu login; o pedido fica registrado nele.</span>
+          <input type="email" id="campoEmail" class="emailLogin" readonly aria-describedby="ajudaEmail">
+        </div>
+
+        <div class="campoEditavel">
+          <label for="campoNUsp">Número USP <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <input type="text" id="campoNUsp" inputmode="numeric" autocomplete="off" maxlength="20" required aria-describedby="avisoNUsp erroNUsp">
+          <div class="avisoPreenchido" id="avisoNUsp" hidden>✓ Preenchido automaticamente</div>
+          <div class="erroCampo" id="erroNUsp" hidden></div>
+        </div>
+
+        <div class="campoEditavel">
+          <label for="campoNome">Nome Completo <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <input type="text" id="campoNome" autocomplete="name" maxlength="200" required aria-describedby="avisoNome erroNome">
+          <div class="avisoPreenchido" id="avisoNome" hidden>✓ Preenchido automaticamente</div>
+          <div class="erroCampo" id="erroNome" hidden></div>
+        </div>
+      </div>
+
+      <div class="secao">
+        <h3>4. Situação atual da matrícula</h3>
+
+        <div class="campoEditavel">
+          <label for="campoCreditos">Número de créditos-aula em que está matriculado(a) <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <span class="ajudaCampo" id="ajudaCreditos">Informe o número de créditos-aula em que se encontra matriculado(a) (antes do trancamento).</span>
+          <input type="text" id="campoCreditos" inputmode="numeric" autocomplete="off" maxlength="2" required aria-describedby="ajudaCreditos erroCreditos">
+          <div class="erroCampo" id="erroCreditos" hidden></div>
+        </div>
+
+        <fieldset class="campoEditavel" aria-describedby="ajudaMenos12 erroMenos12">
+          <legend>Após o trancamento, você ficará com menos de 12 créditos-aula? <span class="obrigatorio" aria-hidden="true">*</span></legend>
+          <span class="ajudaCampo textoInformativo" id="ajudaMenos12">"Será concedido o trancamento parcial em uma ou mais disciplinas desde que o número de créditos-aula restante na matrícula do aluno não seja inferior a doze (Resoluções <strong><a href="https://leginf.usp.br/resolucoes/resolucao-cog-no-3761-de-17-de-dezembro-de1990/" target="_blank" rel="noopener noreferrer">CoG 3761/90</a></strong> e <strong><a href="https://leginf.usp.br/resolucoes/resolucao-cog-no-4744-de-16-de-marco-de-2000/" target="_blank" rel="noopener noreferrer">4744/00</a></strong>)".</span>
+          <div class="caixaOpcoes" id="caixaMenos12">
+            <label class="itemOpcao"><input type="radio" name="menos12" value="Sim"> Sim</label>
+            <label class="itemOpcao"><input type="radio" name="menos12" value="Não"> Não</label>
+          </div>
+          <div class="erroCampo" id="erroMenos12" hidden></div>
+        </fieldset>
+
+        <fieldset class="campoEditavel" aria-describedby="erroConcluiCurso">
+          <legend>Você concluirá o curso neste semestre? <span class="obrigatorio" aria-hidden="true">*</span></legend>
+          <div class="caixaOpcoes" id="caixaConcluiCurso">
+            <label class="itemOpcao"><input type="radio" name="concluiCurso" value="Sim"> Sim</label>
+            <label class="itemOpcao"><input type="radio" name="concluiCurso" value="Não"> Não</label>
+          </div>
+          <div class="erroCampo" id="erroConcluiCurso" hidden></div>
+        </fieldset>
+      </div>
+
+      <div class="secao">
+        <h3>5. Trancamento</h3>
+        <div class="ajudaContextualLinha">
+          <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-disciplinas">Onde encontro o código?</button>
+          <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-codigo-nao-encontrado">O código não foi encontrado</button>
+        </div>
+        <div class="textoInformativo">
+          <p>Digite o código (sigla) de cada disciplina que deseja trancar, como aparece no seu histórico escolar no semestre atual (por exemplo, <strong>PSA0101</strong>). O nome da disciplina aparece automaticamente. Informe cada disciplina só uma vez. As disciplinas serão trancadas na ordem de preferência indicada abaixo.</p>
+        </div>
+        <div id="avisoCatalogo" class="alerta alerta--aviso" hidden>
+          <strong class="tituloAlerta"><span aria-hidden="true">⚠️ </span>O cadastro de disciplinas não carregou</strong>
+          <span>Digite o código e também o nome de cada disciplina.</span>
+        </div>
+
+        <ol class="listaDisciplinas" id="listaDisciplinas" aria-describedby="erroDisciplinas"></ol>
+        <div class="erroCampo" id="erroDisciplinas" hidden></div>
+
+        <button type="button" class="botaoSecundario" id="btnAdicionarDisciplina">
+          <span aria-hidden="true">+</span> Adicionar disciplina
+        </button>
+        <p class="ajudaCampo limiteDisciplinas" id="limiteDisciplinas">Até 6 disciplinas por pedido.</p>
+      </div>
+
+      <div class="secao">
+        <h3>6. Justificativa</h3>
+        <div class="campoEditavel">
+          <label for="campoJustificativa">Justificativa <span class="opcional">(opcional)</span></label>
+          <span class="ajudaCampo" id="ajudaJustificativa">Se quiser, conte o motivo pelo qual pretende fazer o trancamento parcial.</span>
+          <textarea id="campoJustificativa" maxlength="4000" aria-describedby="ajudaJustificativa contadorJustificativa erroJustificativa"></textarea>
+          <div class="contador" id="contadorJustificativa">0 de 4.000 caracteres</div>
+          <div class="erroCampo" id="erroJustificativa" hidden></div>
+        </div>
+      </div>
+
+      <div class="secao">
+        <div id="resumoErros" class="alerta alerta--erro" role="alert" tabindex="-1" hidden></div>
+        <button type="submit" class="botaoPrimario" id="btnEnviar">Enviar pedido</button>
+      </div>
+
+    </form>
+
+  </main>
+
+  <div class="rodape">Serviço de Graduação — Instituto de Psicologia da USP</div>
+
+  <!-- CARREGANDO -->
+  <div id="loadingOverlay" role="status" aria-live="polite">
+    <div id="loadingBox">
+      <div id="loadingTitulo">Pedido de Trancamento Parcial de Matrícula</div>
+      <div id="loadingTexto">Carregando<span id="loadingPontos" aria-hidden="true"></span></div>
+    </div>
+  </div>
+
+<?!= include_('TrancamentoParcialAjuda') ?>
+<?!= include_('TrancamentoParcialAjudaUI') ?>
+
+<script>
+
+const LIMITE_JUSTIFICATIVA = 4000;
+const MAX_DISCIPLINAS = 6;
+
+let loadingTimer;
+let dadosIniciais = null;
+
+// Cadastro de disciplinas: null = carregando; depois { disponivel, porCodigo, apelidos }.
+let catalogo = null;
+let contadorLinhas = 0;
+
+window.addEventListener("load", function () {
+    document.getElementById("formularioPedido").addEventListener("submit", function (evento) {
+        evento.preventDefault();
+        enviarSolicitacao();
+    });
+    document.getElementById("campoJustificativa").addEventListener("input", atualizarContador);
+    document.getElementById("btnAdicionarDisciplina").addEventListener("click", function () {
+        const linha = adicionarDisciplina();
+        if (linha) linha.querySelector(".inputCodigo").focus();
+    });
+    // Campo editado deixa de dizer "Preenchido automaticamente".
+    [["campoNome", "avisoNome"], ["campoNUsp", "avisoNUsp"]]
+        .forEach(([campo, aviso]) => document.getElementById(campo).addEventListener("input", () => {
+            document.getElementById(aviso).hidden = true;
+        }));
+    // Créditos: só dígitos.
+    document.getElementById("campoCreditos").addEventListener("input", function () {
+        const limpo = this.value.replace(/\D/g, "");
+        if (limpo !== this.value) this.value = limpo;
+    });
+    atualizarContador();
+    adicionarDisciplina();
+
+    mostrarLoading("Carregando seus dados");
+    google.script.run
+        .withSuccessHandler(receberDadosIniciais)
+        .withFailureHandler(mostrarErroCarregamento)
+        .obterDadosIniciais();
+});
+
+function receberDadosIniciais(dados) {
+
+    esconderLoading();
+
+    if (!dados) {
+        mostrarErroCarregamento();
+        return;
+    }
+
+    dadosIniciais = dados;
+
+    if (!dados.autenticado) {
+        mostrarBloqueio(
+            "🔒",
+            "Login necessário",
+            "Não foi possível confirmar seu login institucional. Verifique se você está logado no navegador com o seu e-mail @usp.br e recarregue esta página."
+        );
+        return;
+    }
+
+    if (!dados.periodoAberto) {
+        mostrarBloqueio(
+            "📅",
+            "Formulário fechado no momento",
+            dados.motivoFechado || "O formulário de Trancamento Parcial de Matrícula não está disponível no momento.",
+            "ajuda-prazo",
+            "Sobre o prazo"
+        );
+        return;
+    }
+
+    preencherTextosPeriodo(dados.periodo || {});
+
+    document.getElementById("campoEmail").value = dados.email;
+
+    if (dados.encontrado) {
+        document.getElementById("campoNUsp").value = dados.nUsp;
+        document.getElementById("campoNome").value = dados.nome;
+        if (dados.nUsp) document.getElementById("avisoNUsp").hidden = false;
+        if (dados.nome) document.getElementById("avisoNome").hidden = false;
+    } else {
+        adicionarAviso(montarAlerta(
+            "aviso",
+            "Não encontramos automaticamente o seu registro de aluno",
+            "Preencha o número USP e o nome manualmente."
+        ));
+    }
+
+    if (dados.historico && dados.historico.length > 0) {
+        montarAvisoHistorico(dados.historico);
+    }
+
+    if (dados.urlFormulario) {
+        const link = document.getElementById("linkNovoPedido");
+        link.href = dados.urlFormulario;
+        link.hidden = false;
+    }
+
+    document.getElementById("conteudo").hidden = false;
+
+    carregarCatalogo();
+
+}
+
+function preencherTextosPeriodo(periodo) {
+    const tituloSemestre = periodo.semestre === 2 ? "2º semestre" : periodo.semestre === 1 ? "1º semestre" : "";
+    document.getElementById("tituloResumo").textContent = tituloSemestre && periodo.ano
+        ? `Trancamento parcial de matrícula — ${tituloSemestre} de ${periodo.ano}`
+        : "Trancamento parcial de matrícula";
+    const pares = {
+        spanHoraFim: periodo.horaFimTexto, spanDiaFim: periodo.diaFimTexto,
+        spanDataInicioMuitoImportante: periodo.dataInicioTexto, spanDataFimMuitoImportante: periodo.dataFimTexto,
+        spanDataInicioDeclaracao: periodo.dataInicioTexto, spanDataFimDeclaracao: periodo.dataFimTexto
+    };
+    Object.keys(pares).forEach(id => { document.getElementById(id).textContent = pares[id] || "-"; });
+}
+
+// Monta via DOM (não innerHTML com dado externo): situação e
+// disciplinas vêm da planilha, que pode ter texto livre.
+function montarAlerta(tipo, titulo, texto) {
+    const caixa = document.createElement("div");
+    caixa.className = "alerta alerta--" + tipo;
+    const t = document.createElement("strong");
+    t.className = "tituloAlerta";
+    t.textContent = titulo;
+    caixa.appendChild(t);
+    if (texto) {
+        const p = document.createElement("span");
+        p.textContent = texto;
+        caixa.appendChild(p);
+    }
+    return caixa;
+}
+
+function adicionarAviso(elemento) {
+    document.getElementById("avisos").appendChild(elemento);
+}
+
+function semAcento(t) {
+    return String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+function montarAvisoHistorico(historico) {
+
+    const caixa = montarAlerta("info", "Você já tem pedido(s) de trancamento parcial registrado(s) anteriormente:");
+    const lista = document.createElement("ul");
+
+    historico.forEach(item => {
+        const li = document.createElement("li");
+        const selo = document.createElement("span");
+        selo.className = "seloSituacao " + (item.pendente ? "pendente" : "concluido");
+        selo.textContent = item.pendente ? "Pendente" : "Concluído";
+        li.appendChild(selo);
+        const partes = [];
+        const situacao = String(item.situacao || "").trim();
+        if (situacao && situacao !== "(sem status registrado)" && semAcento(situacao) !== semAcento(selo.textContent)) partes.push(situacao);
+        if (item.carimbo) partes.push(`enviado em ${item.carimbo}`);
+        li.appendChild(document.createTextNode(partes.join(" — ")));
+        if (item.disciplinas && item.disciplinas.length) {
+            const d = document.createElement("span");
+            d.className = "discAnteriores";
+            d.textContent = item.disciplinas.join("; ");
+            li.appendChild(d);
+        }
+        lista.appendChild(li);
+    });
+
+    caixa.appendChild(lista);
+
+    const rodape = document.createElement("p");
+    rodape.textContent = "Você ainda pode enviar um novo pedido normalmente, se for o caso. Só repita uma disciplina se quiser pedir de novo o trancamento dela.";
+    caixa.appendChild(rodape);
+
+    adicionarAviso(caixa);
+
+}
+
+function mostrarErroCarregamento() {
+    esconderLoading();
+    mostrarBloqueio("⚠️", "Erro ao carregar", "Não foi possível carregar o formulário agora. Recarregue a página; se continuar, tente mais tarde.");
+}
+
+// Tela de bloqueio genérica: sem login, fora do período ou erro de carga.
+function mostrarBloqueio(icone, titulo, texto, secaoAjuda, rotuloAjuda) {
+    document.getElementById("iconeBloqueio").textContent = icone;
+    document.getElementById("tituloBloqueio").textContent = titulo;
+    document.getElementById("textoBloqueio").textContent = texto;
+    const ajuda = document.getElementById("ajudaBloqueio");
+    ajuda.setAttribute("data-gradip-help-open", secaoAjuda || "ajuda-problemas");
+    ajuda.textContent = rotuloAjuda || "Como resolver?";
+    const tela = document.getElementById("telaBloqueada");
+    tela.hidden = false;
+    tela.focus();
+}
+
+//-----------------------------------
+// Cadastro de disciplinas
+//-----------------------------------
+
+function carregarCatalogo() {
+    google.script.run
+        .withSuccessHandler(receberCatalogo)
+        .withFailureHandler(() => receberCatalogo(null))
+        .obterCatalogoDisciplinas();
+}
+
+function receberCatalogo(resposta) {
+    const porCodigo = {};
+    if (resposta && resposta.disponivel && Array.isArray(resposta.disciplinas)) {
+        resposta.disciplinas.forEach(d => { porCodigo[d[0]] = { codigo: d[0], nome: d[1], creditos: d[2] }; });
+    }
+    catalogo = {
+        disponivel: Object.keys(porCodigo).length > 0,
+        porCodigo: porCodigo,
+        apelidos: (resposta && resposta.apelidos) || {}
+    };
+    document.getElementById("avisoCatalogo").hidden = catalogo.disponivel;
+    document.querySelectorAll(".linhaDisciplina").forEach(atualizarLinha);
+}
+
+function normalizarCodigo(valor) {
+    return String(valor || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function procurarDisciplina(codigo) {
+    if (!catalogo || !catalogo.disponivel || !codigo) return null;
+    if (catalogo.porCodigo[codigo]) return { disciplina: catalogo.porCodigo[codigo], antigo: null };
+    const atual = catalogo.apelidos[codigo];
+    if (atual && catalogo.porCodigo[atual]) return { disciplina: catalogo.porCodigo[atual], antigo: codigo };
+    return null;
+}
+
+//-----------------------------------
+// Linhas de disciplina (até MAX_DISCIPLINAS)
+//-----------------------------------
+
+function adicionarDisciplina() {
+
+    const lista = document.getElementById("listaDisciplinas");
+    if (lista.children.length >= MAX_DISCIPLINAS) return null;
+
+    const n = ++contadorLinhas;
+    const li = document.createElement("li");
+    li.className = "linhaDisciplina";
+    li.dataset.linha = String(n);
+
+    const topo = document.createElement("div");
+    topo.className = "topoDisciplina";
+    const titulo = document.createElement("p");
+    titulo.className = "tituloDisciplina";
+    titulo.id = `tituloDisc${n}`;
+    topo.appendChild(titulo);
+    const remover = document.createElement("button");
+    remover.type = "button";
+    remover.className = "botaoRemover";
+    remover.textContent = "Remover";
+    remover.addEventListener("click", () => removerDisciplina(li));
+    topo.appendChild(remover);
+    li.appendChild(topo);
+
+    const grade = document.createElement("div");
+    grade.className = "gradeDisciplina";
+
+    const campoCodigo = document.createElement("div");
+    campoCodigo.className = "campoEditavel campoCodigo";
+    const lblCodigo = document.createElement("label");
+    lblCodigo.htmlFor = `codigoDisc${n}`;
+    lblCodigo.textContent = "Código (sigla)";
+    const inCodigo = document.createElement("input");
+    inCodigo.type = "text";
+    inCodigo.id = `codigoDisc${n}`;
+    inCodigo.className = "inputCodigo";
+    inCodigo.maxLength = 12;
+    inCodigo.autocomplete = "off";
+    inCodigo.spellcheck = false;
+    inCodigo.setAttribute("autocapitalize", "characters");
+    inCodigo.placeholder = "Ex.: PSA0101";
+    inCodigo.setAttribute("aria-describedby", `statusDisc${n} erroDisc${n}`);
+    inCodigo.addEventListener("input", () => { li.dataset.saiu = ""; atualizarLinha(li); });
+    // Ao sair do campo, um código curto (menos de 7 caracteres) também
+    // passa a aceitar o nome digitado, se não estiver no cadastro.
+    inCodigo.addEventListener("blur", () => {
+        const limpo = normalizarCodigo(inCodigo.value);
+        if (limpo !== inCodigo.value) inCodigo.value = limpo;
+        if (normalizarCodigo(inCodigo.value) && !li.dataset.doCadastro && li.dataset.saiu !== "1") {
+            li.dataset.saiu = "1";
+            atualizarLinha(li);
+        }
+    });
+    campoCodigo.appendChild(lblCodigo);
+    campoCodigo.appendChild(inCodigo);
+
+    const campoNome = document.createElement("div");
+    campoNome.className = "campoEditavel campoNomeDisciplina";
+    const lblNome = document.createElement("label");
+    lblNome.htmlFor = `nomeDisc${n}`;
+    lblNome.textContent = "Nome da disciplina";
+    const inNome = document.createElement("input");
+    inNome.type = "text";
+    inNome.id = `nomeDisc${n}`;
+    inNome.className = "inputNome";
+    inNome.maxLength = 150;
+    inNome.autocomplete = "off";
+    inNome.readOnly = true;
+    inNome.placeholder = "Aparece ao digitar o código";
+    inNome.setAttribute("aria-describedby", `statusDisc${n} erroDisc${n}`);
+    inNome.addEventListener("input", () => { li.dataset.nomeDigitado = inNome.value; limparErroLinha(li); });
+    campoNome.appendChild(lblNome);
+    campoNome.appendChild(inNome);
+
+    grade.appendChild(campoCodigo);
+    grade.appendChild(campoNome);
+    li.appendChild(grade);
+
+    const status = document.createElement("div");
+    status.className = "statusDisciplina";
+    status.id = `statusDisc${n}`;
+    status.setAttribute("aria-live", "polite");
+    li.appendChild(status);
+
+    const erro = document.createElement("div");
+    erro.className = "erroCampo";
+    erro.id = `erroDisc${n}`;
+    erro.hidden = true;
+    li.appendChild(erro);
+
+    lista.appendChild(li);
+    renumerarDisciplinas();
+    atualizarLinha(li);
+    return li;
+
+}
+
+function removerDisciplina(li) {
+    const lista = document.getElementById("listaDisciplinas");
+    const indice = Array.prototype.indexOf.call(lista.children, li);
+    li.remove();
+    if (!lista.children.length) adicionarDisciplina();
+    renumerarDisciplinas();
+    // Foco vai para a linha que ocupou o lugar (ou a anterior).
+    const alvo = lista.children[Math.min(indice, lista.children.length - 1)];
+    if (alvo) alvo.querySelector(".inputCodigo").focus();
+}
+
+function renumerarDisciplinas() {
+    const linhas = document.querySelectorAll(".linhaDisciplina");
+    linhas.forEach((li, i) => {
+        const titulo = li.querySelector(".tituloDisciplina");
+        titulo.textContent = i === 0 ? "Disciplina 1 (obrigatória)" : `Disciplina ${i + 1}`;
+        const remover = li.querySelector(".botaoRemover");
+        remover.hidden = linhas.length === 1;
+        remover.setAttribute("aria-label", `Remover a disciplina ${i + 1}`);
+    });
+    const cheio = linhas.length >= MAX_DISCIPLINAS;
+    document.getElementById("btnAdicionarDisciplina").hidden = cheio;
+    document.getElementById("limiteDisciplinas").textContent = cheio
+        ? "Você chegou ao limite de 6 disciplinas por pedido."
+        : "Até 6 disciplinas por pedido.";
+}
+
+function limparErroLinha(li) {
+    li.classList.remove("comErro");
+    li.querySelectorAll("input").forEach(i => i.removeAttribute("aria-invalid"));
+    const erro = li.querySelector(".erroCampo");
+    erro.textContent = "";
+    erro.hidden = true;
+}
+
+// Preenche o nome pelo cadastro conforme o código digitado.
+function atualizarLinha(li) {
+
+    const inCodigo = li.querySelector(".inputCodigo");
+    const inNome = li.querySelector(".inputNome");
+    const status = li.querySelector(".statusDisciplina");
+    const codigo = normalizarCodigo(inCodigo.value);
+
+    limparErroLinha(li);
+    status.className = "statusDisciplina";
+    li.dataset.doCadastro = "";
+
+    const achado = procurarDisciplina(codigo);
+
+    if (achado) {
+        const d = achado.disciplina;
+        inNome.value = d.nome;
+        inNome.readOnly = true;
+        li.dataset.doCadastro = d.codigo;
+        status.classList.add("encontrada");
+        const creditos = d.creditos ? ` · ${d.creditos} crédito${d.creditos === 1 ? "" : "s"}-aula` : "";
+        status.textContent = achado.antigo
+            ? `✓ O código ${achado.antigo} mudou para ${d.codigo}. Será enviado como ${d.codigo}${creditos}.`
+            : `✓ Encontrada no cadastro: ${d.nome}${creditos}`;
+        return;
+    }
+
+    // Sem cadastro disponível ou código fora dele: nome digitado.
+    const completo = codigo.length >= 7 || (codigo.length >= 3 && li.dataset.saiu === "1");
+    const podeDigitar = !!catalogo && (!catalogo.disponivel || completo);
+    inNome.readOnly = !podeDigitar;
+    inNome.value = podeDigitar ? (li.dataset.nomeDigitado || "") : "";
+    inNome.placeholder = podeDigitar ? "Digite o nome da disciplina" : "Aparece ao digitar o código";
+
+    if (!codigo) {
+        status.textContent = "";
+    } else if (!catalogo) {
+        status.textContent = "Carregando o cadastro de disciplinas…";
+    } else if (!catalogo.disponivel) {
+        status.textContent = "";
+    } else if (!completo) {
+        status.textContent = "";
+    } else {
+        status.classList.add("naoEncontrada");
+        status.textContent = `⚠ O código ${codigo} não está no cadastro de disciplinas. Confira no histórico escolar; se estiver certo, digite o nome da disciplina.`;
+    }
+
+}
+
+function coletarDisciplinas() {
+    return Array.prototype.map.call(document.querySelectorAll(".linhaDisciplina"), li => ({
+        li: li,
+        codigo: normalizarCodigo(li.querySelector(".inputCodigo").value),
+        nome: li.querySelector(".inputNome").value.trim(),
+        doCadastro: li.dataset.doCadastro || ""
+    }));
+}
+
+//-----------------------------------
+// Contador da justificativa
+//-----------------------------------
+
+function atualizarContador() {
+    const n = document.getElementById("campoJustificativa").value.length;
+    const contador = document.getElementById("contadorJustificativa");
+    contador.textContent = `${n.toLocaleString("pt-BR")} de ${LIMITE_JUSTIFICATIVA.toLocaleString("pt-BR")} caracteres`;
+    contador.classList.toggle("perto", n >= LIMITE_JUSTIFICATIVA * 0.9);
+}
+
+//-----------------------------------
+// Validação (a mesma do servidor, que confere tudo de novo)
+//-----------------------------------
+
+const CAMPOS = {
+    ciencia: { campo: "caixaCiencia", erro: "erroCiencia", foco: "#campoCiencia" },
+    nUsp: { campo: "campoNUsp", erro: "erroNUsp" },
+    nome: { campo: "campoNome", erro: "erroNome" },
+    creditos: { campo: "campoCreditos", erro: "erroCreditos" },
+    menos12: { campo: "caixaMenos12", erro: "erroMenos12", foco: 'input[name="menos12"]' },
+    concluiCurso: { campo: "caixaConcluiCurso", erro: "erroConcluiCurso", foco: 'input[name="concluiCurso"]' },
+    disciplinas: { campo: "listaDisciplinas", erro: "erroDisciplinas", foco: ".inputCodigo" },
+    justificativa: { campo: "campoJustificativa", erro: "erroJustificativa" }
+};
+
+function limparErros() {
+    Object.keys(CAMPOS).forEach(chave => {
+        const c = CAMPOS[chave];
+        document.getElementById(c.campo).removeAttribute("aria-invalid");
+        const erro = document.getElementById(c.erro);
+        erro.textContent = "";
+        erro.hidden = true;
+    });
+    document.querySelectorAll(".linhaDisciplina").forEach(limparErroLinha);
+    const resumo = document.getElementById("resumoErros");
+    resumo.hidden = true;
+    resumo.textContent = "";
+}
+
+// Erros: [chave, mensagem] para campos fixos; [li, mensagem, alvo] para uma linha de disciplina.
+function validar(dados, linhas) {
+
+    const erros = [];
+
+    if (!dados.ciencia) erros.push(["ciencia", 'Marque "Ciente" na declaração de ciência.']);
+
+    const digitos = dados.nUsp.replace(/\D/g, "");
+    if (!dados.nUsp) erros.push(["nUsp", "Informe o seu número USP."]);
+    else if (!digitos) erros.push(["nUsp", "Número USP inválido — use só números."]);
+    else if (digitos.length > 15) erros.push(["nUsp", "Número USP muito longo."]);
+
+    if (!dados.nome) erros.push(["nome", "Informe o seu nome completo."]);
+
+    if (!dados.creditos) erros.push(["creditos", "Informe o número de créditos-aula em que está matriculado(a)."]);
+    else if (!/^\d{1,2}$/.test(dados.creditos) || Number(dados.creditos) < 1) erros.push(["creditos", "Use um número inteiro entre 1 e 99."]);
+
+    if (!dados.menos12) erros.push(["menos12", "Responda se ficará com menos de 12 créditos-aula após o trancamento."]);
+    if (!dados.concluiCurso) erros.push(["concluiCurso", "Responda se concluirá o curso neste semestre."]);
+
+    const vistos = {};
+    let preenchidas = 0;
+    if (!catalogo) {
+        erros.push(["disciplinas", "Aguarde o cadastro de disciplinas terminar de carregar e clique em Enviar de novo."]);
+        linhas = [];
+        preenchidas = -1;
+    }
+    linhas.forEach((l, i) => {
+        if (!l.codigo && !l.nome) {
+            if (i === 0) erros.push([l.li, "Informe o código da disciplina que deseja trancar.", ".inputCodigo"]);
+            return;
+        }
+        preenchidas++;
+        if (!l.codigo) { erros.push([l.li, "Informe o código (sigla) da disciplina.", ".inputCodigo"]); return; }
+        if (l.codigo.length < 3) { erros.push([l.li, "Código incompleto — confira no histórico escolar.", ".inputCodigo"]); return; }
+        const codigoFinal = l.doCadastro || l.codigo;
+        if (!l.doCadastro && !l.nome) { erros.push([l.li, "Este código não está no cadastro: confira o código ou digite o nome da disciplina.", ".inputNome"]); return; }
+        if (vistos[codigoFinal]) { erros.push([l.li, `A disciplina ${codigoFinal} já foi informada acima. Informe cada disciplina só uma vez.`, ".inputCodigo"]); return; }
+        vistos[codigoFinal] = true;
+    });
+    if (preenchidas === 0 && !erros.some(e => typeof e[0] !== "string")) erros.push(["disciplinas", "Informe ao menos uma disciplina para trancamento."]);
+
+    if (dados.justificativa.length > LIMITE_JUSTIFICATIVA) {
+        erros.push(["justificativa", `A justificativa passou de ${LIMITE_JUSTIFICATIVA.toLocaleString("pt-BR")} caracteres. Resuma o texto.`]);
+    }
+
+    return erros;
+
+}
+
+function mostrarErros(erros) {
+
+    let primeiroAlvo = null;
+
+    erros.forEach(([chave, mensagem, alvoLinha]) => {
+        let alvo;
+        if (typeof chave === "string") {
+            const c = CAMPOS[chave];
+            document.getElementById(c.campo).setAttribute("aria-invalid", "true");
+            const erro = document.getElementById(c.erro);
+            erro.textContent = mensagem;
+            erro.hidden = false;
+            alvo = c.foco ? document.querySelector(c.foco) : document.getElementById(c.campo);
+        } else {
+            const li = chave;
+            li.classList.add("comErro");
+            alvo = li.querySelector(alvoLinha) || li.querySelector(".inputCodigo");
+            alvo.setAttribute("aria-invalid", "true");
+            const erro = li.querySelector(".erroCampo");
+            erro.textContent = mensagem;
+            erro.hidden = false;
+        }
+        if (!primeiroAlvo) primeiroAlvo = alvo;
+    });
+
+    const resumo = document.getElementById("resumoErros");
+    resumo.textContent = "";
+    const titulo = document.createElement("strong");
+    titulo.className = "tituloAlerta";
+    titulo.textContent = erros.length === 1 ? "Corrija 1 item antes de enviar." : `Corrija ${erros.length} itens antes de enviar.`;
+    resumo.appendChild(titulo);
+    const texto = document.createElement("span");
+    texto.textContent = "Os campos com problema estão marcados acima.";
+    resumo.appendChild(texto);
+    resumo.hidden = false;
+
+    if (primeiroAlvo) primeiroAlvo.focus();
+
+}
+
+function mostrarErroEnvio(mensagem) {
+    const resumo = document.getElementById("resumoErros");
+    resumo.textContent = "";
+    const titulo = document.createElement("strong");
+    titulo.className = "tituloAlerta";
+    titulo.textContent = "O pedido não foi enviado.";
+    resumo.appendChild(titulo);
+    const texto = document.createElement("span");
+    texto.textContent = mensagem;
+    resumo.appendChild(texto);
+    resumo.hidden = false;
+    resumo.focus();
+}
+
+//-----------------------------------
+// Envio
+//-----------------------------------
+
+function enviarSolicitacao() {
+
+    limparErros();
+
+    const menos12El = document.querySelector('input[name="menos12"]:checked');
+    const concluiEl = document.querySelector('input[name="concluiCurso"]:checked');
+    const linhas = coletarDisciplinas();
+
+    const dados = {
+        ciencia: document.getElementById("campoCiencia").checked,
+        nUsp: document.getElementById("campoNUsp").value.trim(),
+        nome: document.getElementById("campoNome").value.trim(),
+        creditos: document.getElementById("campoCreditos").value.trim(),
+        menos12: menos12El ? menos12El.value : "",
+        concluiCurso: concluiEl ? concluiEl.value : "",
+        justificativa: document.getElementById("campoJustificativa").value.trim()
+    };
+
+    const erros = validar(dados, linhas);
+    if (erros.length) {
+        mostrarErros(erros);
+        return;
+    }
+
+    dados.disciplinas = linhas
+        .filter(l => l.codigo || l.nome)
+        .map(l => ({ codigo: l.doCadastro || l.codigo, nome: l.nome }));
+
+    document.getElementById("btnEnviar").disabled = true;
+    mostrarLoading("Enviando seu pedido");
+
+    google.script.run
+        .withSuccessHandler(resultado => {
+            esconderLoading();
+            document.getElementById("conteudo").hidden = true;
+            const lista = document.getElementById("listaEnviadas");
+            lista.textContent = "";
+            ((resultado && resultado.disciplinas) || []).forEach(d => {
+                const li = document.createElement("li");
+                li.textContent = d;
+                lista.appendChild(li);
+            });
+            lista.hidden = !lista.children.length;
+            document.getElementById("textoRecibo").textContent = resultado && resultado.reciboEnviado
+                ? `Um recibo com os dados enviados foi mandado para ${dadosIniciais.email}.`
+                : "Não foi possível enviar o recibo por e-mail, mas o seu pedido foi registrado normalmente.";
+            const tela = document.getElementById("telaConfirmacao");
+            tela.hidden = false;
+            window.scrollTo(0, 0);
+            tela.focus();
+        })
+        .withFailureHandler(erro => {
+            esconderLoading();
+            document.getElementById("btnEnviar").disabled = false;
+            tratarErroEnvio(String((erro && erro.message) || erro || ""));
+        })
+        .registrarSolicitacao(dados);
+
+}
+
+// Mensagens do servidor podem vir prefixadas com "Error: ".
+function tratarErroEnvio(mensagem) {
+    if (mensagem.indexOf("NAO_AUTENTICADO:") !== -1) {
+        mostrarErroEnvio("Seu login não foi confirmado. Recarregue a página com a sua conta @usp.br e envie de novo.");
+        return;
+    }
+    mostrarErroEnvio(mensagem.replace(/^Error:\s*/, "") || "Tente de novo em instantes.");
+}
+
+//-----------------------------------
+// Carregando
+//-----------------------------------
+
+function mostrarLoading(texto) {
+
+    if (loadingTimer) clearInterval(loadingTimer);
+
+    document.getElementById("loadingTexto").firstChild.textContent = texto || "Carregando";
+    document.getElementById("loadingOverlay").hidden = false;
+
+    let pontos = 0;
+    loadingTimer = setInterval(() => {
+        pontos = (pontos + 1) % 4;
+        document.getElementById("loadingPontos").textContent = ".".repeat(pontos);
+    }, 350);
+
+}
+
+function esconderLoading() {
+    if (loadingTimer) clearInterval(loadingTimer);
+    document.getElementById("loadingOverlay").hidden = true;
+}
+
+</script>
+
+</body>
+</html>
