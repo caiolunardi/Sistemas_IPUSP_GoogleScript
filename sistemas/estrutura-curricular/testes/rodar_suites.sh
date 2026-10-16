@@ -309,6 +309,8 @@ rm -f saida/grade_curricular_com_texto_sintetico.pdf || erro testar_pdf_texto "n
 suite testar_pdf_texto - node testar_pdf_texto.js "$CSV" saida/paginas_ocr_navegador.json
 exigir_arquivo testar_pdf_texto saida/grade_curricular_com_texto_sintetico.pdf
 suite testar_dois_arquivos - node testar_dois_arquivos.js "$CSV" saida/grade_curricular_com_texto_sintetico.pdf "$PDF"
+
+suite testar_protecao_grade - node testar_protecao_grade.js
 # reproduzir_auditoria.js é um roteiro DESCRITIVO: imprime os fatos e termina com 0 nas duas fontes.
 if fonte DIR_SRC_ANTERIOR 1.1.0; then
   suite reproduzir_auditoria_antes - env DIR_SRC="$DIR_SRC_ANTERIOR" node reproduzir_auditoria.js "$CSV" saida/paginas_ocr_navegador.json

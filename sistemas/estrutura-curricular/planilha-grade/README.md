@@ -2,7 +2,7 @@
 
 > Migração histórica recebida. A atualização visual 1.10.0 não modifica este script nem exige repetir remoções de arquivos/acionadores. Para implantação nova, confira o estado do projeto vinculado e [INSTALACAO_E_ATUALIZACAO.md](../../../docs/sistemas/estrutura-curricular/INSTALACAO_E_ATUALIZACAO.md).
 
-A planilha que as secretarias preenchem (chave `GRADE_HORARIA_PREENCHIMENTO` no `ID_INDEX`) fica com **um único arquivo de código**: `Validacoes.gs`. Nada de menu, backup, registro de edições ou grade visual: isso roda no sistema Estrutura Curricular (envio da grade, cópia de segurança, auditoria) ou vai para um projeto separado (grade visual).
+A planilha que as secretarias preenchem (chave `GRADE_HORARIA_PREENCHIMENTO` no `ID_INDEX`) fica com **dois arquivos de código**: `Validacoes.gs` (validações a cada edição) e `Protecao.gs` (só e-mails autorizados preenchem). Nada de menu, backup, registro de edições ou grade visual: isso roda no sistema Estrutura Curricular (envio da grade, cópia de segurança, auditoria) ou vai para um projeto separado (grade visual).
 
 ## O que `Validacoes.gs` faz
 
@@ -14,6 +14,25 @@ Gatilho simples `onEdit` (roda sozinho, com as permissões de quem edita), só n
 O **Horário de Fim (M)** não é mais digitado: o envio da grade grava em M a fórmula `início + créditos-aula` (1 crédito = 1 hora), com o resultado em **texto "HH:mm"** (1.6.2). Na Tabela, deixe a coluna Horário de Fim com o tipo **Texto** (ou sem tipo) e sem lista suspensa; o envio não muda o formato dela (o Google não deixa o script mudar o formato de coluna com tipo). Por isso a antiga "verificação de carga horária" saiu — o fim sempre bate com os créditos.
 
 **Correção:** o código antigo procurava os tipos "Obrigatórias", "Optativas Eletivas" e "Optativas Livres", mas a coluna E usa "Obrigatória", "Eletiva" e "Livre" — a verificação de conflitos nunca disparava. O código novo usa os nomes certos.
+
+## O que `Protecao.gs` faz
+
+Só as secretarias autorizadas preenchem a grade, mesmo que a planilha tenha outros editores (por exemplo, um docente que recebeu acesso de uma secretaria). Usa a proteção de abas do próprio Google: quem não está na lista abre e vê a planilha, mas não consegue digitar.
+
+- A lista fica na aba **Acesso** da própria planilha (nunca no código: o repositório é público), uma linha por aba da grade, com os e-mails separados por vírgula. Aba sem e-mail: só o dono edita.
+- Todas as outras abas (Informações, DataBase, Acesso…) ficam só com o dono.
+- Proteções que já existem, como a da coluna M, continuam valendo: numa célula com duas proteções, a pessoa precisa estar autorizada nas duas.
+- A verificação de hora em hora reaplica a lista e desfaz qualquer editor incluído direto na proteção. A coluna "Última aplicação" da aba Acesso mostra quando rodou e quem foi removido.
+
+Instalação (com a conta **dona** da planilha; outra conta é recusada):
+
+1. Extensões › Apps Script: crie o arquivo **`Protecao`** e cole o conteúdo de `Protecao.gs`. Salve.
+2. Execute `prepararAbaAcesso` (autorize quando o Google pedir). Aparece a aba **Acesso**.
+3. Na aba Acesso, coluna B, preencha os e-mails de cada secretaria na linha da aba do departamento. Interdepartamentais e Outras Unidades: os e-mails de quem pode preencher essas abas, ou vazio para só você.
+4. Execute `ativarVerificacaoDeAcesso`: aplica agora e liga a verificação de hora em hora.
+5. Ao trocar uma secretaria, mude a aba Acesso e execute `aplicarAcessoGrade` (ou espere a próxima verificação).
+
+Complementos fora do script, no Drive: em Compartilhar › engrenagem, desmarque "Editores podem alterar permissões e compartilhar" na planilha **e nas pastas acima dela**, e compartilhe com as secretarias só o arquivo, nunca a pasta. Um editor não autorizado ainda consegue criar abas novas ou fazer uma cópia da planilha; nada disso altera a grade.
 
 ## Passo a passo na planilha (Extensões › Apps Script da planilha das secretarias)
 
