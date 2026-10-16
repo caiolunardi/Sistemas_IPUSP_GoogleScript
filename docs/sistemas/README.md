@@ -44,6 +44,10 @@ Sistemas pequenos podem concentrar tudo no `README.md`, mas a seção de dados/s
 - [Trancamento Parcial de Matrícula](trancamento-parcial/README.md) — formulário dos alunos v1.1 (16/10/2026) com disciplinas pelo código (cadastro DISCIPLINAS), recibo por e-mail, tema GRADIP e Central de Ajuda; [manual](trancamento-parcial/MANUAL_OPERACAO.md), [ajuda](trancamento-parcial/AJUDA.md), [segurança](trancamento-parcial/DADOS_E_SEGURANCA.md) e [homologação](trancamento-parcial/HOMOLOGACAO.md). Verificado localmente; implantação pendente. O gerenciador da equipe não está no repositório.
 - [Exclusão de Disciplinas](exclusao-disciplinas/README.md) — formulário dos alunos v1.1 (16/10/2026) com identidade só pelo login, disciplinas pelo código (cadastro DISCIPLINAS) e turma, pedidos anteriores, recibo por e-mail, tema GRADIP e Central de Ajuda; [manual](exclusao-disciplinas/MANUAL_OPERACAO.md), [ajuda](exclusao-disciplinas/AJUDA.md), [segurança](exclusao-disciplinas/DADOS_E_SEGURANCA.md) e [homologação](exclusao-disciplinas/HOMOLOGACAO.md). Verificado localmente; implantação pendente. O gerenciador da equipe não está no repositório.
 
+## Ideias em desenvolvimento
+
+- [Gerenciador de Ofícios e Modelos](gerenciador-oficios/README.md) — ideia em desenvolvimento (16/10/2026), sem código: numeração travada por órgão e ano, modelos de ofício (inclusive a partir de ofício antigo), Drive organizado (chave `OFICIOS`) e rascunho de e-mail no Gmail para revisão.
+
 ## Ordem prevista
 
 1. painéis e dashboards;
