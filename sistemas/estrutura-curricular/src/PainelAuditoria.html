@@ -163,7 +163,7 @@ var Auditoria = (function () {
     var e = String(email || '').trim();
     if (!e || e.indexOf('@') < 0) return { estado: 'sem_email', nome: e || '(não identificado)', vinculo: '', email: '' };
     var id = est.dados && est.dados.identificacao;
-    var p = id && id.pessoas ? id.pessoas[e.toLowerCase()] : null;
+    var p = id && id.pessoas ? id.pessoas[e.replace(/[\s\u00A0\u200B-\u200D\u2060\uFEFF]/g, '').toLowerCase()] : null;   // (1.11.1) como emailComparavel_ no servidor
     if (!p) return { estado: 'sem_confirmacao', nome: e, vinculo: 'nome não verificado', email: '' };
     if (p.vinculo === 'nao_cadastrado') return { estado: 'nao_cadastrada', nome: 'Pessoa não cadastrada com acesso', vinculo: '', email: e };
     var vinculo = p.vinculo === 'servidor' ? (p.setor || 'Servidor(a)') : p.vinculo === 'docente' ? 'Docente' : 'Aluno(a)';

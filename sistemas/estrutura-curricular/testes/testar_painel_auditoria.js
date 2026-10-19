@@ -224,6 +224,13 @@ function ambiente(nEdicoesExtras, op) {
     const d = pedir(a.ctx.obterAuditoriaGrade({}));
     igual([d.identificacao.indisponiveis, d.identificacao.pessoas[SEC_PSE].nome], [[], 'Docente Fictícia Dois']);
   });
+  await teste('(1.11.1) "não cadastrado" não fica em cache: setor incluído no cadastro aparece na leitura seguinte, mesmo com espaço não separável e caractere invisível colados no e-mail', () => {
+    const a = ambiente(0, { aberturasExtras: [INTRUSO] });
+    a.trocarUsuario(LEITOR);
+    igual(pedir(a.ctx.obterAuditoriaGrade({})).identificacao.pessoas[INTRUSO].vinculo, 'nao_cadastrado');
+    a.planilhas.get('ID_SERVIDORES_TESTE').getSheets()[0].appendRow(['\u200B ' + INTRUSO.toUpperCase() + '\u00A0', 'Secretaria Fictícia Nova', 'PSN']);
+    igual(pedir(a.ctx.obterAuditoriaGrade({})).identificacao.pessoas[INTRUSO], { nome: 'Secretaria Fictícia Nova', vinculo: 'servidor', setor: 'PSN' });
+  });
   await teste('(1.11.0) cadastro de alunos sem a coluna "eMail Secundario": busca só pela D; "ID da Pasta" (E) nunca é tratado como e-mail; o diagnóstico avisa', () => {
     const a = ambiente(0, { aberturasExtras: [ALUNO, 'principal@usp.example', 'PASTA_FICTICIA_0'] });
     const alunos = a.planilhas.get('ID_ALUNOS_TESTE').getSheets()[0];

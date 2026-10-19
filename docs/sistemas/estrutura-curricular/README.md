@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.11.0
+# Estrutura Curricular e Grade Horária — 1.11.1
+
+**1.11.1 (19/10/2026):** na Auditoria da grade, quem acaba de ser incluído num cadastro (servidor, setor, docente ou aluno) deixa de aparecer como "Pessoa não cadastrada com acesso" já na leitura seguinte; antes, esse resultado ficava 10 minutos em cache. E-mails do cadastro com espaço não separável ou caractere invisível colado também são reconhecidos.
 
 **1.11.0 (14/10/2026):** a Auditoria da grade mostra o nome, o vínculo e o e-mail de quem edita ou abre a planilha das secretarias ([verificação](VERIFICACAO_1_11_0.md)). O resto é a 1.10.0, descrita a seguir.
 

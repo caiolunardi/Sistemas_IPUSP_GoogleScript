@@ -46,9 +46,10 @@ var PESSOAS_AUDITORIA = {
     // E-mail secundário pelo título (na planilha real, E é "ID da Pasta").
     { chave: 'PLANILHA_ALUNOS', vinculo: 'aluno', descricao: 'alunos', colsEmail: [4], colNome: 2, titulosEmail: ['eMail Secundario'] }
   ],
-  // Nome achado (ou "não cadastrado", com as três planilhas lidas) fica em cache por e-mail.
+  // Nome achado fica em cache por e-mail. (1.11.1) "Não cadastrado" não fica:
+  // quem acabou de ser incluído num cadastro aparece na próxima leitura.
   CACHE_SEGUNDOS: 600,
-  CACHE_PREFIXO: 'pessoaAud:'
+  CACHE_PREFIXO: 'pessoaAud2:'   // 1.11.1: novo prefixo descarta os "não cadastrado" guardados pela 1.11.0
 };
 
 /**
@@ -235,7 +236,7 @@ function andamentoDaGrade_(grade) {
 function identificarPessoas_(emails) {
   var pedidos = {};
   (emails || []).forEach(function (e) {
-    var k = normalizarEmail_(e);
+    var k = emailComparavel_(e);
     if (k && k.indexOf('@') > 0) pedidos[k] = true;
   });
   var lista = Object.keys(pedidos);
@@ -269,7 +270,7 @@ function identificarPessoas_(emails) {
   faltam.forEach(function (k) {
     var p = achados[k];
     if (!p && res.indisponiveis.length) return;   // sem confirmação: não diz "não cadastrado" nem guarda em cache
-    p = p || { nome: '', vinculo: 'nao_cadastrado', setor: '' };
+    if (!p) { res.pessoas[k] = { nome: '', vinculo: 'nao_cadastrado', setor: '' }; return; }   // (1.11.1) sem cache
     res.pessoas[k] = p;
     gravar[PESSOAS_AUDITORIA.CACHE_PREFIXO + k] = JSON.stringify(p);
   });
@@ -277,6 +278,15 @@ function identificarPessoas_(emails) {
     try { cache.putAll(gravar, PESSOAS_AUDITORIA.CACHE_SEGUNDOS); } catch (e) { /* cache é só atalho */ }
   }
   return res;
+}
+
+/**
+ * (1.11.1) E-mail comparável entre a auditoria e os cadastros: sem
+ * maiúsculas, espaços (inclusive o não separável) e caracteres invisíveis
+ * que vêm de texto colado (espaço de largura zero, BOM).
+ */
+function emailComparavel_(email) {
+  return normalizarEmail_(String(email == null ? '' : email).replace(/[\s\u00A0\u200B-\u200D\u2060\uFEFF]/g, ''));
 }
 
 /** Título de coluna comparável: sem acentos, espaços e maiúsculas ("eMail Secundario" → "emailsecundario"). */
@@ -319,7 +329,7 @@ function lerCadastroDePessoas_(fonte) {
     if (!nome) return;
     var p = { nome: nome, vinculo: fonte.vinculo, setor: fonte.colSetor ? String(l[fonte.colSetor - 1] || '').replace(/\s+/g, ' ').trim() : '' };
     colsEmail.forEach(function (c) {
-      var k = normalizarEmail_(l[c - 1]);
+      var k = emailComparavel_(l[c - 1]);
       if (k && !mapa[k]) mapa[k] = p;
     });
   });

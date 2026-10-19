@@ -1,6 +1,12 @@
-# Instalação e atualização — 1.11.0
+# Instalação e atualização — 1.11.1
 
 Esta entrega publica código/documentação no Git. Não altera um projeto Apps Script ou uma planilha automaticamente. A fonte está em [`src/`](../../../sistemas/estrutura-curricular/src/).
+
+## Atualizar um Web App 1.11.0 para 1.11.1
+
+1. **Substitua** o conteúdo de três arquivos: `AuditoriaPainel.gs`, `PainelAuditoria.html` e `Codigo.gs`. Nenhum arquivo novo.
+2. Gerencie as implantações e publique uma **nova versão** na implantação existente (o `/exec` só muda assim).
+3. Na Auditoria da grade (rodapé **1.11.1**), quem está no cadastro aparece com nome e setor; quem for incluído depois aparece já ao recarregar.
 
 ## Atualizar um Web App 1.10.0 para 1.11.0
 
