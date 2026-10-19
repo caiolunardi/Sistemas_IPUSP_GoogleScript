@@ -18,6 +18,12 @@
     Edições         linha do tempo com busca e filtros.
     Histórico       janela com todas as edições de uma disciplina.
 
+  (1.11.2) Uma seção aberta por vez (Preenchimento, Não serão oferecidas,
+  Quem abre e edita, Edições), escolhida na barra #abasAuditoria; no menu
+  lateral ela vira o submenu de "Auditoria da grade". A barra aparece
+  depois da primeira carga; a seção escolhida se mantém ao atualizar ou
+  trocar de grade. Grade encerrada: sem "Não serão oferecidas".
+
   (1.11.0) Pessoas: a auditoria grava o e-mail; o servidor manda também o
   nome (cadastro de servidores, docentes ou alunos — identificacao). Onde
   havia só o e-mail, aparece o nome em destaque e, embaixo, o setor,
@@ -32,11 +38,13 @@ var Auditoria = (function () {
   var gatilho = P.gatilhoAjuda;   // (1.9.0) botões "?" da Central de Ajuda (delegação: sobrevivem ao redesenho)
   var POR_PAGINA = 50;
   // Colunas vindas do servidor
+  var SECOES = ['preenchimento', 'nao', 'pessoas', 'edicoes'];   // (1.11.2) ordem da barra
   var E = { data: 0, origem: 1, email: 2, aba: 3, celula: 4, campo: 5, codigo: 6, disciplina: 7, antes: 8, depois: 9, tipo: 10, celulas: 11, obs: 12, evento: 13 };
   var D = { codigo: 0, nome: 1, tipo: 2, modalidade: 3, oferecida: 4, docente: 5, semestreIdeal: 6, creditos: 7, dia: 8, inicio: 9, fim: 10 };
 
   var est = {
     visao: 'estrutura',
+    secao: 'preenchimento',   // (1.11.2)
     dados: null,
     carregando: false,
     aba: null,
@@ -96,6 +104,8 @@ var Auditoria = (function () {
       $('auditoriaAtualizar').disabled = false;
       $('auditoriaSemestre').disabled = !est.dados;
       $('auditoriaSituacao').textContent = '';
+      $('abasAuditoria').hidden = true;   // (1.11.2) sem seções enquanto a carga falha
+      SECOES.forEach(function (s) { $('audSecao-' + s).hidden = true; });
       $('auditoriaConteudo').innerHTML =
         '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">Não foi possível abrir a auditoria</div><p>' + esc(erro.mensagem) + '</p>' + gatilho('ajuda-problema-auditoria', 'O que fazer') + '</div>' +
         '<p><button type="button" class="botao botao--secundario" data-aud-tentar>Tentar de novo</button></p>';
@@ -121,17 +131,55 @@ var Auditoria = (function () {
   ----------------------------------------------------------------*/
   function renderizar() {
     var d = est.dados;
-    var html = '';
     // 1.8.0: sem link para a planilha de auditoria (o painel é a forma de consulta)
-    // Não oferecidas primeiro: é o que pede ação da Comissão de Graduação
-    html += d.andamento ? htmlNaoOferecidas() + htmlPreenchimento() :
-      '<div class="alerta alerta--info"><div class="alerta__titulo">Grade encerrada</div><p>A grade de ' + esc(rotuloSemestre(d.semestre)) +
-      ' não está mais em preenchimento: a situação final dela está na cópia de segurança feita no envio da grade seguinte. Abaixo, todas as edições registradas.</p>' + gatilho('ajuda-auditoria-anteriores', 'Sobre as grades anteriores') + '</div>';
-    html = htmlAvisoCadastros() + html;
-    html += htmlGraficos();
-    html += htmlEdicoes();
-    $('auditoriaConteudo').innerHTML = html;
+    // (1.11.2) cada seção num painel; só a escolhida fica visível
+    var secoes = {
+      preenchimento: d.andamento ? htmlPreenchimento() :
+        '<div class="alerta alerta--info"><div class="alerta__titulo">Grade encerrada</div><p>A grade de ' + esc(rotuloSemestre(d.semestre)) +
+        ' não está mais em preenchimento: a situação final dela está na cópia de segurança feita no envio da grade seguinte. Em "Edições", todas as edições registradas.</p>' + gatilho('ajuda-auditoria-anteriores', 'Sobre as grades anteriores') + '</div>',
+      nao: d.andamento ? htmlNaoOferecidas() : '',
+      pessoas: htmlGraficos(),
+      edicoes: htmlEdicoes()
+    };
+    $('auditoriaConteudo').innerHTML = htmlAvisoCadastros();
+    SECOES.forEach(function (s) { $('audSecao-' + s).innerHTML = secoes[s]; });
+    sincronizarSecoes();
     sincronizarFiltros();
+  }
+
+  /*----------------------------------------------------------------
+    (1.11.2) Seções: uma aberta por vez
+  ----------------------------------------------------------------*/
+  function secaoDisponivel(s) { return s !== 'nao' || !!(est.dados && est.dados.andamento); }
+
+  function sincronizarSecoes() {
+    var d = est.dados;
+    if (!secaoDisponivel(est.secao)) est.secao = 'preenchimento';
+    SECOES.forEach(function (s) {
+      var botao = $('aud-secao-' + s), painel = $('audSecao-' + s), ativa = s === est.secao;
+      botao.hidden = !secaoDisponivel(s);
+      botao.setAttribute('aria-selected', ativa ? 'true' : 'false');
+      botao.tabIndex = ativa ? 0 : -1;
+      painel.hidden = !d || !ativa;
+    });
+    var nao = 0;
+    if (d && d.andamento) d.andamento.forEach(function (a) { a.disciplinas.forEach(function (x) { if (naoOferecida(x)) nao++; }); });
+    $('audContagemNao').textContent = nao ? '(' + nao + ')' : '';
+    $('abasAuditoria').hidden = !d;
+  }
+
+  function ativarSecao(nome, focar) {
+    if (SECOES.indexOf(nome) < 0 || !secaoDisponivel(nome)) return;
+    est.secao = nome;
+    if (!est.dados) return;
+    sincronizarSecoes();
+    if (focar) $('aud-secao-' + nome).focus();
+    // Seção nova começa no topo: se ela está fora da tela (página rolada ou menu no alto, no celular), leva até ele.
+    var conteudo = $('audSecao-' + nome), topo = conteudo.getBoundingClientRect().top;
+    if (topo < 0 || topo > window.innerHeight * 0.8) {
+      var suave = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      conteudo.scrollIntoView({ block: 'start', behavior: suave ? 'smooth' : 'auto' });
+    }
   }
 
   /** (1.11.0) Algum cadastro de pessoas não abriu: quem não foi achado nos outros aparece só com o e-mail. */
@@ -458,6 +506,19 @@ var Auditoria = (function () {
         if (j !== null) { ev.preventDefault(); ativarVisao(nomes[j], true); }
       });
     });
+    // (1.11.2) Barra de seções: clique e setas (no menu lateral, cima/baixo chegam como direita/esquerda)
+    SECOES.forEach(function (s) {
+      var b = $('aud-secao-' + s);
+      b.addEventListener('click', function () { ativarSecao(s); });
+      b.addEventListener('keydown', function (ev) {
+        var visiveis = SECOES.filter(secaoDisponivel), i = visiveis.indexOf(s), j = null;
+        if (ev.key === 'ArrowRight') j = (i + 1) % visiveis.length;
+        if (ev.key === 'ArrowLeft') j = (i - 1 + visiveis.length) % visiveis.length;
+        if (ev.key === 'Home') j = 0;
+        if (ev.key === 'End') j = visiveis.length - 1;
+        if (j !== null) { ev.preventDefault(); ativarSecao(visiveis[j], true); }
+      });
+    });
     $('auditoriaAtualizar').addEventListener('click', function () { carregar(est.dados ? est.dados.semestre : undefined); });
     $('auditoriaSemestre').addEventListener('change', function (ev) { carregar(ev.target.value); });
 
@@ -478,6 +539,7 @@ var Auditoria = (function () {
       if (alvo.hasAttribute('data-aud-pessoa')) {
         est.filtros = { busca: '', aba: '', pessoa: alvo.getAttribute('data-aud-pessoa'), origem: '' };
         est.limite = POR_PAGINA;
+        est.secao = 'edicoes';   // (1.11.2) "ver edições" abre a seção Edições
         renderizar();
         var t = $('audEdicoesTitulo');
         if (t) { t.setAttribute('tabindex', '-1'); t.focus(); }
@@ -512,6 +574,6 @@ var Auditoria = (function () {
   }
 
   ligar();
-  return { aoCarregarPainel: aoCarregarPainel, ativarVisao: ativarVisao, carregar: carregar, estado: est };
+  return { aoCarregarPainel: aoCarregarPainel, ativarVisao: ativarVisao, ativarSecao: ativarSecao, carregar: carregar, estado: est };
 })();
 </script>

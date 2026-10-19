@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.11.1
+# Estrutura Curricular e Grade Horária — 1.11.2
+
+**1.11.2 (19/10/2026):** a Auditoria da grade abre uma seção por vez (Preenchimento, Não serão oferecidas, Quem abre e edita, Edições). No menu lateral, as seções aparecem como submenu logo abaixo de "Auditoria da grade"; no modo Abas, numa barra acima do conteúdo. Fim da rolagem longa para ver tudo.
 
 **1.11.1 (19/10/2026):** na Auditoria da grade, quem acaba de ser incluído num cadastro (servidor, setor, docente ou aluno) deixa de aparecer como "Pessoa não cadastrada com acesso" já na leitura seguinte; antes, esse resultado ficava 10 minutos em cache. E-mails do cadastro com espaço não separável ou caractere invisível colado também são reconhecidos.
 

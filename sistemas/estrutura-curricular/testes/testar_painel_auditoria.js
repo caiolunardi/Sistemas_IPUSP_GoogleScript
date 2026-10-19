@@ -294,7 +294,38 @@ function ambiente(nEdicoesExtras, op) {
       verdade(/^PSE\d{4}/.test(linhas[0][0]) && linhas[0][1] === 'PSE' && linhas[0][2].indexOf(SEC_PSE) >= 0 && linhas[0][2].indexOf('Docente Fictícia Dois') === 0 && /Docente · /.test(linhas[0][2]) && linhas[0][3] === 'Aguardando Justificativa', JSON.stringify(linhas));
       verdade(/\(1\)/.test(await pagina.textContent('#audNaoTitulo')));
     });
+    await teste('(1.11.2) seções da auditoria: submenu no menu lateral abaixo de "Auditoria da grade", uma seção aberta por vez, contagem das não oferecidas', async () => {
+      const visiveis = () => pagina.$$eval('#visaoAuditoria [role="tabpanel"]', (t) => t.filter((x) => !x.hidden).map((x) => x.id));
+      verdade(await pagina.isVisible('#estruturaGrupoAuditoria') && !!(await pagina.$('#estruturaSlotAuditoria #abasAuditoria')), 'submenu no menu lateral');
+      igual(await pagina.$$eval('#abasAuditoria [role="tab"]', (b) => b.map((x) => [x.textContent.trim(), x.getAttribute('aria-selected'), !!x.querySelector('.estruturaIcone svg[aria-hidden="true"]')])),
+        [['Preenchimento', 'true', true], ['Não serão oferecidas (1)', 'false', true], ['Quem abre e edita', 'false', true], ['Edições', 'false', true]]);
+      igual(await visiveis(), ['audSecao-preenchimento']);
+      for (const [aba, painel] of [['nao', 'audSecao-nao'], ['pessoas', 'audSecao-pessoas'], ['edicoes', 'audSecao-edicoes'], ['preenchimento', 'audSecao-preenchimento']]) {
+        await pagina.click('#aud-secao-' + aba);
+        igual(await visiveis(), [painel], 'só ' + painel);
+        igual(await pagina.getAttribute('#aud-secao-' + aba, 'aria-selected'), 'true');
+      }
+      igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 1, 'trocar de seção não chama o servidor');
+      await pagina.focus('#aud-secao-preenchimento');
+      await pagina.keyboard.press('ArrowDown');
+      igual([await pagina.evaluate(() => document.activeElement.id), await visiveis()], ['aud-secao-nao', ['audSecao-nao']], 'seta para baixo no menu lateral');
+      await pagina.keyboard.press('End');
+      igual(await visiveis(), ['audSecao-edicoes']);
+      await pagina.keyboard.press('ArrowDown');
+      igual(await visiveis(), ['audSecao-preenchimento'], 'volta ao início');
+      await pagina.click('#visao-estrutura');
+      verdade(await pagina.isHidden('#estruturaGrupoAuditoria'), 'submenu some na estrutura');
+      await pagina.click('#visao-auditoria');
+      verdade(await pagina.isVisible('#estruturaGrupoAuditoria'));
+      await pagina.evaluate(() => EstruturaNavegacao.setModo('abas'));
+      verdade(!!(await pagina.$('#visaoAuditoria > #abasAuditoria')) && await pagina.isHidden('#estruturaSidebar'), 'modo Abas: barra acima do conteúdo');
+      await pagina.click('#aud-secao-pessoas');
+      igual(await visiveis(), ['audSecao-pessoas']);
+      await pagina.evaluate(() => EstruturaNavegacao.setModo('sidebar'));
+      igual([await visiveis(), await pagina.getAttribute('#aud-secao-pessoas', 'aria-selected')], [['audSecao-pessoas'], 'true'], 'seção mantida ao trocar o modo');
+    });
     await teste('(1.8.0) gráficos "Quem mais abre a planilha" e "Quem mais edita": barras do maior para o menor, valores em texto; "ver edições" filtra a lista', async () => {
+      await pagina.click('#aud-secao-pessoas');
       const ab = await pagina.$$eval('#audGrafAberturas .graficoBarras__item', (t) => t.map((x) => [x.querySelector('.graficoBarras__nome').textContent, x.querySelector('.graficoBarras__quem').textContent, x.querySelector('.graficoBarras__valor').firstChild.textContent, x.querySelector('.graficoBarras__barra').style.width]));
       igual(ab, [['Servidora Fictícia Um', 'Secretaria do PSA · ' + SEC_PSA, '3', '100%'], ['Docente Fictícia Dois', 'Docente · ' + SEC_PSE, '1', '33%']], '(1.11.0) nome; embaixo, vínculo · e-mail');
       verdade(/4 aberturas/.test(await pagina.textContent('#audGrafAberturasTitulo')));
@@ -302,6 +333,7 @@ function ambiente(nEdicoesExtras, op) {
       igual(ed, [['Docente Fictícia Dois', '61'], ['Servidora Fictícia Um', '5']]);
       verdade(/66 edições/.test(await pagina.textContent('#audGrafEdicoesTitulo')));
       await pagina.click('[data-aud-pessoa="' + SEC_PSA + '"]');
+      verdade(await pagina.isVisible('#audSecao-edicoes') && await pagina.isHidden('#audSecao-pessoas'), '(1.11.2) "ver edições" abre a seção Edições');
       verdade(/^5 de \d+ edições/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
       igual(await pagina.inputValue('#audFiltroPessoa'), SEC_PSA);
       igual(await pagina.$$eval('#audFiltroPessoa option', (o) => o.map((x) => x.textContent)),
@@ -334,6 +366,7 @@ function ambiente(nEdicoesExtras, op) {
       await pagina.click('[data-aud-limpar]');
     });
     await teste('histórico da disciplina: janela com todas as edições dela; fecha só pelo botão e devolve o foco', async () => {
+      await pagina.click('#aud-secao-preenchimento');
       const cod = await pagina.$eval('#audTabelaAba [data-aud-historico]', (b) => b.getAttribute('data-aud-historico'));
       await pagina.click('[data-aud-aba="PSA"]');
       await pagina.click('#audTabelaAba tbody tr:first-child [data-aud-historico]');
@@ -347,12 +380,14 @@ function ambiente(nEdicoesExtras, op) {
       verdade(await pagina.evaluate(() => document.activeElement && document.activeElement.hasAttribute('data-aud-historico')), 'foco volta ao botão');
       verdade(cod, 'código');
     });
-    await teste('"Atualizar" busca de novo e mantém a aba e os filtros; teclado alterna as seções; voltar à estrutura', async () => {
+    await teste('"Atualizar" busca de novo e mantém a aba, os filtros e (1.11.2) a seção aberta; teclado alterna as seções; voltar à estrutura', async () => {
+      await pagina.click('#aud-secao-edicoes');
       await pagina.selectOption('#audFiltroAba', 'PSE');
       await pagina.click('#auditoriaAtualizar');
       await pagina.waitForFunction(() => /Atualizado/.test(document.getElementById('auditoriaSituacao').textContent));
       igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 2);
       igual(await pagina.inputValue('#audFiltroAba'), 'PSE');
+      verdade(await pagina.isVisible('#audSecao-edicoes') && await pagina.isHidden('#audSecao-preenchimento'), 'seção Edições mantida');
       await pagina.focus('#visao-auditoria');
       await pagina.keyboard.press('ArrowLeft');
       verdade(await pagina.isVisible('#visaoEstrutura') && await pagina.isHidden('#visaoAuditoria'));
@@ -398,6 +433,16 @@ function ambiente(nEdicoesExtras, op) {
           verdade(r.barra >= 3, tema + ' barra do gráfico ' + r.barra + ':1');
           r.razoes.forEach(([sel, v]) => { verdade(v !== null, 'não achou ' + sel); piores.push([tema, largura, sel, v]); verdade(v >= 4.5, tema + ' ' + largura + ' ' + sel + ' = ' + v + ':1'); });
           await pg.screenshot({ path: path.join(SAIDA, `${tema}-${largura}-auditoria.png`), fullPage: largura === 1280 });
+          // (1.11.2) cada seção, aberta pelo submenu
+          for (const secao of ['nao', 'pessoas', 'edicoes']) {
+            await pg.click('#aud-secao-' + secao);
+            await pg.mouse.move(0, 0);
+            await pg.waitForTimeout(450);   // fim da transição do menu e da rolagem suave até a seção
+            const o = await pg.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+            verdade(o <= 0, tema + ' ' + largura + ' seção ' + secao + ': rolagem horizontal ' + o);
+            await pg.screenshot({ path: path.join(SAIDA, `${tema}-${largura}-auditoria-${secao}.png`), fullPage: largura === 1280 });
+          }
+          await pg.click('#aud-secao-preenchimento');
           await pg.click('[data-aud-historico]');
           await pg.waitForSelector('#modalHistoricoAuditoria:not([hidden])');
           const m = await pg.evaluate(() => { const p = document.querySelector('#modalHistoricoAuditoria .modal__painel'); return { sw: document.documentElement.scrollWidth, iw: window.innerWidth, painel: p.scrollWidth - p.clientWidth }; });
@@ -457,9 +502,11 @@ function ambiente(nEdicoesExtras, op) {
       await r3.pagina.click('#auditoriaAtualizar');
       await r3.pagina.waitForSelector('[data-aud-tentar]');
       verdade(/Não foi possível abrir a planilha de auditoria/.test(await r3.pagina.textContent('#auditoriaConteudo')));
+      verdade(await r3.pagina.isHidden('#abasAuditoria') && await r3.pagina.isHidden('#estruturaGrupoAuditoria') && await r3.pagina.isHidden('#audSecao-preenchimento'), '(1.11.2) sem seções enquanto a carga falha');
       amb3.ctx.obterAuditoriaGrade = orig;
       await r3.pagina.click('[data-aud-tentar]');
       await r3.pagina.waitForSelector('.auditoriaAba');
+      verdade(await r3.pagina.isVisible('#estruturaGrupoAuditoria'), '(1.11.2) submenu de volta');
     });
     await r3.pagina.context().close();
   } finally {

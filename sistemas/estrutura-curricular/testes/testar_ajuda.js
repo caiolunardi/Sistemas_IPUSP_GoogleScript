@@ -291,13 +291,13 @@ function destinosDaFonte() {
     await p.waitForFunction(() => !/Carregando/.test(document.getElementById('auditoriaSituacao').textContent));
     await conferir('#visaoAuditoria .auditoriaTopo ' + g('ajuda-auditoria'), 'ajuda-auditoria');
     await conferir('#visaoAuditoria .auditoriaTopo ' + g('ajuda-secretarias'), 'ajuda-secretarias');
-    const dinamico = await p.evaluate(() => Array.from(document.querySelectorAll('#auditoriaConteudo [data-gradip-help-open]')).map((b) => b.getAttribute('data-gradip-help-open')));
-    verdade(dinamico.length >= 1, 'gatilhos dentro do conteúdo da auditoria: ' + JSON.stringify(dinamico));
-    await conferir('#auditoriaConteudo [data-gradip-help-open="' + dinamico[0] + '"]', dinamico[0]);
+    const dinamico = await p.evaluate(() => Array.from(document.querySelectorAll('#visaoAuditoria .secaoAuditoriaPainel:not([hidden]) [data-gradip-help-open]')).map((b) => b.getAttribute('data-gradip-help-open')));
+    verdade(dinamico.length >= 1, '(1.11.2) gatilhos dentro da seção aberta da auditoria: ' + JSON.stringify(dinamico));
+    await conferir('#visaoAuditoria .secaoAuditoriaPainel:not([hidden]) [data-gradip-help-open="' + dinamico[0] + '"]', dinamico[0]);
     // A auditoria redesenhada (Atualizar) mantém os gatilhos funcionando (delegação).
     await p.click('#auditoriaAtualizar');
     await p.waitForFunction(() => !document.getElementById('auditoriaAtualizar').disabled);
-    await conferir('#auditoriaConteudo [data-gradip-help-open="' + dinamico[0] + '"]', dinamico[0]);
+    await conferir('#visaoAuditoria .secaoAuditoriaPainel:not([hidden]) [data-gradip-help-open="' + dinamico[0] + '"]', dinamico[0]);
     await fim(c);
   });
 

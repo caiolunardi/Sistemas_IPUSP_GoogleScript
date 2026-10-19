@@ -50,6 +50,10 @@
           <h2 class="estruturaSidebar__rotulo" id="estruturaTituloVisoes">Seções do sistema</h2>
           <div id="estruturaSlotVisoes"></div>
         </section>
+        <section class="estruturaSidebar__grupo" id="estruturaGrupoAuditoria" aria-labelledby="estruturaTituloAuditoria" hidden>
+          <h2 class="estruturaSidebar__rotulo" id="estruturaTituloAuditoria">Seções da auditoria</h2>
+          <div id="estruturaSlotAuditoria"></div>
+        </section>
         <section class="estruturaSidebar__grupo" id="estruturaGrupoEtapas" aria-labelledby="estruturaTituloEtapas" hidden>
           <h2 class="estruturaSidebar__rotulo" id="estruturaTituloEtapas">Preparação da grade</h2>
           <div id="estruturaSlotEtapas"></div>
@@ -506,7 +510,18 @@
       </div>
       <p class="pequeno texto-suave auditoriaTopo__situacao" id="auditoriaSituacao" role="status"></p>
     </div>
+    <!-- (1.11.2) Seções da auditoria: uma aberta por vez (PainelAuditoria.ativarSecao). No menu lateral, vira o submenu de "Auditoria da grade". -->
+    <div class="abas abasAuditoria" id="abasAuditoria" role="tablist" aria-label="Seções da auditoria" hidden>
+      <button type="button" class="abas__aba" role="tab" id="aud-secao-preenchimento" data-aud-secao="preenchimento" aria-controls="audSecao-preenchimento" aria-selected="true">Preenchimento</button>
+      <button type="button" class="abas__aba" role="tab" id="aud-secao-nao" data-aud-secao="nao" aria-controls="audSecao-nao" aria-selected="false" tabindex="-1">Não serão oferecidas <span class="abas__contagem" id="audContagemNao"></span></button>
+      <button type="button" class="abas__aba" role="tab" id="aud-secao-pessoas" data-aud-secao="pessoas" aria-controls="audSecao-pessoas" aria-selected="false" tabindex="-1">Quem abre e edita</button>
+      <button type="button" class="abas__aba" role="tab" id="aud-secao-edicoes" data-aud-secao="edicoes" aria-controls="audSecao-edicoes" aria-selected="false" tabindex="-1">Edições</button>
+    </div>
     <div id="auditoriaConteudo"></div>
+    <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-preenchimento" aria-labelledby="aud-secao-preenchimento" hidden></div>
+    <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-nao" aria-labelledby="aud-secao-nao" hidden></div>
+    <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-pessoas" aria-labelledby="aud-secao-pessoas" hidden></div>
+    <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-edicoes" aria-labelledby="aud-secao-edicoes" hidden></div>
   </section>
 
   <!-- Versão implantada (conferência na homologação e no suporte) -->

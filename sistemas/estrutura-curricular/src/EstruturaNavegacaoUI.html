@@ -16,6 +16,7 @@
   var temporizador;
   var configs = [
     { id: 'visoes', slot: 'estruturaSlotVisoes', grupo: 'estruturaGrupoVisoes', donos: [] },
+    { id: 'abasAuditoria', slot: 'estruturaSlotAuditoria', grupo: 'estruturaGrupoAuditoria', donos: ['visaoAuditoria'] },   // (1.11.2)
     { id: 'etapas', slot: 'estruturaSlotEtapas', grupo: 'estruturaGrupoEtapas', donos: ['visaoEstrutura'] },
     { id: 'abasEstrutura', slot: 'estruturaSlotAbas', grupo: 'estruturaGrupoAbas', donos: ['visaoEstrutura', 'areaDados', 'etapaPainel-1'] }
   ];
@@ -34,7 +35,8 @@
     'visao-estrutura': 'graduation-cap', 'visao-auditoria': 'clipboard-check',
     'etapa-1': 'library-big', 'etapa-2': 'users-round',
     'etapa-3': 'list-checks', 'etapa-4': 'calendar-days',
-    'aba-disciplinas': 'book-open', 'aba-curriculos': 'network', 'aba-historico': 'history'
+    'aba-disciplinas': 'book-open', 'aba-curriculos': 'network', 'aba-historico': 'history',
+    'aud-secao-preenchimento': 'clipboard-list', 'aud-secao-nao': 'ban', 'aud-secao-pessoas': 'chart-column', 'aud-secao-edicoes': 'history'
   };
   Object.keys(icones).forEach(function (id) { icone(document.getElementById(id), icones[id]); });
   var previa = document.getElementById('previaAbas');

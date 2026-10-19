@@ -49,7 +49,7 @@ async function semReferenciasQuebradas(p) {
   await teste('Sidebar padrão, IDs únicos, alvos ARIA e ícones decorativos em todas as opções fixas', async () => {
     const c = await montar(), p = c.pagina;
     assert.deepEqual(await semReferenciasQuebradas(p), { repetidos: [], quebrados: [], mains: 1 });
-    assert.deepEqual(await p.evaluate(() => ({ modo: EstruturaNavegacao.getModo(), vertical: document.getElementById('etapas').getAttribute('aria-orientation'), grupos: Array.from(document.querySelectorAll('.estruturaSidebar__grupo'), el => el.hidden), icones: document.querySelectorAll('.estruturaIcone svg:not([aria-hidden="true"]), .estruturaIcone svg:not([focusable="false"])').length })), { modo: 'sidebar', vertical: 'vertical', grupos: [false, false, false], icones: 0 });
+    assert.deepEqual(await p.evaluate(() => ({ modo: EstruturaNavegacao.getModo(), vertical: document.getElementById('etapas').getAttribute('aria-orientation'), grupos: Array.from(document.querySelectorAll('.estruturaSidebar__grupo'), el => el.hidden), icones: document.querySelectorAll('.estruturaIcone svg:not([aria-hidden="true"]), .estruturaIcone svg:not([focusable="false"])').length })), { modo: 'sidebar', vertical: 'vertical', grupos: [false, true, false, false], icones: 0 });
     assert.equal(await p.locator('#visoes [role=tab] .estruturaIcone, #etapas [role=tab] .estruturaIcone, #abasEstrutura [role=tab] .estruturaIcone').count(), 9);
     await c.fim();
   });

@@ -1,4 +1,10 @@
-# Instalação e atualização — 1.11.1
+# Instalação e atualização — 1.11.2
+
+## Atualizar um Web App 1.11.1 para 1.11.2
+
+1. **Substitua** o conteúdo de seis arquivos: `Painel.html`, `PainelAuditoria.html`, `EstruturaNavegacaoUI.html`, `EstruturaIcones.html`, `EstruturaAjuda.html` e `Codigo.gs`. Nenhum arquivo novo; o servidor da auditoria não muda.
+2. Publique uma **nova versão** na implantação existente.
+3. Na Auditoria da grade (rodapé **1.11.2**), o submenu aparece abaixo de "Auditoria da grade" depois que a auditoria carrega, e cada item mostra só a sua seção.
 
 Esta entrega publica código/documentação no Git. Não altera um projeto Apps Script ou uma planilha automaticamente. A fonte está em [`src/`](../../../sistemas/estrutura-curricular/src/).
 

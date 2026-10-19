@@ -1,6 +1,6 @@
 # Versões e decisões — Estrutura Curricular e Grade Horária
 
-Fonte atual **1.11.1** (nome de quem aparece na auditoria; "não cadastrado" sem cache), sobre a 1.10.0 e a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
+Fonte atual **1.11.2** (auditoria com uma seção aberta por vez, pelo submenu), sobre a 1.10.0 e a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
 
 | Versão | Data | Marco |
 |---|---|---|
@@ -21,6 +21,7 @@ Fonte atual **1.11.1** (nome de quem aparece na auditoria; "não cadastrado" sem
 | 1.10.0 | 11/10/2026 | sidebar padrão, alternância para abas, ícones de catálogo, glow/elevação e documentação completa; algoritmos preservados |
 | 1.11.0 | 14/10/2026 | auditoria da grade mostra nome, vínculo (setor, Docente, Aluno(a)) e e-mail de quem edita ou abre a planilha, pelos cadastros `SERVIDORES` → `PLANILHA_DOCENTES` → `PLANILHA_ALUNOS`; fora deles, "Pessoa não cadastrada com acesso". Correção: "Cadastrar nova grade" travava na última aba e o painel não abria (abas comparadas por objeto; agora pelo ID) |
 | 1.11.1 | 19/10/2026 | auditoria: "Pessoa não cadastrada com acesso" não fica mais em cache (um setor recém-incluído em `SERVIDORES` continuava desconhecido por até 10 min); só o nome achado fica em cache, com prefixo novo `pessoaAud2:`; e-mails comparados sem espaços, espaço não separável e caracteres invisíveis |
+| 1.11.2 | 19/10/2026 | auditoria: submenu de seções (Preenchimento, Não serão oferecidas com a contagem, Quem abre e edita, Edições) abaixo de "Auditoria da grade" no menu lateral; só a seção escolhida fica visível e continua escolhida ao atualizar, trocar de grade ou de modo; "ver edições" abre Edições já filtrada. Pedido do responsável funcional em 19/10/2026; abrir em Preenchimento foi decisão técnica |
 
 ## Decisões estruturais
 
