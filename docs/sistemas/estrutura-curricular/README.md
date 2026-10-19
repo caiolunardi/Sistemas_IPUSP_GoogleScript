@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.11.2
+# Estrutura Curricular e Grade Horária — 1.11.3
+
+**1.11.3 (19/10/2026):** a Auditoria ganha a seção **Panorama** (Mapa da semana, Ritmo, Por departamento e Sem movimento, um detalhe por vez), o botão "Ver as edições da aba" no Preenchimento e a contagem "Edições (N novas)" desde a última visita, com o selo "Nova" nas linhas. Tudo no navegador; o servidor não muda.
 
 **1.11.2 (19/10/2026):** a Auditoria da grade abre uma seção por vez (Preenchimento, Não serão oferecidas, Quem abre e edita, Edições). No menu lateral, as seções aparecem como submenu logo abaixo de "Auditoria da grade"; no modo Abas, numa barra acima do conteúdo. Fim da rolagem longa para ver tudo.
 

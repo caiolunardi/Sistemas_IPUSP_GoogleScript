@@ -513,12 +513,14 @@
     <!-- (1.11.2) Seções da auditoria: uma aberta por vez (PainelAuditoria.ativarSecao). No menu lateral, vira o submenu de "Auditoria da grade". -->
     <div class="abas abasAuditoria" id="abasAuditoria" role="tablist" aria-label="Seções da auditoria" hidden>
       <button type="button" class="abas__aba" role="tab" id="aud-secao-preenchimento" data-aud-secao="preenchimento" aria-controls="audSecao-preenchimento" aria-selected="true">Preenchimento</button>
+      <button type="button" class="abas__aba" role="tab" id="aud-secao-panorama" data-aud-secao="panorama" aria-controls="audSecao-panorama" aria-selected="false" tabindex="-1">Panorama</button>
       <button type="button" class="abas__aba" role="tab" id="aud-secao-nao" data-aud-secao="nao" aria-controls="audSecao-nao" aria-selected="false" tabindex="-1">Não serão oferecidas <span class="abas__contagem" id="audContagemNao"></span></button>
       <button type="button" class="abas__aba" role="tab" id="aud-secao-pessoas" data-aud-secao="pessoas" aria-controls="audSecao-pessoas" aria-selected="false" tabindex="-1">Quem abre e edita</button>
-      <button type="button" class="abas__aba" role="tab" id="aud-secao-edicoes" data-aud-secao="edicoes" aria-controls="audSecao-edicoes" aria-selected="false" tabindex="-1">Edições</button>
+      <button type="button" class="abas__aba" role="tab" id="aud-secao-edicoes" data-aud-secao="edicoes" aria-controls="audSecao-edicoes" aria-selected="false" tabindex="-1">Edições <span class="abas__contagem" id="audContagemEdicoes"></span></button>
     </div>
     <div id="auditoriaConteudo"></div>
     <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-preenchimento" aria-labelledby="aud-secao-preenchimento" hidden></div>
+    <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-panorama" aria-labelledby="aud-secao-panorama" hidden></div>
     <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-nao" aria-labelledby="aud-secao-nao" hidden></div>
     <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-pessoas" aria-labelledby="aud-secao-pessoas" hidden></div>
     <div class="secaoAuditoriaPainel" role="tabpanel" id="audSecao-edicoes" aria-labelledby="aud-secao-edicoes" hidden></div>

@@ -1,4 +1,10 @@
-# Instalação e atualização — 1.11.2
+# Instalação e atualização — 1.11.3
+
+## Atualizar um Web App 1.11.2 para 1.11.3
+
+1. **Substitua** o conteúdo de sete arquivos: `Painel.html`, `PainelAuditoria.html`, `PainelEstilos.html`, `EstruturaNavegacaoUI.html`, `EstruturaIcones.html`, `EstruturaAjuda.html` e `Codigo.gs`. Nenhum arquivo novo; o servidor não muda.
+2. Publique uma **nova versão** na implantação existente.
+3. Na Auditoria da grade (rodapé **1.11.3**): o submenu tem "Panorama"; no Preenchimento, o botão "Ver as edições da aba"; depois de novas edições das secretarias, "Edições (N novas)".
 
 ## Atualizar um Web App 1.11.1 para 1.11.2
 

@@ -69,7 +69,7 @@ Secretarias preenchem a planilha operacional. O projeto vinculado usa `Validacoe
 
 Em **Auditoria da grade**, admin/leitor escolhem semestre e consultam andamento por departamento, não oferecidas, aberturas, edições, linha do tempo e histórico por disciplina. O painel não entrega link para a auditoria crua. Semestres antigos têm auditoria; o preenchimento final não é reconstruído automaticamente do backup.
 
-(1.11.2) A auditoria mostra uma seção por vez: escolha Preenchimento, Não serão oferecidas, Quem abre e edita ou Edições no submenu abaixo de "Auditoria da grade" (no modo Abas, na barra acima do conteúdo).
+(1.11.2/1.11.3) A auditoria mostra uma seção por vez: escolha Preenchimento, Panorama, Não serão oferecidas, Quem abre e edita ou Edições no submenu abaixo de "Auditoria da grade" (no modo Abas, na barra acima do conteúdo).
 
 (1.11.0) Cada pessoa aparece com o nome em destaque e, embaixo, o setor (servidores), "Docente" ou "Aluno(a)" e o e-mail. O nome vem dos cadastros `SERVIDORES`, `PLANILHA_DOCENTES` e `PLANILHA_ALUNOS`, nessa ordem; o nome achado fica em cache por até 10 minutos (1.11.1: "não cadastrado" não fica, então quem acabou de ser incluído aparece ao recarregar). **"Pessoa não cadastrada com acesso"**, com selo "Atenção", indica e-mail fora dos três cadastros: confira quem é e se deveria ter acesso à planilha das secretarias. **"Nome não verificado"**, com o aviso "Nomes incompletos" no topo, indica que um cadastro não abriu: rode `diagnosticarNomesAuditoria` e confira a chave no `ID_INDEX` e o acesso de leitura da conta do Web App.
 

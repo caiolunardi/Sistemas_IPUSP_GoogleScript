@@ -298,9 +298,9 @@ function ambiente(nEdicoesExtras, op) {
       const visiveis = () => pagina.$$eval('#visaoAuditoria [role="tabpanel"]', (t) => t.filter((x) => !x.hidden).map((x) => x.id));
       verdade(await pagina.isVisible('#estruturaGrupoAuditoria') && !!(await pagina.$('#estruturaSlotAuditoria #abasAuditoria')), 'submenu no menu lateral');
       igual(await pagina.$$eval('#abasAuditoria [role="tab"]', (b) => b.map((x) => [x.textContent.trim(), x.getAttribute('aria-selected'), !!x.querySelector('.estruturaIcone svg[aria-hidden="true"]')])),
-        [['Preenchimento', 'true', true], ['Não serão oferecidas (1)', 'false', true], ['Quem abre e edita', 'false', true], ['Edições', 'false', true]]);
+        [['Preenchimento', 'true', true], ['Panorama', 'false', true], ['Não serão oferecidas (1)', 'false', true], ['Quem abre e edita', 'false', true], ['Edições', 'false', true]], '(1.11.3) Panorama; primeira visita: nenhuma edição "nova"');
       igual(await visiveis(), ['audSecao-preenchimento']);
-      for (const [aba, painel] of [['nao', 'audSecao-nao'], ['pessoas', 'audSecao-pessoas'], ['edicoes', 'audSecao-edicoes'], ['preenchimento', 'audSecao-preenchimento']]) {
+      for (const [aba, painel] of [['panorama', 'audSecao-panorama'], ['nao', 'audSecao-nao'], ['pessoas', 'audSecao-pessoas'], ['edicoes', 'audSecao-edicoes'], ['preenchimento', 'audSecao-preenchimento']]) {
         await pagina.click('#aud-secao-' + aba);
         igual(await visiveis(), [painel], 'só ' + painel);
         igual(await pagina.getAttribute('#aud-secao-' + aba, 'aria-selected'), 'true');
@@ -308,7 +308,7 @@ function ambiente(nEdicoesExtras, op) {
       igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 1, 'trocar de seção não chama o servidor');
       await pagina.focus('#aud-secao-preenchimento');
       await pagina.keyboard.press('ArrowDown');
-      igual([await pagina.evaluate(() => document.activeElement.id), await visiveis()], ['aud-secao-nao', ['audSecao-nao']], 'seta para baixo no menu lateral');
+      igual([await pagina.evaluate(() => document.activeElement.id), await visiveis()], ['aud-secao-panorama', ['audSecao-panorama']], 'seta para baixo no menu lateral');
       await pagina.keyboard.press('End');
       igual(await visiveis(), ['audSecao-edicoes']);
       await pagina.keyboard.press('ArrowDown');
@@ -323,6 +323,53 @@ function ambiente(nEdicoesExtras, op) {
       igual(await visiveis(), ['audSecao-pessoas']);
       await pagina.evaluate(() => EstruturaNavegacao.setModo('sidebar'));
       igual([await visiveis(), await pagina.getAttribute('#aud-secao-pessoas', 'aria-selected')], [['audSecao-pessoas'], 'true'], 'seção mantida ao trocar o modo');
+    });
+    await teste('(1.11.3) Preenchimento: "Ver as edições da aba" abre Edições filtrada pela aba e pelas secretarias', async () => {
+      await pagina.click('#aud-secao-preenchimento');
+      await pagina.click('[data-aud-aba="PSA"]');
+      const rotulo = (await pagina.textContent('[data-aud-edicoes-aba]')).trim();
+      igual(rotulo, 'Ver as 5 edições da aba PSA');
+      await pagina.click('[data-aud-edicoes-aba]');
+      verdade(await pagina.isVisible('#audSecao-edicoes') && await pagina.isHidden('#audSecao-preenchimento'), 'abre Edições');
+      igual([await pagina.inputValue('#audFiltroAba'), await pagina.inputValue('#audFiltroOrigem')], ['PSA', 'Secretaria']);
+      verdade(/^5 de/.test(await pagina.textContent('#audContagem')), await pagina.textContent('#audContagem'));
+      await pagina.click('[data-aud-limpar]');
+      await pagina.click('#aud-secao-preenchimento');
+      await pagina.click('[data-aud-aba="PSC"]');
+      verdade(await pagina.isDisabled('[data-aud-edicoes-aba]') && /Nenhuma edição na aba PSC/.test(await pagina.textContent('[data-aud-edicoes-aba]')), 'aba sem edições: botão desativado');
+    });
+    await teste('(1.11.3) Panorama: quatro resumos, um detalhe por vez (Mapa da semana, Ritmo, Por departamento, Sem movimento)', async () => {
+      const txt = async (sel) => (await pagina.textContent(sel)).replace(/\s+/g, ' ').trim();
+      await pagina.click('#aud-secao-panorama');
+      igual(await pagina.$$eval('#audSecao-panorama [data-aud-panorama]', (b) => b.map((x) => [x.getAttribute('data-aud-panorama'), x.getAttribute('aria-pressed')])),
+        [['semana', 'true'], ['ritmo', 'false'], ['departamentos', 'false'], ['parados', 'false']]);
+      const sem = await txt('[data-aud-panorama="semana"]');
+      verdade(/1 aula no mapa/.test(sem) && /Horário mais cheio: Quarta, 8h \(1 disciplina\)/.test(sem), sem);
+      igual(await pagina.$$eval('#audMapaSemana thead th', (t) => t.map((x) => x.textContent.trim()).slice(1)), ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'], 'sem sábado');
+      await pagina.click('[data-aud-semana="qua|8"]');
+      verdade(/Quarta, 8h: 1 disciplina/.test(await txt('#audSemanaDetalhe')) && /Docente Fictício Um/.test(await txt('#audSemanaDetalhe')), await txt('#audSemanaDetalhe'));
+      igual(await pagina.evaluate(() => document.activeElement.getAttribute('data-aud-semana')), 'qua|8', 'foco volta à célula');
+      await pagina.click('[data-aud-semana="qua|8"]');
+      verdade(!(await pagina.$('#audSemanaDetalhe')), 'segundo clique esconde');
+      await pagina.click('[data-aud-panorama="ritmo"]');
+      igual(await pagina.evaluate(() => document.activeElement.getAttribute('data-aud-panorama')), 'ritmo', 'foco no resumo escolhido');
+      verdade(!(await pagina.$('#audMapaSemana')) && !!(await pagina.$('#audRitmo')), 'só o detalhe escolhido');
+      verdade(/Dia com mais edições: 04\/10 \(66 edições\)/.test(await txt('#audPanoramaDetalhe')), await txt('#audPanoramaDetalhe'));
+      await pagina.click('[data-aud-panorama="departamentos"]');
+      const ordem = await pagina.$$eval('#audDepartamentos .departamentos__nome', (b) => b.map((x) => x.textContent));
+      igual(ordem[0], 'PSA', 'mais adiantado primeiro');
+      await pagina.click('[data-aud-ir-aba="PSE"]');
+      verdade(await pagina.isVisible('#audSecao-preenchimento') && await pagina.isHidden('#audSecao-panorama'), 'o departamento abre o Preenchimento');
+      igual([await pagina.getAttribute('[data-aud-aba="PSE"]', 'aria-pressed'), await pagina.evaluate(() => document.activeElement.getAttribute('data-aud-aba'))], ['true', 'PSE']);
+      await pagina.click('#aud-secao-panorama');
+      igual(await pagina.getAttribute('[data-aud-panorama="departamentos"]', 'aria-pressed'), 'true', 'o panorama lembra o detalhe escolhido');
+      const par = await txt('[data-aud-panorama="parados"]');
+      const n = Number(par.match(/(\d+) disciplinas? parada/)[1]);
+      await pagina.click('[data-aud-panorama="parados"]');
+      const linhas = await pagina.$$eval('#audTabelaParados tbody tr', (t) => t.map((x) => x.cells[0].textContent));
+      igual(linhas.length, n, 'resumo e tabela batem');
+      igual(n, Object.values(contagens(amb2, '1')).reduce((a, b) => a + b, 0) - 3, 'todas menos as 3 editadas (PSA linha 4, PSE linhas 4 e 5)');
+      igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 1, 'tudo no navegador');
     });
     await teste('(1.8.0) gráficos "Quem mais abre a planilha" e "Quem mais edita": barras do maior para o menor, valores em texto; "ver edições" filtra a lista', async () => {
       await pagina.click('#aud-secao-pessoas');
@@ -397,6 +444,38 @@ function ambiente(nEdicoesExtras, op) {
       verdade(await pagina.isVisible('#visaoAuditoria'));
       igual(chamadas.filter((c) => c === 'obterAuditoriaGrade').length, 2, 'não busca de novo ao voltar');
     });
+    await teste('(1.11.3) edições novas desde a última visita: contagem no menu, selo "Nova" nas linhas, vistas ao abrir Edições; sem armazenamento, nada quebra', async () => {
+      const vistos = () => pagina.evaluate(() => JSON.parse(localStorage.getItem('estrutura-auditoria-visto') || '{}'));
+      igual(Object.keys(await vistos()), ['2027/1'], 'primeira visita grava a mais recente');
+      const g = amb2.grade(), s = g.getSheetByName('PSA');
+      amb2.congelarRelogio(new Date('2026-10-05T15:00:00Z'));
+      for (const [col, valor] of [[8, 'Docente Fictício Novo'], [18, 'obs nova']]) {
+        s.set(4, col, valor);
+        amb2.ctx.registrarEdicaoGrade({ range: s.getRange(4, col), source: g, user: { getEmail: () => SEC_PSA }, value: valor, oldValue: undefined });
+      }
+      await pagina.click('#aud-secao-preenchimento');
+      await pagina.click('#auditoriaAtualizar');
+      await pagina.waitForFunction(() => /\(2 novas\)/.test(document.getElementById('audContagemEdicoes').textContent));
+      fs.mkdirSync(path.join(__dirname, 'saida', 'visual'), { recursive: true });
+      await pagina.screenshot({ path: path.join(__dirname, 'saida', 'visual', 'light-1280-auditoria-menu-novas.png') });
+      await pagina.click('#aud-secao-edicoes');
+      igual(await pagina.textContent('#audContagemEdicoes'), '', 'contagem some ao abrir Edições');
+      await pagina.click('[data-aud-limpar]');
+      igual(await pagina.$$eval('#audListaEdicoes tbody tr.edicaoNova', (t) => t.length), 2, 'duas linhas com o selo');
+      igual(await pagina.$$eval('#audListaEdicoes tbody tr.edicaoNova .seloNova', (t) => t.map((x) => x.textContent)), ['Nova', 'Nova']);
+      await pagina.mouse.move(0, 0); await pagina.waitForTimeout(300);
+      await pagina.screenshot({ path: path.join(__dirname, 'saida', 'visual', 'light-1280-auditoria-edicoes-novas.png') });
+      igual((await vistos())['2027/1'], '2026-10-05 12:00:00', 'vista: a mais recente (horário de São Paulo)');
+      await pagina.click('#auditoriaAtualizar');
+      await pagina.waitForFunction(() => /Atualizado/.test(document.getElementById('auditoriaSituacao').textContent) && !document.getElementById('auditoriaAtualizar').disabled);
+      igual([await pagina.textContent('#audContagemEdicoes'), await pagina.$$eval('#audListaEdicoes tbody tr.edicaoNova', (t) => t.length)], ['', 0], 'depois de vistas, nada é novo');
+      // localStorage indisponível: o painel continua funcionando, só sem a contagem
+      await pagina.evaluate(() => { Object.defineProperty(window, 'localStorage', { get() { throw new Error('bloqueado'); } }); });
+      await pagina.click('#auditoriaAtualizar');
+      await pagina.waitForFunction(() => !document.getElementById('auditoriaAtualizar').disabled);
+      igual(await pagina.textContent('#audContagemEdicoes'), '');
+      await pagina.click('#aud-secao-preenchimento');
+    });
     await teste('nenhum erro de JavaScript; sem link da planilha para o leitor', async () => {
       igual(errosPagina, []);
       igual(await pagina.$$eval('#visaoAuditoria a[href]', (x) => x.length), 0);
@@ -414,6 +493,7 @@ function ambiente(nEdicoesExtras, op) {
           await esperarCarregado(pg);
           await pg.click('#visao-auditoria');
           await pg.waitForSelector('.auditoriaAba');
+          await pg.evaluate(() => { const td = document.querySelector('#audMapaSemana td'); [1, 2, 3, 4].forEach((n) => { const b = document.createElement('button'); b.className = 'mapaSemana__celula mapaSemana__celula--n' + n + ' teste-n' + n; b.textContent = '9'; td.appendChild(b); }); });
           const r = await pg.evaluate(() => {
             const cor = (c) => c.match(/\d+(\.\d+)?/g).map(Number);
             const lum = (rgb) => { const a = rgb.slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2]; };
@@ -422,19 +502,23 @@ function ambiente(nEdicoesExtras, op) {
             const alvos = ['.visoes__botao[aria-selected="true"]', '.visoes__botao[aria-selected="false"]', '#auditoriaSubtitulo', '.auditoriaAba[aria-pressed="true"] .medida__rotulo', '.auditoriaAba[aria-pressed="false"] .medida__valor',
               '.auditoriaAba__total', '.tabelaAuditoria .texto-suave', '[data-aud-historico]', '.mudanca__antes', '.mudanca__depois', '#audContagem', '.linkDisciplina',
               '.auditoriaAba__nao', '.seloJustificativa', '.graficoBarras__nome', '.graficoBarras__detalhe', '.graficoBarras__valor', '.graficoBarras__acao',
-              '.graficoBarras__quem', '.pessoaAud__nome', '.pessoaAud__detalhe', '.seloPessoaNaoCadastrada'];
+              '.graficoBarras__quem', '.pessoaAud__nome', '.pessoaAud__detalhe', '.seloPessoaNaoCadastrada',
+              // (1.11.3) panorama: resumos, mapa da semana (os quatro níveis) e o atalho do preenchimento
+              '.cartaoAud[aria-pressed="true"] .cartaoAud__titulo', '.cartaoAud[aria-pressed="false"] .cartaoAud__titulo', '.cartaoAud__valor', '.cartaoAud__detalhe',
+              '.mapaSemana th', '.mapaSemana__vazia', '.teste-n1', '.teste-n2', '.teste-n3', '.teste-n4', '[data-aud-edicoes-aba]'];
             // barra do gráfico contra o fundo do cartão: ≥ 3:1 (elemento gráfico)
             const barra = document.querySelector('.graficoBarras__barra');
             const lb = lum(cor(getComputedStyle(barra).backgroundColor)), lf = lum(fundo(barra.parentElement));
             return { sw: document.documentElement.scrollWidth, iw: window.innerWidth, barra: Math.round((Math.max(lb, lf) + 0.05) / (Math.min(lb, lf) + 0.05) * 100) / 100,
               razoes: alvos.map((s) => { const el = document.querySelector(s); return [s, el ? Math.round(razao(el) * 100) / 100 : null]; }) };
           });
+          await pg.evaluate(() => document.querySelectorAll('[class*="teste-n"]').forEach((b) => b.remove()));   // só para medir o contraste
           verdade(r.sw <= r.iw, tema + ' ' + largura + ': scrollWidth ' + r.sw + ' > ' + r.iw);
           verdade(r.barra >= 3, tema + ' barra do gráfico ' + r.barra + ':1');
           r.razoes.forEach(([sel, v]) => { verdade(v !== null, 'não achou ' + sel); piores.push([tema, largura, sel, v]); verdade(v >= 4.5, tema + ' ' + largura + ' ' + sel + ' = ' + v + ':1'); });
           await pg.screenshot({ path: path.join(SAIDA, `${tema}-${largura}-auditoria.png`), fullPage: largura === 1280 });
           // (1.11.2) cada seção, aberta pelo submenu
-          for (const secao of ['nao', 'pessoas', 'edicoes']) {
+          for (const secao of ['panorama', 'nao', 'pessoas', 'edicoes']) {
             await pg.click('#aud-secao-' + secao);
             await pg.mouse.move(0, 0);
             await pg.waitForTimeout(450);   // fim da transição do menu e da rolagem suave até a seção

@@ -18,6 +18,12 @@
     Edições         linha do tempo com busca e filtros.
     Histórico       janela com todas as edições de uma disciplina.
 
+  (1.11.3) Panorama: Mapa da semana, Ritmo, Por departamento e Sem
+  movimento, calculados no navegador; quatro resumos, um detalhe aberto
+  por vez. Preenchimento ganha "Ver as edições da aba". "Edições (N novas)"
+  conta as edições das secretarias feitas depois da última vez que esta
+  pessoa abriu Edições neste navegador (localStorage, só a data e hora).
+
   (1.11.2) Uma seção aberta por vez (Preenchimento, Não serão oferecidas,
   Quem abre e edita, Edições), escolhida na barra #abasAuditoria; no menu
   lateral ela vira o submenu de "Auditoria da grade". A barra aparece
@@ -38,13 +44,18 @@ var Auditoria = (function () {
   var gatilho = P.gatilhoAjuda;   // (1.9.0) botões "?" da Central de Ajuda (delegação: sobrevivem ao redesenho)
   var POR_PAGINA = 50;
   // Colunas vindas do servidor
-  var SECOES = ['preenchimento', 'nao', 'pessoas', 'edicoes'];   // (1.11.2) ordem da barra
+  var SECOES = ['preenchimento', 'panorama', 'nao', 'pessoas', 'edicoes'];   // (1.11.2) ordem da barra; (1.11.3) panorama
+  var CHAVE_VISTO = 'estrutura-auditoria-visto';   // (1.11.3) { semestre: 'AAAA-MM-DD HH:MM:SS' da edição mais recente vista }
   var E = { data: 0, origem: 1, email: 2, aba: 3, celula: 4, campo: 5, codigo: 6, disciplina: 7, antes: 8, depois: 9, tipo: 10, celulas: 11, obs: 12, evento: 13 };
   var D = { codigo: 0, nome: 1, tipo: 2, modalidade: 3, oferecida: 4, docente: 5, semestreIdeal: 6, creditos: 7, dia: 8, inicio: 9, fim: 10 };
 
   var est = {
     visao: 'estrutura',
     secao: 'preenchimento',   // (1.11.2)
+    panorama: null,           // (1.11.3) detalhe aberto no panorama: semana | ritmo | departamentos | parados
+    celulaSemana: null,       // (1.11.3) célula escolhida no mapa da semana ('ter|8')
+    marcaNovas: null,         // (1.11.3) edições depois desta data/hora são "novas"
+    novas: 0,
     dados: null,
     carregando: false,
     aba: null,
@@ -90,7 +101,9 @@ var Auditoria = (function () {
         est.filtros = { busca: '', aba: '', pessoa: '', origem: '' };
         est.limite = POR_PAGINA;
         est.aba = null;
+        est.celulaSemana = null;
       }
+      prepararNovas();
       if (dados.andamento && (!est.aba || !dados.andamento.some(function (a) { return a.aba === est.aba; }))) {
         var primeira = dados.andamento.filter(function (a) { return a.disciplinas.length; })[0];
         est.aba = primeira ? primeira.aba : dados.andamento[0].aba;
@@ -137,6 +150,7 @@ var Auditoria = (function () {
       preenchimento: d.andamento ? htmlPreenchimento() :
         '<div class="alerta alerta--info"><div class="alerta__titulo">Grade encerrada</div><p>A grade de ' + esc(rotuloSemestre(d.semestre)) +
         ' não está mais em preenchimento: a situação final dela está na cópia de segurança feita no envio da grade seguinte. Em "Edições", todas as edições registradas.</p>' + gatilho('ajuda-auditoria-anteriores', 'Sobre as grades anteriores') + '</div>',
+      panorama: htmlPanorama(),
       nao: d.andamento ? htmlNaoOferecidas() : '',
       pessoas: htmlGraficos(),
       edicoes: htmlEdicoes()
@@ -145,6 +159,44 @@ var Auditoria = (function () {
     SECOES.forEach(function (s) { $('audSecao-' + s).innerHTML = secoes[s]; });
     sincronizarSecoes();
     sincronizarFiltros();
+    rolarRitmoAoFim();
+  }
+
+  /*----------------------------------------------------------------
+    (1.11.3) Edições novas desde a última visita (por navegador)
+  ----------------------------------------------------------------*/
+  /** "15/10/2026 11:00:00" → "2026-10-15 11:00:00" (ordenável); inválido → ''. */
+  function dataOrdenavel(t) {
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)/.exec(String(t || ''));
+    return m ? m[3] + '-' + m[2] + '-' + m[1] + ' ' + (m[4].length === 5 ? m[4] + ':00' : m[4]) : '';
+  }
+  function lerVistos() {
+    try { var v = JSON.parse(window.localStorage.getItem(CHAVE_VISTO) || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; }
+  }
+  function gravarVisto(semestre, quando) {
+    try { var v = lerVistos(); v[semestre] = quando; window.localStorage.setItem(CHAVE_VISTO, JSON.stringify(v)); } catch (e) { /* sem armazenamento: só não conta as novas */ }
+  }
+  function maisRecente() {
+    var max = '';
+    est.dados.edicoes.forEach(function (l) { var t = l[E.origem] === 'Secretaria' ? dataOrdenavel(l[E.data]) : ''; if (t > max) max = t; });
+    return max;
+  }
+  function ehNova(l) { return !!est.marcaNovas && l[E.origem] === 'Secretaria' && dataOrdenavel(l[E.data]) > est.marcaNovas; }
+
+  /** A cada carga: o que esta pessoa já viu decide o que é "novo". Primeira visita: nada é novo. */
+  function prepararNovas() {
+    var visto = lerVistos()[est.dados.semestre] || null, max = maisRecente();
+    est.marcaNovas = visto;
+    est.novas = visto ? est.dados.edicoes.filter(ehNova).length : 0;
+    if (!visto && max) gravarVisto(est.dados.semestre, max);
+    if (est.secao === 'edicoes') marcarVistas();
+  }
+
+  /** Abriu Edições: o que está na tela passa a ser visto (as linhas continuam marcadas até a próxima carga). */
+  function marcarVistas() {
+    var max = maisRecente();
+    if (max && max > (lerVistos()[est.dados.semestre] || '')) gravarVisto(est.dados.semestre, max);
+    est.novas = 0;
   }
 
   /*----------------------------------------------------------------
@@ -165,6 +217,7 @@ var Auditoria = (function () {
     var nao = 0;
     if (d && d.andamento) d.andamento.forEach(function (a) { a.disciplinas.forEach(function (x) { if (naoOferecida(x)) nao++; }); });
     $('audContagemNao').textContent = nao ? '(' + nao + ')' : '';
+    $('audContagemEdicoes').textContent = est.novas ? '(' + plural(est.novas, 'nova', 'novas') + ')' : '';   // (1.11.3)
     $('abasAuditoria').hidden = !d;
   }
 
@@ -172,7 +225,9 @@ var Auditoria = (function () {
     if (SECOES.indexOf(nome) < 0 || !secaoDisponivel(nome)) return;
     est.secao = nome;
     if (!est.dados) return;
+    if (nome === 'edicoes') marcarVistas();   // (1.11.3)
     sincronizarSecoes();
+    if (nome === 'panorama') rolarRitmoAoFim();
     if (focar) $('aud-secao-' + nome).focus();
     // Seção nova começa no topo: se ela está fora da tela (página rolada ou menu no alto, no celular), leva até ele.
     var conteudo = $('audSecao-' + nome), topo = conteudo.getBoundingClientRect().top;
@@ -272,7 +327,12 @@ var Auditoria = (function () {
         (c.nao ? '<span class="auditoriaAba__nao">' + c.nao + (c.nao === 1 ? ' não será oferecida' : ' não serão oferecidas') + ' — aguardando justificativa</span>' : '') +
         '</button>';
     });
-    html += '</div>' + htmlTabelaAba() + '</section>';
+    html += '</div>';
+    // (1.11.3) atalho: edições da aba escolhida, já filtradas
+    var nEd = est.dados.edicoes.filter(function (l) { return l[E.origem] === 'Secretaria' && l[E.aba] === est.aba; }).length;
+    if (est.aba) html += '<p class="auditoriaAtalho"><button type="button" class="botao botao--secundario" data-aud-edicoes-aba="' + esc(est.aba) + '"' + (nEd ? '' : ' disabled') + '>' +
+      (nEd ? 'Ver as ' + plural(nEd, 'edição', 'edições') + ' da aba ' + esc(est.aba) : 'Nenhuma edição na aba ' + esc(est.aba)) + '</button></p>';
+    html += htmlTabelaAba() + '</section>';
     return html;
   }
 
@@ -377,6 +437,270 @@ var Auditoria = (function () {
       '</div></section>';
   }
 
+  /*----------------------------------------------------------------
+    (1.11.3) Panorama da grade (vindo do rascunho 1.12.0): mapa da semana, ritmo do preenchimento,
+    comparação por departamento e disciplinas ainda sem movimento.
+    Tudo calculado no navegador com os dados que a auditoria já traz.
+  ----------------------------------------------------------------*/
+  var DIAS_SEMANA = [['seg', 'Segunda'], ['ter', 'Terça'], ['qua', 'Quarta'], ['qui', 'Quinta'], ['sex', 'Sexta'], ['sab', 'Sábado']];
+
+  /** "Terça-Feira" → 'ter'; desconhecido → ''. */
+  function chaveDia(t) {
+    var n = normalizar(t).slice(0, 3);
+    return DIAS_SEMANA.some(function (d) { return d[0] === n; }) ? n : '';
+  }
+
+  /** "08:00" → 480 (minutos); inválido → null. */
+  function minutos(t) {
+    var m = /^\s*(\d{1,2})[:h](\d{2})/.exec(String(t || ''));
+    return m && +m[1] < 24 && +m[2] < 60 ? +m[1] * 60 + +m[2] : null;
+  }
+
+  /** Aulas com dia e início: { dia, ini, fim, aba, x }. Fim ilegível → início + créditos-aula (a fórmula da planilha), ou 2 h. */
+  function aulasDaGrade() {
+    var aulas = [];
+    (est.dados.andamento || []).forEach(function (a) {
+      a.disciplinas.forEach(function (x) {
+        var dia = chaveDia(x[D.dia]), ini = minutos(x[D.inicio]);
+        if (!dia || ini === null || naoOferecida(x)) return;
+        var fim = minutos(x[D.fim]), cred = parseInt(x[D.creditos], 10);
+        if (fim === null || fim <= ini) fim = ini + 60 * (cred > 0 ? cred : 2);
+        aulas.push({ dia: dia, ini: ini, fim: fim, aba: a.aba, x: x });
+      });
+    });
+    return aulas;
+  }
+
+  /** Grade dia × hora: { dias, horas, celulas: {'ter|8': [aulas]}, max }. */
+  function mapaSemana(aulas) {
+    var celulas = {}, max = 0, hMin = 8, hMax = 17, temSabado = false;
+    aulas.forEach(function (au) {
+      if (au.dia === 'sab') temSabado = true;
+      for (var h = Math.floor(au.ini / 60); h * 60 < au.fim; h++) {
+        var k = au.dia + '|' + h;
+        (celulas[k] = celulas[k] || []).push(au);
+        max = Math.max(max, celulas[k].length);
+        hMin = Math.min(hMin, h); hMax = Math.max(hMax, h);
+      }
+    });
+    var horas = [];
+    for (var h = hMin; h <= hMax; h++) horas.push(h);
+    return { dias: DIAS_SEMANA.filter(function (d) { return d[0] !== 'sab' || temSabado; }), horas: horas, celulas: celulas, max: max };
+  }
+
+  function nivel(n, max) { return !n ? 0 : Math.min(4, Math.max(1, Math.ceil(n / max * 4))); }
+
+  function htmlSemana() {
+    var aulas = aulasDaGrade(), m = mapaSemana(aulas);
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audSemanaTitulo"><h3 class="secaoAuditoria__titulo" id="audSemanaTitulo">Mapa da semana</h3>' +
+      '<p class="pequeno texto-suave">Quantas disciplinas têm aula em cada dia e hora, pelo dia, início e fim informados pelas secretarias (as marcadas com NÃO ficam de fora). Quanto mais escura a célula, mais aulas ao mesmo tempo. Clique numa célula para ver quais são.</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-panorama', 'Como ler o panorama') + '</div>';
+    if (!aulas.length) return html + '<p class="texto-suave">Nenhuma disciplina tem dia e horário preenchidos ainda.</p></section>';
+    html += '<div class="mapaSemanaScroll"><table class="mapaSemana" id="audMapaSemana"><caption class="somenteLeitor">Aulas por dia e hora</caption><thead><tr><th scope="col"><span class="somenteLeitor">Hora</span></th>' +
+      m.dias.map(function (d) { return '<th scope="col">' + esc(d[1]) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    m.horas.forEach(function (h) {
+      html += '<tr><th scope="row">' + h + 'h</th>';
+      m.dias.forEach(function (d) {
+        var k = d[0] + '|' + h, n = (m.celulas[k] || []).length;
+        html += '<td>' + (n ? '<button type="button" class="mapaSemana__celula mapaSemana__celula--n' + nivel(n, m.max) + '" data-aud-semana="' + k + '" aria-pressed="' + (est.celulaSemana === k) + '" aria-label="' + esc(d[1]) + ', ' + h + 'h: ' + plural(n, 'disciplina', 'disciplinas') + '">' + n + '</button>' : '<span class="mapaSemana__vazia" aria-label="' + esc(d[1]) + ', ' + h + 'h: nenhuma">·</span>') + '</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div><p class="pequeno texto-suave mapaSemana__legenda">Legenda: o número em cada célula é a quantidade de disciplinas com aula naquela hora.</p>';
+    var sel = est.celulaSemana && m.celulas[est.celulaSemana];
+    if (sel) {
+      var p = est.celulaSemana.split('|'), nomeDia = DIAS_SEMANA.filter(function (d) { return d[0] === p[0]; })[0][1];
+      html += '<div class="mapaSemana__detalhe" id="audSemanaDetalhe" tabindex="-1"><h4 class="mapaSemana__detalheTitulo">' + esc(nomeDia) + ', ' + p[1] + 'h: ' + plural(sel.length, 'disciplina', 'disciplinas') + '</h4><ul class="listaSimples">' +
+        sel.map(function (au) {
+          return '<li><span class="mono">' + esc(au.x[D.codigo]) + '</span> ' + esc(au.x[D.nome]) + ' <span class="pequeno texto-suave">· ' + esc(au.aba) + ' · ' + esc(au.x[D.inicio]) + ' – ' + esc(String(Math.floor(au.fim / 60)).padStart(2, '0') + ':' + String(au.fim % 60).padStart(2, '0')) +
+            (preenchido(au.x[D.docente]) ? ' · ' + esc(au.x[D.docente]) : '') + (preenchido(au.x[D.semestreIdeal]) ? ' · ' + esc(au.x[D.semestreIdeal]) + 'º sem. ideal' : '') + '</span></li>';
+        }).join('') + '</ul></div>';
+    }
+    return html + '</section>';
+  }
+
+  /** "15/10/2026 11:00:00" → "2026-10-15" (ordenável); inválido → ''. */
+  function diaIso(t) {
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(String(t || ''));
+    return m ? m[3] + '-' + m[2] + '-' + m[1] : '';
+  }
+  function somarDias(iso, n) {
+    var d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  function diaCurto(iso) { return iso.slice(8, 10) + '/' + iso.slice(5, 7); }
+
+  /** Edições das secretarias por dia, do envio da grade (ou da 1ª edição) até hoje; no máximo 60 dias. */
+  function ritmo() {
+    var d = est.dados, porDia = {}, inicio = '', fim = diaIso(d.geradoEm);
+    d.edicoes.forEach(function (l) {
+      var dia = diaIso(l[E.data]);
+      if (!dia) return;
+      if (l[E.origem] === 'Secretaria') porDia[dia] = (porDia[dia] || 0) + 1;
+      else if (normalizar(l[E.tipo]) === 'envio da grade' && dia > inicio) inicio = dia;
+    });
+    var dias = Object.keys(porDia).sort();
+    if (!d.andamento && dias.length) fim = dias[dias.length - 1];   // grade encerrada: até a última edição
+    if (!inicio || (dias.length && dias[0] < inicio)) inicio = dias[0] || fim;
+    if (!fim || fim < inicio) fim = dias[dias.length - 1] || inicio;
+    var serie = [];
+    for (var dia = inicio, i = 0; dia && dia <= fim && i < 400; dia = somarDias(dia, 1), i++) serie.push({ dia: dia, n: porDia[dia] || 0 });
+    var cortada = serie.length > 60;
+    if (cortada) serie = serie.slice(-60);
+    var soma = function (de, ate) { return serie.filter(function (s) { return s.dia > de && s.dia <= ate; }).reduce(function (t, s) { return t + s.n; }, 0); };
+    var ult7 = fim ? soma(somarDias(fim, -7), fim) : 0, ant7 = fim ? soma(somarDias(fim, -14), somarDias(fim, -7)) : 0;
+    var pico = serie.reduce(function (p, s) { return s.n > (p ? p.n : 0) ? s : p; }, null);
+    var parados = 0;
+    for (var j = serie.length - 1; j >= 0 && !serie[j].n; j--) parados++;
+    return { serie: serie, cortada: cortada, ult7: ult7, ant7: ant7, pico: pico, diasSemEdicao: parados, total: serie.reduce(function (t, s) { return t + s.n; }, 0) };
+  }
+
+  function htmlRitmo() {
+    var r = ritmo(), d = est.dados;
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audRitmoTitulo"><h3 class="secaoAuditoria__titulo" id="audRitmoTitulo">Ritmo do preenchimento</h3>' +
+      '<p class="pequeno texto-suave">Edições feitas pelas secretarias a cada dia, desde o envio da grade' + (r.cortada ? ' (os últimos 60 dias)' : '') + '. Mostra quando o trabalho andou; não mede o esforço de ninguém.' +
+      (d.limitadas ? ' Só as edições carregadas no painel entram na conta.' : '') + '</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-panorama', 'Como ler o panorama') + '</div>';
+    if (!r.total) return html + '<p class="texto-suave">Nenhuma edição das secretarias registrada ainda.</p></section>';
+    var max = r.pico.n;
+    html += '<div class="ritmoScroll" tabindex="0" role="region" aria-label="Gráfico de edições por dia (role para os lados no celular)"><ol class="ritmo" id="audRitmo" aria-label="Edições por dia">';
+    r.serie.forEach(function (s, i) {
+      var mostrarRotulo = r.serie.length <= 14 || i % 7 === 0 || i === r.serie.length - 1;
+      html += '<li class="ritmo__dia' + (s.n ? '' : ' ritmo__dia--zero') + '" title="' + esc(diaCurto(s.dia) + ': ' + plural(s.n, 'edição', 'edições')) + '">' +
+        '<span class="ritmo__valor">' + (s.n ? s.n : '') + '</span>' +
+        '<span class="ritmo__trilho" aria-hidden="true"><span class="ritmo__barra" style="height:' + (s.n ? Math.max(4, Math.round(s.n / max * 100)) : 0) + '%"></span></span>' +
+        '<span class="ritmo__rotulo' + (mostrarRotulo ? '' : ' somenteLeitor') + '">' + diaCurto(s.dia) + '</span>' +
+        '<span class="somenteLeitor">: ' + plural(s.n, 'edição', 'edições') + '</span></li>';
+    });
+    return html + '</ol></div><p class="pequeno">Dia com mais edições: <strong>' + diaCurto(r.pico.dia) + '</strong> (' + plural(r.pico.n, 'edição', 'edições') + ').' +
+      (d.andamento && r.diasSemEdicao ? ' Sem edições há ' + plural(r.diasSemEdicao, 'dia', 'dias') + '.' : '') + '</p></section>';
+  }
+
+  /** Por aba: contagens, campos preenchidos (média dos 3 campos), edições e última edição. */
+  function porDepartamento() {
+    var ed = {}, ult = {};
+    est.dados.edicoes.forEach(function (l) {
+      if (l[E.origem] !== 'Secretaria' || !l[E.aba]) return;
+      ed[l[E.aba]] = (ed[l[E.aba]] || 0) + 1;
+      if (!ult[l[E.aba]]) ult[l[E.aba]] = l[E.data];
+    });
+    return (est.dados.andamento || []).filter(function (a) { return a.disciplinas.length; }).map(function (a) {
+      var c = contarAba(a);
+      return { aba: a.aba, c: c, campos: Math.round((c.oferecida + c.docente + c.horario) / (3 * c.total) * 100), edicoes: ed[a.aba] || 0, ultima: ult[a.aba] || '' };
+    }).sort(function (a, b) { return b.campos - a.campos || a.aba.localeCompare(b.aba, 'pt-BR'); });
+  }
+
+  function barraPct(rotulo, valor, total) {
+    var pct = total ? Math.round(valor / total * 100) : 0;
+    return '<span class="medida"><span class="medida__topo"><span class="medida__rotulo">' + esc(rotulo) + '</span><span class="medida__valor">' + pct + '% <span class="medida__extra">(' + valor + ' de ' + total + ')</span></span></span>' +
+      '<span class="barraProgresso" aria-hidden="true"><span class="barraProgresso__valor" style="width:' + pct + '%"></span></span></span>';
+  }
+
+  function htmlDepartamentos() {
+    var lista = porDepartamento();
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audDepTitulo"><h3 class="secaoAuditoria__titulo" id="audDepTitulo">Por departamento</h3>' +
+      '<p class="pequeno texto-suave">Cada aba da planilha lado a lado, da que tem mais campos preenchidos para a que tem menos. "Campos preenchidos" é a média de Será oferecida, Docente e Dia e horário: não diz quantas disciplinas estão prontas.</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-panorama', 'Como ler o panorama') + '</div>';
+    if (!lista.length) return html + '<p class="texto-suave">Nenhuma disciplina na grade.</p></section>';
+    html += '<ol class="departamentos" id="audDepartamentos">';
+    lista.forEach(function (x, i) {
+      html += '<li class="departamentos__item"><div class="departamentos__topo"><span class="departamentos__posicao" aria-hidden="true">' + (i + 1) + 'º</span>' +
+        '<button type="button" class="linkPessoa departamentos__nome" data-aud-ir-aba="' + esc(x.aba) + '" aria-label="Ver as disciplinas da aba ' + esc(x.aba) + '">' + esc(x.aba) + '</button>' +
+        '<span class="departamentos__campos"><strong>' + x.campos + '%</strong> dos campos preenchidos</span></div>' +
+        '<div class="departamentos__medidas">' + barraPct('Será oferecida', x.c.oferecida, x.c.total) + barraPct('Docente', x.c.docente, x.c.total) + barraPct('Dia e horário', x.c.horario, x.c.total) + '</div>' +
+        '<p class="pequeno texto-suave departamentos__rodape">' + plural(x.c.total, 'disciplina', 'disciplinas') + ' · ' + plural(x.edicoes, 'edição', 'edições') +
+        (x.ultima ? ' · última em ' + esc(x.ultima.slice(0, 16)) : ' · nenhuma edição') + (x.c.nao ? ' · ' + plural(x.c.nao, 'não será oferecida', 'não serão oferecidas') : '') + '</p></li>';
+    });
+    return html + '</ol></section>';
+  }
+
+  /** Disciplinas sem nenhuma edição registrada e sem nada preenchido. */
+  function semMovimento() {
+    var editadas = {}, lista = [];
+    est.dados.edicoes.forEach(function (l) { if (l[E.origem] === 'Secretaria' && l[E.codigo]) editadas[l[E.codigo]] = true; });
+    (est.dados.andamento || []).forEach(function (a) {
+      a.disciplinas.forEach(function (x) {
+        if (editadas[x[D.codigo]] || preenchido(x[D.oferecida]) || preenchido(x[D.docente]) || preenchido(x[D.dia]) || preenchido(x[D.inicio])) return;
+        lista.push({ aba: a.aba, x: x });
+      });
+    });
+    return lista;
+  }
+
+  function htmlParados() {
+    var lista = semMovimento(), d = est.dados;
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audParadosTitulo"><h3 class="secaoAuditoria__titulo" id="audParadosTitulo">Ainda sem movimento' +
+      (lista.length ? ' <span class="contagemTitulo">(' + lista.length + ')</span>' : '') + '</h3>' +
+      '<p class="pequeno texto-suave">Disciplinas da grade em que ninguém mexeu: nenhuma edição registrada e nenhum campo preenchido.' + (d.limitadas ? ' Só as edições carregadas no painel entram na conta.' : '') + '</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-panorama', 'Como ler o panorama') + '</div>';
+    if (!lista.length) return html + '<p class="texto-suave">Todas as disciplinas da grade já tiveram alguma edição ou algum campo preenchido.</p></section>';
+    html += '<div class="tabelaScroll"><table class="tabela tabelaAuditoria" id="audTabelaParados"><caption class="somenteLeitor">Disciplinas ainda sem movimento</caption>' +
+      '<thead><tr><th scope="col">Disciplina</th><th scope="col">Aba</th><th scope="col">Tipo</th><th scope="col">Semestre ideal</th></tr></thead><tbody>';
+    lista.forEach(function (it) {
+      var x = it.x;
+      html += '<tr><td><span class="mono">' + esc(x[D.codigo]) + '</span> ' + esc(x[D.nome]) + '</td><td data-rotulo="Aba">' + esc(it.aba) + '</td>' +
+        '<td data-rotulo="Tipo">' + (preenchido(x[D.tipo]) ? esc(x[D.tipo]) : '—') + '</td><td data-rotulo="Semestre ideal">' + (preenchido(x[D.semestreIdeal]) ? esc(x[D.semestreIdeal]) + 'º' : '—') + '</td></tr>';
+    });
+    return html + '</tbody></table></div></section>';
+  }
+
+  /** Ícone do catálogo (template estruturaIcones), ou '' se não houver. */
+  function iconeHtml(nome, classe) {
+    var t = document.getElementById('estruturaIcones');
+    var svg = t && t.content ? t.content.querySelector('[data-estrutura-icone="' + nome + '"]') : null;
+    return svg ? '<span class="estruturaIcone' + (classe ? ' ' + classe : '') + '" aria-hidden="true">' + svg.outerHTML + '</span>' : '';
+  }
+
+  function plural(n, um, varios) { return n.toLocaleString('pt-BR') + ' ' + (n === 1 ? um : varios); }
+
+  /** O gráfico do ritmo começa mostrando os dias mais recentes (no celular ele rola para os lados). */
+  function rolarRitmoAoFim() {
+    var r = document.querySelector('#visaoAuditoria .ritmoScroll');
+    if (r) r.scrollLeft = r.scrollWidth;
+  }
+
+  var ROTULO_PANORAMA = { semana: 'Mapa da semana', ritmo: 'Ritmo', departamentos: 'Por departamento', parados: 'Sem movimento' };
+
+  function resumoPanorama(chave, icone, valor, detalhes) {
+    var ativo = est.panorama === chave;
+    return '<button type="button" class="cartaoAud" data-aud-panorama="' + chave + '" aria-pressed="' + ativo + '" aria-controls="audPanoramaDetalhe">' +
+      '<span class="cartaoAud__topo">' + iconeHtml(icone, 'cartaoAud__icone') + '<span class="cartaoAud__titulo">' + esc(ROTULO_PANORAMA[chave]) + '</span></span>' +
+      '<span class="cartaoAud__valor">' + valor + '</span>' + detalhes + '</button>';
+  }
+
+  /** (1.11.3) Seção Panorama: quatro resumos (os de preenchimento só na grade em preenchimento) e o detalhe do escolhido. */
+  function htmlPanorama() {
+    var d = est.dados, chaves = d.andamento ? ['semana', 'ritmo', 'departamentos', 'parados'] : ['ritmo'];
+    if (chaves.indexOf(est.panorama) < 0) est.panorama = chaves[0];
+    var html = '<section class="cartao secaoAuditoria" aria-labelledby="audPanoramaTitulo"><h3 class="secaoAuditoria__titulo" id="audPanoramaTitulo">Panorama da grade</h3>' +
+      '<p class="pequeno texto-suave">Visão geral calculada com os dados da auditoria. Escolha um resumo para ver o detalhe.</p>' +
+      '<div class="ajudaLinha">' + gatilho('ajuda-auditoria-panorama', 'Como ler o panorama') + '</div>' +
+      '<div class="cartoesAuditoria" role="group" aria-label="Resumos do panorama">';
+    if (d.andamento) {
+      var aulas = aulasDaGrade(), m = mapaSemana(aulas), pico = null;
+      Object.keys(m.celulas).forEach(function (k) { if (!pico || m.celulas[k].length > m.celulas[pico].length) pico = k; });
+      var nomePico = pico ? DIAS_SEMANA.filter(function (x) { return x[0] === pico.split('|')[0]; })[0][1] + ', ' + pico.split('|')[1] + 'h' : '';
+      html += resumoPanorama('semana', 'calendar-days', plural(aulas.length, '<span class="cartaoAud__unidade">aula no mapa</span>', '<span class="cartaoAud__unidade">aulas no mapa</span>'),
+        '<span class="cartaoAud__detalhe">' + (pico ? 'Horário mais cheio: <strong>' + esc(nomePico) + '</strong> (' + plural(m.celulas[pico].length, 'disciplina', 'disciplinas') + ')' : 'Nenhum dia e horário preenchido ainda.') + '</span>');
+    }
+    var r = ritmo();
+    var tendencia = r.ult7 > r.ant7 ? 'mais que' : r.ult7 < r.ant7 ? 'menos que' : 'o mesmo que';
+    html += resumoPanorama('ritmo', 'activity', plural(r.ult7, '<span class="cartaoAud__unidade">edição em 7 dias</span>', '<span class="cartaoAud__unidade">edições em 7 dias</span>'),
+      '<span class="cartaoAud__detalhe">' + (r.total ? tendencia + ' nos 7 dias anteriores (' + r.ant7.toLocaleString('pt-BR') + ')' : 'Nenhuma edição das secretarias ainda.') + '</span>' +
+      (d.andamento && r.total && r.diasSemEdicao >= 3 ? '<span class="cartaoAud__alerta">Sem edições há ' + plural(r.diasSemEdicao, 'dia', 'dias') + '</span>' : ''));
+    if (d.andamento) {
+      var dep = porDepartamento(), pri = dep[0], ult = dep[dep.length - 1];
+      html += resumoPanorama('departamentos', 'library-big', pri ? '<span class="cartaoAud__unidade">Mais adiantado:</span> ' + esc(pri.aba) : '<span class="cartaoAud__unidade">Sem disciplinas</span>',
+        pri ? '<span class="cartaoAud__detalhe">' + pri.campos + '% dos campos preenchidos</span>' + (dep.length > 1 ? '<span class="cartaoAud__detalhe">Menos adiantado: <strong>' + esc(ult.aba) + '</strong> (' + ult.campos + '%)</span>' : '') : '');
+      var parados = semMovimento(), porAba = {};
+      parados.forEach(function (p) { porAba[p.aba] = (porAba[p.aba] || 0) + 1; });
+      html += resumoPanorama('parados', 'hourglass', plural(parados.length, '<span class="cartaoAud__unidade">disciplina parada</span>', '<span class="cartaoAud__unidade">disciplinas paradas</span>'),
+        '<span class="cartaoAud__detalhe">' + (parados.length ? Object.keys(porAba).map(function (a) { return esc(a) + ' ' + porAba[a]; }).join(' · ') : 'Todas já tiveram algum movimento.') + '</span>');
+    }
+    var detalhe = { semana: htmlSemana, ritmo: htmlRitmo, departamentos: htmlDepartamentos, parados: htmlParados }[est.panorama]();
+    return html + '</div></section><div class="panoramaDetalhe" id="audPanoramaDetalhe">' + detalhe + '</div>';
+  }
+
   function opcoes(valores, atual, rotuloTodos) {
     return '<option value="">' + esc(rotuloTodos) + '</option>' + valores.map(function (v) {
       return '<option value="' + esc(v) + '"' + (v === atual ? ' selected' : '') + '>' + esc(v) + '</option>';
@@ -445,7 +769,7 @@ var Auditoria = (function () {
   function linhaEdicao(l, comDisciplina) {
     var onde = l[E.aba] ? esc(l[E.aba]) + (l[E.celula] ? ' · <span class="mono">' + esc(l[E.celula]) + '</span>' : '') : '—';
     var disc = l[E.codigo] ? '<button type="button" class="linkDisciplina" data-aud-historico="' + esc(l[E.codigo]) + '"><span class="mono">' + esc(l[E.codigo]) + '</span></button> ' + esc(l[E.disciplina]) : '<span class="texto-suave">—</span>';
-    return '<tr><td class="auditoriaData">' + esc(l[E.data]) + '</td>' +
+    return '<tr' + (ehNova(l) ? ' class="edicaoNova"' : '') + '><td class="auditoriaData">' + esc(l[E.data]) + (ehNova(l) ? '<br><span class="selo selo--info seloNova">Nova</span>' : '') + '</td>' +
       '<td class="celPessoa" data-rotulo="Quem">' + (l[E.origem] === 'Sistema' ? 'Sistema' : htmlPessoa(l[E.email])) + '</td>' +
       '<td class="auditoriaOnde" data-rotulo="Onde">' + onde + '</td>' +
       (comDisciplina ? '<td data-rotulo="Disciplina">' + disc + '</td>' : '') +
@@ -535,12 +859,48 @@ var Auditoria = (function () {
         if (b) b.focus();
         return;
       }
+      if (alvo.hasAttribute('data-aud-panorama')) {
+        // (1.11.3) resumo do panorama: mostra o detalhe dele (um por vez)
+        est.panorama = alvo.getAttribute('data-aud-panorama');
+        renderizar();
+        var bp = raiz.querySelector('[data-aud-panorama="' + est.panorama + '"]');
+        if (bp) bp.focus();
+        return;
+      }
+      if (alvo.hasAttribute('data-aud-semana')) {
+        // célula do mapa da semana: mostra (ou esconde) as disciplinas daquela hora
+        var k = alvo.getAttribute('data-aud-semana');
+        est.celulaSemana = est.celulaSemana === k ? null : k;
+        renderizar();
+        var cel = raiz.querySelector('[data-aud-semana="' + k.replace(/"/g, '') + '"]');
+        if (cel) cel.focus();
+        return;
+      }
+      if (alvo.hasAttribute('data-aud-ir-aba')) {
+        // departamento no panorama: abre Preenchimento já na aba
+        est.aba = alvo.getAttribute('data-aud-ir-aba');
+        renderizar();
+        ativarSecao('preenchimento');
+        var ba = raiz.querySelector('[data-aud-aba="' + est.aba.replace(/"/g, '') + '"]');
+        if (ba) ba.focus();
+        return;
+      }
+      if (alvo.hasAttribute('data-aud-edicoes-aba')) {
+        // (1.11.3) Preenchimento → Edições só da aba
+        est.filtros = { busca: '', aba: alvo.getAttribute('data-aud-edicoes-aba'), pessoa: '', origem: 'Secretaria' };
+        est.limite = POR_PAGINA;
+        renderizar();
+        ativarSecao('edicoes');
+        var te = $('audEdicoesTitulo');
+        if (te) { te.setAttribute('tabindex', '-1'); te.focus(); }
+        return;
+      }
       if (alvo.hasAttribute('data-aud-historico')) { abrirHistorico(alvo.getAttribute('data-aud-historico')); return; }
       if (alvo.hasAttribute('data-aud-pessoa')) {
         est.filtros = { busca: '', aba: '', pessoa: alvo.getAttribute('data-aud-pessoa'), origem: '' };
         est.limite = POR_PAGINA;
-        est.secao = 'edicoes';   // (1.11.2) "ver edições" abre a seção Edições
         renderizar();
+        ativarSecao('edicoes');   // (1.11.2) "ver edições" abre a seção Edições
         var t = $('audEdicoesTitulo');
         if (t) { t.setAttribute('tabindex', '-1'); t.focus(); }
         return;

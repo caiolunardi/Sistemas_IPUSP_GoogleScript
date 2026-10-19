@@ -1010,15 +1010,27 @@
         <section id="ajuda-auditoria" class="centralAjuda__secao" data-gradip-help-section aria-labelledby="ajuda-auditoria-titulo" hidden>
           <h3 class="centralAjuda__secaoTitulo" id="ajuda-auditoria-titulo" tabindex="-1">Auditoria da grade</h3>
 
-          <article class="centralAjuda__item" id="ajuda-auditoria-abrir" data-gradip-help-search-item data-search="abrir auditoria da grade selecionar grade atual anteriores atualizar horario ultima atualizacao tempo real somente leitura secoes submenu menu lateral preenchimento nao serao oferecidas quem abre e edita edicoes">
+          <article class="centralAjuda__item" id="ajuda-auditoria-abrir" data-gradip-help-search-item data-search="abrir auditoria da grade selecionar grade atual anteriores atualizar horario ultima atualizacao tempo real somente leitura secoes submenu menu lateral preenchimento panorama nao serao oferecidas quem abre e edita edicoes novas">
             <h4 tabindex="-1">Abrir e atualizar</h4>
             <ol>
               <li>No topo da página, clique em <strong>"Auditoria da grade"</strong> (para voltar, "Estrutura curricular"). Administradores e leitores veem esta seção; ninguém altera nada por ela.</li>
               <li>Em <strong>Grade</strong>, vem escolhida a grade em preenchimento; as grades anteriores com auditoria aparecem na lista.</li>
               <li>A linha abaixo mostra a hora da última leitura ("Atualizado às …"). Os dados <strong>não se atualizam sozinhos</strong>: clique em <strong>"Atualizar"</strong> para ler de novo.</li>
-              <li>A auditoria tem quatro seções: <strong>Preenchimento</strong>, <strong>Não serão oferecidas</strong>, <strong>Quem abre e edita</strong> e <strong>Edições</strong>. Escolha uma no menu lateral, logo abaixo de "Auditoria da grade" (no modo Abas, na barra acima do conteúdo). Só a seção escolhida fica aberta, e ela continua aberta quando você atualiza ou troca de grade.</li>
+              <li>A auditoria tem cinco seções: <strong>Preenchimento</strong>, <strong>Panorama</strong>, <strong>Não serão oferecidas</strong>, <strong>Quem abre e edita</strong> e <strong>Edições</strong>. Escolha uma no menu lateral, logo abaixo de "Auditoria da grade" (no modo Abas, na barra acima do conteúdo). Só a seção escolhida fica aberta, e ela continua aberta quando você atualiza ou troca de grade.</li>
             </ol>
             <p>A forma de consulta é este painel: não há link nem endereço da planilha de auditoria, para nenhum perfil.</p>
+          </article>
+
+          <article class="centralAjuda__item" id="ajuda-auditoria-panorama" data-gradip-help-search-item data-search="panorama da grade mapa da semana dia hora horario mais cheio ritmo edicoes por dia sem edicoes por departamento mais adiantado menos adiantado campos preenchidos sem movimento paradas">
+            <h4 tabindex="-1">Panorama da grade</h4>
+            <p>A seção "Panorama" traz quatro resumos calculados com os mesmos dados da auditoria. Clique num resumo para ver o detalhe dele logo abaixo; só um detalhe fica aberto por vez.</p>
+            <ul>
+              <li><strong>Mapa da semana</strong>: quantas disciplinas têm aula em cada dia e hora, pelo dia, início e fim informados (as marcadas com NÃO ficam de fora). O número está escrito em cada célula; quanto mais escura, mais aulas ao mesmo tempo. Clique numa célula para ver quais disciplinas são. Quando o fim não está legível, vale o início mais os créditos-aula, como na planilha.</li>
+              <li><strong>Ritmo</strong>: edições das secretarias por dia, desde o envio da grade (no máximo os últimos 60 dias). O resumo compara os últimos 7 dias com os 7 anteriores e avisa quando não há edições há 3 dias ou mais. Mostra quando o trabalho andou, não o esforço de cada pessoa.</li>
+              <li><strong>Por departamento</strong>: as abas lado a lado, da que tem mais campos preenchidos para a que tem menos. "Campos preenchidos" é a média de Será oferecida, Docente e Dia e horário; <strong>não</strong> é a porcentagem de disciplinas prontas. Clique no nome da aba para abrir o preenchimento dela.</li>
+              <li><strong>Sem movimento</strong>: disciplinas da grade sem nenhuma edição registrada e sem nenhum campo preenchido. Quando há mais de 5.000 edições, só as carregadas no painel entram na conta.</li>
+            </ul>
+            <p>Mapa da semana, Por departamento e Sem movimento só aparecem na grade em preenchimento; numa grade anterior fica só o Ritmo.</p>
           </article>
 
           <article class="centralAjuda__item" id="ajuda-auditoria-justificativas" data-gradip-help-search-item data-search="nao serao oferecidas aguardando justificativa quem marcou quando selo recebimento aprovacao comissao">
@@ -1035,6 +1047,7 @@
               <li>Um cartão por aba da planilha (PSA, PSC, PSE, PST, Interdepartamentais e Outras Unidades) mostra quantas disciplinas já têm <strong>Será oferecida</strong>, <strong>Docente</strong> e <strong>Dia e horário</strong> preenchidos.</li>
               <li>Cada contagem é <strong>por campo</strong>: ela não diz que a disciplina está "completa" nem pronta, e não há uma porcentagem de disciplinas prontas.</li>
               <li>Clique num cartão para ver a tabela da aba: cada disciplina com o que já foi informado e a última edição feita por uma secretaria.</li>
+              <li>O botão <strong>"Ver as edições da aba"</strong>, abaixo dos cartões, abre a seção Edições já filtrada pelas edições das secretarias naquela aba.</li>
             </ul>
           </article>
 
@@ -1063,12 +1076,13 @@
             </ul>
           </article>
 
-          <article class="centralAjuda__item" id="ajuda-auditoria-edicoes" data-gradip-help-search-item data-search="edicoes lista busca filtros aba pessoa origem sistema secretaria mostrar mais 5000 mais recentes limite carregadas colagem resumo">
+          <article class="centralAjuda__item" id="ajuda-auditoria-edicoes" data-gradip-help-search-item data-search="edicoes lista busca filtros aba pessoa origem sistema secretaria mostrar mais 5000 mais recentes limite carregadas colagem resumo novas nova ultima visita">
             <h4 tabindex="-1">Edições: busca, filtros e limites</h4>
             <ul>
               <li>A lista vai da edição mais recente para a mais antiga, 50 por vez ("Mostrar mais"). Há busca (código, disciplina, docente, campo, nome, e-mail…) e filtros por aba, pessoa e origem.</li>
               <li><strong>Origem</strong>: "Secretaria" são edições feitas na planilha; "Sistema" são eventos do próprio sistema, como o envio da grade e o encerramento de um semestre.</li>
               <li>No máximo as <strong>5.000 edições mais recentes</strong> são carregadas; quando há mais, a contagem avisa ("as 5.000 mais recentes de …"). A lista e o histórico mostram o que foi carregado, não necessariamente tudo desde o início.</li>
+              <li><strong>Edições novas</strong>: no menu, "Edições (3 novas)" conta as edições das secretarias feitas depois da última vez que você abriu Edições <strong>neste navegador</strong>; na lista, elas aparecem com o selo "Nova". Ao abrir Edições, elas passam a contar como vistas (o selo some na próxima atualização). Na primeira visita, nada aparece como novo. Em outro computador ou navegador, a contagem começa de novo.</li>
               <li>Colagens geram uma linha por célula, sem o valor anterior; colagens muito grandes viram uma linha-resumo. Mudanças feitas pela própria planilha (como apagar dia e início por conflito) e mudanças só de formatação não aparecem.</li>
             </ul>
           </article>
