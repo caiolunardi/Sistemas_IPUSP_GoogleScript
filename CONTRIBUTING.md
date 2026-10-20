@@ -33,6 +33,8 @@ Abra uma issue do tipo **Sugestão**. Diga qual sistema, quem usaria (alunos, eq
 
 O mantenedor revisa, aceita no `main` e leva a mudança ao Google. **Um merge no Git não muda nenhum sistema em uso**: os arquivos são copiados para o projeto Apps Script e publicados numa nova versão, depois da homologação. Cada versão de sistema vira uma tag e uma Release no GitHub ([versões](docs/VERSOES.md)).
 
+No repositório principal, o único ramo permanente é o `main`. Um pull request aceito é incorporado com merge (não squash), e o ramo dele é apagado. Um pull request parado que ficou para trás em relação ao `main` é incorporado em parte ou fechado, com um comentário dizendo o que entrou e em que versão (como o #5, em 20/10/2026).
+
 ### Sistema novo
 
 Siga [`docs/sistemas/README.md`](docs/sistemas/README.md): pasta `sistemas/<nome>/src` para o código, `docs/sistemas/<nome>/` para a documentação, configuração pelo `ID_INDEX` e por Script Properties, `DADOS_E_SEGURANCA.md` a partir do [modelo](docs/seguranca/SYSTEM_SECURITY_TEMPLATE.md) e ambiente de homologação.
