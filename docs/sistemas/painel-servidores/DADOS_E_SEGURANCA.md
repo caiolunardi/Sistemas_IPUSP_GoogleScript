@@ -35,9 +35,11 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 | Planilha de Exclusão de Disciplinas | Sheets | `ID_PLANILHA_EXCLUSAO_DISCIPLINAS` | Não | leitura |
 | Planilha de Períodos | Sheets | `ID_PLANILHA_PERIODOS` (`ConfigFormulariosCore.gs`) | Não | leitura e escrita |
 | Planilha de Regras Curriculares | Sheets | `ID_PLANILHA_REGRAS_CURRICULARES` (`ConfigRegrasCurricularesRepository.gs`) | Não | leitura e escrita |
-| Sistemas da equipe | Web Apps `/exec` | URLs no array `SISTEMAS` (`Painel.html`) | destino de navegação | cada sistema controla o próprio acesso |
+| Sistemas da equipe | Web Apps `/exec` | Script Property `URLS_SISTEMAS_EQUIPE` (JSON lido por `UrlsSistemas.gs`) | Não | cada sistema controla o próprio acesso |
 
-No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valores reais ficam só no projeto Apps Script. As URLs `/exec` dos sistemas foram mantidas, como no [Painel de Solicitações](../painel-solicitacoes/DADOS_E_SEGURANCA.md): são destinos de navegação exibidos a quem usa o painel, não credenciais.
+No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valores reais ficam só no projeto Apps Script.
+
+**URLs dos sistemas internos (20/10/2026).** Até esta data as nove URLs `/exec` dos sistemas da equipe ficavam escritas no `Painel.html`. Com o repositório público, elas saíram do Git: o `Painel.html` recebe as URLs do servidor (`urlsSistemasParaPagina_()`, em `UrlsSistemas.gs`), que lê a Script Property `URLS_SISTEMAS_EQUIPE`. Diferente das URLs do [Painel de Solicitações](../painel-solicitacoes/DADOS_E_SEGURANCA.md), que são destinos divulgados aos alunos, estas levam a ferramentas internas (por exemplo, a Comunidade IPUSP, que envia o cadastro completo a quem abre a página; ver [seção 4 da Comunidade IPUSP](../busca-alunos/DADOS_E_SEGURANCA.md#4-web-app)). URL não é credencial, mas publicá-la tira a única barreira que hoje existe nesses sistemas sem autorização no backend. As URLs antigas continuam no histórico do Git; a forma de invalidá-las (nova implantação) está em [`docs/seguranca/REPOSITORIO_PUBLICO.md`](../../seguranca/REPOSITORIO_PUBLICO.md).
 
 ## 4. Web App
 
@@ -56,6 +58,18 @@ Recomendações, para decisão do responsável:
 4. Avaliar `USER_ACCESSING` se a auditoria precisar do e-mail real de quem corrigiu.
 
 ## 5. Configuração
+
+Script Property (valor fora do Git; o formato está em `UrlsSistemas.gs`):
+
+```text
+URLS_SISTEMAS_EQUIPE   JSON com as chaves PESSOAS_IPUSP, EMISSAO_DIPLOMAS,
+                       GERENCIADOR_HABILITACOES, GERENCIADOR_TRANCAMENTO_TOTAL,
+                       GERENCIADOR_TRANCAMENTO_PARCIAL, GERENCIADOR_BUSP,
+                       GERENCIADOR_INTERCAMBISTAS, GERENCIADOR_EXCLUSAO_DISCIPLINAS,
+                       CONFIGURACOES_GRADE_HORARIA
+```
+
+Constantes nos `.gs`:
 
 ```text
 ID_PLANILHA_DIPLOMAS
@@ -99,9 +113,9 @@ Seguir [`docs/seguranca/INCIDENTES.md`](../../seguranca/INCIDENTES.md). Medida i
 
 ## 11. Exceções
 
-- URLs `/exec` dos sistemas mantidas no código, como destinos públicos de navegação.
+- (até 20/10/2026) URLs `/exec` dos sistemas no código; desde então ficam na Script Property `URLS_SISTEMAS_EQUIPE`.
 - Modelo de acesso anônimo mantido sem alteração (fora do escopo da rodada visual), registrado acima para decisão.
 
 ## 12. Homologação
 
-Checklist de segurança: IDs removidos, sem dados pessoais, sem segredos no Git, sem segredos enviados ao navegador. Itens pendentes: autorização no backend e modelo de acesso (seção 4), migração dos IDs (seção 5).
+Checklist de segurança: IDs e URLs internas removidos, sem dados pessoais, sem segredos no Git, sem segredos enviados ao navegador. Itens pendentes: autorização no backend e modelo de acesso (seção 4), migração dos IDs (seção 5).

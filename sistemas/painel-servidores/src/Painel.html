@@ -933,6 +933,10 @@ summary:focus-visible,
 // badge vermelho de "X solicitações pendentes" aparecer. Um sistema
 // pode ter mais de um badge (ex: BUSP) usando "chavesContador"
 // (array) em vez de "chaveContador" (singular) — ver mais abaixo.
+// As URLs /exec vêm do servidor (Script Property URLS_SISTEMAS_EQUIPE,
+// ver Code.gs) e não ficam no repositório. Card sem URL = "Em breve".
+const URLS_SISTEMAS = <?!= urlsSistemasParaPagina_() ?>;
+
 const SISTEMAS = [
     // "Pessoas do IPUSP" é o nome da área, não de uma busca específica:
     // hoje o link abre a busca de alunos; consultas de docentes e
@@ -943,7 +947,7 @@ const SISTEMAS = [
         nome: "Pessoas do IPUSP",
         descricao: "Consulta de pessoas do Instituto de Psicologia. Por enquanto, reúne a busca de alunos",
         icone: "👥",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbzKbGAI31-yuWnBNcR6XYM99vXZiUvY0iO5zjvd1_G-_pgfISJo-IRPUpyzdhVCLqzn/exec",
+        url: URLS_SISTEMAS.PESSOAS_IPUSP || "",
         ativo: true
     },
     {
@@ -951,7 +955,7 @@ const SISTEMAS = [
         nome: "Emissão de Diplomas",
         descricao: "Conferência de dados pessoais, histórico escolar, colação de grau e emissão de diploma",
         icone: "🎓",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbxzx-xTGki4foDovGeZV9Q7UtVUdlZRnGzSHp2dgIa-lqo78RRKGBAmVA5tMXGfLPkM/exec",
+        url: URLS_SISTEMAS.EMISSAO_DIPLOMAS || "",
         ativo: true,
         chaveContador: "diplomas"
     },
@@ -960,7 +964,7 @@ const SISTEMAS = [
         nome: "Gerenciador de Abertura de Habilitações",
         descricao: "Processamento dos pedidos de abertura de habilitação vindos do formulário dos alunos",
         icone: "🗂️",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbwJij_cJSzKlt1z4YvFtRw87P4sN7TyNfOKw_xYOs3bWDuGrygoz10LjYGDnDz5BnGR/exec",
+        url: URLS_SISTEMAS.GERENCIADOR_HABILITACOES || "",
         ativo: true,
         chaveContador: "habilitacoes"
     },
@@ -969,7 +973,7 @@ const SISTEMAS = [
         nome: "Gerenciador de Trancamento Total de Matrícula",
         descricao: "Processamento dos pedidos de trancamento total de matrícula vindos do formulário dos alunos",
         icone: "📕",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbwSHN4Ia-twjXIPfILQelOS9gLR_VQRErBBHhh5e6mZ-T8EacRhKn9mWf3FBpviB_om/exec",
+        url: URLS_SISTEMAS.GERENCIADOR_TRANCAMENTO_TOTAL || "",
         ativo: true,
         chaveContador: "trancamentoTotal"
     },
@@ -978,7 +982,7 @@ const SISTEMAS = [
         nome: "Gerenciador de Trancamento Parcial de Matrícula",
         descricao: "Processamento dos pedidos de trancamento parcial de matrícula (disciplinas) vindos do formulário dos alunos",
         icone: "📗",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbyhYEBvT9Hf7MSekyLvO5s4ejiO6ODm681ojc2gEYtMySYueQLqOJxNN6_Gsr2C-Ws5Ug/exec",
+        url: URLS_SISTEMAS.GERENCIADOR_TRANCAMENTO_PARCIAL || "",
         ativo: true,
         chaveContador: "trancamentoParcial"
     },
@@ -987,7 +991,7 @@ const SISTEMAS = [
         nome: "Gerenciador de 2ª Via do BUSP",
         descricao: "Processamento dos pedidos de 2ª via do Bilhete Único USP (defeito, roubo/furto e perda/extravio)",
         icone: "🚌",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbwKDUfMx4lyoTkUOxqIdH_gF3UdY0tvmMVEVgh6dCyRfX66R_gxn1XxJ2THjpzTAzpU/exec",
+        url: URLS_SISTEMAS.GERENCIADOR_BUSP || "",
         ativo: true,
         chavesContador: [
             { chave: "busp", rotuloSingular: "1 solicitação pendente de análise", rotuloPlural: "{n} solicitações pendentes de análise" },
@@ -999,7 +1003,7 @@ const SISTEMAS = [
         nome: "Gerenciador de Matrícula de Intercambistas",
         descricao: "Processamento dos pedidos de inclusão/exclusão de disciplinas de alunos intercambistas",
         icone: "🌐",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbzBydN3qdAWReS_hnxSV4NshYQvZ4ButlO_WDlIgz3UnvDjJPtjrhUt5iS5TQfDmViS/exec",
+        url: URLS_SISTEMAS.GERENCIADOR_INTERCAMBISTAS || "",
         ativo: true,
         chavesContador: [
             { chave: "intercambistasInclusao", rotuloSingular: "1 pedido pendente de inclusão", rotuloPlural: "{n} pedidos pendentes de inclusão" },
@@ -1011,7 +1015,7 @@ const SISTEMAS = [
         nome: "Gerenciador de Exclusão de Disciplinas",
         descricao: "Processamento dos pedidos de exclusão de disciplinas vindos do formulário dos alunos",
         icone: "📙",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbzkqMYFDaeyOH-x2oS2VdWK6q8_Kn-bTB1LRP17ffx491yzAUuqrNuAVUFa2pekqcqN/exec",
+        url: URLS_SISTEMAS.GERENCIADOR_EXCLUSAO_DISCIPLINAS || "",
         ativo: true,
         chavesContador: [
             { chave: "exclusaoDisciplinas", rotuloSingular: "1 aluno com pedido pendente", rotuloPlural: "{n} alunos com pedidos pendentes" }
@@ -1024,7 +1028,7 @@ const SISTEMAS = [
         nome: "Configurações de Grade Horária",
         descricao: "Configurações usadas na preparação da grade horária",
         icone: "🗓️",
-        url: "https://script.google.com/a/macros/usp.br/s/AKfycbwp1SjW2YQmnS0BYNgTJTlAZmxX_92b21j4y3_lHWrhuGOvTt_MT5u0gcJG6SgpF3O4xA/exec",
+        url: URLS_SISTEMAS.CONFIGURACOES_GRADE_HORARIA || "",
         ativo: true
     }
     // Exemplo de sistema ainda não publicado — deixe "ativo: false" e

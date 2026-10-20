@@ -18,6 +18,7 @@ O GitHub não sincroniza com o Apps Script. Documentação: [visão geral](../..
 | Arquivo | Papel | Situação nesta versão |
 |---|---|---|
 | `Code.gs` | `doGet`, `include_`, contagem dos avisos de pendência | IDs trocados por marcadores; resto idêntico |
+| `UrlsSistemas.gs` | lê as URLs dos sistemas da Script Property `URLS_SISTEMAS_EQUIPE`; `diagnosticarUrlsSistemas` | novo (20/10/2026) |
 | `ConfigFormulariosCore.gs` | Leitura e gravação dos períodos dos formulários | IDs trocados por marcadores; resto idêntico |
 | `ConfigRegrasCurricularesRepository.gs` | Acesso à planilha das Regras Curriculares | IDs trocados por marcadores; resto idêntico |
 | `ConfigCore.gs`, `ConfigFormularioColacaoGrau.gs`, `ConfigFormularioExclusaoDisciplinas.gs`, `ConfigRegrasCurriculares.gs`, `ConfigRegrasCurricularesAuditoria.gs`, `ConfigRegrasCurricularesMigracao.gs`, `ConfigRegrasCurricularesValidacao.gs`, `teste.gs` | Backend | byte-idênticos à fonte recebida |
@@ -37,7 +38,7 @@ Os testes locais estão em [`testes/`](testes/README.md) e não vão para o Apps
 ## Instalação resumida
 
 1. Guarde uma cópia do projeto atual (**Arquivo → Fazer uma cópia**, ou baixe os arquivos).
-2. **Não substitua nenhum `.gs`** nem o `appsscript.json`.
+2. **Não substitua nenhum `.gs` que já existe** nem o `appsscript.json`. Crie o script novo `UrlsSistemas` com o conteúdo de `src/UrlsSistemas.gs` e a propriedade `URLS_SISTEMAS_EQUIPE` com as URLs dos sistemas ([manual, passo 2a](../../docs/sistemas/painel-servidores/MANUAL_OPERACAO.md#instalar-ou-atualizar)). As URLs dos sistemas da equipe não ficam no Git.
 3. Substitua o conteúdo de `Painel`, `ConfigHomeUI`, `ConfigFormulariosUI`, `ConfigRegrasCurricularesUI`, `ConfigRegrasCurricularesEstilos` e `ConfigRegrasCurricularesAjudaEstilos` pelos desta pasta.
 4. Crie os arquivos HTML novos (**+ → HTML**), com estes nomes exatos e sem extensão: `GradipTema`, `GradipTemaControle`, `GradipMarcaIPUSP`, `GradipMarcaUSP`, `PainelAjuda`, `PainelAjudaEstilos`, `PainelAjudaUI`, `PainelNavegacaoEstilos`, `PainelNavegacaoUI`, `PainelIcones`.
 5. Teste pela URL `/dev` e depois publique uma **nova versão da implantação existente**, mantendo a URL `/exec`.

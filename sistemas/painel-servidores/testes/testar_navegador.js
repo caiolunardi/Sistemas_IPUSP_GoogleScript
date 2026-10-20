@@ -11,9 +11,15 @@ const {chromium} = carregarPlaywright();
 const SRC = path.join(__dirname, '..', 'src') + '/';
 const SAIDA = path.join(require('os').tmpdir(), 'painel-servidores-');
 
+const URLS_FICTICIAS = {};
+['PESSOAS_IPUSP','EMISSAO_DIPLOMAS','GERENCIADOR_HABILITACOES','GERENCIADOR_TRANCAMENTO_TOTAL','GERENCIADOR_TRANCAMENTO_PARCIAL','GERENCIADOR_BUSP','GERENCIADOR_INTERCAMBISTAS','GERENCIADOR_EXCLUSAO_DISCIPLINAS','CONFIGURACOES_GRADE_HORARIA']
+  .forEach(c => { URLS_FICTICIAS[c] = 'https://script.google.com/a/macros/usp.br/s/FICTICIO_' + c + '/exec'; });
+
 function build(){
   let h = fs.readFileSync(SRC + 'Painel.html', 'utf8');
   for (let k = 0; k < 4; k++) h = h.replace(/<\?!= include_\('(\w+)'\); \?>/g, (_, n) => fs.readFileSync(SRC + n + '.html', 'utf8'));
+  // URLs fictícias no lugar da Script Property URLS_SISTEMAS_EQUIPE (Code.gs).
+  h = h.replace('<?!= urlsSistemasParaPagina_() ?>', JSON.stringify(URLS_FICTICIAS));
   if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
   return h;
 }
@@ -77,9 +83,9 @@ async function contraste(p, scheme, seletores, rotulo=''){
   const primeiro = await p.evaluate(()=>{const c=document.querySelector('#listaCategorias .cardSistema');return [c.closest('.grupoCategoria').querySelector('.tituloCategoria').textContent.trim(),c.textContent]});
   chk(`${T} Pessoas do IPUSP é o primeiro card`, primeiro[0].includes('Pessoas')&&primeiro[1].includes('Pessoas do IPUSP')&&!primeiro[1].includes('Busca de Alunos'), primeiro[0]);
   await p.click('#listaCategorias .cardSistema >> nth=0');
-  chk(`${T} card abre o app de alunos`, (await p.evaluate(()=>window.__abertos[0]||'')).endsWith('/AKfycbzKbGAI31-yuWnBNcR6XYM99vXZiUvY0iO5zjvd1_G-_pgfISJo-IRPUpyzdhVCLqzn/exec'));
+  chk(`${T} card abre o app de alunos`, (await p.evaluate(()=>window.__abertos[0]||'')).endsWith('/FICTICIO_PESSOAS_IPUSP/exec'));
   await p.evaluate(()=>{const c=[...document.querySelectorAll('#listaCategorias .cardSistema')].find(c=>c.textContent.includes('Configurações de Grade Horária'));c.click()});
-  chk(`${T} card Configurações de Grade Horária abre o link`, (await p.evaluate(()=>window.__abertos.pop()||'')).endsWith('/AKfycbwp1SjW2YQmnS0BYNgTJTlAZmxX_92b21j4y3_lHWrhuGOvTt_MT5u0gcJG6SgpF3O4xA/exec'));
+  chk(`${T} card Configurações de Grade Horária abre o link`, (await p.evaluate(()=>window.__abertos.pop()||'')).endsWith('/FICTICIO_CONFIGURACOES_GRADE_HORARIA/exec'));
   chk(`${T} card focável como link`, await p.evaluate(()=>{const c=document.querySelector('#listaCategorias .cardSistema');return c.tabIndex===0&&c.getAttribute('role')==='link'}));
   await p.focus('#listaCategorias .cardSistema >> nth=1'); await p.keyboard.press('Enter');
   chk(`${T} Enter abre card`, await p.evaluate(()=>window.__abertos.length===2));

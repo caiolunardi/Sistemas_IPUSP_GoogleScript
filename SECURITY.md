@@ -1,26 +1,29 @@
-# Security Policy — Sistemas IPUSP
+# Política de segurança — Sistemas IPUSP
 
-Este repositório adota as diretrizes de `docs/seguranca/` para proteção de código, configuração, informações institucionais e dados pessoais.
+Este repositório é público e segue as diretrizes de [`docs/seguranca/`](docs/seguranca/README.md) e de [Repositório público](docs/seguranca/REPOSITORIO_PUBLICO.md).
 
 ## Não reporte conteúdo sensível em issue pública
 
 Se encontrar:
-- credencial/token/chave;
-- dado pessoal real;
-- URL/ID interno indevidamente exposto;
-- vulnerabilidade de autorização;
-- compartilhamento indevido;
-- outro possível incidente de segurança;
 
-não inclua o valor sensível em issue, discussão, screenshot ou mensagem aberta.
+- credencial, token ou chave;
+- dado pessoal real (nome, nº USP, e-mail, histórico, pedido);
+- ID ou endereço interno exposto;
+- falha de autorização (alguém consegue ver ou mudar o que não deveria);
+- compartilhamento indevido de planilha ou pasta;
+- outro possível incidente de segurança,
 
-## Fluxo
+**não** coloque o valor sensível em issue, discussão, pull request, print ou mensagem aberta.
 
-1. preserve o mínimo de evidência necessário;
-2. evite ampliar a exposição;
-3. comunique privadamente o responsável pelo repositório/sistema;
-4. quando houver possível incidente com dados pessoais, siga `docs/seguranca/INCIDENTES.md` e os canais institucionais vigentes da USP.
+## Como reportar
 
-Esta política de repositório não substitui os procedimentos formais da Universidade de São Paulo.
+1. **Pelo GitHub (preferencial):** aba **Security → Report a vulnerability** deste repositório. A mensagem fica visível só para os mantenedores.
+2. **Por e-mail:** escreva para `gradip@usp.br` com o assunto "Segurança — repositório Sistemas IPUSP", descrevendo **onde** está o problema (arquivo, sistema, tela), sem copiar o dado sensível.
 
-Documentação: `docs/seguranca/README.md`.
+Preserve o mínimo de evidência necessário e evite ampliar a exposição (não compartilhe o achado com outras pessoas antes da correção).
+
+## O que acontece depois
+
+O responsável avalia, corrige e, quando houver possível incidente com dados pessoais, segue [`docs/seguranca/INCIDENTES.md`](docs/seguranca/INCIDENTES.md) e os canais institucionais da USP.
+
+Esta política não substitui os procedimentos formais da Universidade de São Paulo.

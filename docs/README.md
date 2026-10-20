@@ -25,8 +25,12 @@ A diretriz é técnica e alinhada à LGPD/estrutura da USP; não substitui a Pol
 
 Pasta `sistemas/`. Consulte também o [catálogo geral](SISTEMAS.md).
 
-- [Painel de Solicitações dos alunos](sistemas/painel-solicitacoes/README.md): documentação da UI v1.2 aceita e fonte Apps Script versionada;
-- [Estrutura Curricular e Grade Horária 1.10.0](sistemas/estrutura-curricular/README.md): fonte versionada sobre a baseline 1.9.3 auditada, navegação lateral/abas, manual operacional, instalação, modelo de dados, contratos, manutenção e evidências locais. A homologação da nova versão no Google permanece pendente.
+O catálogo lista todos os sistemas já incorporados (painéis dos alunos e dos servidores, Grade Horária visual, Estrutura Curricular, Comunidade IPUSP, formulários de exclusão e trancamento) com o estado de cada um.
+
+Guias para quem chega de fora:
+- [Como reaproveitar um sistema em outro setor](COMO_REAPROVEITAR.md);
+- [Ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md);
+- [Repositório público](seguranca/REPOSITORIO_PUBLICO.md): o que pode e o que não pode entrar.
 
 Ordem de incorporação:
 1. painéis/dashboards;

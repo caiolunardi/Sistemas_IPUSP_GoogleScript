@@ -39,6 +39,8 @@ As Regras Curriculares têm manual próprio, aberto pelo botão **❓ Manual e F
 | “Não consegui carregar os formulários: ...” | Planilha de períodos indisponível ou `ID_PLANILHA_PERIODOS` errado. | Conferir o ID em `ConfigFormulariosCore.gs` e o acesso da conta que executa. |
 | “Esse formulário mudou de posição na planilha de Períodos...” | A ordem das linhas mudou depois que a lista foi aberta. | Reabrir Formulários e repetir. |
 | “Não consegui carregar os rulesets: ...” | Planilha de Regras indisponível ou aba ausente. | Conferir `ConfigRegrasCurricularesRepository.gs`. |
+| Todos os cards aparecem como "Em breve" | Propriedade `URLS_SISTEMAS_EQUIPE` ausente ou com JSON inválido. | Rodar `diagnosticarUrlsSistemas` e corrigir a propriedade. |
+| Página em branco com erro `urlsSistemasParaPagina_` | Falta o arquivo `UrlsSistemas.gs` no projeto. | Criar o arquivo (passo 2a de "Instalar ou atualizar"). |
 | Página em branco ou sem estilo | Arquivo HTML faltando ou com nome diferente. | Conferir os nomes exatos (abaixo). `include_` falha se o arquivo não existir. |
 
 ## Instalar ou atualizar
@@ -46,7 +48,8 @@ As Regras Curriculares têm manual próprio, aberto pelo botão **❓ Manual e F
 O commit no Git não altera o Apps Script. Para levar esta versão ao Google:
 
 1. **Cópia de segurança.** No editor do projeto, faça uma cópia (**Visão geral → Fazer uma cópia**) ou guarde o conteúdo dos arquivos atuais.
-2. **Não toque nos `.gs` nem no `appsscript.json`.** Os arquivos do Git têm marcadores no lugar dos IDs reais; os do projeto já estão corretos e não mudaram em comportamento.
+2. **Não toque nos `.gs` que já existem nem no `appsscript.json`.** Os arquivos do Git têm marcadores no lugar dos IDs reais; os do projeto já estão corretos e não mudaram em comportamento. A exceção é o arquivo novo `UrlsSistemas.gs` (passo 2a).
+2a. **Endereços dos sistemas (desde 20/10/2026).** Crie o arquivo de script `UrlsSistemas` (**+ → Script**) e cole o conteúdo de [`src/UrlsSistemas.gs`](../../../sistemas/painel-servidores/src/UrlsSistemas.gs). Em **Configurações do projeto → Propriedades do script**, crie `URLS_SISTEMAS_EQUIPE` com um JSON de uma linha, uma chave por card (`PESSOAS_IPUSP`, `EMISSAO_DIPLOMAS`, `GERENCIADOR_HABILITACOES`, `GERENCIADOR_TRANCAMENTO_TOTAL`, `GERENCIADOR_TRANCAMENTO_PARCIAL`, `GERENCIADOR_BUSP`, `GERENCIADOR_INTERCAMBISTAS`, `GERENCIADOR_EXCLUSAO_DISCIPLINAS`, `CONFIGURACOES_GRADE_HORARIA`), cada uma com a URL `/exec` do sistema. Rode `diagnosticarUrlsSistemas` no editor: ele diz quais chaves faltam, sem mostrar as URLs. Card cuja URL falta aparece como **Em breve**. Não registre as URLs no Git.
 3. **Substitua o conteúdo** destes seis arquivos HTML pelos de [`sistemas/painel-servidores/src`](../../../sistemas/painel-servidores/src):
    `Painel`, `ConfigHomeUI`, `ConfigFormulariosUI`, `ConfigRegrasCurricularesUI`, `ConfigRegrasCurricularesEstilos`, `ConfigRegrasCurricularesAjudaEstilos`.
    O pacote recebido tinha `ConfirHomeUI.html`, mas `Painel` inclui `ConfigHomeUI`. Use no projeto o nome que `Painel` inclui: `ConfigHomeUI`.

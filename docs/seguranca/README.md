@@ -19,7 +19,7 @@ Ela foi escrita para orientar desenvolvimento, documentação, revisão de códi
 ## Princípios
 
 1. **Mínimo necessário.** Se um dado não é necessário ao código, teste ou documento, ele não entra.
-2. **Repositório não é cofre.** Nem repositório privado deve armazenar credenciais ou dados pessoais desnecessários.
+2. **Repositório não é cofre.** Este repositório é público, com histórico; nenhum repositório, nem privado, deve armazenar credenciais ou dados pessoais desnecessários.
 3. **ID não é permissão, mas também não é documentação pública por padrão.** IDs de Sheets/Drive/Forms/deployments são identificadores operacionais e devem ser abstraídos.
 4. **Autorização é validada no backend.** Não confiar em botão oculto, URL desconhecida, nome de função ou obscuridade.
 5. **Dados reais não são fixtures.** Testes e screenshots usam dados sintéticos ou devidamente anonimizados.
@@ -38,6 +38,7 @@ Ela foi escrita para orientar desenvolvimento, documentação, revisão de códi
 - `SECURITY_CHECKLIST.md` — homologação.
 - `SYSTEM_SECURITY_TEMPLATE.md` — modelo para documentar segurança de cada sistema sem registrar valores de produção.
 - `REFERENCIAS.md` — fontes oficiais.
+- `REPOSITORIO_PUBLICO.md` — o que pode entrar no repositório público e a revisão feita antes de abri-lo (20/10/2026).
 
 ## Regra para os próximos sistemas
 

@@ -88,6 +88,7 @@ Não "corrija" silenciosamente uma particularidade funcional ou editorial para f
 
 ## Regras de segurança e privacidade
 
+- **O repositório é público, inclusive o histórico.** Antes de commitar, siga `docs/seguranca/REPOSITORIO_PUBLICO.md`. URLs `/exec` de ferramentas da equipe ficam em Script Properties, nunca no código.
 - Nunca versionar senha, token, chave, client secret, private key, service account ou credencial.
 - Não copiar dados pessoais reais para fixtures, documentação, screenshots, exemplos ou prompts de agente de código.
 - Nº USP, CPF, nome, e-mail, histórico, notas e solicitações individualizadas são dados pessoais/restritos para fins desta política de engenharia.
