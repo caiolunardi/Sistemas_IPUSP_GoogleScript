@@ -41,7 +41,7 @@ Uma Release só marca código **integrado e aprovado**. O workflow **Release** (
 
 1. A mudança, a documentação, os testes e `notas-de-versao/<tag>.md` (o que mudou para quem usa, o que copiar para o Apps Script e a linha **Implantação: ainda não implantada**) entram no `main` **pelo mesmo pull request**. Sem as notas naquele commit, a Release é recusada.
 2. Depois do merge, espere a CI do **commit de merge** no `main` ficar ✓ (com a etapa **CI concluída**) e copie o SHA completo dele (na página do PR, "merged commit …", ou na página do commit).
-3. **Actions → Release → Run workflow**, com o ramo `main` selecionado. Informe a tag (por exemplo `exclusao-disciplinas-v1.3`; várias, separadas por espaço) e o **commit**. Se o environment `release` estiver configurado ([proteção](governanca/PROTECAO_DO_MAIN.md#3-segurança-e-actions)), a rodada espera a aprovação em **Review deployments**.
+3. **Actions → Release → Run workflow**, com o ramo `main` selecionado. Informe a tag (por exemplo `exclusao-disciplinas-v1.3`; várias, separadas por espaço) e o **commit**. Se o environment `release` estiver configurado ([proteção](governanca/PROTECAO_DO_MAIN.md#4-quem-publica-e-quem-autoriza-dois-modelos)), a rodada espera a aprovação em **Review deployments**.
 4. A Release usa o texto de `notas-de-versao/<tag>.md` **daquele commit** e acrescenta no fim o SHA, o número do PR e a rodada da CI conferidos. A tag é criada pela própria Release, no commit informado (tag leve).
 
 Tag enviada pelo git (`git push origin <tag>`) **não** gera Release: o gatilho por push de tag foi retirado em 20/10/2026, porque a tag já existiria antes de qualquer conferência. Não envie tags de versão pelo git.
