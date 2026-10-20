@@ -22,7 +22,13 @@ Enquanto a proteção não for aplicada, nada impede um push direto no `main`, u
 
 ## 2. Checklist de aplicação e validação
 
-Nada nesta seção está aplicado. Cada passo tem uma **conferência**: o `main` só conta como protegido depois que todas passarem, registradas na seção 1 (data e resultado).
+Nada nesta seção está aplicado. O `main` só conta como protegido depois que as conferências dos passos estiverem registradas na seção 1 (data e resultado).
+
+**Nenhuma conferência deste documento tenta uma operação destrutiva no repositório institucional.** Não se faz push direto no `main`, force push (nem `--force-with-lease`) contra ele, nem se move ou apaga uma tag real "para ver se é recusado": se a regra estiver errada, o teste é o próprio estrago. A validação tem três partes:
+
+- **A. Inspeção** da configuração real, pela tela e por consultas só de leitura à API (seção 2.A);
+- **B. Testes de comportamento**: os destrutivos, só num **repositório descartável** com a mesma configuração; no institucional, só os seguros, feitos com pull requests (seção 2.B);
+- **C. Limites** do que cada evidência prova (seção 2.C).
 
 **Por que esta ordem:** a regra "exigir a verificação `CI concluída`" só pode ser ligada depois que essa verificação existir no `main` (ela nasce no PR #9). Exigir um nome que nenhum workflow produz trava todos os merges. Já o bloqueio de force push e de exclusão não depende de nada e pode ser ligado antes.
 
@@ -34,7 +40,7 @@ Nada nesta seção está aplicado. Cada passo tem uma **conferência**: o `main`
 2. **Target branches → Add target → Include default branch.**
 3. Marque só **Restrict deletions** e **Block force pushes**. **Create**.
 
-Conferência 0: num clone de teste, `git push --force-with-lease origin <commit-antigo>:main` deve ser recusado com `GH013`. (Push normal ainda passa neste passo.)
+Conferência 0: inspeção A1 a A3 (abaixo) mostra o ruleset ativo, com alvo no ramo padrão, bypass vazio e as regras `deletion` e `non_fast_forward`.
 
 ### Passo 1 — integrar os PRs preparatórios
 
@@ -52,26 +58,66 @@ Edite o ruleset `main protegido` e marque também:
 
 Em **Settings → General → Pull Requests:** desmarque **Allow squash merging** e **Allow rebase merging**; marque **Automatically delete head branches**.
 
-### Passo 3 — validar com testes reais
+Conferência 2: inspeção A1 a A5 e os testes seguros B1 a B4.
 
-| # | Teste | Resultado esperado |
-|---|---|---|
-| 3.1 | `git push origin main` com um commit qualquer num clone de teste | recusado (`GH013`, "Changes must be made through a pull request") |
-| 3.2 | PR legítimo (por exemplo, a atualização da seção 1 deste documento) com CI verde | botão **Merge** liberado; o merge funciona |
-| 3.3 | PR de teste com um teste quebrado de propósito (num ramo descartável, sem merge) | **Merge** bloqueado até a CI passar; feche o PR e apague o ramo |
-| 3.4 | PR com uma conversa de revisão aberta | **Merge** bloqueado até resolver |
-| 3.5 | **Settings → Rules → Rulesets → main protegido** | **Bypass list** vazia; **Rule insights** mostra os pushes recusados |
-| 3.6 | PR atrás do `main` | pede **Update branch** antes do merge |
-
-Se um teste falhar, o `main` **não** está protegido: corrija a regra e repita o teste.
-
-### Passo 4 — tags de versão
+### Passo 3 — tags de versão
 
 **Settings → Rules → Rulesets → New tag ruleset:** nome `tags de versão`, `Active`, bypass vazio, **Target tags → Include by pattern** `*-v*`, marque **Restrict updates**, **Restrict deletions** e **Block force pushes**.
 
-Conferência 4: `git push --force origin <outro-commit>:refs/tags/<tag existente>` e `git push origin :refs/tags/<tag existente>` são recusados.
+Conferência 3: inspeção A6. O bloqueio de mover e apagar tags é testado só no repositório descartável (B6); nenhuma tag real é tocada.
 
 A criação de tags novas continua permitida (o workflow Release cria a tag junto com a Release). Por isso alguém com escrita ainda pode enviar uma tag de versão pelo git: ela **não** gera Release (o Release não tem mais gatilho por tag), mas ocupa o nome. Restringir também a criação exigiria pôr o app do GitHub Actions no bypass, o que não foi possível conferir nesta conta; fica para avaliar depois.
+
+### 2.A Inspeção da configuração real (só leitura)
+
+Feita pelo dono, na tela ou num terminal com o `gh` autenticado. Nenhum comando abaixo muda nada: todos são `GET`. Troque `R` por `caiolunardi/Sistemas_IPUSP_GoogleScript`. Guarde a saída (sem tokens) para registrar na seção 1.
+
+| # | O que conferir | Onde | Esperado |
+|---|---|---|---|
+| A1 | Rulesets existentes e estado | `gh api repos/R/rulesets` · **Settings → Rules → Rulesets** | `main protegido` (e, no passo 3, `tags de versão`) com `enforcement: "active"` |
+| A2 | Alvo e regras do ruleset do `main` | `gh api repos/R/rulesets/<id>` | `target: "branch"`; `conditions.ref_name.include` com `~DEFAULT_BRANCH`; `rules` com `deletion`, `non_fast_forward` e, depois do passo 2, `pull_request` (aprovações `0` no modelo A, `required_review_thread_resolution: true`, `allowed_merge_methods: ["merge"]`) e `required_status_checks` |
+| A3 | Bypass | o mesmo `GET` (o campo `bypass_actors` só aparece para administrador) · tela do ruleset | lista vazia; se o campo não vier, confira na tela |
+| A4 | Origem confiável da `CI concluída` | o mesmo `GET`, em `required_status_checks` | `context: "CI concluída"` com `integration_id: 15368` (o app GitHub Actions) e `strict_required_status_checks_policy: true` (ramo atualizado). Sem `integration_id`, um *commit status* qualquer com o mesmo nome satisfaria a regra |
+| A5 | Regras efetivas no `main` | `gh api repos/R/rules/branches/main` | as mesmas regras de A2, cada uma com `ruleset_id` do `main protegido` (confere que nenhum outro ruleset ou configuração antiga interfere) |
+| A6 | Ruleset das tags | `gh api repos/R/rulesets/<id>` | `target: "tag"`; `include` com `refs/tags/*-v*`; regras `update`, `deletion`, `non_fast_forward`; bypass vazio |
+| A7 | Registros de bloqueio | **Settings → Rules → Insights** · `gh api "repos/R/rulesets/rule-suites?ref=refs/heads/main"` | lista as avaliações das regras; servem de evidência de tentativas recusadas que **já** aconteceram (não se provoca uma) |
+| A8 | Opções de merge | `gh api repos/R --jq '{allow_merge_commit, allow_squash_merge, allow_rebase_merge, delete_branch_on_merge}'` | `true, false, false, true` |
+
+Em 20/10/2026, A1 e A5 responderam `[]` (nenhum ruleset, nenhuma regra efetiva).
+
+### 2.B Testes de comportamento
+
+**No repositório institucional, só testes seguros.** Nenhum deles escreve no `main` sem PR nem toca uma tag.
+
+| # | Teste | Esperado |
+|---|---|---|
+| B1 | PR legítimo (por exemplo, o que atualiza a seção 1 deste documento) com CI verde | botão **Merge** liberado; o merge funciona |
+| B2 | PR de teste com um teste quebrado de propósito, num ramo descartável | **Merge** bloqueado enquanto a CI estiver vermelha. **Não faça o merge**: feche o PR e apague o ramo |
+| B3 | PR com uma conversa de revisão aberta | **Merge** bloqueado até resolver |
+| B4 | PR atrás do `main` | pede **Update branch** antes do merge |
+| B5 | Registros já existentes (A7) | se houver tentativas recusadas, aparecem com a regra que recusou |
+
+**Os destrutivos, só num repositório descartável.** Eles provam que **a configuração** recusa push direto, force push, exclusão e tag movida; o repositório institucional fica intocado.
+
+1. Crie um repositório novo na mesma conta (por exemplo `teste-protecao`, privado), com um commit qualquer no `main` e um workflow mínimo com um job chamado `CI concluída` que só faz `echo ok`. Nenhum dado, código ou segredo do repositório institucional vai para lá.
+2. No institucional, **Settings → Rules → Rulesets → main protegido → ⋯ → Export ruleset** (baixa um JSON; exportar é leitura). No descartável, **New ruleset → Import a ruleset** com esse arquivo. Faça o mesmo com `tags de versão`. Confira com A2, A4 e A6 no descartável que as regras ficaram iguais.
+3. Ainda no descartável:
+
+| # | Teste (só no descartável) | Esperado |
+|---|---|---|
+| B6 | num clone **do descartável** (confira `git remote -v` antes): `git push origin main` com um commit novo; `git push --force origin <commit-antigo>:main`; `git push origin :main`; criar uma tag `x-v1.0`, depois `git push --force origin <outro-commit>:refs/tags/x-v1.0` e `git push origin :refs/tags/x-v1.0` | todos recusados (`GH013`); a criação da tag nova passa |
+| B7 | criar pela API um *commit status* `CI concluída` = `success` num commit de PR com a CI vermelha (`gh api repos/<descartável>/statuses/<sha> -f state=success -f context="CI concluída"`) | o **Merge** continua bloqueado (a regra exige a origem GitHub Actions) |
+| B8 | **Rule insights** do descartável | mostra as recusas de B6 |
+
+4. Registre os resultados na seção 1 e apague o repositório descartável.
+
+### 2.C Limites do que cada evidência prova
+
+- **Inspeção (A)** prova o que está **configurado**, não o comportamento. É a evidência sobre o repositório institucional.
+- **O repositório descartável (B6 a B8)** prova o comportamento **daquela** configuração naquele repositório. Vale para o institucional na medida em que A2, A4 e A6 mostrarem regras iguais nos dois; não prova nada sobre configurações que só existem no institucional.
+- **`git push --dry-run` não prova nada:** ele não envia o push e o GitHub não avalia as regras. Não use como teste de proteção.
+- **Testes seguros (B1 a B4)** provam o caminho por PR; não exercitam push direto nem force push.
+- Se um item falhar, o `main` **não** está protegido: corrija a regra e repita a inspeção e o teste correspondente.
 
 ## 3. Segurança e Actions
 
@@ -87,7 +133,7 @@ A criação de tags novas continua permitida (o workflow Release cria a tag junt
 - **Approval for running fork pull request workflows from contributors:** `Require approval for all external contributors`.
 - **Workflow permissions:** `Read repository contents and packages permissions`, e **desmarque** `Allow GitHub Actions to create and approve pull requests`. Cada workflow pede no próprio arquivo só o que precisa (o Release pede `contents: write`).
 
-**Settings → Environments → New environment** `release`: ver o modelo escolhido na seção 4. Configure-o **antes** do primeiro uso do Release: se o environment não existir, o GitHub o cria vazio na primeira rodada, e ela não espera aprovação.
+**Settings → Environments → New environment** `release`: ver o modelo escolhido na seção 4. Configure-o **antes** do primeiro uso do Release: se o environment não existir, o GitHub o cria vazio na primeira rodada, e ela não espera aprovação. Depois do PR #9, o script do Release recusa essa rodada (não há aprovação registrada) e nada é publicado; mas o environment vazio fica criado e precisa ser configurado.
 
 ## 4. Quem publica e quem autoriza: dois modelos
 
@@ -118,16 +164,30 @@ O que a documentação do GitHub diz (consultada em 20/10/2026; não foi possív
 | Riscos que ficam | o dono continua administrador e pode desligar as regras (fica no log de auditoria); a conta pessoal continua sendo ponto único de recuperação ([pendências](README.md#3-decisões-pendentes)) |
 | Como não travar | com uma pessoa ausente, nada é integrado nem publicado. Combine quem cobre férias; em emergência, o dono desliga a regra, registra e religa. Repositório numa organização da USP resolveria a titularidade, mas é decisão institucional |
 
+### A trava do Release (PR #9)
+
+O script do Release só publica se a rodada em andamento tiver uma aprovação `approved`, de um usuário, no environment `release` (`GET actions/runs/{id}/approvals`). Sem environment, com ele vazio, sem revisor, rejeitado, com erro de leitura ou fora do workflow, ele para antes de conferir ou escrever qualquer coisa. Isso vale nos dois modelos: no A, o dono aprova a própria rodada; no B, a outra pessoa. Uma variável no environment (por exemplo `RELEASE_GOVERNANCE_READY`) **não** é usada como prova, porque o Actions não distingue se ela veio do environment, do repositório ou da organização ([versões](../VERSOES.md), seção 6, que chega com o #9).
+
+**Validar o environment sem publicar nada** (depois de configurado e com o #9 no `main`):
+
+| # | Teste | Esperado |
+|---|---|---|
+| E1 | **Settings → Environments → release** | revisor obrigatório, *Prevent self-review* conforme o modelo, administradores sem bypass, só o ramo `main` |
+| E2 | **Run workflow** do Release no `main` e, em **Review deployments**, **Reject** | a rodada termina sem executar o job; nenhuma tag nem Release |
+| E3 | **Run workflow** com o commit de merge mais recente do `main` e a tag `teste-v0.0` (não existe `sistemas/teste`), e **Approve** | o log mostra "Rodada … aprovada no environment release por …" (a trava leu a aprovação real) e depois "Pasta sistemas/teste não existe"; nenhuma tag nem Release |
+
+E3 é o único teste que confere, com o GitHub real, o formato da resposta de aprovações; a recusa vem das conferências do commit e das tags, então nada é publicado mesmo que a trava aceite.
+
 **Recomendação:** modelo A agora (é seguro contra erro e contra terceiros e não trava a operação) e modelo B quando houver uma segunda pessoa. Criar um segundo usuário só para aprovar não é recomendado: seria a mesma pessoa com duas contas, sem independência real.
 
 ## 5. Sequência de integração
 
-1. Passo 0 (força e exclusão), a qualquer momento.
+1. Passo 0 (força e exclusão) e conferência 0, a qualquer momento.
 2. Merge do #8 (só documentação; não muda nenhum workflow).
 3. Atualizar o ramo do #9 com o `main` (botão **Update branch**, que faz um merge; sem rebase), esperar a CI verde e fazer o merge.
-4. Conferência 1 e passo 2; validação do passo 3.
+4. Conferência 1, passo 2 e conferência 2 (inspeção e testes seguros; o repositório descartável quando o dono puder).
 5. #10 e #11: **Update branch**, CI verde, merge. Com "up to date" ligado, cada merge pede atualizar o seguinte.
-6. Environment `release` (seção 4) e passo 4.
+6. Environment `release` (seção 4, testes E1 a E3) e passo 3 (tags).
 
 Os quatro PRs saíram do mesmo commit do `main`. Em 20/10/2026 foi conferido, num clone local, que eles se integram nessa ordem sem conflito (merge de cada um sobre o anterior).
 
