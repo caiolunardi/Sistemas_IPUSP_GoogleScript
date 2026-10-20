@@ -20,10 +20,12 @@ const chk = (nome, cond, extra) => { if (cond) ok++; else { falhas++; console.lo
 
 const raiz = fs.mkdtempSync(path.join(os.tmpdir(), 'release-'));
 const origem = path.join(raiz, 'origem.git'), clone = path.join(raiz, 'clone'), falso = path.join(raiz, 'falso');
-const git = (cwd, ...a) => execFileSync('git', a, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, GIT_AUTHOR_DATE: '2026-10-20T12:00:00', GIT_COMMITTER_DATE: '2026-10-20T12:00:00' } }).trim();
+// Identidade fixa: o runner da CI não tem user.name/user.email globais.
+const IDENT = { GIT_AUTHOR_NAME: 'Teste', GIT_AUTHOR_EMAIL: 'teste@example.invalid', GIT_COMMITTER_NAME: 'Teste', GIT_COMMITTER_EMAIL: 'teste@example.invalid',
+  GIT_AUTHOR_DATE: '2026-10-20T12:00:00', GIT_COMMITTER_DATE: '2026-10-20T12:00:00' };
+const git = (cwd, ...a) => execFileSync('git', a, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...IDENT } }).trim();
 git(raiz, 'init', '-q', '--bare', '-b', 'main', origem);
 git(raiz, 'init', '-q', '-b', 'main', clone); git(clone, 'remote', 'add', 'origin', origem);
-git(clone, 'config', 'user.name', 'Teste'); git(clone, 'config', 'user.email', 'teste@example.invalid');
 
 const escrever = (rel, txt) => { const f = path.join(clone, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, txt); };
 const commit = (msg) => { git(clone, 'add', '-A'); git(clone, 'commit', '-q', '--allow-empty', '-m', msg); return git(clone, 'rev-parse', 'HEAD'); };
