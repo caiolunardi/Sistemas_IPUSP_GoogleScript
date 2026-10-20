@@ -49,7 +49,9 @@ Uma URL `/exec` deixa de funcionar quando a implantação é **arquivada**. Para
 2. Atualize a chave correspondente em `URLS_SISTEMAS_EQUIPE` no projeto do Painel dos servidores e confira o card.
 3. **Implantar → Gerenciar implantações**, selecione a implantação antiga e **Arquivar**.
 
-A alternativa é reescrever o histórico do Git (por exemplo com `git filter-repo`) e forçar o push, o que muda todos os hashes de commit e exige que todo clone seja refeito. Arquivar as implantações resolve o risco na origem e vale mesmo que alguém já tenha copiado o histórico.
+**Decisão (20/10/2026):** arquivar as implantações antigas e manter o histórico do Git como está. O e-mail de autor dos commits antigos continua visível.
+
+A alternativa, não adotada, é reescrever o histórico do Git (por exemplo com `git filter-repo`) e forçar o push, o que muda todos os hashes de commit e exige que todo clone seja refeito. Arquivar as implantações resolve o risco na origem e vale mesmo que alguém já tenha copiado o histórico.
 
 ### O que a revisão não resolve
 
