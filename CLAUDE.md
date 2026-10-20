@@ -37,6 +37,10 @@ Antes de adicionar código, configuração, exemplos, screenshots, logs ou docum
 20. `docs/seguranca/MINIMIZACAO_E_DADOS_DE_TESTE.md`
 21. `docs/seguranca/SECURITY_CHECKLIST.md`
 
+## Ao terminar qualquer mudança
+
+Atualize a documentação seguindo `docs/ATUALIZAR_DOCUMENTACAO.md`: arquivos do sistema, catálogo, mapa das chaves do `ID_INDEX` (`docs/ARQUITETURA_GERAL.md`), glossário e Central de Ajuda, conforme o tipo de mudança.
+
 ## Fonte de verdade e precedência
 
 Ao implementar ou revisar UX, use esta ordem:

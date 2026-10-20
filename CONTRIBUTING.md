@@ -28,7 +28,7 @@ Abra uma issue do tipo **Sugestão**. Diga qual sistema, quem usaria (alunos, eq
 2. Leia as regras do [`CLAUDE.md`](CLAUDE.md). Elas valem para pessoas e agentes: padrão visual GRADIP, Central de Ajuda, segurança e escopo das mudanças.
 3. Altere **um sistema por vez**. Mantenha o backend igual numa mudança só visual.
 4. Rode os testes do sistema que você mexeu.
-5. Atualize a documentação do sistema: README (versão e o que mudou), `MANUAL_OPERACAO.md`, `AJUDA.md` (se a tela mudou), `DADOS_E_SEGURANCA.md` (se mudou o que é lido, gravado ou mostrado) e `HOMOLOGACAO.md` (o que foi testado).
+5. Atualize a documentação seguindo o [roteiro de atualização](docs/ATUALIZAR_DOCUMENTACAO.md): arquivos do sistema e, conforme o caso, catálogo, mapa das chaves, glossário e Central de Ajuda.
 6. Abra um **pull request**, preenchendo o modelo.
 
 O mantenedor revisa, aceita no `main` e leva a mudança ao Google. **Um merge no Git não muda nenhum sistema em uso**: os arquivos são copiados para o projeto Apps Script e publicados numa nova versão, depois da homologação.

@@ -61,7 +61,8 @@ Antes de alterar a interface de qualquer sistema, leia:
 - [`docs/UX_CHECKLIST.md`](docs/UX_CHECKLIST.md): checklist de homologação visual;
 - [`docs/ajuda/README.md`](docs/ajuda/README.md): Central de Ajuda, busca, FAQ e ajuda contextual;
 - [`docs/seguranca/README.md`](docs/seguranca/README.md): segurança, privacidade, LGPD e configuração segura;
-- [`CLAUDE.md`](CLAUDE.md): instruções para agentes de código.
+- [`docs/ATUALIZAR_DOCUMENTACAO.md`](docs/ATUALIZAR_DOCUMENTACAO.md): o que atualizar na documentação a cada mudança;
+- [`CLAUDE.md`](CLAUDE.md) e [`AGENTS.md`](AGENTS.md): instruções para agentes de código.
 
 Base reutilizável:
 
