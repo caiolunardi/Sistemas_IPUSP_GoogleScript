@@ -41,7 +41,7 @@ Não são decisões técnicas. Ficam aqui até alguém com autoridade decidir; n
 | **Contribuições externas** | sem termo de cessão ou de licença de contribuição. Aceitar código de fora antes de definir a licença deixa a titularidade dessa contribuição indefinida | junto com a licença |
 | **Código de conduta** | não há `CODE_OF_CONDUCT.md` | o responsável; adotar um texto padrão é decisão de política, não técnica |
 | **Titularidade do repositório** | conta pessoal, um único administrador. Se o acesso dessa conta se perder, não há outra pessoa capaz de administrar o repositório | Serviço de Graduação: avaliar uma organização no GitHub com pelo menos dois administradores institucionais. **Não migrar** sem essa decisão |
-| **Segundo responsável** | sem ele, o GitHub não consegue exigir aprovação de outra pessoa ([proteção, seção 4](PROTECAO_DO_MAIN.md#4-mantenedor-único-o-limite-das-aprovações)) | Serviço de Graduação |
+| **Segundo responsável** | sem ele, o GitHub não consegue exigir aprovação de outra pessoa ([proteção, seção 4](PROTECAO_DO_MAIN.md#4-quem-publica-e-quem-autoriza-dois-modelos)) | Serviço de Graduação |
 | **Recuperação de acesso** | conta do GitHub e conta institucional do clasp com recuperação só do titular | o responsável: autenticação em dois fatores, códigos de recuperação guardados em local institucional |
 | **Retenção** de planilhas de pedidos, logs e auditoria | `A VALIDAR INSTITUCIONALMENTE` em todos os `DADOS_E_SEGURANCA.md` | Serviço de Graduação com o Encarregado de Dados da USP. Nenhum agente implementa exclusão automática |
 | **Base legal** do tratamento de dados de cada sistema | `A VALIDAR INSTITUCIONALMENTE` | idem |
