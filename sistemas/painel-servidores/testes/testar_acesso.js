@@ -173,6 +173,7 @@ for (const [rotulo, opcoes] of [
   const nomes = ['EMISSAO_DIPLOMAS', 'ABERTURA_HABILITACOES', 'TRANCAMENTO_TOTAL_MATRICULA', 'TRANCAMENTO_PARCIAL_MATRICULA', 'SEGUNDA_VIA_BUSP', 'MATRICULA_INTERCAMBISTAS', 'EXCLUSAO_DISCIPLINAS', 'PERIODOS', 'REGRAS_CURRICULARES', 'AUDITORIA_PAINEL_SERVIDORES', 'SERVIDORES', 'PLANILHA_DOCENTES'];
   const indice = [['Chave', 'ID de Produção'], ['PERMISSOES_DE_ACESSO', ID_PERMISSOES]].concat(nomes.filter(n => n !== 'SEGUNDA_VIA_BUSP').map(n => [n, 'IDREAL_' + n]));
   const extras = {}; nomes.forEach(n => { extras['IDREAL_' + n] = { getName: () => 'Planilha ' + n }; });
+  extras.IDREAL_PERIODOS = { getName: () => { throw new Error('O tempo limite do serviço Drive foi atingido ao acessar o documento com o código 1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdEf.'); } };
   const { ctx, logs } = cenario({ indice, extras });
   vm.runInContext(fs.readFileSync(path.join(SRC, 'Code.gs'), 'utf8').match(/const CHAVE_PLANILHA_[\s\S]*?;/g).join('\n') + '\n' +
     fs.readFileSync(path.join(SRC, 'ConfigFormulariosCore.gs'), 'utf8').match(/const CHAVE_PLANILHA_[^\n]*/)[0] + '\n' +
@@ -181,8 +182,9 @@ for (const [rotulo, opcoes] of [
   const r = ctx.diagnosticarPlanilhasPainel();
   chk('diagnóstico das planilhas: 13 chaves', Object.keys(r).length === 13, Object.keys(r).join(', '));
   chk('diagnóstico mostra o nome, nunca o ID', r.EMISSAO_DIPLOMAS === 'ok: Planilha EMISSAO_DIPLOMAS' && Object.values(r).every(v => !/IDREAL_/.test(v)) && logs.every(l => !/IDREAL_/.test(l)), JSON.stringify(r));
+  chk('erro do Google com ID: o ID não aparece', r.PERIODOS === 'FALHA: O tempo limite do serviço Drive foi atingido ao acessar o documento com o código [ID omitido].' && logs.every(l => !/1AbCdEf/.test(l)), r.PERIODOS);
   chk('diagnóstico aponta a chave que falta', /^FALHA: Chave SEGUNDA_VIA_BUSP ausente/.test(r.SEGUNDA_VIA_BUSP), r.SEGUNDA_VIA_BUSP);
-  chk('diagnóstico registrado na auditoria', vm.runInContext('manutencao', ctx)[0][1].falhas.join() === 'SEGUNDA_VIA_BUSP');
+  chk('diagnóstico registrado na auditoria', vm.runInContext('manutencao', ctx)[0][1].falhas.join() === 'SEGUNDA_VIA_BUSP,PERIODOS');
   const leitor = cenario({ email: 'leitor@exemplo.usp.br' }).ctx;
   chk('diagnóstico das planilhas só para administrador', lanca(() => leitor.diagnosticarPlanilhasPainel()) !== null);
 }

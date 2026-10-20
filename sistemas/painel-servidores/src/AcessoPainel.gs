@@ -237,7 +237,9 @@ function diagnosticarPlanilhasPainel() {
     try {
       resultado[chave] = "ok: " + SpreadsheetApp.openById(idNoIndicePainel_(chave)).getName();
     } catch (erro) {
-      resultado[chave] = "FALHA: " + (erro && erro.message ? erro.message : erro);
+      // a mensagem do Google pode trazer o ID do documento: esconde
+      const mensagem = String(erro && erro.message ? erro.message : erro).replace(/[A-Za-z0-9_-]{25,}/g, "[ID omitido]");
+      resultado[chave] = "FALHA: " + mensagem;
     }
   });
   const falhas = Object.keys(resultado).filter(c => resultado[c].indexOf("FALHA") === 0);
