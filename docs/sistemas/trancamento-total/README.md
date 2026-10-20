@@ -7,7 +7,7 @@
 São dois Web Apps sobre a mesma planilha de respostas:
 
 - **Formulário (alunos):** o aluno, logado com a conta `@usp.br`, pede o trancamento total de matrícula. Substitui o antigo Google Forms e grava na mesma planilha, com a mesma estrutura de colunas.
-- **Gerenciador (equipe):** o Serviço de Graduação lista os pendentes, conclui os pedidos e avisa o aluno por e-mail. Esta documentação trata principalmente do formulário; o gerenciador tem o resumo em [`gerenciador/README.md`](../../../sistemas/trancamento-total/gerenciador/README.md).
+- **Gerenciador (equipe):** o Serviço de Graduação lista os pendentes, conclui os pedidos e avisa o aluno por e-mail. Esta documentação trata principalmente do formulário; o gerenciador tem o resumo em [`gerenciador/README.md`](../../../sistemas/trancamento-total/gerenciador/README.md) e os dados e a segurança em [`DADOS_E_SEGURANCA_GERENCIADOR.md`](DADOS_E_SEGURANCA_GERENCIADOR.md) (sem autorização no servidor; implantação em uso com acesso "Somente eu").
 
 ## Funcionamento do formulário
 

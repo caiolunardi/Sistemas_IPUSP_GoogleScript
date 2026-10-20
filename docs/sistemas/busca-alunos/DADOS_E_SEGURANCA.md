@@ -47,8 +47,8 @@ O código versionado não contém o ID do `ID_INDEX` nem os das planilhas de alu
 
 ## 4. Web App
 
-- Quem pode acessar: **A VALIDAR** na implantação.
-- Executa como: **A VALIDAR** (`USER_DEPLOYING` ou `USER_ACCESSING`).
+- Quem pode acessar: **Somente eu** (informado pelo responsável em 20/10/2026).
+- Executa como: **eu**, a conta institucional (`USER_DEPLOYING`; informado em 20/10/2026). O manifesto não está versionado.
 - Dados enviados ao cliente: lista com linha, número USP, nome, ingresso, e-mail e e-mail secundário de todos os alunos; (v1.2) (v1.3) linha, nº USP, nome e e-mails de todos os docentes; linha, nº USP, nome, e-mails e setor de todos os servidores e setores; motivo (sem IDs nem e-mails) de cadastro que não abriu; ficha completa de uma linha quando aberta.
 - Operações privilegiadas: **gravação** de células das planilhas de alunos, docentes e servidores (`salvarFicha`; `salvarFichaAluno` é atalho para alunos).
 
@@ -63,7 +63,7 @@ Além da permissão, a gravação confere que a linha ainda é da mesma pessoa (
 
 Limitações conhecidas: compartilhamento só via **grupo** não aparece em `getEditors()` (a pessoa precisa ser editora individual); a regra vale para o Web App, não substitui a revisão de quem é editor da planilha.
 
-**Ponto de atenção (decisão pendente) — leitura.** Como a busca é feita no navegador, quem abre a página recebe todo o cadastro, não só o resultado da busca, e pode exportá-lo. A v1.2 amplia esse alcance aos cadastros de docentes e servidores (nome, e-mail e setor) e a v1.3 acrescenta o nº USP e o e-mail secundário deles, o que torna a decisão abaixo mais relevante. Se a implantação executar como quem implantou e estiver aberta a todo o domínio, qualquer conta desse domínio obtém a lista completa, mesmo sem acesso à planilha. Opções, para decisão do responsável funcional:
+**Ponto de atenção (decisão pendente) — leitura.** Como a busca é feita no navegador, quem abre a página recebe todo o cadastro, não só o resultado da busca, e pode exportá-lo. A v1.2 amplia esse alcance aos cadastros de docentes e servidores (nome, e-mail e setor) e a v1.3 acrescenta o nº USP e o e-mail secundário deles, o que torna a decisão abaixo mais relevante. Se a implantação executar como quem implantou e estiver aberta a todo o domínio, qualquer conta desse domínio obtém a lista completa, mesmo sem acesso à planilha. Com a implantação atual ("Somente eu"), só a conta institucional abre a página, e o risco é latente. Proposta detalhada, com testes e transição: [autorização de leitura nas ferramentas da equipe](../../seguranca/propostas/ACESSO_LEITURA_EQUIPE.md). Opções, para decisão do responsável funcional:
 
 1. executar como **usuário que acessa** — a permissão de leitura de cada planilha passa a ser a fronteira de acesso (quem não lê o cadastro de docentes, por exemplo, vê o aviso de cadastro indisponível e os demais) (e a de edição continua conferida pelo servidor);
 2. manter a execução como implantador e aplicar à leitura a mesma regra da gravação (só editores/leitores da planilha), ou uma lista nominal como `PERMISSOES_DE_ACESSO` da Estrutura Curricular;
