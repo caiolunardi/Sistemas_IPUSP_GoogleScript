@@ -29,6 +29,16 @@ jobs:
           node-version: 22
       - run: node ferramentas/verificar_publicacao.js
 
+  copias:
+    name: Cópias de shared/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node ferramentas/verificar_copias_shared.js
+
   servidor:
     name: Servidor — ${{ matrix.suite }}
     runs-on: ubuntu-latest

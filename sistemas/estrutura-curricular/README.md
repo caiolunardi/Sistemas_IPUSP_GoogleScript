@@ -1,8 +1,8 @@
-# Estrutura Curricular e Grade Horária — 1.10.0
+# Estrutura Curricular e Grade Horária — 1.11.3
 
 Web App interno do Serviço de Graduação do IPUSP. Importa a estrutura do Júpiter, mantém ajustes operacionais, prepara a grade e acompanha o preenchimento pelas secretarias.
 
-A fonte desta pasta parte do pacote **1.9.3 auditado**, com a camada visual **1.10.0**. Abre com menu lateral e permite alternar para abas, com ícones Lucide, brilho discreto e elevação no hover. Os controladores de negócio e as regras do servidor permanecem iguais à baseline; `Codigo.gs` muda apenas a versão.
+A versão no código (`VERSAO_SISTEMA` em `Codigo.gs`) é a **1.11.3** (19/10/2026); o que mudou em cada versão desde a 1.10.0 está no [índice da documentação](../../docs/sistemas/estrutura-curricular/README.md). A fonte parte do pacote **1.9.3 auditado**, com a camada visual **1.10.0**. Abre com menu lateral e permite alternar para abas, com ícones Lucide, brilho discreto e elevação no hover. Os controladores de negócio e as regras do servidor permanecem iguais à baseline; `Codigo.gs` muda apenas a versão.
 
 **Estado:** código e verificações locais versionados. Implantação e homologação desta versão no Google Workspace ainda pendentes. Código publicado no Git não atualiza automaticamente o `/exec`.
 

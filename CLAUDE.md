@@ -39,7 +39,7 @@ Antes de adicionar código, configuração, exemplos, screenshots, logs ou docum
 
 ## Ao terminar qualquer mudança
 
-Rode os testes do sistema e `node ferramentas/verificar_publicacao.js` (a CI em `.github/workflows/ci.yml` roda os mesmos a cada push; ver `docs/CI.md`). Atualize a documentação seguindo `docs/ATUALIZAR_DOCUMENTACAO.md`: arquivos do sistema, catálogo, mapa das chaves do `ID_INDEX` (`docs/ARQUITETURA_GERAL.md`), glossário e Central de Ajuda, conforme o tipo de mudança. Se a versão de um sistema subiu, escreva `notas-de-versao/<sistema>-v<versão>.md` e siga `docs/VERSOES.md` (tag e Release); não mova tags já enviadas.
+Rode os testes do sistema, `node ferramentas/verificar_publicacao.js` e `node ferramentas/verificar_copias_shared.js` (a CI em `.github/workflows/ci.yml` roda os mesmos a cada push; ver `docs/CI.md`). Atualize a documentação seguindo `docs/ATUALIZAR_DOCUMENTACAO.md`: arquivos do sistema, catálogo, mapa das chaves do `ID_INDEX` (`docs/ARQUITETURA_GERAL.md`), glossário e Central de Ajuda, conforme o tipo de mudança. Se a versão de um sistema subiu, escreva `notas-de-versao/<sistema>-v<versão>.md` e siga `docs/VERSOES.md` (tag e Release); não mova tags já enviadas.
 
 ## Fonte de verdade e precedência
 

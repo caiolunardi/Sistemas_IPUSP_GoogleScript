@@ -1,4 +1,4 @@
-# Pedido de Trancamento Parcial de Matrícula (formulário dos alunos) — fonte v1.1
+# Pedido de Trancamento Parcial de Matrícula (formulário dos alunos) — fonte v1.2
 
 Web App em que o aluno, logado com a conta `@usp.br`, pede o trancamento de matrícula em até 6 disciplinas do semestre. O formulário só abre no período configurado na planilha de Períodos. O aluno digita o **código** de cada disciplina e o nome vem do cadastro da planilha DISCIPLINAS; código fora do cadastro aceita o nome digitado. O pedido é gravado como `pendente` na planilha de respostas, que o gerenciador da equipe lê.
 
@@ -33,3 +33,4 @@ Nenhum ID de planilha fica no código. Não registre os valores nesta documenta�
 |---|---|
 | v1.0 (em uso até 16/10/2026) | Três IDs de planilha literais; colunas por posição fixa; cadastro automático do aluno não encontrado na planilha de alunos (colunas A–D fixas); disciplina em texto livre; erros em `alert`; sem tema nem ajuda. SHA-256 `Codigo.gs` `34a06544…332929`, `TrancamentoParcialApp.html` `87c68d08…623948`. |
 | v1.1 | IDs pelo `ID_INDEX`; disciplinas pelo código com o cadastro DISCIPLINAS; colunas pelo título; sem cadastro automático de aluno e sem ano de ingresso; justificativa opcional; recibo por e-mail ao aluno; tema GRADIP, Central de Ajuda e validação no próprio campo. Exige nova autorização do script (envio de e-mail). |
+| v1.2 (16/10/2026) | Ambiente de homologação: numa cópia do projeto com a Script Property `AMBIENTE = homologacao`, as planilhas vêm da coluna `Homologação` do `ID_INDEX`, sem volta para a produção; a página mostra uma faixa de aviso e o recibo leva `[HOMOLOGAÇÃO]`. Sem a propriedade, nada muda. Mudam só `Codigo.gs` e `TrancamentoParcialApp.html`. Ver [ambiente de homologação](../../../docs/sistemas/AMBIENTE_DE_HOMOLOGACAO.md). |

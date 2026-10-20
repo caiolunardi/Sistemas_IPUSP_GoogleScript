@@ -1,4 +1,4 @@
-# Pedido de Trancamento Total de Matrícula (formulário dos alunos) — fonte v1.2
+# Pedido de Trancamento Total de Matrícula (formulário dos alunos) — fonte v1.3
 
 Web App em que o aluno, logado com a conta `@usp.br`, envia o pedido de trancamento total. O e-mail vem sempre da sessão do Google; nome, Nº USP e ano de ingresso são pré-preenchidos pela planilha de alunos e podem ser corrigidos. O pedido é gravado como `pendente` na planilha de respostas, que o [Gerenciador](../gerenciador/README.md) lê.
 
@@ -32,5 +32,6 @@ Nenhum ID de planilha fica no código. Não registre os valores nesta documenta�
 | Versão | Alterações |
 |---|---|
 | v1.0 (em uso) | IDs das duas planilhas literais no código; alunos lidos pelas colunas A–D. SHA-256 `Codigo.gs` `11e38af7…731c6`, `TrancamentoFormApp.html` `a8e19acd…db0d0`. |
+| v1.3 (16/10/2026) | Ambiente de homologação: numa cópia do projeto com a Script Property `AMBIENTE = homologacao`, as planilhas vêm da coluna `Homologação` do `ID_INDEX`, sem volta para a produção; a página mostra uma faixa de aviso e o recibo leva `[HOMOLOGAÇÃO]`. Sem a propriedade, nada muda. Mudam só `Codigo.gs` e `TrancamentoFormApp.html`. Ver [ambiente de homologação](../../../docs/sistemas/AMBIENTE_DE_HOMOLOGACAO.md). |
 | v1.2 | Recibo por e-mail ao aluno (`noReply`), confirmação para enviar com pedido pendente, justificativa opcional, texto das regras revisado, tema GRADIP, Central de Ajuda, validação no próprio campo e contador. Exige nova autorização do script. |
 | v1.1 | IDs pelo `ID_INDEX`; alunos pelo título, login procurado também no `eMail Secundario`; planilha de alunos fora do ar não bloqueia o formulário; coluna da confirmação pelo título; gravação com `appendRow`; justificativa acima de 4.000 caracteres recusada (antes cortada em silêncio); trava ocupada com mensagem clara; erro de configuração não mostra detalhes técnicos ao aluno. |

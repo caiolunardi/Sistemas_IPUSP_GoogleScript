@@ -55,7 +55,7 @@ Versão: suba a versão no código (constante ou rodapé, quando existir) e use 
 ## 5. Termos e padrões comuns
 
 - **Termo novo** (sigla, nome de setor, conceito acadêmico ou técnico) que alguém de outra unidade não conheceria: acrescente no [`GLOSSARIO.md`](GLOSSARIO.md) e use sempre o mesmo nome em telas e documentos.
-- **Mudança num padrão comum** (`shared/`, tema, ajuda, segurança): atualize o documento do padrão em `docs/` e liste os sistemas que precisam receber a mudança. As cópias em `sistemas/*/src/` (por exemplo `GradipTema.html`) devem continuar idênticas a `shared/`, ou a diferença deve ser explicada no README do sistema.
+- **Mudança num padrão comum** (`shared/`, tema, ajuda, segurança): atualize o documento do padrão em `docs/` e liste os sistemas que precisam receber a mudança. As cópias em `sistemas/*/src/` (por exemplo `GradipTema.html`) devem continuar idênticas a `shared/`, ou a diferença deve ser explicada no README do sistema e registrada em `proprios` de [`ferramentas/copias_shared.json`](../ferramentas/copias_shared.json); a CI confere (`node ferramentas/verificar_copias_shared.js`). Uma correção feita primeiro na cópia de um sistema (por exemplo, um ajuste de contraste) volta para `shared/` e para as outras cópias na mesma rodada.
 - **Decisão que vale para todos** (por exemplo, como guardar URLs internas): registre no documento comum de `docs/` e, se agentes de IA precisarem segui-la, também no [`CLAUDE.md`](../CLAUDE.md).
 
 ## 6. Antes de enviar

@@ -1,0 +1,16 @@
+{
+  "_sobre": "Cópias de arquivos de shared/ dentro de sistemas/*/src/. 'copias' devem ser byte-idênticas à origem; 'proprios' são implementações próprias do sistema, com o motivo. Conferido por ferramentas/verificar_copias_shared.js (CI). Ver docs/ATUALIZAR_DOCUMENTACAO.md, seção 5.",
+  "padroes": [
+    { "origem": "shared/GradipTema.html", "nome": "^GradipTema\\.html$" },
+    { "origem": "shared/GradipTemaControle.html", "nome": "^GradipTemaControle\\.html$" },
+    { "origem": "shared/ajuda/GradipAjudaEstilos.html", "nome": "AjudaEstilos\\.html$" },
+    { "origem": "shared/ajuda/GradipAjudaUI.html", "nome": "AjudaUI\\.html$" }
+  ],
+  "proprios": {
+    "sistemas/estrutura-curricular/src/EstruturaAjudaEstilos.html": "Central própria da Estrutura Curricular (módulo EstruturaAjuda, janela de manual com vistas); ver docs/sistemas/estrutura-curricular/ARQUITETURA.md.",
+    "sistemas/estrutura-curricular/src/EstruturaAjudaUI.html": "Central própria da Estrutura Curricular (módulo EstruturaAjuda); ver docs/sistemas/estrutura-curricular/ARQUITETURA.md.",
+    "sistemas/painel-solicitacoes/src/PainelAjudaEstilos.html": "Central do Painel dos alunos com estilos e interação próprios, homologada desde a v1.1 (ver docs/sistemas/painel-solicitacoes/HOMOLOGACAO.md); não é cópia de shared/ajuda/.",
+    "sistemas/painel-solicitacoes/src/PainelAjudaUI.html": "Central do Painel dos alunos com estilos e interação próprios, homologada desde a v1.1 (ver docs/sistemas/painel-solicitacoes/HOMOLOGACAO.md); não é cópia de shared/ajuda/.",
+    "sistemas/painel-servidores/src/ConfigRegrasCurricularesAjudaEstilos.html": "Estilos do manual das Regras Curriculares, que veio com a fonte recebida; não é a Central de Ajuda do painel."
+  }
+}

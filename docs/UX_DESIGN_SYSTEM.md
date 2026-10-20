@@ -86,7 +86,7 @@ Essa cor é identidade de marca. Tokens interativos podem assumir variações ma
 | Texto principal | `--gradip-text` | `#1F2933` |
 | Texto secundário | `--gradip-text-muted` | `#5F6B76` |
 | Borda | `--gradip-border` | `#D8DEE4` |
-| Borda forte | `--gradip-border-strong` | `#B8C2CC` |
+| Borda forte (limite de campos e controles) | `--gradip-border-strong` | `#848C93` (3,41:1 sobre `--gradip-input-bg`) |
 | Link | `--gradip-link` | `#005AA9` |
 | Link hover | `--gradip-link-hover` | `#00457F` |
 | Foco | `--gradip-focus` | `#00509D` |
@@ -107,7 +107,7 @@ A base escura usa azul-petróleo, evitando preto absoluto.
 | Texto principal | `--gradip-text` | `#F7F3EF` |
 | Texto secundário | `--gradip-text-muted` | `#B9AFA7` |
 | Borda | `--gradip-border` | `#2D3D48` |
-| Borda forte | `--gradip-border-strong` | `#405461` |
+| Borda forte (limite de campos e controles) | `--gradip-border-strong` | `#6A7A84` (3,49:1 sobre `--gradip-input-bg`) |
 | Link | `--gradip-link` | `#66B5F2` |
 | Link hover | `--gradip-link-hover` | `#8CC8F5` |
 | Foco | `--gradip-focus` | `#7CC4FF` |

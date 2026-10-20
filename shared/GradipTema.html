@@ -131,7 +131,17 @@
   --gradip-text-muted: #5f6b76;
 
   --gradip-border: #d8dee4;
-  --gradip-border-strong: #b8c2cc;
+  /* CORREÇÃO v1.1 (Correção 4 — bordas de controles interativos):
+     valor anterior (#b8c2cc) media só 1.81:1 contra --gradip-input-bg
+     (#ffffff) — insuficiente pro limite visual de um input/select
+     (alvo >=3:1, WCAG 1.4.11). Novo valor mede 3.41:1. Só este token
+     mudou; --gradip-border (separadores/cards decorativos) não foi
+     tocado. Ver PAINEL_SOLICITACOES: seção "ALTERAÇÕES QUE DEVEM SER
+     PROPAGADAS AO DESIGN SYSTEM CENTRAL" no relatório desta rodada —
+     este ajuste é local a esta cópia do app e precisa ser replicado
+     manualmente no repositório central Sistemas_IPUSP_GoogleScript
+     após homologação. */
+  --gradip-border-strong: #848c93;
 
   --gradip-link: #005aa9;
   --gradip-link-hover: #00457f;
@@ -179,7 +189,10 @@
   --gradip-text-muted: #b9afa7;
 
   --gradip-border: #2d3d48;
-  --gradip-border-strong: #405461;
+  /* CORREÇÃO v1.1 (Correção 4): valor anterior (#405461) media só
+     1.96:1 contra --gradip-input-bg (#172630). Novo valor mede
+     3.49:1. Ver comentário equivalente no bloco :root acima. */
+  --gradip-border-strong: #6a7a84;
 
   --gradip-link: #66b5f2;
   --gradip-link-hover: #8cc8f5;
