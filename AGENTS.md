@@ -4,6 +4,7 @@ As instruções deste repositório ficam em [`CLAUDE.md`](CLAUDE.md) e valem par
 
 Em resumo:
 
+- **Nunca commite no `main`.** Ramo próprio e pull request; merge, Release, `clasp push`, implantação e mudanças de configuração só com ordem explícita do responsável para aquela ação. Seu parecer não é aprovação. Ver [`docs/governanca/FLUXO_DE_MUDANCAS.md`](docs/governanca/FLUXO_DE_MUDANCAS.md).
 - O repositório é **público, inclusive o histórico**. Nunca inclua dado pessoal real, ID de planilha ou pasta, URL `/exec` de ferramenta da equipe ou credencial. Ver [`docs/seguranca/REPOSITORIO_PUBLICO.md`](docs/seguranca/REPOSITORIO_PUBLICO.md).
 - Siga o padrão visual GRADIP e a Central de Ajuda descritos em `docs/`.
 - Uma mudança visual não altera o backend.

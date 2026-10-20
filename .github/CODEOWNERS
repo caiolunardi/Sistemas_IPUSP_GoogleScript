@@ -1,0 +1,12 @@
+# Quem revisa cada parte do repositório. O GitHub pede a revisão
+# automaticamente; a exigência dessa revisão no merge fica desligada
+# enquanto houver um só responsável (docs/governanca/PROTECAO_DO_MAIN.md, seção 4).
+# Ao entrar um segundo responsável, acrescente-o nas linhas abaixo.
+
+*                         @caiolunardi
+
+# Controles do próprio processo: mudança aqui é risco crítico.
+/.github/                 @caiolunardi
+/ferramentas/             @caiolunardi
+/docs/governanca/         @caiolunardi
+/docs/seguranca/          @caiolunardi

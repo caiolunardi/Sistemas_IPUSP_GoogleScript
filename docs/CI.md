@@ -23,7 +23,7 @@ Cada suíte roda em paralelo e uma falha não interrompe as outras, para o relat
 3. **Cópias de `shared/`:** se você mudou `shared/`, copie o arquivo para os sistemas listados no log (e registre a mudança no README de cada um, que vai precisar de nova implantação). Se mudou só a cópia de um sistema de propósito, registre o arquivo e o motivo em `proprios` de `copias_shared.json`.
 4. **Testes:** rode a mesma suíte no computador (`cd` na pasta `testes` e `node <arquivo>`), corrija e envie de novo.
 
-Como o fluxo do mantenedor é commitar direto no `main`, a CI avisa **depois** do push. Não implante no Apps Script uma versão com ✗.
+Toda mudança entra no `main` por pull request ([fluxo de mudanças](governanca/FLUXO_DE_MUDANCAS.md)), e um PR com ✗ não recebe merge (o GitHub passa a impor isso no passo 2 da [proteção do `main`](governanca/PROTECAO_DO_MAIN.md#passo-2--exigir-pr-e-a-ci)). Não implante no Apps Script uma versão com ✗.
 
 ## Rodar no computador antes do push
 
