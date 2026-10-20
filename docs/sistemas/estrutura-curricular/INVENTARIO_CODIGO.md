@@ -1,12 +1,13 @@
 # Inventário do código — 1.10.0
 
-34 arquivos na raiz do projeto Apps Script do Web App: 13 scripts e 21 HTML. Os arquivos novos são de apresentação. A comparação com a baseline é registrada em [Verificação](VERIFICACAO_1_10_0.md).
+35 arquivos na raiz do projeto Apps Script do Web App: 14 scripts e 21 HTML. (1.12.0) `BaseDisciplinas.gs` é novo. Os arquivos novos são de apresentação. A comparação com a baseline é registrada em [Verificação](VERIFICACAO_1_10_0.md).
 
 | Arquivo | Camada | Responsabilidade | Relação com 1.9.3 |
 |---|---|---|---|
 | [`Acesso.gs`](../../../sistemas/estrutura-curricular/src/Acesso.gs) | servidor | identificação e papéis no servidor | byte idêntico |
 | [`AuditoriaGrade.gs`](../../../sistemas/estrutura-curricular/src/AuditoriaGrade.gs) | servidor | auditoria, índices e acionadores | byte idêntico |
 | [`AuditoriaPainel.gs`](../../../sistemas/estrutura-curricular/src/AuditoriaPainel.gs) | servidor | agregação de consulta/auditoria; (1.11.0) nome de quem aparece e `diagnosticarNomesAuditoria` | alterado na 1.11.0 |
+| [`BaseDisciplinas.gs`](../../../sistemas/estrutura-curricular/src/BaseDisciplinas.gs) | servidor | (1.12.0) migração para a planilha DISCIPLINAS: `simularMigracaoDisciplinas`, `migrarDisciplinasParaBaseUnica` (editor, só administradores) | novo na 1.12.0 |
 | [`Codigo.gs`](../../../sistemas/estrutura-curricular/src/Codigo.gs) | servidor | doGet, include_ e versão | somente versão (1.11.0) |
 | [`Configuracao.gs`](../../../sistemas/estrutura-curricular/src/Configuracao.gs) | servidor | propriedades, ID_INDEX e diagnóstico | byte idêntico |
 | [`Consulta.gs`](../../../sistemas/estrutura-curricular/src/Consulta.gs) | servidor | payload consistente do painel | byte idêntico |

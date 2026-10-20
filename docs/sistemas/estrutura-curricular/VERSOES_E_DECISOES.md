@@ -1,6 +1,6 @@
 # Versões e decisões — Estrutura Curricular e Grade Horária
 
-Fonte atual **1.11.3** (auditoria com submenu, Panorama, atalho para as edições da aba e edições novas), sobre a 1.10.0 e a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
+Fonte atual **1.12.0** (migração para a base única de disciplinas), sobre a 1.11.3 (auditoria com submenu, Panorama, atalho para as edições da aba e edições novas), a 1.10.0 e a baseline **1.9.3 auditada**. Verificação local registrada; implantação/homologação no Google pendentes. A cronologia completa recebida está no [README](README.md), na seção de histórico.
 
 | Versão | Data | Marco |
 |---|---|---|
@@ -23,6 +23,7 @@ Fonte atual **1.11.3** (auditoria com submenu, Panorama, atalho para as ediçõe
 | 1.11.1 | 19/10/2026 | auditoria: "Pessoa não cadastrada com acesso" não fica mais em cache (um setor recém-incluído em `SERVIDORES` continuava desconhecido por até 10 min); só o nome achado fica em cache, com prefixo novo `pessoaAud2:`; e-mails comparados sem espaços, espaço não separável e caracteres invisíveis |
 | 1.11.2 | 19/10/2026 | auditoria: submenu de seções (Preenchimento, Não serão oferecidas com a contagem, Quem abre e edita, Edições) abaixo de "Auditoria da grade" no menu lateral; só a seção escolhida fica visível e continua escolhida ao atualizar, trocar de grade ou de modo; "ver edições" abre Edições já filtrada. Pedido do responsável funcional em 19/10/2026; abrir em Preenchimento foi decisão técnica |
 | 1.11.3 | 19/10/2026 | auditoria: seção Panorama (Mapa da semana, Ritmo, Por departamento, Sem movimento; vinda do rascunho 1.12.0, agora com um detalhe por vez); "Ver as edições da aba" no Preenchimento (Edições filtrada pela aba e pelas secretarias; o clique no cartão continua mostrando a tabela da aba); "Edições (N novas)" e selo "Nova": edições das secretarias depois da última vez que a pessoa abriu Edições neste navegador (`localStorage["estrutura-auditoria-visto"]`, só data e hora por semestre; primeira visita não conta nada). Pedido do responsável funcional em 19/10/2026 |
+| 1.12.0 | 20/10/2026 (preparada em 15/10, sobre a 1.11.3) | `BaseDisciplinas.gs`: `simularMigracaoDisciplinas` e `migrarDisciplinasParaBaseUnica` copiam as disciplinas da estrutura (com os ajustes) para a planilha `DISCIPLINAS` (chave primária `disc_` + UUID, universo, oferta por habilitação, histórico). Painel e envio inalterados. Ver [BASE_DISCIPLINAS.md](BASE_DISCIPLINAS.md) |
 
 ## Decisões estruturais
 

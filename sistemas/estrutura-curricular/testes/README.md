@@ -1,5 +1,9 @@
 # Testes locais — Estrutura Curricular
 
+## Base de disciplinas 1.12.0
+
+`node testar_base_disciplinas.js` (só dados sintéticos, 11 testes): chave ausente ou apontando para a estrutura, só administradores, simulação sem escrita, migração com ajustes aplicados (IP, outra unidade, para outros cursos, excluída), oferta por habilitação, histórico, nova rodada sem duplicar, campos da base e colunas extras preservados, externa cadastrada à mão, código repetido e linha antiga sem `chave_estrutura`. `criarPlanilhaDisciplinas` em `mockGoogle.js` cria a planilha fictícia e a chave no ID_INDEX.
+
 ## Verificação 1.11.0 (nome de quem aparece na auditoria)
 
 ```bash

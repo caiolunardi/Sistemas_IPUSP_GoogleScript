@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.11.3
+# Estrutura Curricular e Grade Horária — 1.12.0
+
+**1.12.0 (20/10/2026, sobre a 1.11.3):** migração das disciplinas para a planilha `DISCIPLINAS` (base única de disciplinas), rodada pelo editor (`simularMigracaoDisciplinas` e `migrarDisciplinasParaBaseUnica`). O painel e o envio da grade não mudam ([base de disciplinas](BASE_DISCIPLINAS.md)). Preparada em 15/10/2026 junto com um rascunho de auditoria em cartões; essa parte não entrou, porque a 1.11.2 e a 1.11.3 já reorganizaram a auditoria.
 
 **1.11.3 (19/10/2026):** a Auditoria ganha a seção **Panorama** (Mapa da semana, Ritmo, Por departamento e Sem movimento, um detalhe por vez), o botão "Ver as edições da aba" no Preenchimento e a contagem "Edições (N novas)" desde a última visita, com o selo "Nova" nas linhas. Tudo no navegador; o servidor não muda.
 
@@ -24,6 +26,7 @@ Este índice permite retomar o projeto por objetivo, sem depender de outra conve
 | [Navegação e visual](NAVEGACAO_E_VISUAL_1_10_0.md) | implementação de sidebar/abas, ícones, temas e efeitos |
 | [UX](UX.md) | comportamento de interface e acessibilidade |
 | [Ajuda](AJUDA.md) | Central estática, FAQ e orientação auditada |
+| [Base de disciplinas](BASE_DISCIPLINAS.md) | planilha DISCIPLINAS: decisões, colunas, migração e próximas etapas |
 | [Dados e segurança](DADOS_E_SEGURANCA.md) | tratamento, autorização, recursos e validação institucional |
 | [Verificação 1.11.0](VERIFICACAO_1_11_0.md) | nome de quem aparece na auditoria: testes e limites |
 | [Verificação 1.10.0](VERIFICACAO_1_10_0.md) | navegação e visual: testes executados e limites |

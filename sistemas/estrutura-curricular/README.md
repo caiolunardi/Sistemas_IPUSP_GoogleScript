@@ -1,14 +1,14 @@
-# Estrutura Curricular e Grade Horária — 1.11.3
+# Estrutura Curricular e Grade Horária — 1.12.0
 
 Web App interno do Serviço de Graduação do IPUSP. Importa a estrutura do Júpiter, mantém ajustes operacionais, prepara a grade e acompanha o preenchimento pelas secretarias.
 
-A versão no código (`VERSAO_SISTEMA` em `Codigo.gs`) é a **1.11.3** (19/10/2026); o que mudou em cada versão desde a 1.10.0 está no [índice da documentação](../../docs/sistemas/estrutura-curricular/README.md). A fonte parte do pacote **1.9.3 auditado**, com a camada visual **1.10.0**. Abre com menu lateral e permite alternar para abas, com ícones Lucide, brilho discreto e elevação no hover. Os controladores de negócio e as regras do servidor permanecem iguais à baseline; `Codigo.gs` muda apenas a versão.
+A versão no código (`VERSAO_SISTEMA` em `Codigo.gs`) é a **1.12.0** (20/10/2026: migração para a base única `DISCIPLINAS`, em `BaseDisciplinas.gs`); o que mudou em cada versão desde a 1.10.0 está no [índice da documentação](../../docs/sistemas/estrutura-curricular/README.md). A fonte parte do pacote **1.9.3 auditado**, com a camada visual **1.10.0**. Abre com menu lateral e permite alternar para abas, com ícones Lucide, brilho discreto e elevação no hover. Os controladores de negócio e as regras do servidor permanecem iguais à baseline; `Codigo.gs` muda apenas a versão.
 
 **Estado:** código e verificações locais versionados. Implantação e homologação desta versão no Google Workspace ainda pendentes. Código publicado no Git não atualiza automaticamente o `/exec`.
 
 | Pasta/arquivo | Conteúdo |
 |---|---|
-| [`src/`](src/) | 34 arquivos para a raiz do projeto Apps Script do Web App |
+| [`src/`](src/) | 35 arquivos para a raiz do projeto Apps Script do Web App |
 | [`planilha-grade/`](planilha-grade/README.md) | `Validacoes.gs` 1.1 e `Protecao.gs`, para o projeto vinculado à planilha das secretarias; implantação separada ([documentação da planilha](../../docs/sistemas/planilha-grade-secretarias/README.md)) |
 | [`testes/`](testes/README.md) | simulador de Apps Script, testes de servidor e Chromium com dados sintéticos |
 | [`LICENCA_ICONES.txt`](LICENCA_ICONES.txt) | licença do catálogo Lucide Static 1.55.0 |
