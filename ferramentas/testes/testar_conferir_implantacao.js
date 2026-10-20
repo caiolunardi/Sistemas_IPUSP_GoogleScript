@@ -40,6 +40,7 @@ chk('saída sem conteúdo dos arquivos', !saida.join('\n').includes('return 2'))
 
 
 // --- Segunda rodada: casos que podiam dar falso "idêntico"
+const RAIZ = path.join(__dirname, '..', '..');
 const { execFileSync } = require('child_process');
 const silencio = f => { const l = console.log, e = console.error, out = []; console.log = console.error = m => out.push(String(m)); try { return [f(), out.join('\n')]; } finally { console.log = l; console.error = e; } };
 
@@ -81,13 +82,12 @@ const [codIgual, outIgual] = silencio(() => main([gIgual, semSub]));
 chk('idêntico: código 0 e aviso sobre /exec e configuração', codIgual === 0 && outIgual.includes('/exec') && outIgual.includes('Script Properties'));
 
 // --commit com valor que parece opção do git: recusado, sem executar nada.
-const [codOpc] = silencio(() => main([gIgual, 'sistemas/busca-alunos/src', '--commit', '--output=/tmp/x']));
+const [codOpc] = silencio(() => main([gIgual, path.join(RAIZ, 'sistemas/busca-alunos/src'), '--commit', '--output=/tmp/x']));
 chk('--commit que parece opção do git: código 2', codOpc === 2 && !fs.existsSync('/tmp/x'));
-const [codOpc2] = silencio(() => main([gIgual, 'sistemas/busca-alunos/src', '--qualquer']));
+const [codOpc2] = silencio(() => main([gIgual, path.join(RAIZ, 'sistemas/busca-alunos/src'), '--qualquer']));
 chk('opção desconhecida: código 2', codOpc2 === 2);
 
 // --commit e --procurar no histórico real do repositório (só leitura).
-const RAIZ = path.join(__dirname, '..', '..');
 const srcRel = 'sistemas/busca-alunos/src';
 const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: RAIZ, encoding: 'utf8' }).trim();
 const copia = tmp();
@@ -96,12 +96,12 @@ for (const f of execFileSync('git', ['ls-tree', '-r', '--name-only', 'HEAD', '--
   fs.mkdirSync(path.join(copia, path.dirname(dentro)), { recursive: true });
   fs.writeFileSync(path.join(copia, dentro), execFileSync('git', ['show', `HEAD:${f}`], { cwd: RAIZ, encoding: 'utf8' }));
 }
-const [codC] = silencio(() => main([copia, srcRel, '--commit', head]));
+const [codC] = silencio(() => main([copia, path.join(RAIZ, srcRel), '--commit', head]));
 chk('--commit HEAD com cópia exata: código 0', codC === 0);
-const [codP, outP] = silencio(() => main([copia, srcRel, '--procurar']));
+const [codP, outP] = silencio(() => main([copia, path.join(RAIZ, srcRel), '--procurar']));
 chk('--procurar acha um commit idêntico', codP === 0 && outP.startsWith('Código idêntico ao commit'));
 fs.appendFileSync(path.join(copia, fs.readdirSync(copia).find(n => n.endsWith('.gs'))), '// mudança só no editor\n');
-const [codP2, outP2] = silencio(() => main([copia, srcRel, '--procurar']));
+const [codP2, outP2] = silencio(() => main([copia, path.join(RAIZ, srcRel), '--procurar']));
 chk('--procurar com mudança só no editor: nenhum commit', codP2 === 1 && outP2.includes('Nenhum dos'));
 chk('saída do --procurar não mostra conteúdo', !outP2.includes('mudança só no editor'));
 
