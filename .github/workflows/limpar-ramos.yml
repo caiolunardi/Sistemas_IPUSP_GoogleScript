@@ -1,0 +1,34 @@
+# Uso único (20/10/2026): apaga os ramos antigos já incorporados ao main.
+# Só apaga se o ramo ainda aponta para o commit conferido. Será removido
+# do repositório logo depois de rodar.
+name: Limpar ramos antigos
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  limpar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apagar ramos conferidos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          while read -r ramo sha; do
+            atual=$(gh api "repos/$REPO/git/ref/heads/$ramo" --jq .object.sha 2>/dev/null || true)
+            if [ -z "$atual" ]; then echo "$ramo: já não existe"; continue; fi
+            if [ "$atual" != "$sha" ]; then echo "::warning::$ramo mudou ($atual); não apagado"; continue; fi
+            gh api -X DELETE "repos/$REPO/git/refs/heads/$ramo" && echo "$ramo: apagado ($sha)"
+          done <<'LISTA'
+          assets/usp-light-dark 50b5239e08f384c9f446e14b4baf133cc6786a03
+          base-disciplinas-migracao 1b731d89846a7942abf4628ae9a25db80b7ab514
+          grade-visual-sem-atraso 270e44d4007e6c66221b08509f70e6764feb5fb4
+          painel-alunos-grade-horaria b23fd03f19c26ee9fec822e1b3cb71dac88939e7
+          planilha-secretarias-alerta-conflito 19b4a782fcb2049e9e514b987cce30cadbe19bb2
+          sistemas/painel-periodos-id-index 26a117f3d8d7c8719f5f65504e5f0ae9a1a0b076
+          sistemas/painel-solicitacoes-v1-2-fonte 984d383e3dbcd58b5966623123b1911a009b6b4d
+          LISTA
