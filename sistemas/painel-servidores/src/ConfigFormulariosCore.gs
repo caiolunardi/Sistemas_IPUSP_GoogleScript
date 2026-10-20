@@ -81,6 +81,7 @@ function obterUltimaColunaLeituraPeriodos_() {
 // só limpa datas/horários/semestre, o que já é suficiente pra nenhum
 // formulário achar uma janela válida.
 function desativarFormulario(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");
@@ -115,6 +116,7 @@ function desativarFormulario(dados) {
 }
 
 function obterFormulariosConfig() {
+  exigirAcessoPainel_();
 
   const aba = obterAbaPeriodos_();
   const ultimaLinha = aba.getLastRow();
@@ -158,6 +160,7 @@ function obterFormulariosConfig() {
 }
 
 function salvarConfigFormulario(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");

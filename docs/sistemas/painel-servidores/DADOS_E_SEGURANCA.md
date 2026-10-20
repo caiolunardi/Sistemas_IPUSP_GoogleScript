@@ -8,7 +8,7 @@ Preenchido a partir do código recebido em 13/10/2026, segundo [`SYSTEM_SECURITY
 - Público: equipe.
 - Ambiente: produção (implantação `/exec` existente); a fonte do Git ainda não foi implantada.
 - Responsável funcional: Serviço de Graduação (A VALIDAR INSTITUCIONALMENTE o nome do responsável).
-- Última revisão: 13/10/2026, revisão de código, sem acesso ao projeto Apps Script nem às planilhas.
+- Última revisão: 20/10/2026 (versão 1.1, controle de acesso), com o código do projeto Apps Script lido pelo clasp e a aba de permissões conferida. A revisão de 13/10/2026 foi só de código.
 
 ## 2. Dados tratados
 
@@ -18,6 +18,8 @@ Preenchido a partir do código recebido em 13/10/2026, segundo [`SYSTEM_SECURITY
 | Períodos de formulários | datas, horários, tipo, link do formulário | abrir/fechar formulários | planilha de períodos | navegador (leitura e edição) | grava na planilha | Interna |
 | Regras curriculares | códigos de curso/habilitação, disciplinas, requisitos | conferência de históricos | planilha de regras | navegador (leitura e edição) | grava na planilha | Interna |
 | Auditoria de correção | e-mail de quem corrigiu, data, motivo, antes/depois | rastrear correções de ruleset ativo | `Session` | aba `AUDITORIA_REGRAS_CURRICULARES` | grava na planilha | Pessoal (e-mail institucional) |
+| Lista de acesso | e-mail institucional e perfil (ADMINISTRADOR/LEITOR) | quem abre e quem altera o painel | aba `PAINEL_SERVIDORES` da planilha de permissões | só no servidor (cache de 60 s); o navegador recebe só o papel (`admin`/`leitor`) | não grava | Pessoal (e-mail institucional) |
+| Conta de quem usa | e-mail `@usp.br` | conferir a lista | `Session.getActiveUser()` | só no servidor | não grava (a auditoria das Regras continua gravando, como antes) | Pessoal |
 | Preferência de aparência | `system`/`light`/`dark` | tema | navegador | `localStorage["gradip-theme"]` | só no navegador | Não pessoal |
 
 Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
@@ -35,6 +37,8 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 | Planilha de Exclusão de Disciplinas | Sheets | `ID_PLANILHA_EXCLUSAO_DISCIPLINAS` | Não | leitura |
 | Planilha de Períodos | Sheets | `ID_PLANILHA_PERIODOS` (`ConfigFormulariosCore.gs`) | Não | leitura e escrita |
 | Planilha de Regras Curriculares | Sheets | `ID_PLANILHA_REGRAS_CURRICULARES` (`ConfigRegrasCurricularesRepository.gs`) | Não | leitura e escrita |
+| Índice mestre | Sheets | Script Property `ID_INDEX_SPREADSHEET_ID` | Não | leitura (primeira aba, colunas "Chave" e "ID de Produção") |
+| Planilha de permissões | Sheets | chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`; aba `PAINEL_SERVIDORES` | Não | leitura pela conta que executa |
 | Sistemas da equipe | Web Apps `/exec` | Script Property `URLS_SISTEMAS_EQUIPE` (JSON lido por `UrlsSistemas.gs`) | Não | cada sistema controla o próprio acesso |
 
 No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valores reais ficam só no projeto Apps Script.
@@ -43,23 +47,27 @@ No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valor
 
 ## 4. Web App
 
-- Quem pode acessar: `ANYONE_ANONYMOUS` (`appsscript.json`), ou seja, qualquer pessoa com a URL, sem login.
-- Executa como: `USER_DEPLOYING`.
-- Autorização server-side: **nenhuma**. Nenhuma função confere quem está chamando.
-- Dados enviados ao cliente: contadores numéricos, configuração de períodos (com links de formulários) e regras curriculares.
-- Operações privilegiadas expostas a `google.script.run`: salvar e desativar períodos de formulários; criar, editar, validar, ativar, inativar e versionar rulesets; e também `migrarRegrasCurricularesMultiCurriculoERevisaoV1`, `TESTE` e `TESTE3`, que não têm `_` no fim do nome e por isso também podem ser chamadas pelo navegador.
-
-**Risco principal (não corrigido nesta rodada, que foi de interface):** quem tiver a URL `/exec` pode, sem login, alterar os períodos dos formulários dos alunos e as Regras Curriculares, com as permissões de quem implantou. Como o Web App executa como quem implantou e aceita anônimos, a auditoria tende a registrar o e-mail de quem implantou ou `NAO_IDENTIFICADO`, e não o de quem realmente corrigiu.
-
-Recomendações, para decisão do responsável:
-1. Mudar o acesso para **“Qualquer pessoa da USP”** (`DOMAIN`) ou contas específicas.
-2. Validar no backend uma lista de contas autorizadas (por exemplo, editores de uma planilha de controle) antes de qualquer gravação.
-3. Renomear `migrarRegrasCurricularesMultiCurriculoERevisaoV1`, `TESTE` e `TESTE3` com `_` no fim (ou removê-los da implantação), para que não possam ser chamados pelo navegador.
-4. Avaliar `USER_ACCESSING` se a auditoria precisar do e-mail real de quem corrigiu.
+- Quem pode acessar: **Qualquer pessoa da USP** (`DOMAIN`, `appsscript.json`), desde 20/10/2026. Antes era `ANYONE_ANONYMOUS`, sem login.
+- Executa como: `USER_DEPLOYING`. Como quem acessa e quem implantou são do mesmo domínio, `Session.getActiveUser()` devolve o e-mail de quem está usando, e é ele que vai para a auditoria das Regras.
+- Autorização server-side (versão 1.1, `AcessoPainel.gs`):
+  - o `doGet` confere o e-mail na aba `PAINEL_SERVIDORES`. Fora da aba, ou sem conta identificada, a pessoa vê `PainelSemAcesso.html`, que não traz nada do painel. Se a lista não puder ser lida (propriedade, chave, aba ou títulos faltando), o painel **fica fechado** e o motivo vai para o log;
+  - toda função pública chamada pela página começa com `exigirAcessoPainel_()` (leitura) ou `exigirAdminPainel_()` (gravação). A conferência vale para chamadas diretas a `google.script.run`, não só para os botões;
+  - Perfil `ADMINISTRADOR`: vê e altera tudo. Perfil `LEITOR`, vazio ou desconhecido: vê tudo e recebe "Você não tem permissão para fazer alterações…" ao tentar salvar, excluir, ativar, inativar, desativar ou criar. E-mail repetido na aba: vale o menor acesso;
+  - a lista fica em cache por 60 s: tirar ou rebaixar alguém vale em até 1 minuto;
+  - `migrarRegrasCurricularesMultiCurriculoERevisaoV1`, `TESTE`, `TESTE3`, `diagnosticarUrlsSistemas` e `diagnosticarAcessoPainel` exigem administrador.
+- O aviso "Somente leitura" na tela é só informação; quem protege é o servidor. `testes/testar_acesso.js` confere que nenhuma função pública fica sem guarda.
+- Dados enviados ao cliente: contadores numéricos, configuração de períodos (com links de formulários), regras curriculares e o papel (`admin`/`leitor`). Nenhum e-mail da lista.
 
 ## 5. Configuração
 
-Script Property (valor fora do Git; o formato está em `UrlsSistemas.gs`):
+Script Properties (valores fora do Git):
+
+```text
+ID_INDEX_SPREADSHEET_ID   ID da planilha ID_INDEX; dela sai a planilha de
+                          permissões (chave PERMISSOES_DE_ACESSO)
+```
+
+Formato de `URLS_SISTEMAS_EQUIPE` em `UrlsSistemas.gs`:
 
 ```text
 URLS_SISTEMAS_EQUIPE   JSON com as chaves PESSOAS_IPUSP, EMISSAO_DIPLOMAS,
@@ -87,7 +95,7 @@ Hoje são constantes no código do projeto Apps Script. Pendência: migrar para 
 
 ## 6. Logs
 
-- Eventos registrados: falhas de contagem, falhas de `Session`, `TESTE`/`TESTE3` (lista de rulesets).
+- Eventos registrados: falhas de contagem, falhas de `Session`, `TESTE`/`TESTE3` (lista de rulesets), falha ao ler a lista de acesso (só a mensagem técnica) e `diagnosticarAcessoPainel` (contagem por perfil, sem e-mails).
 - Dados pessoais em log: as funções de contagem registram só mensagens de erro. Não foram vistos logs com nomes ou e-mails de alunos; conferir os registros de execução reais (A VALIDAR).
 - O navegador registra no console só a falha de busca dos contadores.
 
@@ -95,10 +103,12 @@ Hoje são constantes no código do projeto Apps Script. Pendência: migrar para 
 
 - Planilhas: a conta que implanta precisa ler as sete planilhas de sistemas e editar as de Períodos e Regras. Revisão de permissões: A VALIDAR.
 - Projeto Apps Script: editores do projeto veem os IDs reais.
+- Lista de acesso: aba `PAINEL_SERVIDORES` (A N. USP, B Nome, C e-mail, D Observação, E Perfil). Quem edita a planilha de permissões decide quem abre e quem altera o painel; mantenha essa edição restrita ao Serviço de Graduação. Revisão periódica: A VALIDAR.
 
 ## 8. Dados de teste
 
 - `testes/testar_navegador.js` usa formulários, rulesets e contadores fictícios, sem planilhas nem rede.
+- `testes/testar_acesso.js` usa e-mails `@usp.br` e nomes inventados ("Pessoa Fictícia A").
 - Capturas de tela ficam na pasta temporária e não são versionadas.
 
 ## 9. Pontos LGPD/institucionais
@@ -114,8 +124,8 @@ Seguir [`docs/seguranca/INCIDENTES.md`](../../seguranca/INCIDENTES.md). Medida i
 ## 11. Exceções
 
 - (até 20/10/2026) URLs `/exec` dos sistemas no código; desde então ficam na Script Property `URLS_SISTEMAS_EQUIPE`.
-- Modelo de acesso anônimo mantido sem alteração (fora do escopo da rodada visual), registrado acima para decisão.
+- (até 20/10/2026) Acesso anônimo sem autorização no backend; resolvido na versão 1.1 (seção 4), depois de implantada.
 
 ## 12. Homologação
 
-Checklist de segurança: IDs e URLs internas removidos, sem dados pessoais, sem segredos no Git, sem segredos enviados ao navegador. Itens pendentes: autorização no backend e modelo de acesso (seção 4), migração dos IDs (seção 5).
+Checklist de segurança: IDs e URLs internas removidos, sem dados pessoais, sem segredos no Git, sem segredos enviados ao navegador. Autorização no backend e acesso `DOMAIN`: feitos na 1.1, a conferir no `/dev` ([HOMOLOGACAO.md](HOMOLOGACAO.md)). Pendente: migração dos IDs (seção 5).

@@ -80,6 +80,25 @@ body{
     background:var(--gradip-header-accent);
 }
 
+/* Perfil LEITOR: aviso fixo. Quem protege é o servidor (AcessoPainel.gs). */
+.avisoSomenteLeitura{
+    max-width:900px;
+    margin:16px auto 0;
+    padding:12px 16px;
+    border:1px solid var(--gradip-info-border);
+    border-left-width:4px;
+    border-radius:8px;
+    background:var(--gradip-info-bg);
+    color:var(--gradip-text);
+    font-size:14px;
+    line-height:1.45;
+    box-sizing:border-box;
+}
+.avisoSomenteLeitura[hidden]{ display:none; }
+@media (max-width: 940px){
+    .avisoSomenteLeitura{ margin:12px 16px 0; }
+}
+
 #conteudo{
     max-width:900px;
     margin:32px auto 60px auto;
@@ -845,6 +864,10 @@ summary:focus-visible,
 
 <div class="barraAzul"></div>
 
+<div id="avisoSomenteLeitura" class="avisoSomenteLeitura" role="note" hidden>
+    <strong>Somente leitura.</strong> Você pode ver tudo, mas não pode salvar, excluir, ativar nem desativar nada. Para fazer alterações, peça o perfil de administrador ao Serviço de Graduação.
+</div>
+
 <!-- NAVEGAÇÃO: menu lateral (padrão ao abrir) ou abas. Os mesmos botões
      servem aos dois modos; trocar de modo só muda a apresentação — não
      recarrega listas, não fecha modais e não chama o servidor. Ver
@@ -936,6 +959,12 @@ summary:focus-visible,
 // As URLs /exec vêm do servidor (Script Property URLS_SISTEMAS_EQUIPE,
 // ver Code.gs) e não ficam no repositório. Card sem URL = "Em breve".
 const URLS_SISTEMAS = <?!= urlsSistemasParaPagina_() ?>;
+
+// Perfil de quem abriu ("admin" ou "leitor"), conferido no servidor pela
+// aba PAINEL_SERVIDORES (AcessoPainel.gs). Só mostra o aviso: as
+// gravações de quem é leitor são recusadas pelo próprio servidor.
+const PAPEL_USUARIO = <?!= papelParaPagina_() ?>;
+if (PAPEL_USUARIO !== "admin") document.getElementById("avisoSomenteLeitura").hidden = false;
 
 const SISTEMAS = [
     // "Pessoas do IPUSP" é o nome da área, não de uma busca específica:

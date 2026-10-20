@@ -2,6 +2,22 @@
 
 **Estado:** verificado localmente em Chromium (Playwright) em 13/10/2026. **Não implantado nem conferido no `/exec`.** Depois de implantar, registre aqui a data, a versão da implantação e o resultado do roteiro do [manual](MANUAL_OPERACAO.md#instalar-ou-atualizar).
 
+## Versão 1.1: controle de acesso (20/10/2026)
+
+**Estado:** verificada localmente; não enviada ao Apps Script.
+
+- Arquivos novos: `AcessoPainel.gs`, `PainelSemAcesso.html`, `testes/testar_acesso.js`.
+- Alterados: `Code.gs` (`doGet` confere o acesso antes de montar o painel), `Painel.html` (aviso "Somente leitura" e `PAPEL_USUARIO`), `PainelAjuda.html` (problema e pergunta sobre o perfil de leitura), `appsscript.json` (`DOMAIN`), e a primeira linha das funções públicas de `ConfigFormularioColacaoGrau.gs`, `ConfigFormularioExclusaoDisciplinas.gs`, `ConfigFormulariosCore.gs`, `ConfigRegrasCurriculares.gs`, `ConfigRegrasCurricularesMigracao.gs`, `UrlsSistemas.gs`, `teste.gs` e `Code.gs` (31 guardas com a de `diagnosticarAcessoPainel`). Nenhuma outra linha desses `.gs` muda.
+- Byte-idênticos à 1.0: os demais arquivos, inclusive o JavaScript das telas de Configurações. Os botões de gravar continuam iguais; a recusa vem do servidor e aparece onde já aparecia qualquer erro (aviso do modal ou caixa de alerta).
+- Tokens usados no que é novo: `--gradip-info-bg`, `--gradip-info-border` (aviso), `--gradip-warning-border` (página sem acesso), `--gradip-surface`, `--gradip-text`, `--gradip-text-muted`, `--gradip-link`, `--gradip-link-hover`, `--gradip-focus`.
+
+Testes locais:
+
+- `testar_acesso.js`: **77 checagens, 0 falhas** (perfis; e-mail com maiúsculas, espaço e tab; perfil vazio, desconhecido ou repetido; fora da aba; sem conta; cinco falhas de configuração que fecham o painel; cache; diagnóstico sem e-mails; guarda em todas as funções públicas).
+- `testar_navegador.js`: **322 checagens, 0 falhas**. Novas: aviso escondido para administrador; para leitor, aviso visível com contraste ≥ 4,5:1 nos dois temas, cards e Regras visíveis, Salvar mostra a recusa no modal e o botão volta; página sem acesso em 360 px e 1280 px, nos dois temas, com marca certa, contraste ≥ 4,5:1 e sem rolagem horizontal.
+
+A conferir no `/dev` com contas reais: administrador salva; leitor vê o aviso e é recusado; conta fora da aba vê a página de sem acesso; a auditoria das Regras registra o e-mail de quem corrigiu.
+
 ## Baseline
 
 Pacote “dashboard - servidores.zip”, recebido em 13/10/2026, 19 arquivos em CRLF, convertidos para LF antes de versionar. Dois nomes foram corrigidos: `ConfirHomeUI.html` virou `ConfigHomeUI.html` (o nome que `Painel.html` inclui) e `appscript.json` virou `appsscript.json`. Commit da baseline sanitizada: `Painel dos servidores: fonte recebida em 13/10/2026, sem IDs de planilha`.

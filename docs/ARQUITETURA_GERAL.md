@@ -35,7 +35,7 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 | `TRANCAMENTO_PARCIAL_MATRICULA` | respostas do trancamento parcial | formulário (G); Painel dos servidores (L, literal); gerenciador (fora do repositório) | [Trancamento Parcial](sistemas/trancamento-parcial/README.md) |
 | `TRANCAMENTO_TOTAL_MATRICULA` | respostas do trancamento total | formulário (G); gerenciador (L/G); Painel dos servidores (L, literal) | [Trancamento Total](sistemas/trancamento-total/README.md) |
 | `ESTRUTURA_CURRICULAR` | base curricular importada do Júpiter, ajustes e histórico | Estrutura Curricular (L/G) | [modelo de dados](sistemas/estrutura-curricular/MODELO_DE_DADOS.md) |
-| `PERMISSOES_DE_ACESSO` | quem entra na Estrutura Curricular e com que perfil | Estrutura Curricular (L) | [Estrutura Curricular](sistemas/estrutura-curricular/DADOS_E_SEGURANCA.md) |
+| `PERMISSOES_DE_ACESSO` | quem entra em cada sistema da equipe e com que perfil, uma aba por sistema (`ESTRUTURA_CURRICULAR`, `PAINEL_SERVIDORES`, ...) | Estrutura Curricular (L); Painel dos servidores 1.1 (L, aba `PAINEL_SERVIDORES`) | [Estrutura Curricular](sistemas/estrutura-curricular/DADOS_E_SEGURANCA.md) |
 | `GRADE_HORARIA_PREENCHIMENTO` | planilha que as secretarias preenchem | Estrutura Curricular (G no envio, L na auditoria); Grade Horária visual (L); código da própria planilha (validação e proteção) | [modelo de dados](sistemas/estrutura-curricular/MODELO_DE_DADOS.md#índices-e-planilha-das-secretarias) |
 | `INDEX_GRADE_HORARIA_VERSOES_ANTERIORES` | índice das cópias de semestres anteriores | Estrutura Curricular (G); Grade Horária visual (L) | idem |
 | `BACKUP_GRADES_ANTERIORES` | pasta das cópias da grade | Estrutura Curricular (G) | idem |
@@ -48,7 +48,7 @@ O Painel dos servidores também lê, por ID literal, as planilhas de Diplomas, H
 
 | Propriedade | Projetos | Conteúdo |
 |---|---|---|
-| `ID_INDEX_SPREADSHEET_ID` | todos, menos o Painel dos servidores | ID da planilha mestre |
+| `ID_INDEX_SPREADSHEET_ID` | todos (no Painel dos servidores, desde a 1.1, só para achar `PERMISSOES_DE_ACESSO`) | ID da planilha mestre |
 | `AMBIENTE` | Exclusão, Trancamento Parcial e Total (só nas cópias de teste) | `homologacao` |
 | `URLS_SISTEMAS_EQUIPE` | Painel dos servidores | JSON com as URLs `/exec` das ferramentas da equipe |
 

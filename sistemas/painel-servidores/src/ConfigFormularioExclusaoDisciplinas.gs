@@ -43,6 +43,7 @@ const COL_PERIODOS_SEM2_RETIF_INICIO = 16; // P
 const COL_PERIODOS_SEM2_RETIF_FIM = 17;    // Q
 
 function salvarConfigExclusaoDisciplinas(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");

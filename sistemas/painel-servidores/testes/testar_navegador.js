@@ -3,7 +3,8 @@
 // tema (Sistema/Claro/Escuro, persistência, mudança do sistema com a página
 // aberta), contraste WCAG, menu lateral x abas, teclado, card "Pessoas do
 // IPUSP", Central de Ajuda, modais de Formulários, lista de Regras
-// Curriculares e larguras de 360/390/480/768 px. Uso: node testar_navegador.js
+// Curriculares, perfil LEITOR (aviso fixo e recusa do servidor), página
+// de quem não tem acesso e larguras de 360/390/480/768 px. Uso: node testar_navegador.js
 const fs = require('fs');
 const path = require('path');
 function carregarPlaywright(){try{return require('playwright')}catch(e){return require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright')}}
@@ -15,15 +16,28 @@ const URLS_FICTICIAS = {};
 ['PESSOAS_IPUSP','EMISSAO_DIPLOMAS','GERENCIADOR_HABILITACOES','GERENCIADOR_TRANCAMENTO_TOTAL','GERENCIADOR_TRANCAMENTO_PARCIAL','GERENCIADOR_BUSP','GERENCIADOR_INTERCAMBISTAS','GERENCIADOR_EXCLUSAO_DISCIPLINAS','CONFIGURACOES_GRADE_HORARIA']
   .forEach(c => { URLS_FICTICIAS[c] = 'https://script.google.com/a/macros/usp.br/s/FICTICIO_' + c + '/exec'; });
 
-function build(){
-  let h = fs.readFileSync(SRC + 'Painel.html', 'utf8');
+function incluir(h){
   for (let k = 0; k < 4; k++) h = h.replace(/<\?!= include_\('(\w+)'\); \?>/g, (_, n) => fs.readFileSync(SRC + n + '.html', 'utf8'));
+  return h;
+}
+function build(papel){
+  let h = incluir(fs.readFileSync(SRC + 'Painel.html', 'utf8'));
   // URLs fictícias no lugar da Script Property URLS_SISTEMAS_EQUIPE (Code.gs).
   h = h.replace('<?!= urlsSistemasParaPagina_() ?>', JSON.stringify(URLS_FICTICIAS));
+  // Papel que o servidor leu da aba PAINEL_SERVIDORES (AcessoPainel.gs).
+  h = h.replace('<?!= papelParaPagina_() ?>', JSON.stringify(papel));
   if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
   return h;
 }
-const html = build();
+const html = build('admin');
+const htmlLeitor = build('leitor');
+// Mesma frase de AcessoPainel.gs (o servidor recusa a gravação do LEITOR).
+const MENSAGEM_SO_LEITURA = fs.readFileSync(SRC + 'AcessoPainel.gs', 'utf8').match(/const MENSAGEM_SO_LEITURA =\s*"([^"]+)"/)[1];
+function buildSemAcesso(titulo, mensagem){
+  const h = incluir(fs.readFileSync(SRC + 'PainelSemAcesso.html', 'utf8')).replace('<?= titulo ?>', titulo).replace('<?= mensagem ?>', mensagem);
+  if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
+  return h;
+}
 
 const FORMULARIOS = [
   {indicador:'Formulário de Teste Sazonal', tipo:'sazonal', sem1AberturaData:'2026-02-01', sem1AberturaHora:'08:00', sem1FechamentoData:'2026-02-20', sem1FechamentoHora:'18:00'},
@@ -36,7 +50,7 @@ const RULESETS = [
   {ruleset_id:'RS-TESTE-A-V2', curso_codigo:'99999', habilitacao_codigo:'1', habilitacao_nome:'Habilitação Fictícia A', versao:2, revisao:0, status:'RASCUNHO'},
   {ruleset_id:'RS-TESTE-B-V1', curso_codigo:'99999', habilitacao_codigo:'2', habilitacao_nome:'Habilitação Fictícia B', versao:1, revisao:0, status:'INATIVO'}
 ];
-const stub = `(function(){window.__chamadas=[];window.__abertos=[];window.open=function(u){window.__abertos.push(u);return null};
+const stub = (papel='admin') => `(function(){window.__chamadas=[];window.__abertos=[];window.open=function(u){window.__abertos.push(u);return null};
 var F=${JSON.stringify(FORMULARIOS)},R=${JSON.stringify(RULESETS)};
 var API={
  obterContadoresPendencias:function(){return {diplomas:3,habilitacoes:1,trancamentoTotal:0,trancamentoParcial:2,busp:1,buspAguardando:4,intercambistasInclusao:1,intercambistasExclusao:0,exclusaoDisciplinas:5}},
@@ -45,6 +59,7 @@ var API={
  listarRulesetsCurriculares:function(){return JSON.parse(JSON.stringify(R))},
  obterDicionarioRegrasCurriculares:function(){return {}},
  obterRulesetCurricular:function(id){throw new Error('editor não simulado neste teste')}};
+if(${JSON.stringify(papel)}!=='admin'){['salvarConfigFormulario','salvarConfigColacao','salvarConfigExclusaoDisciplinas'].forEach(function(n){API[n]=function(){throw new Error(${JSON.stringify(MENSAGEM_SO_LEITURA)})}})}
 function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:function(x){s=x;return o},withFailureHandler:function(x){f=x;return o}};
  Object.keys(API).forEach(function(n){o[n]=function(arg){window.__chamadas.push(n);setTimeout(function(){try{s(API[n](arg))}catch(e){f(e)}},30)}});return o}
 window.google={script:{get run(){return runner()}}};})();`;
@@ -53,8 +68,9 @@ function lum(c){const m=c.match(/[\d.]+/g).map(Number);const a=m.slice(0,3).map(
 function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
 const BG = `function bg(el){while(el){const c=getComputedStyle(el).backgroundColor;if(c&&!/rgba\\(0, 0, 0, 0\\)|transparent/.test(c))return c;el=el.parentElement}return getComputedStyle(document.body).backgroundColor}`;
 
-async function load(p){
-  await p.route('http://painel.teste/**', r => r.fulfill({contentType:'text/html; charset=utf-8', body: html.replace('<head>', '<head><script>'+stub+'</script>')}));
+async function load(p, papel='admin'){
+  const pagina = papel === 'admin' ? html : htmlLeitor;
+  await p.route('http://painel.teste/**', r => r.fulfill({contentType:'text/html; charset=utf-8', body: pagina.replace('<head>', '<head><script>'+stub(papel)+'</script>')}));
   await p.route('https://datagrad.sistemas.ip.usp.br/**', r => r.fulfill({contentType:'image/svg+xml', body:'<svg xmlns="http://www.w3.org/2000/svg" width="240" height="97"><rect width="240" height="97" fill="#00509d"/></svg>'}));
   await p.goto('http://painel.teste/');
   await p.waitForSelector('#badge-diplomas:not([style*="none"])');
@@ -76,6 +92,7 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await load(p);
   const T = `[${scheme}]`;
   chk(`${T} tema Sistema resolvido`, await p.evaluate(s=>document.documentElement.dataset.theme===s&&document.documentElement.dataset.themePreference==='system', scheme));
+  chk(`${T} administrador não vê o aviso de somente leitura`, await p.evaluate(()=>document.getElementById('avisoSomenteLeitura').hidden));
   chk(`${T} abre no menu lateral`, await p.evaluate(()=>document.getElementById('painelLayout').dataset.navegacao==='sidebar'&&document.querySelector('[data-painel-modo="sidebar"]').getAttribute('aria-pressed')==='true'));
   chk(`${T} Sistemas marcado como página atual`, await p.getAttribute('#navPainelSistemas','aria-current')==='page');
   chk(`${T} ícones injetados`, await p.$$eval('.painelNavIcone svg', e=>e.length)===7);
@@ -176,6 +193,50 @@ async function contraste(p, scheme, seletores, rotulo=''){
 
   chk(`${T} sem erros de JS`, errs.length===0, errs.join(' | '));
   await ctx.close();
+ }
+
+ // Perfil LEITOR: vê tudo, o aviso fica fixo e o servidor recusa a gravação
+ for (const scheme of ['light','dark']){
+  const ctx = await b.newContext({colorScheme:scheme, viewport:{width:1280, height:900}});
+  const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e=>errs.push(e.message));
+  await load(p, 'leitor');
+  const T = `[${scheme} leitor]`;
+  chk(`${T} aviso de somente leitura visível`, await p.evaluate(()=>{const a=document.getElementById('avisoSomenteLeitura');return !a.hidden&&a.offsetHeight>0&&a.textContent.includes('Somente leitura')}));
+  await contraste(p, scheme, ['#avisoSomenteLeitura','#avisoSomenteLeitura strong'], ' aviso');
+  chk(`${T} cards dos sistemas continuam`, await p.$$eval('#listaCategorias .cardSistema', e=>e.length)>5);
+  await p.click('#navPainelFormularios'); await p.waitForSelector('#listaFormulariosConfig .cardSistema');
+  await p.click('#listaFormulariosConfig .cardSistema >> nth=0');
+  chk(`${T} abre o modal com os dados`, await p.evaluate(()=>document.getElementById('sem1AberturaData').value==='2026-02-01'));
+  await p.click('#modalConfigFormulario .botaoPrimarioConfig');
+  await p.waitForFunction(()=>getComputedStyle(document.getElementById('avisoValidacaoConfig')).display!=='none', null, {timeout:5000}).catch(()=>{});
+  chk(`${T} salvar mostra a recusa do servidor`, (await p.textContent('#avisoValidacaoConfig')).includes('não tem permissão'), await p.textContent('#avisoValidacaoConfig'));
+  chk(`${T} modal continua aberto e o botão volta`, await p.evaluate(()=>document.getElementById('modalConfigFormulario').style.display==='flex'&&!document.querySelector('#modalConfigFormulario .botaoPrimarioConfig').disabled));
+  await p.evaluate(()=>fecharModalConfigFormulario());
+  await p.click('#navPainelRegras'); await p.waitForSelector('#listaRulesetsCurriculares .cardSistema');
+  chk(`${T} vê as Regras Curriculares`, await p.$$eval('#listaRulesetsCurriculares .cardSistema', e=>e.length)===3);
+  await p.screenshot({path:SAIDA+`leitor-${scheme}.png`});
+  chk(`${T} sem erros de JS`, errs.length===0, errs.join(' | '));
+  await ctx.close();
+ }
+
+ // Página de quem não tem acesso (PainelSemAcesso.html)
+ const semAcesso = buildSemAcesso('Sem acesso a este painel', 'Sua conta não tem acesso ao Painel de Sistemas. Se você precisa usá-lo, peça acesso ao Serviço de Graduação.');
+ for (const w of [360,1280]){
+  for (const scheme of ['light','dark']){
+   const ctx = await b.newContext({colorScheme:scheme, viewport:{width:w, height:800}});
+   const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e=>errs.push(e.message));
+   await p.route('http://painel.teste/**', r => r.fulfill({contentType:'text/html; charset=utf-8', body: semAcesso}));
+   await p.goto('http://painel.teste/');
+   const T = `[${w}px ${scheme} sem acesso]`;
+   chk(`${T} título e mensagem`, (await p.textContent('h1')).includes('Sem acesso')&&(await p.textContent('.cartaoSemAcesso')).includes('peça acesso'));
+   chk(`${T} nenhum card do painel`, await p.$$eval('.cardSistema', e=>e.length)===0);
+   chk(`${T} marca certa`, await p.evaluate(s=>{const o=s==='light'?'dark':'light';return [...document.querySelectorAll('.gradip-logo-'+s)].some(e=>getComputedStyle(e).display!=='none')&&[...document.querySelectorAll('.gradip-logo-'+o)].every(e=>getComputedStyle(e).display==='none')}, scheme));
+   chk(`${T} sem rolagem horizontal`, await p.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth));
+   await contraste(p, scheme, ['.tituloSistema','.subtituloSistema','.cartaoSemAcesso h1','.cartaoSemAcesso p','.cartaoSemAcesso .contato','.cartaoSemAcesso a'], ' sem acesso');
+   await p.screenshot({path:SAIDA+`sem-acesso-${w}-${scheme}.png`});
+   chk(`${T} sem erros de JS`, errs.length===0, errs.join(' | '));
+   await ctx.close();
+  }
  }
 
  // Preferência manual, persistência e mudança do sistema com a página aberta

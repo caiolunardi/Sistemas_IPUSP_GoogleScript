@@ -1,6 +1,6 @@
 # Painel de Sistemas — servidores
 
-**Estado:** fonte recebida em 13/10/2026 e versionada com a camada visual nova (tema, menu lateral/abas, Pessoas do IPUSP e Central de Ajuda), verificada localmente em Chromium. **Ainda não homologada no `/exec`.** O GitHub não informa qual versão está implantada no Apps Script. [Código](../../../sistemas/painel-servidores/README.md).
+**Estado:** versão 1.1 (controle de acesso), verificada localmente. **Ainda não homologada no `/exec`**: em 20/10/2026 a implantação ainda rodava a camada visual de 13/10, sem nenhuma conferência de acesso. O GitHub não informa qual versão está implantada no Apps Script. [Código](../../../sistemas/painel-servidores/README.md).
 
 ## Finalidade e público
 
@@ -12,6 +12,18 @@ O painel tem duas partes:
 2. **Configurações**: telas que **gravam** em planilhas usadas por outros sistemas.
    - **Formulários**: períodos de abertura e encerramento dos formulários dos alunos (Sazonal ou Contínuo), com telas próprias para Colação de Grau e Exclusão de Disciplinas.
    - **Regras Curriculares**: rulesets por currículo e habilitação (requisitos, disciplinas, grupos), com validação, ativação, versões, correção auditada de ruleset ativo e manual próprio.
+
+## Quem pode usar (1.1)
+
+A lista fica na aba **`PAINEL_SERVIDORES`** da planilha de permissões (chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`), coluna C e-mail e coluna E Perfil:
+
+| Perfil na aba | O que a pessoa faz |
+|---|---|
+| `ADMINISTRADOR` | vê e altera tudo |
+| `LEITOR`, vazio ou outro texto | vê tudo (sistemas, avisos, Formulários, Regras Curriculares); um aviso fixo diz "Somente leitura" e o servidor recusa qualquer gravação com "Você não tem permissão para fazer alterações…" |
+| fora da aba | vê só uma página de "Sem acesso a este painel", com o contato do Serviço de Graduação |
+
+O painel só abre para contas `@usp.br` ("Qualquer pessoa da USP"). A conferência é feita no servidor em toda chamada, não só nos botões. Mudanças na aba valem em até 1 minuto. Detalhes em [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md#4-web-app).
 
 ## Cards de sistemas
 
@@ -52,3 +64,4 @@ Os avisos são lidos uma vez, quando a página abre (`obterContadoresPendencias`
 | Fonte no Git (13/10/2026) | Tema GRADIP, menu lateral/abas, card Pessoas do IPUSP, Central de Ajuda e gatilhos `?`, cards acessíveis por teclado, avisos mantidos ao usar a busca. Backend sem mudança de comportamento. Verificada localmente; implantação pendente. |
 | Fonte no Git (13/10/2026, 2ª) | Card Configurações de Grade Horária (categoria Grade Horária, sem aviso de pendência). Só `Painel.html` e `PainelAjuda.html` mudam. |
 | 1.0 (20/10/2026) | Primeiro número de versão (tag `painel-servidores-v1.0`). URLs das ferramentas da equipe saem do código e passam a vir da Script Property `URLS_SISTEMAS_EQUIPE` (`UrlsSistemas.gs`). Implantação pendente. |
+| 1.1 (20/10/2026) | Controle de acesso pela aba `PAINEL_SERVIDORES` (`AcessoPainel.gs`, `PainelSemAcesso.html`): administrador altera, leitor só vê, quem está fora não abre. Todas as funções chamadas pela página conferem o acesso; acesso da implantação `DOMAIN`. Aviso "Somente leitura" e ajuda nova. Implantação pendente. [Notas](../../../notas-de-versao/painel-servidores-v1.1.md). |

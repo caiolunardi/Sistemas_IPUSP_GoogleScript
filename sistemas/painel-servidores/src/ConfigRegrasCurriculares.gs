@@ -58,10 +58,12 @@
 ------------------------------------------------------*/
 
 function listarRulesetsCurriculares() {
+  exigirAcessoPainel_();
   return repoListarRulesets_();
 }
 
 function obterRulesetCurricular(rulesetId) {
+  exigirAcessoPainel_();
 
   if (!rulesetId) throw new Error("Ruleset não informado.");
 
@@ -105,6 +107,7 @@ function obterRulesetCurricular(rulesetId) {
 // Quem precisar do snapshot completo de uma auditoria específica usa
 // obterDetalheAuditoriaRuleset, abaixo.
 function listarHistoricoRevisoesRuleset(rulesetId) {
+  exigirAcessoPainel_();
   if (!rulesetId) throw new Error("Ruleset não informado.");
   return repoListarAuditoriasRulesetResumo_(rulesetId);
 }
@@ -114,6 +117,7 @@ function listarHistoricoRevisoesRuleset(rulesetId) {
 // padrão da tela. Sem UI própria nesta rodada (o achado permite deixar
 // isso fora do escopo para não aumentar a superfície da UI).
 function obterDetalheAuditoriaRuleset(auditoriaId) {
+  exigirAcessoPainel_();
   if (!auditoriaId) throw new Error("Auditoria não informada.");
   const auditoria = repoObterAuditoriaPorId_(auditoriaId);
   if (!auditoria) throw new Error(`Auditoria "${auditoriaId}" não encontrada.`);
@@ -121,14 +125,17 @@ function obterDetalheAuditoriaRuleset(auditoriaId) {
 }
 
 function listarRequisitosRuleset(rulesetId) {
+  exigirAcessoPainel_();
   return repoListarRequisitos_(rulesetId);
 }
 
 function listarDisciplinasRuleset(rulesetId) {
+  exigirAcessoPainel_();
   return repoListarDisciplinas_(rulesetId);
 }
 
 function listarGruposRuleset(rulesetId) {
+  exigirAcessoPainel_();
   return repoListarGrupos_(rulesetId);
 }
 
@@ -136,6 +143,7 @@ function listarGruposRuleset(rulesetId) {
 // Requisitos/Disciplinas/Grupos com UMA chamada só, em vez de uma
 // viagem ao servidor por dropdown.
 function obterDicionarioRegrasCurriculares() {
+  exigirAcessoPainel_();
   return {
     criteriosNumericos: repoObterCriteriosNumericos_().map(c => ({ codigo: c.codigo, rotulo: c.rotulo })),
     operadores: repoObterDominioDicionario_("OPERADOR"),
@@ -317,6 +325,7 @@ function normalizarNumeroOpcional_(valor, rotuloCampo) {
 // ruleset ativo" + "mantenha selecao_automatica/criterio_selecao sob
 // a política atual/reservada").
 function salvarDadosGeraisRuleset(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.rulesetId) throw new Error("Dados do ruleset incompletos.");
 
@@ -467,6 +476,7 @@ function salvarDadosGeraisRuleset(dados) {
 =====================================================*/
 
 function salvarRequisitoCurricular(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.rulesetId) throw new Error("Dados do requisito incompletos.");
 
@@ -621,6 +631,7 @@ function salvarRequisitoCurricular(dados) {
 }
 
 function excluirRequisitoCurricular(requisitoId, snapshotToken, motivoCorrecaoAtiva) {
+  exigirAdminPainel_();
 
   if (!requisitoId) throw new Error("Requisito não informado.");
 
@@ -682,6 +693,7 @@ function excluirRequisitoCurricular(requisitoId, snapshotToken, motivoCorrecaoAt
 =====================================================*/
 
 function salvarDisciplinaCurricular(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.rulesetId) throw new Error("Dados da disciplina incompletos.");
 
@@ -807,6 +819,7 @@ function salvarDisciplinaCurricular(dados) {
 }
 
 function excluirDisciplinaCurricular(regraDisciplinaId, snapshotToken, motivoCorrecaoAtiva) {
+  exigirAdminPainel_();
 
   if (!regraDisciplinaId) throw new Error("Disciplina não informada.");
 
@@ -868,6 +881,7 @@ function excluirDisciplinaCurricular(regraDisciplinaId, snapshotToken, motivoCor
 =====================================================*/
 
 function salvarGrupoCurricular(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.rulesetId) throw new Error("Dados do grupo incompletos.");
 
@@ -1002,6 +1016,7 @@ function salvarGrupoCurricular(dados) {
 }
 
 function excluirGrupoCurricular(grupoId, snapshotToken, motivoCorrecaoAtiva) {
+  exigirAdminPainel_();
 
   if (!grupoId) throw new Error("Grupo não informado.");
 
@@ -1073,6 +1088,7 @@ function excluirGrupoCurricular(grupoId, snapshotToken, motivoCorrecaoAtiva) {
 // — usado pelo botão "Validar regras", que pode ser clicado a
 // qualquer momento durante a montagem do ruleset.
 function validarRulesetCurricular(rulesetId) {
+  exigirAcessoPainel_();
   if (!rulesetId) throw new Error("Ruleset não informado.");
   return validarRulesetParaAtivacao_(rulesetId);
 }
@@ -1089,6 +1105,7 @@ function validarRulesetCurricular(rulesetId) {
 // o sistema nunca adivinha — mais seguro recusar do que arriscar
 // inativar (ou deixar de inativar) o ruleset errado.
 function ativarRulesetCurricular(rulesetId, snapshotToken) {
+  exigirAdminPainel_();
 
   if (!rulesetId) throw new Error("Ruleset não informado.");
 
@@ -1175,6 +1192,7 @@ function ativarRulesetCurricular(rulesetId, snapshotToken) {
 }
 
 function inativarRulesetCurricular(rulesetId, snapshotToken) {
+  exigirAdminPainel_();
 
   if (!rulesetId) throw new Error("Ruleset não informado.");
 
@@ -1230,6 +1248,7 @@ function derivarPrefixoRulesetId_(rulesetIdOrigem, cursoCodigo, habilitacaoCodig
 // tudo (Instruções.txt item 10). O ruleset de origem NUNCA é
 // alterado. selecao_automatica sempre volta pra NAO "por segurança".
 function criarNovaVersaoRuleset(rulesetIdOrigem) {
+  exigirAdminPainel_();
 
   if (!rulesetIdOrigem) throw new Error("Ruleset de origem não informado.");
 
@@ -1369,6 +1388,7 @@ function criarNovaVersaoRuleset(rulesetIdOrigem) {
   novoRulesetId.
 =====================================================*/
 function criarRulesetParaOutroCurriculo(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.rulesetIdOrigem) throw new Error("Ruleset de origem não informado.");
 

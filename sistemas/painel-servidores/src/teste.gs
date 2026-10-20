@@ -1,10 +1,12 @@
 function TESTE() {
+  exigirAdminPainel_();
   const resultado = listarRulesetsCurriculares();
   Logger.log("Quantidade: " + resultado.length);
   Logger.log(JSON.stringify(resultado));
 }
 
 function TESTE3() {
+  exigirAdminPainel_();
   const rulesets = repoListarRulesets_();
   const r = rulesets[0];
   Logger.log("ruleset: " + r.ruleset_id);

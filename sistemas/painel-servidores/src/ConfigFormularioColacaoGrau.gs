@@ -27,6 +27,7 @@ function normalizarSemestreColacao_(valor) {
 }
 
 function salvarConfigColacao(dados) {
+  exigirAdminPainel_();
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");

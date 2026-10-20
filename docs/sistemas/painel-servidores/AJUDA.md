@@ -17,8 +17,8 @@ A Central segue o contrato de [`docs/ajuda/`](../../ajuda/README.md): `PainelAju
 | `ajuda-colacao` | Colação de Grau | período único, semestre da colação |
 | `ajuda-exclusao` | Exclusão de Disciplinas | datas de retificação, sem Contínuo |
 | `ajuda-regras` | Regras Curriculares | resumo, ordem de trabalho e botões para o manual existente |
-| `ajuda-problemas` | Problemas comuns | avisos ausentes, sistema que não abre, busca vazia, erros ao carregar ou salvar, aparência não guardada |
-| `ajuda-faq` | Perguntas frequentes | 11 perguntas (`painel-faq-*`) |
+| `ajuda-problemas` | Problemas comuns | avisos ausentes, sistema que não abre, busca vazia, erros ao carregar ou salvar, “Você não tem permissão para fazer alterações” (perfil de leitura), aparência não guardada |
+| `ajuda-faq` | Perguntas frequentes | 12 perguntas (`painel-faq-*`), entre elas “Somente leitura” |
 
 ## Gatilhos contextuais
 
@@ -37,3 +37,5 @@ A Central abre por cima das janelas de período (z-index 10000 sobre 9999). ESC 
 ## Manutenção
 
 Os textos repetem regras do backend (validação de semestres, Contínuo apaga datas, formato do semestre da colação, critérios de contagem). Ao mudar uma dessas regras em `.gs`, atualize a seção correspondente e a tabela de `ajuda-pendencias`. Não acrescente IDs de planilha, URLs de planilha, nomes de funções ou detalhes de implantação ao conteúdo.
+
+Quem não está na lista de acesso não chega à Central: vê só a página `PainelSemAcesso.html`, que diz o motivo e o contato do Serviço de Graduação.

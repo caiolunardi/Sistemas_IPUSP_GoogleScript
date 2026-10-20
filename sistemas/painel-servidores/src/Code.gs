@@ -60,6 +60,9 @@ const TIMEZONE = "America/Sao_Paulo";
 =====================================================*/
 
 function doGet(e) {
+  // Só abre para quem está na aba PAINEL_SERVIDORES (AcessoPainel.gs).
+  const acesso = verificarAcessoPainel_();
+  if (!acesso.ok) return paginaSemAcessoPainel_(acesso);
   return HtmlService.createTemplateFromFile("Painel")
     .evaluate()
     .setTitle("Painel de Sistemas — Serviço de Graduação")
@@ -83,6 +86,7 @@ function include_(nomeArquivo) {
 =====================================================*/
 
 function obterContadoresPendencias() {
+  exigirAcessoPainel_();
   const intercambistas = contarPendentesIntercambistas_();
   return {
     diplomas: contarPendentesDiplomas_(),

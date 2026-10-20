@@ -52,6 +52,7 @@
 =====================================================*/
 
 function migrarRegrasCurricularesMultiCurriculoERevisaoV1() {
+  exigirAdminPainel_();
 
   const relatorio = {
     colunasCriadasCurriculos: [],

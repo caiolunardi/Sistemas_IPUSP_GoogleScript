@@ -48,6 +48,7 @@ function urlsSistemasParaPagina_() {
 // Rode no editor do Apps Script depois de cadastrar a propriedade:
 // mostra quais chaves estão faltando, sem imprimir as URLs.
 function diagnosticarUrlsSistemas() {
+  exigirAdminPainel_();
   const urls = lerUrlsSistemas_();
   const faltando = CHAVES_URLS_SISTEMAS.filter(chave => !urls[chave]);
   console.log(faltando.length
