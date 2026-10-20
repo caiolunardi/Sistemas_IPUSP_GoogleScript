@@ -14,12 +14,21 @@
 
       <p class="atendimentoStatus" data-atendimento="status"></p>
 
-      <a class="atendimentoBotao" data-atendimento="link" target="_blank" rel="noopener noreferrer">
-        <span class="atendimentoBotaoIcone" aria-hidden="true">💬</span>
-        <span>Abrir conversa no WhatsApp</span>
-        <span class="somenteLeitor"> (abre em nova aba)</span>
-      </a>
-      <p class="atendimentoNota">A conversa já abre com um modelo para você completar com seu nome, número USP e assunto.</p>
+      <div class="atendimentoContato">
+        <div class="atendimentoAcoes">
+          <a class="atendimentoBotao" data-atendimento="link" target="_blank" rel="noopener noreferrer">
+            <span class="atendimentoBotaoIcone" aria-hidden="true">💬</span>
+            <span>Abrir conversa no WhatsApp</span>
+            <span class="somenteLeitor"> (abre em nova aba)</span>
+          </a>
+          <p class="atendimentoNota">A conversa já abre com um modelo para você completar com seu nome, número USP e assunto.</p>
+        </div>
+        <!-- QR code: só em telas largas (no celular, o botão já resolve).
+             O SVG vem de PainelAtendimentoQR.html. -->
+        <figure class="atendimentoQr" data-atendimento="qr">
+          <figcaption>Está no computador? Aponte a câmera do celular para o código e a conversa abre no WhatsApp.</figcaption>
+        </figure>
+      </div>
     </section>
 
     <section class="atendimentoCartao" aria-labelledby="atendimentoComoFunciona">
@@ -36,6 +45,7 @@
       <h2 id="atendimentoImportante">Importante</h2>
       <ul>
         <li>Pedidos formais, como trancamento, exclusão de disciplinas e colação de grau, continuam sendo feitos pelos formulários deste painel. O WhatsApp serve para orientações e dúvidas.</li>
+        <li>Este número não recebe ligações: o atendimento é feito só por mensagem.</li>
         <li>Nunca envie sua senha. Envie documentos ou fotos apenas quando um servidor pedir.</li>
       </ul>
     </section>
@@ -83,6 +93,10 @@
     campo('telefone').textContent = ATENDIMENTO_ONLINE.telefoneTexto;
     campo('horario').textContent = ATENDIMENTO_ONLINE.horarioTexto;
     campo('link').href = linkWhatsApp();
+
+    var qr = document.getElementById('modeloAtendimentoQr');
+    if (qr) campo('qr').insertBefore(qr.content.cloneNode(true), campo('qr').firstChild);
+    else campo('qr').remove();
 
     var status = campo('status');
     if (dentroDoHorario(new Date())) {

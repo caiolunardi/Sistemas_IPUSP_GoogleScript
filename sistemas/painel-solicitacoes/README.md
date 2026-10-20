@@ -1,6 +1,6 @@
 # Painel de Solicitações dos alunos — fonte v1.5
 
-**v1.5 (20/10/2026, fonte; ainda não implantada no Apps Script):** página **Atendimento online** no fim do menu lateral (e como aba no modo abas), aberta no quadro principal: texto institucional, horário, aviso "dentro/fora do horário" pela hora de São Paulo e botão que abre o WhatsApp do Serviço de Graduação, em nova aba, com uma mensagem modelo (nome, nº USP, assunto). A busca encontra a página ("whatsapp", "atendimento", "contato") e "Sobre o Painel", na Central de Ajuda, aponta para ela. Número, horário e mensagem ficam em `ATENDIMENTO_ONLINE` (`Codigo.gs`); o texto, em `PainelAtendimento.html`. Para instalar, veja "Instalação da v1.5" abaixo.
+**v1.5 (20/10/2026, fonte; ainda não implantada no Apps Script):** página **Atendimento online** no fim do menu lateral (e como aba no modo abas), aberta no quadro principal: texto institucional, horário, aviso "dentro/fora do horário" pela hora de São Paulo e botão que abre o WhatsApp do Serviço de Graduação, em nova aba, com uma mensagem modelo (nome, nº USP, assunto), e QR code com o mesmo link para quem está no computador (some em telas de até 600 px). A busca encontra a página ("whatsapp", "atendimento", "contato") e "Sobre o Painel", na Central de Ajuda, aponta para ela. Número, horário e mensagem ficam em `ATENDIMENTO_ONLINE` (`Codigo.gs`); o texto, em `PainelAtendimento.html`. Para instalar, veja "Instalação da v1.5" abaixo.
 
 **v1.4 (15/10/2026, implantada no Apps Script em 15/10/2026, segundo o responsável):** link da **Grade horária** visual, como card de consulta em "Matrícula e disciplinas" e atalho no rodapé do menu lateral, ambos em nova aba. Para instalar junto com a v1.3, substitua também `PainelNavegacaoEstilos.html` e `PainelIcones.html` (na lista da v1.3 eles já são arquivos novos). Para trocar o link da grade, edite o item `grade-horaria` de `FERRAMENTAS_PAINEL` em `Codigo.gs`.
 
@@ -22,6 +22,7 @@ O GitHub é a referência de código, mas **não sincroniza automaticamente** co
 | `PainelNavegacaoEstilos.html`, `PainelNavegacaoUI.html` | v1.3. Menu lateral (padrão) e abas, como no Painel dos servidores; recolhe em telas ≤ 900 px. |
 | `PainelIcones.html` | v1.3. Ícones Lucide do menu (licença em `LICENCA_ICONES.txt`); v1.5 acrescenta `message-circle-more`. |
 | `PainelAtendimento.html`, `PainelAtendimentoEstilos.html` | v1.5. Texto e comportamento da página Atendimento online, e seus estilos. |
+| `PainelAtendimentoQR.html` | v1.5. QR code do WhatsApp em SVG fixo. **Arquivo gerado** por `testes/gerar_qr_atendimento.js`; não edite à mão. |
 | `ContagemCreditos.gs` | v1.3. Lê as Regras Curriculares (só leitura, só currículos `ATIVO`) e entrega ao navegador o necessário para a contagem; cache de 5 min; `diagnosticarContagemCreditos()` para conferir no editor. |
 | `PainelContagemMotor.html`, `PainelContagemUI.html`, `PainelContagemEstilos.html` | v1.3. Conta feita no navegador, janela da contagem e seus estilos. |
 
@@ -47,9 +48,9 @@ Os sete links `/exec` de `SISTEMAS` são destinos exibidos aos alunos no própri
 
 ## Instalação da v1.5
 
-1. No Apps Script do painel dos alunos, crie os arquivos novos `PainelAtendimento.html` e `PainelAtendimentoEstilos.html` (sem `src/`).
+1. No Apps Script do painel dos alunos, crie os arquivos novos `PainelAtendimento.html`, `PainelAtendimentoEstilos.html` e `PainelAtendimentoQR.html` (sem `src/`).
 2. Substitua o conteúdo de `Codigo.gs`, `Painel.html`, `PainelAjuda.html` e `PainelIcones.html`. Os demais arquivos não mudaram.
 3. Nenhuma chave nova no `ID_INDEX` e nenhuma permissão nova: a página não lê planilha nem chama o servidor.
 4. Crie uma nova versão da implantação existente e confira no `/exec`: o item "Atendimento online" no fim do menu, o botão abrindo o WhatsApp do setor com a mensagem modelo, a busca por "whatsapp" e o botão em Ajuda → "Sobre o Painel".
 
-Para trocar número, horário ou mensagem modelo, edite `ATENDIMENTO_ONLINE` em `Codigo.gs`; para trocar o texto, edite o modelo em `PainelAtendimento.html`.
+Para trocar número, horário ou mensagem modelo, edite `ATENDIMENTO_ONLINE` em `Codigo.gs` e, se mudou o número ou a mensagem, rode `node gerar_qr_atendimento.js` na pasta `testes` (requer o pacote npm `qrcode`) para refazer o QR code e copie também `PainelAtendimentoQR.html`; para trocar o texto, edite o modelo em `PainelAtendimento.html`.

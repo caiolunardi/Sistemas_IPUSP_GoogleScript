@@ -48,6 +48,13 @@ async function contraste(p, scheme, seletores, rotulo = '') {
 const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.map(c => c.querySelector('strong').textContent));
 
 (async () => {
+  // O QR versionado (gerado por gerar_qr_atendimento.js) tem de bater com
+  // ATENDIMENTO_ONLINE: mudou número ou mensagem, rode o gerador de novo.
+  try {
+    const { gerar } = require('./gerar_qr_atendimento.js');
+    const { html: esperado } = await gerar();
+    chk('QR code versionado está atualizado (rode gerar_qr_atendimento.js se falhar)', require('fs').readFileSync(path.join(__dirname, '..', 'src', 'PainelAtendimentoQR.html'), 'utf8') === esperado);
+  } catch (e) { console.log('aviso: pacote "qrcode" ausente, conferência do QR versionado pulada'); }
   const b = await chromium.launch();
   for (const scheme of ['light', 'dark']) {
     const T = `[${scheme}]`;
@@ -77,6 +84,10 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
     chk(`${T} Atendimento online abre no frame principal`, at && at.h1 === 'Atendimento online' && at.cards === 0 && await p.getAttribute('#navCategoria-atendimento-online', 'aria-current') === 'page', JSON.stringify(at && at.h1));
     chk(`${T} botão do WhatsApp com número e mensagem modelo, em nova aba`, at && /^https:\/\/wa\.me\/551130914177\?text=/.test(at.href) && decodeURIComponent(at.href.split('text=')[1]).includes('Nº USP:') && at.target === '_blank' && /noopener/.test(at.rel) && at.aviso, at && at.href);
     chk(`${T} texto com número e horário`, at && at.texto.includes('(11) 3091-4177') && at.texto.includes('de segunda a sexta-feira, das 9h às 17h') && at.texto.includes('Como funciona') && at.texto.includes('Nunca envie sua senha'));
+    chk(`${T} avisa que o número não recebe ligações`, at && at.texto.includes('não recebe ligações'));
+    const qr = await p.evaluate(() => { const svg = document.querySelector('.atendimentoQr .atendimentoQrSvg'); const t = document.getElementById('modeloAtendimentoQr'); return svg && { visivel: svg.getBoundingClientRect().width >= 120, nome: svg.getAttribute('aria-label'), link: t.getAttribute('data-link'), botao: window.PainelAtendimento.linkWhatsApp() }; });
+    chk(`${T} QR code visível no computador, com nome acessível`, qr && qr.visivel && /QR code/.test(qr.nome), JSON.stringify(qr && qr.nome));
+    chk(`${T} QR code leva ao mesmo link do botão`, qr && qr.link === qr.botao, qr && qr.link);
     chk(`${T} aviso de horário presente e escrito`, at && /atendimentoStatus--(dentro|fora)/.test(at.status));
     const horarios = await p.evaluate(() => ['2026-10-20T12:00:00Z', '2026-10-20T11:59:00Z', '2026-10-20T19:59:00Z', '2026-10-20T20:00:00Z', '2026-10-24T15:00:00Z', '2026-10-25T15:00:00Z'].map(d => window.PainelAtendimento.dentroDoHorario(new Date(d))).join());
     chk(`${T} horário de São Paulo: 9h–17h, seg–sex`, horarios === 'true,false,true,false,false,false', horarios);
@@ -254,6 +265,7 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
     if (w <= 900) await p.click('#painelMenuMovel');
     await p.click('#navCategoria-atendimento-online');
     chk(`${w}px atendimento sem rolagem horizontal e botão ≥ 44 px`, await semRolagem() && await p.evaluate(() => document.querySelector('.atendimentoBotao').getBoundingClientRect().height >= 43.5));
+    chk(`${w}px QR code ${w <= 600 ? 'escondido' : 'visível'}`, await p.evaluate(() => getComputedStyle(document.querySelector('.atendimentoQr')).display !== 'none') === (w > 600));
     if (w === 360) { await p.waitForTimeout(250); await p.screenshot({ path: SAIDA + 'atendimento-360.png', fullPage: true }); }
     if (w <= 900) await p.click('#painelMenuMovel');
     await p.click('#navCategoria-formacao-conclusao');

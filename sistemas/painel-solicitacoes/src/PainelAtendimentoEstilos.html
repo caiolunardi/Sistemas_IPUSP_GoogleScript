@@ -103,6 +103,53 @@
     color:var(--gradip-text-muted);
 }
 
+.atendimentoContato{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px 28px;
+    flex-wrap:wrap;
+}
+
+.atendimentoAcoes{
+    flex:1 1 280px;
+    min-width:0;
+}
+
+.atendimentoAcoes > :last-child{
+    margin-bottom:0;
+}
+
+/* O QR fica preto sobre branco nos dois temas (é o que a câmera lê); no
+   escuro, a borda separa o quadro branco da superfície. A largura vem do
+   próprio SVG (3 px por módulo, número inteiro: sem borrar os módulos). */
+.atendimentoQr{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    max-width:380px;
+    margin:0;
+}
+
+.atendimentoQrSvg{
+    flex:0 0 auto;
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+}
+
+.atendimentoQr figcaption{
+    font-size:12.5px;
+    line-height:1.45;
+    color:var(--gradip-text-muted);
+}
+
+@media (max-width:600px){
+    .atendimentoQr{
+        display:none;
+    }
+}
+
 @media (max-width:480px){
     .atendimentoCartao{
         padding:16px;
