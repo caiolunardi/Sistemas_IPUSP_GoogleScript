@@ -33,6 +33,7 @@ Guias para quem chega de fora:
 - [Verificação automática (CI)](CI.md);
 - [Desenvolvimento local com clasp](../DEVELOPMENT_LOCAL.md): Git e clasp, `.claspignore`, segurança e princípios de arquitetura;
 - [Versões e Releases](VERSOES.md);
+- [Implantação](IMPLANTACAO.md): do commit aprovado ao Apps Script, conferência do código no Google e volta atrás;
 - [Como reaproveitar um sistema em outro setor](COMO_REAPROVEITAR.md);
 - [Ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md);
 - [Repositório público](seguranca/REPOSITORIO_PUBLICO.md): o que pode e o que não pode entrar;
