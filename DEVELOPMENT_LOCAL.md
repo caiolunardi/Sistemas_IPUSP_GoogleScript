@@ -95,11 +95,9 @@ Valem para todo sistema novo e para cada mudança, e estão também no [`CLAUDE.
 - **Configuração fora do código** (seção 6) e **auditoria** pelo [modelo](docs/auditoria/MODELO.md) quando o sistema grava dados.
 - **Testes locais** em `sistemas/<sistema>/testes/`, com o Apps Script simulado e dados sintéticos, incluídos na CI ([`docs/CI.md`](docs/CI.md)).
 
-## 8. Exceção atual: Painel dos servidores
+## 8. Painel dos servidores: IDs saíram do código na 1.4
 
-O código do Painel dos servidores no Git ainda tem marcadores `CONFIGURAR_ID_PLANILHA_…` no lugar de IDs que, no projeto real, estão escritos no código (`Code.gs`, `ConfigFormulariosCore.gs`, `ConfigRegrasCurricularesRepository.gs`). Um `clasp push` direto da pasta do repositório quebraria o painel.
-
-Até esses IDs passarem para o `ID_INDEX`, o painel é enviado de um clone separado (fora do repositório), onde se aplicam os arquivos do commit e se **mantêm as linhas com os IDs reais**. Nesse clone, nunca rode `git add` nem copie os arquivos de volta para o repositório sem trocar os IDs pelos marcadores. Os outros sistemas já leem a configuração do `ID_INDEX` e de Script Properties.
+Até a versão 1.3, o projeto real do Painel dos servidores tinha os IDs das planilhas escritos no código, e o Git tinha marcadores `CONFIGURAR_ID_PLANILHA_…` no lugar deles; por isso ele era enviado de um clone separado, com os IDs recolocados à mão. Desde a 1.4 o painel acha todas as planilhas pelo `ID_INDEX`, e a pasta `sistemas/painel-servidores/src/` vai ao Google como está. O clone antigo deixa de ser necessário depois do primeiro envio da 1.4; não copie arquivos dele de volta para o repositório.
 
 ## 9. Problemas comuns
 

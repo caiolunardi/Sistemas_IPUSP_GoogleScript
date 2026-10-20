@@ -56,13 +56,13 @@ function aba(valores) {
   };
 }
 const TITULOS = ['N. USP', 'Nome', 'e-mail', 'Observacao', 'Perfil'];
-function cenario({ email = 'admin@exemplo.usp.br', linhas, propriedade = ID_INDICE, indice, semAba = false, titulos = TITULOS } = {}) {
-  const leituras = { planilha: 0 };
+function cenario({ email = 'admin@exemplo.usp.br', linhas, propriedade = ID_INDICE, indice, semAba = false, titulos = TITULOS, extras = {} } = {}) {
+  const leituras = { planilha: 0, indice: 0 };
   const cache = {};
   const logs = [];
-  const planilhas = {
-    [ID_INDICE]: { getSheets: () => [aba(indice || [['Chave', 'Descrição', 'ID de Produção'], ['OUTRA', '', 'x'], ['PERMISSOES_DE_ACESSO', '', ID_PERMISSOES]])] },
-    [ID_PERMISSOES]: { getSheetByName: n => { leituras.planilha++; return semAba || n !== 'PAINEL_SERVIDORES' ? null : aba([titulos].concat(linhas || [
+  const planilhas = Object.assign({}, extras, {
+    [ID_INDICE]: { getSheets: () => { leituras.indice++; return [aba(indice || [['Chave', 'Descrição', 'ID de Produção'], ['OUTRA', '', 'x'], ['PERMISSOES_DE_ACESSO', '', ID_PERMISSOES]])]; } },
+    [ID_PERMISSOES]: { getName: () => 'Permissões', getSheetByName: n => { leituras.planilha++; return semAba || n !== 'PAINEL_SERVIDORES' ? null : aba([titulos].concat(linhas || [
       ['1', 'Pessoa Fictícia A', 'Admin@Exemplo.USP.br ', '', 'ADMINISTRADOR'],
       ['2', 'Pessoa Fictícia B', '\tleitor@exemplo.usp.br', '', 'LEITOR'],
       ['3', 'Pessoa Fictícia C', 'semperfil@exemplo.usp.br', '', ''],
@@ -71,7 +71,7 @@ function cenario({ email = 'admin@exemplo.usp.br', linhas, propriedade = ID_INDI
       ['6', 'Pessoa Fictícia E', 'duplo@exemplo.usp.br', '', 'LEITOR'],
       ['7', 'Sem e-mail', '', '', 'ADMINISTRADOR']
     ])); } }
-  };
+  });
   const ctx = {
     console: { log: m => logs.push(String(m)), error: m => logs.push(String(m)), warn: m => logs.push(String(m)) },
     JSON,
@@ -146,6 +146,45 @@ for (const [rotulo, opcoes] of [
   chk('diagnóstico não registra e-mails', logs.every(l => !/@/.test(l)), logs.join(' | '));
   const leitor = cenario({ email: 'leitor@exemplo.usp.br' }).ctx;
   chk('diagnóstico só para administrador', lanca(() => leitor.diagnosticarAcessoPainel()) !== null);
+}
+
+// --- 3. Planilhas pelo ID_INDEX (1.4) ---------------------------------------
+{
+  const fontes = ['Code.gs', 'ConfigFormulariosCore.gs', 'ConfigRegrasCurricularesRepository.gs'].map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
+  const todos = fs.readdirSync(SRC).filter(f => f.endsWith('.gs')).map(f => fs.readFileSync(path.join(SRC, f), 'utf8')).join('\n');
+  chk('nenhum ID nem marcador CONFIGURAR_ no código', !/CONFIGURAR_ID|ID_PLANILHA_/.test(todos) && !/openById\(\s*["']/.test(todos));
+  const chaves = [...fontes.matchAll(/const (CHAVE_PLANILHA_[A-Z_]+) = "([A-Z_]+)"/g)];
+  chk('9 planilhas de dados por chave do ID_INDEX', chaves.length === 9, chaves.map(c => c[2]).join(', '));
+  chk('cada chave é aberta por idNoIndicePainel_', chaves.every(c => fontes.includes('openById(idNoIndicePainel_(' + c[1] + '))')));
+}
+{
+  const indice = [['Chave', 'ID de Produção'], ['PERMISSOES_DE_ACESSO', ID_PERMISSOES], ['PERIODOS', 'PER'], ['DIPLOMAS_X', 'DIP']];
+  const { ctx, leituras, cache } = cenario({ indice });
+  ctx.idNoIndicePainel_('PERIODOS'); ctx.idNoIndicePainel_('DIPLOMAS_X'); ctx.exigirAcessoPainel_();
+  chk('ID_INDEX lido uma vez para várias chaves', leituras.indice === 1, String(leituras.indice));
+  vm.runInContext('indicePainelLido_ = null', ctx);
+  chk('outra execução usa o cache do script', ctx.idNoIndicePainel_('PERIODOS') === 'PER' && leituras.indice === 1, String(leituras.indice));
+  indice.push(['NOVA', 'NOV']);
+  chk('chave recém-criada: lê o ID_INDEX de novo', ctx.idNoIndicePainel_('NOVA') === 'NOV' && leituras.indice === 2, String(leituras.indice));
+  chk('chave ausente: erro com o nome da chave', (lanca(() => ctx.idNoIndicePainel_('NAO_EXISTE')) || {}).message === 'Chave NAO_EXISTE ausente ou sem ID de Produção no ID_INDEX.');
+  chk('o cache guarda só o mapa chave → ID', Object.keys(JSON.parse(cache.indicePainelServidores)).join() === 'PERMISSOES_DE_ACESSO,PERIODOS,DIPLOMAS_X,NOVA');
+}
+{
+  const nomes = ['EMISSAO_DIPLOMAS', 'ABERTURA_HABILITACOES', 'TRANCAMENTO_TOTAL_MATRICULA', 'TRANCAMENTO_PARCIAL_MATRICULA', 'SEGUNDA_VIA_BUSP', 'MATRICULA_INTERCAMBISTAS', 'EXCLUSAO_DISCIPLINAS', 'PERIODOS', 'REGRAS_CURRICULARES', 'AUDITORIA_PAINEL_SERVIDORES', 'SERVIDORES', 'PLANILHA_DOCENTES'];
+  const indice = [['Chave', 'ID de Produção'], ['PERMISSOES_DE_ACESSO', ID_PERMISSOES]].concat(nomes.filter(n => n !== 'SEGUNDA_VIA_BUSP').map(n => [n, 'IDREAL_' + n]));
+  const extras = {}; nomes.forEach(n => { extras['IDREAL_' + n] = { getName: () => 'Planilha ' + n }; });
+  const { ctx, logs } = cenario({ indice, extras });
+  vm.runInContext(fs.readFileSync(path.join(SRC, 'Code.gs'), 'utf8').match(/const CHAVE_PLANILHA_[\s\S]*?;/g).join('\n') + '\n' +
+    fs.readFileSync(path.join(SRC, 'ConfigFormulariosCore.gs'), 'utf8').match(/const CHAVE_PLANILHA_[^\n]*/)[0] + '\n' +
+    fs.readFileSync(path.join(SRC, 'ConfigRegrasCurricularesRepository.gs'), 'utf8').match(/const CHAVE_PLANILHA_[^\n]*/)[0] +
+    '\nconst AUDITORIA_PAINEL = { CHAVE: "AUDITORIA_PAINEL_SERVIDORES" }; var manutencao = []; function registrarManutencaoPainel_(f, r) { manutencao.push([f, r]); }', ctx);
+  const r = ctx.diagnosticarPlanilhasPainel();
+  chk('diagnóstico das planilhas: 13 chaves', Object.keys(r).length === 13, Object.keys(r).join(', '));
+  chk('diagnóstico mostra o nome, nunca o ID', r.EMISSAO_DIPLOMAS === 'ok: Planilha EMISSAO_DIPLOMAS' && Object.values(r).every(v => !/IDREAL_/.test(v)) && logs.every(l => !/IDREAL_/.test(l)), JSON.stringify(r));
+  chk('diagnóstico aponta a chave que falta', /^FALHA: Chave SEGUNDA_VIA_BUSP ausente/.test(r.SEGUNDA_VIA_BUSP), r.SEGUNDA_VIA_BUSP);
+  chk('diagnóstico registrado na auditoria', vm.runInContext('manutencao', ctx)[0][1].falhas.join() === 'SEGUNDA_VIA_BUSP');
+  const leitor = cenario({ email: 'leitor@exemplo.usp.br' }).ctx;
+  chk('diagnóstico das planilhas só para administrador', lanca(() => leitor.diagnosticarPlanilhasPainel()) !== null);
 }
 
 console.log(`\n${ok} ok, ${fail} falha(s).`);

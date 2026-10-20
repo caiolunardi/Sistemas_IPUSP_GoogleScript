@@ -28,7 +28,9 @@ const ACESSO_PAINEL = {
   PERFIL_ADMIN: "ADMINISTRADOR",
   PERFIL_LEITOR: "LEITOR",
   CACHE: "permissoesPainelServidores",
-  CACHE_SEGUNDOS: 60
+  CACHE_SEGUNDOS: 60,
+  CACHE_INDICE: "indicePainelServidores",
+  CACHE_INDICE_SEGUNDOS: 600
 };
 
 const MENSAGEM_SO_LEITURA =
@@ -135,8 +137,13 @@ function idPlanilhaPermissoes_() {
   return idNoIndicePainel_(ACESSO_PAINEL.CHAVE);
 }
 
-/** ID de produção de uma chave da planilha ID_INDEX (primeira aba). */
-function idNoIndicePainel_(chave) {
+// Mapa chave → ID de Produção do ID_INDEX. Desde a 1.4 o painel acha todas
+// as planilhas por ele (nenhum ID no código), então o índice é lido uma vez
+// por execução e guardado no cache do script por alguns minutos. Chave que
+// não está no mapa guardado força uma leitura nova (chave recém-criada).
+let indicePainelLido_ = null;
+
+function lerIndicePainel_() {
   const idIndice = String(PropertiesService.getScriptProperties().getProperty(ACESSO_PAINEL.PROPRIEDADE_ID_INDEX) || "").trim();
   if (!idIndice) {
     throw new Error("Falta a Script Property " + ACESSO_PAINEL.PROPRIEDADE_ID_INDEX + ".");
@@ -149,12 +156,25 @@ function idNoIndicePainel_(chave) {
   if (colChave === -1 || colId === -1) {
     throw new Error('A planilha ID_INDEX precisa das colunas "Chave" e "ID de Produção".');
   }
+  const mapa = {};
   for (let i = 1; i < valores.length; i++) {
-    if (String(valores[i][colChave]).trim() === chave) {
-      const id = String(valores[i][colId] || "").trim();
-      if (id) return id;
-    }
+    const chave = String(valores[i][colChave]).trim();
+    const id = String(valores[i][colId] || "").trim();
+    if (chave && id && !mapa[chave]) mapa[chave] = id;
   }
+  indicePainelLido_ = mapa;
+  try { CacheService.getScriptCache().put(ACESSO_PAINEL.CACHE_INDICE, JSON.stringify(mapa), ACESSO_PAINEL.CACHE_INDICE_SEGUNDOS); } catch (erro) { /* sem cache: lê a cada execução */ }
+  return mapa;
+}
+
+/** ID de produção de uma chave da planilha ID_INDEX (primeira aba). */
+function idNoIndicePainel_(chave) {
+  let mapa = indicePainelLido_;
+  if (!mapa) {
+    try { mapa = JSON.parse(CacheService.getScriptCache().get(ACESSO_PAINEL.CACHE_INDICE) || "null"); } catch (erro) { mapa = null; }
+  }
+  if (!mapa || !mapa[chave]) mapa = lerIndicePainel_();
+  if (mapa[chave]) return mapa[chave];
   throw new Error("Chave " + chave + " ausente ou sem ID de Produção no ID_INDEX.");
 }
 
@@ -196,4 +216,32 @@ function diagnosticarAcessoPainel() {
   try { registrarManutencaoPainel_("diagnosticarAcessoPainel", contagem); } catch (falha) { /* auditoria indisponível */ }
   console.log("Aba " + ACESSO_PAINEL.ABA + " lida: " + JSON.stringify(contagem));
   return contagem;
+}
+
+/**
+ * Confere, no editor, se todas as planilhas que o painel usa são achadas
+ * pelo ID_INDEX (1.4). Mostra o nome de cada planilha, nunca o ID.
+ */
+function diagnosticarPlanilhasPainel() {
+  exigirAdminPainel_();
+  CacheService.getScriptCache().remove(ACESSO_PAINEL.CACHE_INDICE);
+  indicePainelLido_ = null;
+  const chaves = [
+    CHAVE_PLANILHA_DIPLOMAS, CHAVE_PLANILHA_HABILITACOES, CHAVE_PLANILHA_TRANCAMENTO_TOTAL,
+    CHAVE_PLANILHA_TRANCAMENTO_PARCIAL, CHAVE_PLANILHA_BUSP, CHAVE_PLANILHA_INTERCAMBISTAS,
+    CHAVE_PLANILHA_EXCLUSAO_DISCIPLINAS, CHAVE_PLANILHA_PERIODOS, CHAVE_PLANILHA_REGRAS_CURRICULARES,
+    ACESSO_PAINEL.CHAVE, AUDITORIA_PAINEL.CHAVE, "SERVIDORES", "PLANILHA_DOCENTES"
+  ];
+  const resultado = {};
+  chaves.forEach(chave => {
+    try {
+      resultado[chave] = "ok: " + SpreadsheetApp.openById(idNoIndicePainel_(chave)).getName();
+    } catch (erro) {
+      resultado[chave] = "FALHA: " + (erro && erro.message ? erro.message : erro);
+    }
+  });
+  const falhas = Object.keys(resultado).filter(c => resultado[c].indexOf("FALHA") === 0);
+  try { registrarManutencaoPainel_("diagnosticarPlanilhasPainel", { chaves: chaves.length, falhas: falhas }); } catch (falha) { /* auditoria indisponível */ }
+  Object.keys(resultado).forEach(c => console.log(c + " → " + resultado[c]));
+  return resultado;
 }

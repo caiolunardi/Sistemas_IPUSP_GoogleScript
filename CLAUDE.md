@@ -116,7 +116,6 @@ Leia `DEVELOPMENT_LOCAL.md` antes de configurar o clasp, criar um sistema novo o
 - IDs de produção ficam no `ID_INDEX` ou em Script Properties, nunca no código. A verificação acusa `openById("…")` e constantes `*ID*` com ID real.
 - Interface em HTML, CSS e JavaScript nativos, sem framework nem etapa de build. Regra de negócio, validação, autorização e planilhas nos `.gs`; telas e estilos nos `.html`; a página só fala com o servidor por `google.script.run`.
 - Agente de IA nunca roda `clasp deploy`, `redeploy` ou `undeploy`, nem implanta pelo editor, sem a ordem explícita do responsável. `clasp push` só quando pedido, e depois de `clasp status`.
-- O Painel dos servidores ainda tem IDs escritos no código do projeto real (marcadores `CONFIGURAR_*` no Git): não faça `clasp push` dele a partir da pasta do repositório (ver a seção 8 do `DEVELOPMENT_LOCAL.md`).
 
 ## Regra de escopo
 

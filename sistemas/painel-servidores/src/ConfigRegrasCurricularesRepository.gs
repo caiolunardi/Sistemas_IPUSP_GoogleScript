@@ -24,7 +24,7 @@
   sem precisar criar uma.
 =====================================================*/
 
-const ID_PLANILHA_REGRAS_CURRICULARES = "CONFIGURAR_ID_PLANILHA_REGRAS_CURRICULARES"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_REGRAS_CURRICULARES = "REGRAS_CURRICULARES"; // chave do ID_INDEX (1.4: o ID não fica no código)
 
 const ABA_REGRAS_README = "README";
 const ABA_REGRAS_CURRICULOS = "CURRICULOS";
@@ -123,7 +123,7 @@ const STATUS_RULESET_INATIVO = "INATIVO";
 ------------------------------------------------------*/
 
 function obterPlanilhaRegras_() {
-  return SpreadsheetApp.openById(ID_PLANILHA_REGRAS_CURRICULARES);
+  return SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_REGRAS_CURRICULARES));
 }
 
 function obterAbaRegras_(nomeAba) {

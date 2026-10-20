@@ -4,32 +4,32 @@
 =====================================================*/
 
 // --- Diplomas ---
-const ID_PLANILHA_DIPLOMAS = "CONFIGURAR_ID_PLANILHA_DIPLOMAS"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_DIPLOMAS = "EMISSAO_DIPLOMAS"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const ABA_DIPLOMAS = "Diplomas";
 const CABECALHO_NOME_DIPLOMAS = "Nome completo";
 const CABECALHO_STATUS_DIPLOMAS = "Status — Dados Pessoais";
 
 // --- Abertura de Habilitações ---
-const ID_PLANILHA_HABILITACOES = "CONFIGURAR_ID_PLANILHA_HABILITACOES"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_HABILITACOES = "ABERTURA_HABILITACOES"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const ABA_HABILITACOES_ATUAL = "Respostas ao formulário 2";
 const ABA_HABILITACOES_HISTORICA = "2021 - 2022";
 const COLUNA_SITUACAO_ATUAL = 11;
 const VALOR_SITUACAO_PENDENTE = "pendente";
 
 // --- Trancamento Total de Matrícula ---
-const ID_PLANILHA_TRANCAMENTO_TOTAL = "CONFIGURAR_ID_PLANILHA_TRANCAMENTO_TOTAL"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_TRANCAMENTO_TOTAL = "TRANCAMENTO_TOTAL_MATRICULA"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const COLUNA_SITUACAO_TRANCAMENTO_TOTAL = 1;
 const COLUNA_NOME_TRANCAMENTO_TOTAL = 4;
 const VALOR_SITUACAO_CONCLUIDO_TRANCAMENTO_TOTAL = "concluído";
 
 // --- Trancamento Parcial de Matrícula ---
-const ID_PLANILHA_TRANCAMENTO_PARCIAL = "CONFIGURAR_ID_PLANILHA_TRANCAMENTO_PARCIAL"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_TRANCAMENTO_PARCIAL = "TRANCAMENTO_PARCIAL_MATRICULA"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const COLUNA_SITUACAO_TRANCAMENTO_PARCIAL = 1;
 const COLUNA_NOME_TRANCAMENTO_PARCIAL = 6;
 const VALOR_SITUACAO_PENDENTE_TRANCAMENTO_PARCIAL = "pendente";
 
 // --- 2ª Via do BUSP ---
-const ID_PLANILHA_BUSP = "CONFIGURAR_ID_PLANILHA_BUSP"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_BUSP = "SEGUNDA_VIA_BUSP"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const COLUNA_STATUS_BUSP = 9;
 const COLUNA_NOME_BUSP = 4;
 const VALOR_STATUS_PENDENTE_ANALISE_BUSP = "pendente de análise";
@@ -37,7 +37,7 @@ const VALOR_STATUS_PENDENTE_EMISSAO_BUSP = "pendente de emissão";
 const VALOR_STATUS_AGUARDANDO_FINANCEIRO_BUSP = "aguardando serviço técnico de apoio financeiro";
 
 // --- Matrícula de Intercambistas ---
-const ID_PLANILHA_INTERCAMBISTAS = "CONFIGURAR_ID_PLANILHA_INTERCAMBISTAS"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_INTERCAMBISTAS = "MATRICULA_INTERCAMBISTAS"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const COLUNA_SITUACAO_INTERCAMBISTAS = 1;
 const COLUNA_TIPO_INTERCAMBISTAS = 4;
 const COLUNA_EMAIL_INTERCAMBISTAS = 5;
@@ -46,7 +46,7 @@ const VALOR_TIPO_INCLUSAO_INTERCAMBISTAS = "inclusao";
 const VALOR_TIPO_EXCLUSAO_INTERCAMBISTAS = "exclusao";
 
 // --- Gerenciador de Exclusão de Disciplinas ---
-const ID_PLANILHA_EXCLUSAO_DISCIPLINAS = "CONFIGURAR_ID_PLANILHA_EXCLUSAO_DISCIPLINAS"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_EXCLUSAO_DISCIPLINAS = "EXCLUSAO_DISCIPLINAS"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const ABA_EXCLUSAO_DISCIPLINAS = "Respostas ao formulário 1";
 const COLUNA_EMAIL_EXCLUSAO_DISCIPLINAS = 2;
 const COLUNA_DISCIPLINA_EXCLUSAO_DISCIPLINAS = 10;
@@ -128,7 +128,7 @@ function contarPendentesDiplomas_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_DIPLOMAS);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_DIPLOMAS));
     const aba = ss.getSheetByName(ABA_DIPLOMAS);
     if (!aba) return 0;
 
@@ -165,7 +165,7 @@ function contarPendentesHabilitacoes_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_HABILITACOES);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_HABILITACOES));
     let total = 0;
 
     const abaAtual = ss.getSheetByName(ABA_HABILITACOES_ATUAL);
@@ -231,7 +231,7 @@ function contarPendentesTrancamentoTotal_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_TRANCAMENTO_TOTAL);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_TRANCAMENTO_TOTAL));
     const aba = ss.getSheets()[0];
     if (!aba) return 0;
 
@@ -264,7 +264,7 @@ function contarPendentesTrancamentoParcial_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_TRANCAMENTO_PARCIAL);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_TRANCAMENTO_PARCIAL));
     const aba = ss.getSheets()[0];
     if (!aba) return 0;
 
@@ -297,7 +297,7 @@ function contarPendentesBusp_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_BUSP);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_BUSP));
     const aba = ss.getSheets()[0];
     if (!aba) return 0;
 
@@ -330,7 +330,7 @@ function contarAguardandoFinanceiroBusp_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_BUSP);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_BUSP));
     const aba = ss.getSheets()[0];
     if (!aba) return 0;
 
@@ -374,7 +374,7 @@ function contarPendentesIntercambistas_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_INTERCAMBISTAS);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_INTERCAMBISTAS));
     const aba = ss.getSheets()[0];
     if (!aba) return { inclusao: 0, exclusao: 0 };
 
@@ -418,7 +418,7 @@ function contarPendentesExclusaoDisciplinas_() {
 
   try {
 
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_EXCLUSAO_DISCIPLINAS);
+    const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_EXCLUSAO_DISCIPLINAS));
     const aba = ss.getSheetByName(ABA_EXCLUSAO_DISCIPLINAS);
     if (!aba) return 0;
 

@@ -18,7 +18,7 @@
   movido de Code.gs durante a modularização.
 =====================================================*/
 
-const ID_PLANILHA_PERIODOS = "CONFIGURAR_ID_PLANILHA_PERIODOS"; // valor real omitido do Git — ver docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md
+const CHAVE_PLANILHA_PERIODOS = "PERIODOS"; // chave do ID_INDEX (1.4: o ID não fica no código)
 const NOME_ABA_PERIODOS = "Página1";
 
 // Colunas fixas por posição (A a K) — decisão já tomada nesse
@@ -46,7 +46,7 @@ const INDICADOR_COLACAO_GRAU = "Pedido de Colação de Grau";
 const INDICADOR_EXCLUSAO_DISCIPLINAS = "Formulário de Exclusão de Disciplinas";
 
 function obterAbaPeriodos_() {
-  const ss = SpreadsheetApp.openById(ID_PLANILHA_PERIODOS);
+  const ss = SpreadsheetApp.openById(idNoIndicePainel_(CHAVE_PLANILHA_PERIODOS));
   // Busca pelo nome real da aba primeiro; se ela for renomeada algum
   // dia, cai pra primeira aba em vez de quebrar a tela inteira.
   const aba = ss.getSheetByName(NOME_ABA_PERIODOS) || ss.getSheets()[0];

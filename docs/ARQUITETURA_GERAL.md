@@ -21,19 +21,19 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 
 ## 2. Mapa das chaves
 
-**L** = lê, **G** = grava. "Literal" indica um sistema que ainda tem o ID numa constante do código (marcador `CONFIGURAR_*` no Git) em vez de usar o `ID_INDEX`.
+**L** = lê, **G** = grava. Nenhum sistema do repositório tem mais ID de planilha no código (o Painel dos servidores foi o último, até a 1.3).
 
 | Chave | O que é | Quem usa | Onde está o formato |
 |---|---|---|---|
 | `PLANILHA_ALUNOS` | cadastro dos alunos (nº USP, nome, ingresso, e-mails) | Comunidade IPUSP (L/G ficha); formulários de Exclusão, Trancamento Parcial e Total (L); Estrutura Curricular, auditoria (L) | [Comunidade IPUSP](sistemas/busca-alunos/DADOS_E_SEGURANCA.md) |
 | `PLANILHA_DOCENTES` | cadastro dos docentes | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
 | `SERVIDORES` | cadastro de servidores e setores | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
-| `PERIODOS` | abertura e fechamento de cada formulário | Painel de Solicitações (L); Exclusão e Trancamento Parcial (L); Painel dos servidores (L/G, literal) | [Painel de Solicitações](sistemas/painel-solicitacoes/DADOS_E_SEGURANCA.md) |
-| `REGRAS_CURRICULARES` | regras de cada currículo para a contagem de créditos (a aba `AUDITORIA_REGRAS_CURRICULARES` ganha `evento_id` na 1.3 do Painel dos servidores) | Painel de Solicitações (L); Painel dos servidores (L/G, literal) | [Contagem de créditos](sistemas/painel-solicitacoes/CONTAGEM_DE_CREDITOS.md) |
+| `PERIODOS` | abertura e fechamento de cada formulário | Painel de Solicitações (L); Exclusão e Trancamento Parcial (L); Painel dos servidores (L/G) | [Painel de Solicitações](sistemas/painel-solicitacoes/DADOS_E_SEGURANCA.md) |
+| `REGRAS_CURRICULARES` | regras de cada currículo para a contagem de créditos (a aba `AUDITORIA_REGRAS_CURRICULARES` ganha `evento_id` na 1.3 do Painel dos servidores) | Painel de Solicitações (L); Painel dos servidores (L/G) | [Contagem de créditos](sistemas/painel-solicitacoes/CONTAGEM_DE_CREDITOS.md) |
 | `DISCIPLINAS` | cadastro de disciplinas (código, nome, créditos) | Exclusão e Trancamento Parcial (L) | [Exclusão](sistemas/exclusao-disciplinas/DADOS_E_SEGURANCA.md) |
-| `EXCLUSAO_DISCIPLINAS` | respostas do formulário de exclusão | formulário (G); Painel dos servidores (L, literal); gerenciador (fora do repositório) | [Exclusão](sistemas/exclusao-disciplinas/README.md) |
-| `TRANCAMENTO_PARCIAL_MATRICULA` | respostas do trancamento parcial | formulário (G); Painel dos servidores (L, literal); gerenciador (fora do repositório) | [Trancamento Parcial](sistemas/trancamento-parcial/README.md) |
-| `TRANCAMENTO_TOTAL_MATRICULA` | respostas do trancamento total | formulário (G); gerenciador (L/G); Painel dos servidores (L, literal) | [Trancamento Total](sistemas/trancamento-total/README.md) |
+| `EXCLUSAO_DISCIPLINAS` | respostas do formulário de exclusão | formulário (G); Painel dos servidores (L); gerenciador (fora do repositório) | [Exclusão](sistemas/exclusao-disciplinas/README.md) |
+| `TRANCAMENTO_PARCIAL_MATRICULA` | respostas do trancamento parcial | formulário (G); Painel dos servidores (L); gerenciador (fora do repositório) | [Trancamento Parcial](sistemas/trancamento-parcial/README.md) |
+| `TRANCAMENTO_TOTAL_MATRICULA` | respostas do trancamento total | formulário (G); gerenciador (L/G); Painel dos servidores (L) | [Trancamento Total](sistemas/trancamento-total/README.md) |
 | `ESTRUTURA_CURRICULAR` | base curricular importada do Júpiter, ajustes e histórico | Estrutura Curricular (L/G) | [modelo de dados](sistemas/estrutura-curricular/MODELO_DE_DADOS.md) |
 | `PERMISSOES_DE_ACESSO` | quem entra em cada sistema da equipe e com que perfil, uma aba por sistema (`ESTRUTURA_CURRICULAR`, `PAINEL_SERVIDORES`, ...) | Estrutura Curricular (L); Painel dos servidores 1.1 (L, aba `PAINEL_SERVIDORES`) | [Estrutura Curricular](sistemas/estrutura-curricular/DADOS_E_SEGURANCA.md) |
 | `GRADE_HORARIA_PREENCHIMENTO` | planilha que as secretarias preenchem | Estrutura Curricular (G no envio, L na auditoria); Grade Horária visual (L); código da própria planilha (validação e proteção) | [modelo de dados](sistemas/estrutura-curricular/MODELO_DE_DADOS.md#índices-e-planilha-das-secretarias) |
@@ -43,7 +43,14 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 | `AUDITORIA_PAINEL_SERVIDORES` | auditoria do Painel dos servidores: eventos, alterações (antes/depois), sessões, resumo diário, pendências | Painel dos servidores 1.3 (G) | [docs/auditoria](auditoria/README.md) |
 | `OFICIOS` | pasta do futuro Gerenciador de Ofícios | ainda sem código | [ideia](sistemas/gerenciador-oficios/README.md) |
 
-O Painel dos servidores também lê, por ID literal, as planilhas de Diplomas, Habilitações, BUSP e Intercambistas, que pertencem a sistemas ainda fora do repositório.
+O Painel dos servidores também lê, desde a 1.4 pelo `ID_INDEX`, as planilhas de quatro sistemas ainda fora do repositório:
+
+| Chave | O que é | Quem usa |
+|---|---|---|
+| `EMISSAO_DIPLOMAS` | pedidos de emissão de diploma (aba `Diplomas`) | Painel dos servidores 1.4 (L, aviso do card) |
+| `ABERTURA_HABILITACOES` | pedidos de abertura de habilitação | Painel dos servidores 1.4 (L) |
+| `SEGUNDA_VIA_BUSP` | pedidos de 2ª via do BUSP | Painel dos servidores 1.4 (L) |
+| `MATRICULA_INTERCAMBISTAS` | pedidos de inclusão e exclusão de intercambistas | Painel dos servidores 1.4 (L) |
 
 ## 3. Script Properties
 

@@ -29,24 +29,24 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 
 ## 3. Recursos externos
 
-| Nome lógico | Tipo | Config key (constante no código) | Público? | Permissão esperada |
+| Nome lógico | Tipo | Chave do `ID_INDEX` (desde a 1.4; constante no código) | Público? | Permissão esperada |
 |---|---|---|---|---|
-| Planilha de Diplomas | Sheets | `ID_PLANILHA_DIPLOMAS` (`Code.gs`) | Não | leitura pela conta que executa |
-| Planilha de Habilitações | Sheets | `ID_PLANILHA_HABILITACOES` | Não | leitura |
-| Planilha de Trancamento Total | Sheets | `ID_PLANILHA_TRANCAMENTO_TOTAL` | Não | leitura |
-| Planilha de Trancamento Parcial | Sheets | `ID_PLANILHA_TRANCAMENTO_PARCIAL` | Não | leitura |
-| Planilha do BUSP | Sheets | `ID_PLANILHA_BUSP` | Não | leitura |
-| Planilha de Intercambistas | Sheets | `ID_PLANILHA_INTERCAMBISTAS` | Não | leitura |
-| Planilha de Exclusão de Disciplinas | Sheets | `ID_PLANILHA_EXCLUSAO_DISCIPLINAS` | Não | leitura |
-| Planilha de Períodos | Sheets | `ID_PLANILHA_PERIODOS` (`ConfigFormulariosCore.gs`) | Não | leitura e escrita |
-| Planilha de Regras Curriculares | Sheets | `ID_PLANILHA_REGRAS_CURRICULARES` (`ConfigRegrasCurricularesRepository.gs`) | Não | leitura e escrita |
+| Planilha de Diplomas | Sheets | `EMISSAO_DIPLOMAS` (`CHAVE_PLANILHA_DIPLOMAS`, `Code.gs`) | Não | leitura pela conta que executa |
+| Planilha de Habilitações | Sheets | `ABERTURA_HABILITACOES` (`CHAVE_PLANILHA_HABILITACOES`) | Não | leitura |
+| Planilha de Trancamento Total | Sheets | `TRANCAMENTO_TOTAL_MATRICULA` (`CHAVE_PLANILHA_TRANCAMENTO_TOTAL`) | Não | leitura |
+| Planilha de Trancamento Parcial | Sheets | `TRANCAMENTO_PARCIAL_MATRICULA` (`CHAVE_PLANILHA_TRANCAMENTO_PARCIAL`) | Não | leitura |
+| Planilha do BUSP | Sheets | `SEGUNDA_VIA_BUSP` (`CHAVE_PLANILHA_BUSP`) | Não | leitura |
+| Planilha de Intercambistas | Sheets | `MATRICULA_INTERCAMBISTAS` (`CHAVE_PLANILHA_INTERCAMBISTAS`) | Não | leitura |
+| Planilha de Exclusão de Disciplinas | Sheets | `EXCLUSAO_DISCIPLINAS` (`CHAVE_PLANILHA_EXCLUSAO_DISCIPLINAS`) | Não | leitura |
+| Planilha de Períodos | Sheets | `PERIODOS` (`CHAVE_PLANILHA_PERIODOS`, `ConfigFormulariosCore.gs`) | Não | leitura e escrita |
+| Planilha de Regras Curriculares | Sheets | `REGRAS_CURRICULARES` (`CHAVE_PLANILHA_REGRAS_CURRICULARES`, `ConfigRegrasCurricularesRepository.gs`) | Não | leitura e escrita |
 | Índice mestre | Sheets | Script Property `ID_INDEX_SPREADSHEET_ID` | Não | leitura (primeira aba, colunas "Chave" e "ID de Produção") |
 | Cadastros de servidores e de docentes | Sheets | chaves `SERVIDORES` e `PLANILHA_DOCENTES` no `ID_INDEX` (primeira aba) | Não | leitura pela conta que executa (1.2, só para a saudação) |
 | Planilha de permissões | Sheets | chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`; aba `PAINEL_SERVIDORES` | Não | leitura pela conta que executa |
 | Planilha da auditoria (1.3) | Sheets | chave `AUDITORIA_PAINEL_SERVIDORES` no `ID_INDEX` | Não | escrita pela conta que executa; **só ela abre** (decisão de 20/10/2026) |
 | Sistemas da equipe | Web Apps `/exec` | Script Property `URLS_SISTEMAS_EQUIPE` (JSON lido por `UrlsSistemas.gs`) | Não | cada sistema controla o próprio acesso |
 
-No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valores reais ficam só no projeto Apps Script.
+Desde a 1.4 nenhum ID de planilha fica no código, nem no Git nem no projeto Apps Script: o painel lê a chave no `ID_INDEX` (`idNoIndicePainel_`, em `AcessoPainel.gs`). O índice é lido uma vez por execução e o mapa chave → ID fica no cache do script por 10 minutos (servidor, nunca vai à página); uma chave que não está no mapa guardado força uma leitura nova. `diagnosticarPlanilhasPainel` (só administrador, no editor) confere as 13 chaves e mostra o nome de cada planilha, nunca o ID. Até a 1.3, os nove IDs ficavam em constantes do código, trocados no Git por marcadores `CONFIGURAR_ID_PLANILHA_<NOME>`.
 
 **URLs dos sistemas internos (20/10/2026).** Até esta data as nove URLs `/exec` dos sistemas da equipe ficavam escritas no `Painel.html`. Com o repositório público, elas saíram do Git: o `Painel.html` recebe as URLs do servidor (`urlsSistemasParaPagina_()`, em `UrlsSistemas.gs`), que lê a Script Property `URLS_SISTEMAS_EQUIPE`. Diferente das URLs do [Painel de Solicitações](../painel-solicitacoes/DADOS_E_SEGURANCA.md), que são destinos divulgados aos alunos, estas levam a ferramentas internas (por exemplo, a Comunidade IPUSP, que envia o cadastro completo a quem abre a página; ver [seção 4 da Comunidade IPUSP](../busca-alunos/DADOS_E_SEGURANCA.md#4-web-app)). URL não é credencial, mas publicá-la tira a única barreira que hoje existe nesses sistemas sem autorização no backend. As URLs antigas continuam no histórico do Git; a forma de invalidá-las (nova implantação) está em [`docs/seguranca/REPOSITORIO_PUBLICO.md`](../../seguranca/REPOSITORIO_PUBLICO.md).
 

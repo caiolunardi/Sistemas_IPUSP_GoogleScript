@@ -4,7 +4,7 @@
 
   UMA função administrativa, IDEMPOTENTE, que prepara a planilha
   oficial de Regras Curriculares (mesmo ID de sempre —
-  ID_PLANILHA_REGRAS_CURRICULARES, ConfigRegrasCurricularesRepository.gs)
+  CHAVE_PLANILHA_REGRAS_CURRICULARES, ConfigRegrasCurricularesRepository.gs)
   pra suportar:
 
     - os novos campos acadêmicos em CURRICULOS (semestres_minimos,
@@ -70,7 +70,7 @@ function migrarRegrasCurricularesMultiCurriculoERevisaoV1SemAuditoria_() {
 
   try {
 
-  // 1) A planilha oficial é sempre a mesma (ID_PLANILHA_REGRAS_CURRICULARES,
+  // 1) A planilha oficial é sempre a mesma (CHAVE_PLANILHA_REGRAS_CURRICULARES,
   // ConfigRegrasCurricularesRepository.gs) — não há necessidade de abrir
   // nada explicitamente aqui, os helpers do Repository já usam esse ID.
 
