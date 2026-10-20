@@ -1,24 +1,25 @@
 # Cria a Release no GitHub de uma versão de sistema.
 # Formato da tag: <sistema>-v<versão>, por exemplo exclusao-disciplinas-v1.2.
-# Dois jeitos de usar (docs/VERSOES.md):
-#   - Actions → Release → Run workflow, informando a(s) tag(s) e o commit
-#     do main: o workflow confere o commit e cria a tag e a Release;
-#   - enviar a tag pelo git (git push origin <tag>): o workflow confere o
-#     commit da tag e cria a Release.
-# Em qualquer caso o commit precisa estar no main, ter entrado por pull
-# request aceito e ter a CI verde (push no main). Sem isso, nada é criado.
+# Uso: Actions → Release → Run workflow (no main), informando a(s) tag(s) e o
+# commit de merge do PR. Documentação: docs/VERSOES.md.
+#
+# A conferência e a criação ficam em ferramentas/release/publicar_release.sh
+# (testado em ferramentas/testes/testar_publicar_release.js): o commit precisa
+# ser um estado do main criado pelo merge de um PR aceito, com a CI verde no
+# push do main. Tudo é conferido antes de qualquer escrita; a tag nasce junto
+# com a Release; nada é apagado nem movido.
+#
+# Não há gatilho por push de tag: uma tag enviada pelo git não gera Release.
 name: Release
 
 on:
-  push:
-    tags: ["*-v*"]
   workflow_dispatch:
     inputs:
       tags:
         description: "Tag(s) a criar, separadas por espaço (ex.: exclusao-disciplinas-v1.3)"
         required: true
       commit:
-        description: "SHA completo (40 caracteres) do commit do main que tem o código da versão"
+        description: "SHA completo (40 caracteres) do commit de merge do PR, no main"
         required: true
 
 permissions: {}
@@ -29,101 +30,29 @@ concurrency:
 
 jobs:
   release:
+    # Só a cópia do workflow que está no main. Uma cópia alterada noutro ramo
+    # pularia esta linha, por isso o environment "release" também restringe o
+    # ramo a main (docs/governanca/PROTECAO_DO_MAIN.md).
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Com o environment "release" configurado com revisor obrigatório
-    # (docs/governanca/PROTECAO_DO_MAIN.md), cada rodada espera a aprovação
-    # do responsável no GitHub antes de começar.
+    # Com revisor obrigatório configurado no environment, a rodada espera a
+    # aprovação no GitHub antes de começar. Sem o environment configurado, o
+    # GitHub o cria vazio e a rodada não espera ninguém.
     environment: release
     permissions:
-      contents: write   # criar tag e Release
-      actions: read     # conferir a CI do commit
-      pull-requests: read
+      contents: write       # criar a Release (e a tag junto)
+      actions: read         # conferir a CI do commit
+      pull-requests: read   # conferir o PR do commit
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-          persist-credentials: true   # o push da tag usa o token deste job
-      - name: Conferir o commit e criar tag(s) e Release(s)
+          persist-credentials: false   # nada é enviado pelo git; a escrita é pela API
+      - name: Conferir o commit e criar a(s) Release(s)
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          EVENTO: ${{ github.event_name }}
-          TAGS: ${{ github.event_name == 'push' && github.ref_name || inputs.tags }}
-          COMMIT_PEDIDO: ${{ github.event_name == 'push' && github.sha || inputs.commit }}
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch --no-tags origin main
-
-          # 1. O commit: SHA completo, existente, no main.
-          if ! [[ "$COMMIT_PEDIDO" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error::Informe o SHA completo do commit (40 caracteres hexadecimais)."; exit 1
-          fi
-          COMMIT=$(git rev-parse --verify "${COMMIT_PEDIDO}^{commit}")
-          if ! git merge-base --is-ancestor "$COMMIT" origin/main; then
-            echo "::error::O commit $COMMIT não está no main. Só código integrado vira versão."; exit 1
-          fi
-
-          # 2. Entrou por pull request aceito no main.
-          prs=$(gh api "repos/$REPO/commits/$COMMIT/pulls" --jq '[.[] | select(.merged_at != null and .base.ref == "main")] | length')
-          if [ "$prs" -lt 1 ]; then
-            echo "::error::O commit $COMMIT não pertence a nenhum pull request aceito no main."; exit 1
-          fi
-
-          # 3. A CI do push no main terminou verde neste commit exato.
-          ci=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$COMMIT&event=push&branch=main&status=success&per_page=1" --jq '.total_count')
-          if [ "$ci" -lt 1 ]; then
-            echo "::error::A CI do commit $COMMIT no main não terminou com sucesso (ou ainda está rodando)."; exit 1
-          fi
-          echo "Commit $COMMIT conferido: no main, de PR aceito, CI verde."
-
-          for TAG in $TAGS; do
-            if ! [[ "$TAG" =~ ^[a-z0-9-]+-v[0-9]+(\.[0-9]+)*$ ]]; then
-              echo "::error::Tag fora do formato <sistema>-v<versão>: $TAG"; exit 1
-            fi
-            sistema="${TAG%-v*}"
-            pasta="sistemas/${sistema}"; docs="docs/sistemas/${sistema%-gerenciador}"
-            case "$sistema" in
-              *-gerenciador) pasta="sistemas/${sistema%-gerenciador}/gerenciador" ;;
-              planilha-secretarias) pasta="sistemas/estrutura-curricular/planilha-grade"; docs="docs/sistemas/planilha-grade-secretarias" ;;
-            esac
-            if ! git cat-file -e "$COMMIT:$pasta" 2>/dev/null; then echo "::error::Pasta $pasta não existe no commit para a tag $TAG"; exit 1; fi
-
-            # 4. A tag: nunca movida. Se já existe, tem de apontar para este commit.
-            git fetch --no-tags origin "refs/tags/$TAG:refs/tags/$TAG" 2>/dev/null || true
-            if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-              alvo=$(git rev-parse "refs/tags/$TAG^{commit}")
-              if [ "$alvo" != "$COMMIT" ]; then
-                echo "::error::A tag $TAG já existe em outro commit ($alvo). Tags não são movidas: crie a versão seguinte."; exit 1
-              fi
-              echo "A tag $TAG já existe neste commit."
-            elif [ "$EVENTO" = "workflow_dispatch" ]; then
-              git tag -a "$TAG" "$COMMIT" -m "Versão $TAG (notas em notas-de-versao/$TAG.md; commit $COMMIT)"
-              git push origin "refs/tags/$TAG"
-            else
-              echo "::error::Tag $TAG não encontrada."; exit 1
-            fi
-
-            if gh release view "$TAG" >/dev/null 2>&1; then echo "Release $TAG já existe; nada mudou."; continue; fi
-
-            notas="$RUNNER_TEMP/notas-$TAG.md"
-            if git cat-file -e "$COMMIT:notas-de-versao/${TAG}.md" 2>/dev/null; then
-              git show "$COMMIT:notas-de-versao/${TAG}.md" > "$notas"
-            else
-              # Sem notas escritas: lista os commits do sistema desde a versão anterior.
-              anterior=$(git tag --list "${sistema}-v*" --sort=-v:refname | grep -vx "$TAG" | head -1 || true)
-              {
-                echo "Versão sem notas escritas em notas-de-versao/. Commits incluídos:"
-                echo
-                git log --format='- %s (%h)' ${anterior:+$anterior..}"$TAG" -- "$pasta" "$docs"
-              } > "$notas"
-            fi
-            {
-              echo
-              echo "---"
-              echo "Commit da versão: \`$COMMIT\` · conferido pelo workflow Release: no main, de pull request aceito, CI verde."
-            } >> "$notas"
-            gh release create "$TAG" --title "$TAG" --notes-file "$notas" --verify-tag
-          done
+          TAGS: ${{ inputs.tags }}
+          COMMIT_PEDIDO: ${{ inputs.commit }}
+        run: bash ferramentas/release/publicar_release.sh
