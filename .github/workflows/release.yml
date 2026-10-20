@@ -38,8 +38,11 @@ jobs:
               echo "::error::Tag fora do formato <sistema>-v<versão>: $TAG"; exit 1
             fi
             sistema="${TAG%-v*}"
-            pasta="sistemas/${sistema}"
-            case "$sistema" in *-gerenciador) pasta="sistemas/${sistema%-gerenciador}/gerenciador" ;; esac
+            pasta="sistemas/${sistema}"; docs="docs/sistemas/${sistema%-gerenciador}"
+            case "$sistema" in
+              *-gerenciador) pasta="sistemas/${sistema%-gerenciador}/gerenciador" ;;
+              planilha-secretarias) pasta="sistemas/estrutura-curricular/planilha-grade"; docs="docs/sistemas/planilha-grade-secretarias" ;;
+            esac
             if [ ! -d "$pasta" ]; then echo "::error::Pasta $pasta não existe para a tag $TAG"; exit 1; fi
 
             if [ "$EVENTO" = "workflow_dispatch" ]; then
@@ -59,7 +62,7 @@ jobs:
               {
                 echo "Versão sem notas escritas em notas-de-versao/. Commits incluídos:"
                 echo
-                git log --format='- %s (%h)' ${anterior:+$anterior..}"$TAG" -- "$pasta" "docs/sistemas/${sistema%-gerenciador}"
+                git log --format='- %s (%h)' ${anterior:+$anterior..}"$TAG" -- "$pasta" "$docs"
               } > "$RUNNER_TEMP/notas.md"
               notas="$RUNNER_TEMP/notas.md"
             fi

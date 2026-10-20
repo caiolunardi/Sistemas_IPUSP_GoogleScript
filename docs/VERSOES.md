@@ -19,10 +19,11 @@ Uma Release **marca o código do repositório**. Ela não publica nada no Google
 | Trancamento Parcial (formulário) | `trancamento-parcial-v1.2` |
 | Trancamento Total (formulário) | `trancamento-total-v1.3` |
 | Gerenciador de Trancamento Total | `trancamento-total-gerenciador-v1.1` |
+| Planilha das secretarias | `planilha-secretarias-v1.1` |
 
 Gerenciadores usam o sufixo `-gerenciador` (código em `sistemas/<sistema>/gerenciador/`). Os formulários com gerenciador usam o nome do sistema sem sufixo.
 
-A **Planilha das secretarias** (`sistemas/estrutura-curricular/planilha-grade/`) acompanha a Estrutura Curricular e ainda não tem número próprio. Se passar a ter, use `planilha-secretarias-v<versão>` e acrescente a linha aqui.
+A **Planilha das secretarias** tem código em `sistemas/estrutura-curricular/planilha-grade/` e documentação em `docs/sistemas/planilha-grade-secretarias/`; o workflow conhece esse caminho.
 
 ## 2. Quando subir a versão
 

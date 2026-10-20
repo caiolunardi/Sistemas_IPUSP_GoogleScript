@@ -1,5 +1,6 @@
 /*=====================================================================
   PLANILHA DAS SECRETARIAS — VALIDAÇÕES (único arquivo do projeto)
+  Versão 1.1 (14/10/2026): aviso na tela quando há conflito de horário.
 
   Este é o ÚNICO código que fica na planilha "Grade Horária" que as
   secretarias preenchem (chave GRADE_HORARIA_PREENCHIMENTO). Tudo o mais
@@ -20,6 +21,13 @@
       mesmo semestre ideal (I), no mesmo dia, com horário sobreposto. Se
       achar, apaga o dia e o início da linha editada e explica numa nota
       na célula do dia. Sem conflito, a nota antiga sai.
+   3. (1.1) Aviso na tela: depois de gravar as notas e apagar os
+      horários, abre uma caixa "Conflito de horário" para quem editou,
+      com o mesmo texto da nota. Uma colagem com vários conflitos gera
+      UMA caixa com a lista. A caixa vem DEPOIS de gravar porque o
+      gatilho simples tem 30 s: se a pessoa demorar a clicar em OK, a
+      validação já valeu. No app de celular a caixa não aparece (fica
+      só a nota). A caixa não pede autorização nova.
 
   Horário de Fim (M): é uma FÓRMULA gravada pelo envio da grade —
   início + créditos-aula (1 crédito = 1 hora). Não é calculado aqui; a
@@ -37,7 +45,9 @@ var VALIDACAO = {
   OBRIGATORIA: 'Obrigatória',
   OPTATIVAS: ['Eletiva', 'Livre'],
   // Uma colagem grande não é verificada linha a linha (evita estourar o tempo do gatilho).
-  MAX_LINHAS: 50
+  MAX_LINHAS: 50,
+  // Quantos conflitos a caixa de aviso lista por extenso; o resto vira "e mais N".
+  MAX_AVISOS: 10
 };
 
 function onEdit(e) {
@@ -50,14 +60,40 @@ function onEdit(e) {
   if (ultima < primeira) return;
   var colIni = r.getColumn(), colFim = colIni + r.getNumColumns() - 1;
   var toca = function (c) { return colIni <= c && c <= colFim; };
+  var conflitos = [];
   try {
     if (toca(VALIDACAO.COL.modalidade)) aplicarModalidade_(aba, primeira, ultima);
     if ((toca(VALIDACAO.COL.dia) || toca(VALIDACAO.COL.inicio) || toca(VALIDACAO.COL.modalidade)) && ultima - primeira < VALIDACAO.MAX_LINHAS) {
       var obrigatorias = obrigatoriasDaGrade_(aba.getParent());
-      for (var linha = primeira; linha <= ultima; linha++) verificarConflito_(aba, linha, obrigatorias);
+      for (var linha = primeira; linha <= ultima; linha++) {
+        var conflito = verificarConflito_(aba, linha, obrigatorias);
+        if (conflito) conflitos.push(conflito);
+      }
     }
   } catch (erro) {
     console.error('Validação da grade falhou: ' + (erro && erro.message));
+  }
+  // Por último, com notas gravadas e horários apagados.
+  if (conflitos.length) avisarConflitos_(conflitos);
+}
+
+/** (1.1) Caixa "Conflito de horário" para quem editou; uma só por edição. Falha ao abrir não desfaz nada. */
+function avisarConflitos_(conflitos) {
+  var max = VALIDACAO.MAX_AVISOS;
+  var texto;
+  if (conflitos.length === 1) {
+    texto = conflitos[0] + '\n\nO dia da semana e o horário de início foram apagados. Esta explicação fica na nota da célula "Dia da semana". Escolha outro dia ou horário.';
+  } else {
+    texto = conflitos.length + ' disciplinas ficaram sem dia da semana e horário de início:\n\n' +
+      conflitos.slice(0, max).map(function (c) { return '• ' + c; }).join('\n\n') +
+      (conflitos.length > max ? '\n\n… e mais ' + (conflitos.length - max) + '.' : '') +
+      '\n\nA explicação de cada uma fica na nota da célula "Dia da semana". Escolha outros dias ou horários.';
+  }
+  try {
+    var ui = SpreadsheetApp.getUi();
+    ui.alert('Conflito de horário', texto, ui.ButtonSet.OK);
+  } catch (erro) {
+    console.warn('Aviso de conflito não exibido: ' + (erro && erro.message));
   }
 }
 
@@ -101,24 +137,29 @@ function obrigatoriasDaGrade_(ss) {
   return lista;
 }
 
-/** Confere uma linha: optativa × obrigatória do mesmo semestre ideal, mesmo dia, horário sobreposto. */
+/**
+ * Confere uma linha: optativa × obrigatória do mesmo semestre ideal, mesmo dia, horário sobreposto.
+ * Havendo conflito, grava a nota, apaga dia e início e devolve o texto do conflito (para o aviso); senão, null.
+ */
 function verificarConflito_(aba, linha, obrigatorias) {
   var C = VALIDACAO.COL;
   var v = aba.getRange(linha, C.codigo, 1, C.inicio - C.codigo + 1).getValues()[0];
   var tipo = String(v[C.tipo - C.codigo]).trim();
-  if (VALIDACAO.OPTATIVAS.indexOf(tipo) === -1) return;
+  if (VALIDACAO.OPTATIVAS.indexOf(tipo) === -1) return null;
   var semestre = String(v[C.semestre - C.codigo]).trim();
   var dia = String(v[C.dia - C.codigo]).trim();
   var ini = minutosDe_(v[C.inicio - C.codigo]);
   var cred = Number(v[C.creditos - C.codigo]);
   var celulaDia = aba.getRange(linha, C.dia);
-  if (!semestre || !dia || ini === null || !cred) return;
+  if (!semestre || !dia || ini === null || !cred) return null;
   var fim = ini + cred * 60;
   var choque = obrigatorias.filter(function (o) {
     return !(o.aba === aba.getName() && o.linha === linha) && o.semestre === semestre && o.dia === dia && ini < o.fim && fim > o.ini;
   })[0];
-  if (!choque) { celulaDia.clearNote(); return; }
-  celulaDia.setNote('Conflito de horário.\n\n' + v[0] + ' (' + tipo + ', ' + semestre + 'º semestre ideal), ' + dia + ' ' + horaTexto_(ini) + '–' + horaTexto_(fim) +
-    ', coincide com a obrigatória ' + choque.codigo + ' - ' + choque.nome + ' (aba ' + choque.aba + '), ' + horaTexto_(choque.ini) + '–' + horaTexto_(choque.fim) + '.\n\nEscolha outro dia ou horário.');
+  if (!choque) { celulaDia.clearNote(); return null; }
+  var conflito = v[0] + ' (' + tipo + ', ' + semestre + 'º semestre ideal), ' + dia + ' ' + horaTexto_(ini) + '–' + horaTexto_(fim) +
+    ', coincide com a obrigatória ' + choque.codigo + ' - ' + choque.nome + ' (aba ' + choque.aba + '), ' + horaTexto_(choque.ini) + '–' + horaTexto_(choque.fim) + '.';
+  celulaDia.setNote('Conflito de horário.\n\n' + conflito + '\n\nEscolha outro dia ou horário.');
   aba.getRange(linha, C.dia, 1, 2).clearContent();
+  return conflito;
 }

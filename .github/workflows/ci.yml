@@ -109,6 +109,8 @@ jobs:
       - run: node testar_etapa7_trava_auditoria.js
       - run: node testar_etapa8_previa_envio.js
       - run: node testar_etapa9_auditoria_envio.js
+      - run: node testar_validacoes_planilha.js
+      - run: node testar_protecao_grade.js
       - run: node testar_ajuda.js
       - run: node testar_navegacao_visual.js
       - run: node testar_navegador_etapa6.js

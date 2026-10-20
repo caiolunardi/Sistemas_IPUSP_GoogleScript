@@ -9,7 +9,7 @@ A versão no código (`VERSAO_SISTEMA` em `Codigo.gs`) é a **1.11.3** (19/10/20
 | Pasta/arquivo | Conteúdo |
 |---|---|
 | [`src/`](src/) | 34 arquivos para a raiz do projeto Apps Script do Web App |
-| [`planilha-grade/`](planilha-grade/README.md) | `Validacoes.gs`, para o projeto vinculado à planilha das secretarias; implantação separada |
+| [`planilha-grade/`](planilha-grade/README.md) | `Validacoes.gs` 1.1 e `Protecao.gs`, para o projeto vinculado à planilha das secretarias; implantação separada ([documentação da planilha](../../docs/sistemas/planilha-grade-secretarias/README.md)) |
 | [`testes/`](testes/README.md) | simulador de Apps Script, testes de servidor e Chromium com dados sintéticos |
 | [`LICENCA_ICONES.txt`](LICENCA_ICONES.txt) | licença do catálogo Lucide Static 1.55.0 |
 
