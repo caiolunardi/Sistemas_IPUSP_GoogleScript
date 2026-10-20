@@ -51,6 +51,24 @@ body{
     flex:0 0 auto;
 }
 
+/* Saudação de quem abriu (SaudacaoPainel.gs); o período vem do relógio do navegador. */
+.saudacaoUsuario{
+    flex:1 1 auto;
+    min-width:0;
+    text-align:center;
+    font-size:16px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+/* Sem espaço ao lado dos botões: a saudação desce para uma linha própria. */
+@media (max-width:1279px){
+    #headerSistema{ flex-wrap:wrap; row-gap:4px; padding-top:8px; padding-bottom:8px; }
+    .saudacaoUsuario{ order:3; flex:1 1 100%; text-align:left; font-size:15px; }
+}
+
 .logoUSP{
     height:44px;
     width:auto;
@@ -755,7 +773,11 @@ summary:focus-visible,
     .logoEsquerda{
         flex:1 1 100%;
     }
+    .saudacaoUsuario{
+        order:1;
+    }
     .grupoDireitaHeader{
+        order:2;
         flex:1 1 100%;
         justify-content:flex-end;
         flex-wrap:wrap;
@@ -849,6 +871,7 @@ summary:focus-visible,
             <div class="subtituloSistema">Serviço de Graduação — Instituto de Psicologia</div>
         </div>
     </div>
+    <div id="saudacaoUsuario" class="saudacaoUsuario"></div>
     <div class="grupoDireitaHeader">
         <?!= include_('GradipTemaControle'); ?>
         <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
@@ -965,6 +988,20 @@ const URLS_SISTEMAS = <?!= urlsSistemasParaPagina_() ?>;
 // gravações de quem é leitor são recusadas pelo próprio servidor.
 const PAPEL_USUARIO = <?!= papelParaPagina_() ?>;
 if (PAPEL_USUARIO !== "admin") document.getElementById("avisoSomenteLeitura").hidden = false;
+
+// "Bom dia, {nome}": nome lido no servidor pelo e-mail de quem abriu
+// (SaudacaoPainel.gs; "" se não estiver nos cadastros). O período segue
+// o relógio do computador e é conferido de minuto em minuto.
+const NOME_USUARIO = <?!= saudacaoParaPagina_() ?>;
+function atualizarSaudacao_() {
+    const hora = new Date().getHours();
+    const periodo = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+    const el = document.getElementById("saudacaoUsuario");
+    el.textContent = NOME_USUARIO ? periodo + ", " + NOME_USUARIO : periodo;
+    el.title = el.textContent;
+}
+atualizarSaudacao_();
+setInterval(atualizarSaudacao_, 60000);
 
 const SISTEMAS = [
     // "Pessoas do IPUSP" é o nome da área, não de uma busca específica:

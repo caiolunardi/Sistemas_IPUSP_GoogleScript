@@ -18,7 +18,7 @@ A Central segue o contrato de [`docs/ajuda/`](../../ajuda/README.md): `PainelAju
 | `ajuda-exclusao` | Exclusão de Disciplinas | datas de retificação, sem Contínuo |
 | `ajuda-regras` | Regras Curriculares | resumo, ordem de trabalho e botões para o manual existente |
 | `ajuda-problemas` | Problemas comuns | avisos ausentes, sistema que não abre, busca vazia, erros ao carregar ou salvar, “Você não tem permissão para fazer alterações” (perfil de leitura), aparência não guardada |
-| `ajuda-faq` | Perguntas frequentes | 12 perguntas (`painel-faq-*`), entre elas “Somente leitura” |
+| `ajuda-faq` | Perguntas frequentes | 13 perguntas (`painel-faq-*`), entre elas “Somente leitura” e a saudação sem nome |
 
 ## Gatilhos contextuais
 

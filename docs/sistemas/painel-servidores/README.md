@@ -1,6 +1,6 @@
 # Painel de Sistemas — servidores
 
-**Estado:** versão 1.1 (controle de acesso), verificada localmente. **Ainda não homologada no `/exec`**: em 20/10/2026 a implantação ainda rodava a camada visual de 13/10, sem nenhuma conferência de acesso. O GitHub não informa qual versão está implantada no Apps Script. [Código](../../../sistemas/painel-servidores/README.md).
+**Estado:** versão 1.2 (saudação no cabeçalho), verificada localmente. A 1.1 (controle de acesso) foi enviada ao editor pelo clasp e conferida no `/dev` em 20/10/2026; a publicação no `/exec` está pendente. O GitHub não informa qual versão está implantada no Apps Script. [Código](../../../sistemas/painel-servidores/README.md).
 
 ## Finalidade e público
 
@@ -24,6 +24,19 @@ A lista fica na aba **`PAINEL_SERVIDORES`** da planilha de permissões (chave `P
 | fora da aba | vê só uma página de "Sem acesso a este painel", com o contato do Serviço de Graduação |
 
 O painel só abre para contas `@usp.br` ("Qualquer pessoa da USP"). A conferência é feita no servidor em toda chamada, não só nos botões. Mudanças na aba valem em até 1 minuto. Detalhes em [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md#4-web-app).
+
+## Saudação (1.2)
+
+No cabeçalho, entre o título e os botões, aparece "Bom dia", "Boa tarde" ou "Boa noite" seguido do nome de quem abriu: até 11:59, de 12:00 a 17:59 e a partir das 18:00, pelo relógio do computador (troca sozinha com a página aberta). O nome é procurado pelo e-mail da conta nos cadastros `SERVIDORES` e `PLANILHA_DOCENTES`:
+
+| Cadastro | O que aparece |
+|---|---|
+| servidor | primeiro nome ("Boa tarde, Maria") |
+| setor (TIPO = SETOR, ou NOME vazio) | nome do setor inteiro ("Bom dia, Serviço de Graduação") |
+| docente | Prof. ou Profª., pela coluna M / F, e o primeiro nome |
+| não encontrado | só "Bom dia" |
+
+Nome todo em maiúsculas é ajustado ("MARIA" vira "Maria"). Vale primeiro o e-mail principal e depois o secundário; servidores antes de docentes. Abaixo de 1280 px a saudação fica numa linha própria, logo abaixo do título.
 
 ## Cards de sistemas
 
@@ -64,4 +77,5 @@ Os avisos são lidos uma vez, quando a página abre (`obterContadoresPendencias`
 | Fonte no Git (13/10/2026) | Tema GRADIP, menu lateral/abas, card Pessoas do IPUSP, Central de Ajuda e gatilhos `?`, cards acessíveis por teclado, avisos mantidos ao usar a busca. Backend sem mudança de comportamento. Verificada localmente; implantação pendente. |
 | Fonte no Git (13/10/2026, 2ª) | Card Configurações de Grade Horária (categoria Grade Horária, sem aviso de pendência). Só `Painel.html` e `PainelAjuda.html` mudam. |
 | 1.0 (20/10/2026) | Primeiro número de versão (tag `painel-servidores-v1.0`). URLs das ferramentas da equipe saem do código e passam a vir da Script Property `URLS_SISTEMAS_EQUIPE` (`UrlsSistemas.gs`). Implantação pendente. |
-| 1.1 (20/10/2026) | Controle de acesso pela aba `PAINEL_SERVIDORES` (`AcessoPainel.gs`, `PainelSemAcesso.html`): administrador altera, leitor só vê, quem está fora não abre. Todas as funções chamadas pela página conferem o acesso; acesso da implantação `DOMAIN`. Aviso "Somente leitura" e ajuda nova. Implantação pendente. [Notas](../../../notas-de-versao/painel-servidores-v1.1.md). |
+| 1.1 (20/10/2026) | Controle de acesso pela aba `PAINEL_SERVIDORES` (`AcessoPainel.gs`, `PainelSemAcesso.html`): administrador altera, leitor só vê, quem está fora não abre. Todas as funções chamadas pela página conferem o acesso; acesso da implantação `DOMAIN`. Aviso "Somente leitura" e ajuda nova. Enviada ao editor e conferida no `/dev` (20/10). [Notas](../../../notas-de-versao/painel-servidores-v1.1.md). |
+| 1.2 (20/10/2026) | Saudação "Bom dia/Boa tarde/Boa noite, {nome}" no cabeçalho (`SaudacaoPainel.gs`), com o nome tirado dos cadastros de servidores e docentes. Implantação pendente. [Notas](../../../notas-de-versao/painel-servidores-v1.2.md). |

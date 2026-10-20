@@ -2,9 +2,20 @@
 
 **Estado:** verificado localmente em Chromium (Playwright) em 13/10/2026. **Não implantado nem conferido no `/exec`.** Depois de implantar, registre aqui a data, a versão da implantação e o resultado do roteiro do [manual](MANUAL_OPERACAO.md#instalar-ou-atualizar).
 
-## Versão 1.1: controle de acesso (20/10/2026)
+## Versão 1.2: saudação (20/10/2026)
 
 **Estado:** verificada localmente; não enviada ao Apps Script.
+
+- Novo: `SaudacaoPainel.gs`, `testes/testar_saudacao.js`.
+- Alterados: `Painel.html` (elemento `#saudacaoUsuario`, CSS e script), `AcessoPainel.gs` (a leitura do `ID_INDEX` passa a servir para qualquer chave, `idNoIndicePainel_`; mesmo comportamento), `PainelAjuda.html` (pergunta sobre a saudação).
+- Token usado: `--gradip-text`.
+- `testar_saudacao.js`: **18 checagens, 0 falhas**. `testar_acesso.js`: 77, 0 falhas. `testar_navegador.js`: **342 checagens, 0 falhas** (saudação com e sem nome, período pela hora do navegador, contraste ≥ 4,5:1 nos dois temas, inteira e sem rolagem horizontal em 360 a 1024 px).
+
+A conferir no `/dev`: o nome certo para uma conta de servidor, uma de setor e uma de docente.
+
+## Versão 1.1: controle de acesso (20/10/2026)
+
+**Estado:** enviada ao editor pelo clasp em 20/10/2026 (32 arquivos, IDs reais mantidos) e conferida no `/dev` pelo responsável. Publicação no `/exec` pendente.
 
 - Arquivos novos: `AcessoPainel.gs`, `PainelSemAcesso.html`, `testes/testar_acesso.js`.
 - Alterados: `Code.gs` (`doGet` confere o acesso antes de montar o painel), `Painel.html` (aviso "Somente leitura" e `PAPEL_USUARIO`), `PainelAjuda.html` (problema e pergunta sobre o perfil de leitura), `appsscript.json` (`DOMAIN`), e a primeira linha das funções públicas de `ConfigFormularioColacaoGrau.gs`, `ConfigFormularioExclusaoDisciplinas.gs`, `ConfigFormulariosCore.gs`, `ConfigRegrasCurriculares.gs`, `ConfigRegrasCurricularesMigracao.gs`, `UrlsSistemas.gs`, `teste.gs` e `Code.gs` (31 guardas com a de `diagnosticarAcessoPainel`). Nenhuma outra linha desses `.gs` muda.

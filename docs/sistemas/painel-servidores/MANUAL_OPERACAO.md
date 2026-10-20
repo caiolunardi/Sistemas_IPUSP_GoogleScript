@@ -42,6 +42,8 @@ As Regras Curriculares têm manual próprio, aberto pelo botão **❓ Manual e F
 | "Sem acesso a este painel" | O e-mail não está na aba `PAINEL_SERVIDORES`, ou está com erro de digitação. | Incluir ou corrigir na aba; vale em até 1 minuto. |
 | "Conta não identificada" | A pessoa não está com a conta `@usp.br` ativa no navegador. | Entrar com a conta `@usp.br` (ou abrir numa janela só com ela). |
 | "Não foi possível abrir o painel" para todos | A lista de acesso não pôde ser lida: falta a propriedade `ID_INDEX_SPREADSHEET_ID`, a chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`, a aba `PAINEL_SERVIDORES`, ou os títulos de C/E mudaram. O painel fica fechado de propósito. | Ver o motivo em **Execuções** (`doGet`) e rodar `diagnosticarAcessoPainel` como administrador. |
+| Saudação sem nome ("Bom dia", só) | O e-mail da conta não está em `SERVIDORES` nem em `PLANILHA_DOCENTES` (nem como e-mail secundário), ou um desses cadastros não abriu. A página funciona normalmente. | Incluir ou corrigir o e-mail no cadastro (Comunidade IPUSP); vale em até 10 minutos. Falha de leitura aparece em **Execuções** como "Saudação: cadastro ... não lido". |
+| Nome errado na saudação | O cadastro tem NOME, TIPO ou M / F diferentes do esperado. | Corrigir no cadastro: TIPO = SETOR mostra o nome inteiro; M / F define Prof./Profª. |
 | "Você não tem permissão para fazer alterações" | Perfil `LEITOR`, vazio ou desconhecido. | Se a pessoa deve alterar, mudar o Perfil para `ADMINISTRADOR`. |
 | Todos os cards aparecem como "Em breve" | Propriedade `URLS_SISTEMAS_EQUIPE` ausente ou com JSON inválido. | Rodar `diagnosticarUrlsSistemas` e corrigir a propriedade. |
 | Página em branco com erro `urlsSistemasParaPagina_` | Falta o arquivo `UrlsSistemas.gs` no projeto. | Criar o arquivo (passo 2a de "Instalar ou atualizar"). |
@@ -54,6 +56,7 @@ O commit no Git não altera o Apps Script. Para levar esta versão ao Google:
 1. **Cópia de segurança.** No editor do projeto, faça uma cópia (**Visão geral → Fazer uma cópia**) ou guarde o conteúdo dos arquivos atuais.
 2. **Não toque nos `.gs` que já existem nem no `appsscript.json`.** Os arquivos do Git têm marcadores no lugar dos IDs reais; os do projeto já estão corretos e não mudaram em comportamento. A exceção é o arquivo novo `UrlsSistemas.gs` (passo 2a).
 2b. **Controle de acesso (1.1).** Antes de tudo, inclua na aba `PAINEL_SERVIDORES` todas as pessoas da equipe que usam o painel, com `ADMINISTRADOR` para quem altera períodos ou Regras; quem não estiver na aba deixa de abrir o painel. Crie os arquivos `AcessoPainel` (script) e `PainelSemAcesso` (HTML) com o conteúdo de `src/`, e acrescente a linha `exigirAcessoPainel_();` ou `exigirAdminPainel_();` no início de cada função pública, como nos `.gs` do Git (o teste `testar_acesso.js` lista quais). Confirme a propriedade `ID_INDEX_SPREADSHEET_ID`. Em **Implantar → Gerenciar implantações**, o acesso deve ser **Qualquer pessoa da USP**. Rode `diagnosticarAcessoPainel` e autorize: ele mostra quantas pessoas há por perfil, sem e-mails. Pelo clasp, o mais simples é levar os `.gs` do Git e só recolocar neles os IDs reais.
+2c. **Saudação (1.2).** Crie o arquivo de script `SaudacaoPainel` com o conteúdo de `src/SaudacaoPainel.gs`, e atualize `AcessoPainel` e `Painel`. Usa as chaves `SERVIDORES` e `PLANILHA_DOCENTES` do `ID_INDEX`, que já existem; não há propriedade nova.
 2a. **Endereços dos sistemas (desde 20/10/2026).** Crie o arquivo de script `UrlsSistemas` (**+ → Script**) e cole o conteúdo de [`src/UrlsSistemas.gs`](../../../sistemas/painel-servidores/src/UrlsSistemas.gs). Em **Configurações do projeto → Propriedades do script**, crie `URLS_SISTEMAS_EQUIPE` com um JSON de uma linha, uma chave por card (`PESSOAS_IPUSP`, `EMISSAO_DIPLOMAS`, `GERENCIADOR_HABILITACOES`, `GERENCIADOR_TRANCAMENTO_TOTAL`, `GERENCIADOR_TRANCAMENTO_PARCIAL`, `GERENCIADOR_BUSP`, `GERENCIADOR_INTERCAMBISTAS`, `GERENCIADOR_EXCLUSAO_DISCIPLINAS`, `CONFIGURACOES_GRADE_HORARIA`), cada uma com a URL `/exec` do sistema. Rode `diagnosticarUrlsSistemas` no editor: ele diz quais chaves faltam, sem mostrar as URLs. Card cuja URL falta aparece como **Em breve**. Não registre as URLs no Git.
 3. **Substitua o conteúdo** destes seis arquivos HTML pelos de [`sistemas/painel-servidores/src`](../../../sistemas/painel-servidores/src):
    `Painel`, `ConfigHomeUI`, `ConfigFormulariosUI`, `ConfigRegrasCurricularesUI`, `ConfigRegrasCurricularesEstilos`, `ConfigRegrasCurricularesAjudaEstilos`.
@@ -63,6 +66,7 @@ O commit no Git não altera o Apps Script. Para levar esta versão ao Google:
 5. `ConfigRegrasCurricularesAjuda` não muda.
 6. **Teste pela URL `/dev`** (**Implantar → Testar implantações**) e confira:
    - com uma conta ADMINISTRADOR, salvar um formulário de teste funciona; com uma conta LEITOR, o aviso "Somente leitura" aparece e Salvar devolve "Você não tem permissão…"; com uma conta fora da aba, aparece "Sem acesso a este painel";
+   - a saudação mostra o período certo e o seu nome (ou o do setor);
    - abre no menu lateral; **Abas** e **Menu lateral** alternam;
    - **Aparência** em Sistema, Claro e Escuro; a marca IPUSP e a USP trocam de versão;
    - os selos de pendência aparecem como antes;
@@ -84,4 +88,4 @@ Para voltar atrás, edite a implantação e escolha a versão anterior.
 - **Cores:** use os tokens `--gradip-*`. Não acrescente cores fixas.
 - **IDs de planilha:** nunca envie os valores reais para o Git. Ver [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md).
 - **Nova função chamada pela página:** a primeira linha deve ser `exigirAcessoPainel_();` (só lê) ou `exigirAdminPainel_();` (grava). `testar_acesso.js` falha se faltar.
-- **Testes:** `node sistemas/painel-servidores/testes/testar_acesso.js` e `node sistemas/painel-servidores/testes/testar_navegador.js` antes de publicar.
+- **Testes:** `node sistemas/painel-servidores/testes/testar_acesso.js`, `node sistemas/painel-servidores/testes/testar_saudacao.js` e `node sistemas/painel-servidores/testes/testar_navegador.js` antes de publicar.

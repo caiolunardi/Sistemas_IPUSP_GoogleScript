@@ -19,6 +19,7 @@ Preenchido a partir do código recebido em 13/10/2026, segundo [`SYSTEM_SECURITY
 | Regras curriculares | códigos de curso/habilitação, disciplinas, requisitos | conferência de históricos | planilha de regras | navegador (leitura e edição) | grava na planilha | Interna |
 | Auditoria de correção | e-mail de quem corrigiu, data, motivo, antes/depois | rastrear correções de ruleset ativo | `Session` | aba `AUDITORIA_REGRAS_CURRICULARES` | grava na planilha | Pessoal (e-mail institucional) |
 | Lista de acesso | e-mail institucional e perfil (ADMINISTRADOR/LEITOR) | quem abre e quem altera o painel | aba `PAINEL_SERVIDORES` da planilha de permissões | só no servidor (cache de 60 s); o navegador recebe só o papel (`admin`/`leitor`) | não grava | Pessoal (e-mail institucional) |
+| Nome para a saudação (1.2) | primeiro nome, nome do setor, Prof./Profª. | "Bom dia, {nome}" no cabeçalho | cadastros `SERVIDORES` e `PLANILHA_DOCENTES` (e-mail, nome, setor, tipo, M / F) | servidor (cache de 10 min com e-mail e nome de todos); o navegador recebe **só o nome de quem abriu** | não grava | Pessoal (nome institucional) |
 | Conta de quem usa | e-mail `@usp.br` | conferir a lista | `Session.getActiveUser()` | só no servidor | não grava (a auditoria das Regras continua gravando, como antes) | Pessoal |
 | Preferência de aparência | `system`/`light`/`dark` | tema | navegador | `localStorage["gradip-theme"]` | só no navegador | Não pessoal |
 
@@ -38,6 +39,7 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 | Planilha de Períodos | Sheets | `ID_PLANILHA_PERIODOS` (`ConfigFormulariosCore.gs`) | Não | leitura e escrita |
 | Planilha de Regras Curriculares | Sheets | `ID_PLANILHA_REGRAS_CURRICULARES` (`ConfigRegrasCurricularesRepository.gs`) | Não | leitura e escrita |
 | Índice mestre | Sheets | Script Property `ID_INDEX_SPREADSHEET_ID` | Não | leitura (primeira aba, colunas "Chave" e "ID de Produção") |
+| Cadastros de servidores e de docentes | Sheets | chaves `SERVIDORES` e `PLANILHA_DOCENTES` no `ID_INDEX` (primeira aba) | Não | leitura pela conta que executa (1.2, só para a saudação) |
 | Planilha de permissões | Sheets | chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`; aba `PAINEL_SERVIDORES` | Não | leitura pela conta que executa |
 | Sistemas da equipe | Web Apps `/exec` | Script Property `URLS_SISTEMAS_EQUIPE` (JSON lido por `UrlsSistemas.gs`) | Não | cada sistema controla o próprio acesso |
 
@@ -56,7 +58,7 @@ No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valor
   - a lista fica em cache por 60 s: tirar ou rebaixar alguém vale em até 1 minuto;
   - `migrarRegrasCurricularesMultiCurriculoERevisaoV1`, `TESTE`, `TESTE3`, `diagnosticarUrlsSistemas` e `diagnosticarAcessoPainel` exigem administrador.
 - O aviso "Somente leitura" na tela é só informação; quem protege é o servidor. `testes/testar_acesso.js` confere que nenhuma função pública fica sem guarda.
-- Dados enviados ao cliente: contadores numéricos, configuração de períodos (com links de formulários), regras curriculares e o papel (`admin`/`leitor`). Nenhum e-mail da lista.
+- Dados enviados ao cliente: contadores numéricos, configuração de períodos (com links de formulários), regras curriculares, o papel (`admin`/`leitor`) e o nome da própria pessoa para a saudação. Nenhum e-mail da lista nem nome de outras pessoas.
 
 ## 5. Configuração
 
@@ -95,7 +97,7 @@ Hoje são constantes no código do projeto Apps Script. Pendência: migrar para 
 
 ## 6. Logs
 
-- Eventos registrados: falhas de contagem, falhas de `Session`, `TESTE`/`TESTE3` (lista de rulesets), falha ao ler a lista de acesso (só a mensagem técnica) e `diagnosticarAcessoPainel` (contagem por perfil, sem e-mails).
+- Eventos registrados: falhas de contagem, falhas de `Session`, `TESTE`/`TESTE3` (lista de rulesets), falha ao ler a lista de acesso ou um cadastro da saudação (só a mensagem técnica) e `diagnosticarAcessoPainel` (contagem por perfil, sem e-mails).
 - Dados pessoais em log: as funções de contagem registram só mensagens de erro. Não foram vistos logs com nomes ou e-mails de alunos; conferir os registros de execução reais (A VALIDAR).
 - O navegador registra no console só a falha de busca dos contadores.
 
@@ -108,7 +110,7 @@ Hoje são constantes no código do projeto Apps Script. Pendência: migrar para 
 ## 8. Dados de teste
 
 - `testes/testar_navegador.js` usa formulários, rulesets e contadores fictícios, sem planilhas nem rede.
-- `testes/testar_acesso.js` usa e-mails `@usp.br` e nomes inventados ("Pessoa Fictícia A").
+- `testes/testar_acesso.js` e `testes/testar_saudacao.js` usam e-mails do domínio fictício `exemplo.usp.br` e nomes inventados ("Pessoa Fictícia A", "Maria Fictícia").
 - Capturas de tela ficam na pasta temporária e não são versionadas.
 
 ## 9. Pontos LGPD/institucionais

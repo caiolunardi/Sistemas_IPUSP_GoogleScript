@@ -19,6 +19,7 @@ O GitHub não sincroniza com o Apps Script. Documentação: [visão geral](../..
 |---|---|---|
 | `Code.gs` | `doGet`, `include_`, contagem dos avisos de pendência | IDs trocados por marcadores; resto idêntico |
 | `AcessoPainel.gs` | quem abre e quem altera o painel (aba `PAINEL_SERVIDORES`); `diagnosticarAcessoPainel` | novo (1.1) |
+| `SaudacaoPainel.gs` | nome da saudação do cabeçalho, pelos cadastros `SERVIDORES` e `PLANILHA_DOCENTES` | novo (1.2) |
 | `PainelSemAcesso.html` | página de quem não tem acesso | novo (1.1) |
 | `UrlsSistemas.gs` | lê as URLs dos sistemas da Script Property `URLS_SISTEMAS_EQUIPE`; `diagnosticarUrlsSistemas` | novo (20/10/2026) |
 | `ConfigFormulariosCore.gs` | Leitura e gravação dos períodos dos formulários | IDs trocados por marcadores; resto idêntico |

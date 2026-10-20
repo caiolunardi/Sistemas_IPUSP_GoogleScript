@@ -20,17 +20,19 @@ function incluir(h){
   for (let k = 0; k < 4; k++) h = h.replace(/<\?!= include_\('(\w+)'\); \?>/g, (_, n) => fs.readFileSync(SRC + n + '.html', 'utf8'));
   return h;
 }
-function build(papel){
+function build(papel, nome){
   let h = incluir(fs.readFileSync(SRC + 'Painel.html', 'utf8'));
   // URLs fictícias no lugar da Script Property URLS_SISTEMAS_EQUIPE (Code.gs).
   h = h.replace('<?!= urlsSistemasParaPagina_() ?>', JSON.stringify(URLS_FICTICIAS));
   // Papel que o servidor leu da aba PAINEL_SERVIDORES (AcessoPainel.gs).
   h = h.replace('<?!= papelParaPagina_() ?>', JSON.stringify(papel));
+  // Nome que o servidor achou nos cadastros (SaudacaoPainel.gs); "" = não achou.
+  h = h.replace('<?!= saudacaoParaPagina_() ?>', JSON.stringify(nome));
   if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
   return h;
 }
-const html = build('admin');
-const htmlLeitor = build('leitor');
+const html = build('admin', 'Profª. Fulana');
+const htmlLeitor = build('leitor', '');
 // Mesma frase de AcessoPainel.gs (o servidor recusa a gravação do LEITOR).
 const MENSAGEM_SO_LEITURA = fs.readFileSync(SRC + 'AcessoPainel.gs', 'utf8').match(/const MENSAGEM_SO_LEITURA =\s*"([^"]+)"/)[1];
 function buildSemAcesso(titulo, mensagem){
@@ -92,6 +94,8 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await load(p);
   const T = `[${scheme}]`;
   chk(`${T} tema Sistema resolvido`, await p.evaluate(s=>document.documentElement.dataset.theme===s&&document.documentElement.dataset.themePreference==='system', scheme));
+  chk(`${T} saudação com o nome`, /^(Bom dia|Boa tarde|Boa noite), Profª\. Fulana$/.test(await p.textContent('#saudacaoUsuario')), await p.textContent('#saudacaoUsuario'));
+  chk(`${T} saudação segue a hora do navegador`, await p.evaluate(()=>{const h=new Date().getHours();return document.getElementById('saudacaoUsuario').textContent.startsWith(h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')}));
   chk(`${T} administrador não vê o aviso de somente leitura`, await p.evaluate(()=>document.getElementById('avisoSomenteLeitura').hidden));
   chk(`${T} abre no menu lateral`, await p.evaluate(()=>document.getElementById('painelLayout').dataset.navegacao==='sidebar'&&document.querySelector('[data-painel-modo="sidebar"]').getAttribute('aria-pressed')==='true'));
   chk(`${T} Sistemas marcado como página atual`, await p.getAttribute('#navPainelSistemas','aria-current')==='page');
@@ -114,7 +118,7 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await p.fill('#caixaBusca','');await p.dispatchEvent('#caixaBusca','input');
   chk(`${T} avisos voltam depois da busca`, await p.evaluate(()=>getComputedStyle(document.getElementById('badge-diplomas')).display!=='none'));
 
-  await contraste(p, scheme, ['.tituloSistema','.subtituloSistema','.cardResumo h1','.cardResumo p','.caixaBusca','.linkAjudaContextual','.tituloCategoria','.infoSistema strong','.infoSistema div','#badge-diplomas','#badge-buspAguardando','.rodape','.botaoAjuda','.botaoConfiguracoes','.gradip-theme-control__select','.painelSidebar__titulo','#navPainelSistemas','#navPainelConfiguracoes','.painelModo[aria-pressed="true"]','.painelModo[aria-pressed="false"]','.painelNavegacaoModos__rotulo']);
+  await contraste(p, scheme, ['#saudacaoUsuario','.tituloSistema','.subtituloSistema','.cardResumo h1','.cardResumo p','.caixaBusca','.linkAjudaContextual','.tituloCategoria','.infoSistema strong','.infoSistema div','#badge-diplomas','#badge-buspAguardando','.rodape','.botaoAjuda','.botaoConfiguracoes','.gradip-theme-control__select','.painelSidebar__titulo','#navPainelSistemas','#navPainelConfiguracoes','.painelModo[aria-pressed="true"]','.painelModo[aria-pressed="false"]','.painelNavegacaoModos__rotulo']);
   await p.screenshot({path:SAIDA+`desk-${scheme}.png`, fullPage:true});
 
   // Navegação pelo menu lateral
@@ -202,7 +206,8 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await load(p, 'leitor');
   const T = `[${scheme} leitor]`;
   chk(`${T} aviso de somente leitura visível`, await p.evaluate(()=>{const a=document.getElementById('avisoSomenteLeitura');return !a.hidden&&a.offsetHeight>0&&a.textContent.includes('Somente leitura')}));
-  await contraste(p, scheme, ['#avisoSomenteLeitura','#avisoSomenteLeitura strong'], ' aviso');
+  await contraste(p, scheme, ['#avisoSomenteLeitura','#avisoSomenteLeitura strong','#saudacaoUsuario'], ' aviso');
+  chk(`${T} saudação sem nome quando não está nos cadastros`, /^(Bom dia|Boa tarde|Boa noite)$/.test(await p.textContent('#saudacaoUsuario')), await p.textContent('#saudacaoUsuario'));
   chk(`${T} cards dos sistemas continuam`, await p.$$eval('#listaCategorias .cardSistema', e=>e.length)>5);
   await p.click('#navPainelFormularios'); await p.waitForSelector('#listaFormulariosConfig .cardSistema');
   await p.click('#listaFormulariosConfig .cardSistema >> nth=0');
@@ -266,6 +271,7 @@ async function contraste(p, scheme, seletores, rotulo=''){
    const T=`[${w}px ${scheme}]`;
    const overflow = async()=>p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
    chk(`${T} sem rolagem horizontal`, (await overflow())<=0, await overflow());
+   chk(`${T} saudação visível e inteira`, await p.evaluate(()=>{const e=document.getElementById('saudacaoUsuario');const r=e.getBoundingClientRect();return r.height>0&&r.right<=window.innerWidth&&e.scrollWidth<=e.clientWidth+1}));
    if (w<=900){
     chk(`${T} menu começa recolhido`, await p.evaluate(()=>document.getElementById('painelSidebar').dataset.recolhido==='true'&&getComputedStyle(document.getElementById('painelMenu')).display==='none'&&document.getElementById('painelMenuMovel').getAttribute('aria-expanded')==='false'));
     await p.click('#painelMenuMovel');

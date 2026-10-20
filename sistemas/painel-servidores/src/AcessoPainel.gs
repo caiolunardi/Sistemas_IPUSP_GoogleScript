@@ -116,6 +116,11 @@ function permissoesDoPainel_() {
 }
 
 function idPlanilhaPermissoes_() {
+  return idNoIndicePainel_(ACESSO_PAINEL.CHAVE);
+}
+
+/** ID de produção de uma chave da planilha ID_INDEX (primeira aba). */
+function idNoIndicePainel_(chave) {
   const idIndice = String(PropertiesService.getScriptProperties().getProperty(ACESSO_PAINEL.PROPRIEDADE_ID_INDEX) || "").trim();
   if (!idIndice) {
     throw new Error("Falta a Script Property " + ACESSO_PAINEL.PROPRIEDADE_ID_INDEX + ".");
@@ -129,12 +134,12 @@ function idPlanilhaPermissoes_() {
     throw new Error('A planilha ID_INDEX precisa das colunas "Chave" e "ID de Produção".');
   }
   for (let i = 1; i < valores.length; i++) {
-    if (String(valores[i][colChave]).trim() === ACESSO_PAINEL.CHAVE) {
+    if (String(valores[i][colChave]).trim() === chave) {
       const id = String(valores[i][colId] || "").trim();
       if (id) return id;
     }
   }
-  throw new Error("Chave " + ACESSO_PAINEL.CHAVE + " ausente ou sem ID de Produção no ID_INDEX.");
+  throw new Error("Chave " + chave + " ausente ou sem ID de Produção no ID_INDEX.");
 }
 
 function lerPermissoesDoPainel_() {
