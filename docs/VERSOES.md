@@ -41,8 +41,8 @@ Uma Release só marca código **integrado e aprovado**. O workflow **Release** (
 
 1. A mudança, a documentação, os testes e `notas-de-versao/<tag>.md` (o que mudou para quem usa, o que copiar para o Apps Script e a linha **Implantação: ainda não implantada**) entram no `main` **pelo mesmo pull request**. Sem as notas naquele commit, a Release é recusada.
 2. Depois do merge, espere a CI do **commit de merge** no `main` ficar ✓ (com a etapa **CI concluída**) e copie o SHA completo dele (na página do PR, "merged commit …", ou na página do commit).
-3. **Actions → Release → Run workflow**, com o ramo `main` selecionado. Informe a tag (por exemplo `exclusao-disciplinas-v1.3`; várias, separadas por espaço) e o **commit**. Se o environment `release` estiver configurado ([proteção](governanca/PROTECAO_DO_MAIN.md#4-quem-publica-e-quem-autoriza-dois-modelos)), a rodada espera a aprovação em **Review deployments**.
-4. A Release usa o texto de `notas-de-versao/<tag>.md` **daquele commit** e acrescenta no fim o SHA, o número do PR e a rodada da CI conferidos. A tag é criada pela própria Release, no commit informado (tag leve).
+3. **Actions → Release → Run workflow**, com o ramo `main` selecionado. Informe a tag (por exemplo `exclusao-disciplinas-v1.3`; várias, separadas por espaço) e o **commit**. A rodada espera a aprovação em **Review deployments** do environment `release` ([proteção](governanca/PROTECAO_DO_MAIN.md#4-quem-publica-e-quem-autoriza-dois-modelos)). **Sem o environment configurado com revisor obrigatório, a rodada para logo no começo e nada é criado** (seção 6, trava).
+4. A Release usa o texto de `notas-de-versao/<tag>.md` **daquele commit** e acrescenta no fim o SHA, o número do PR, a rodada da CI conferidos e quem aprovou a rodada do Release. A tag é criada pela própria Release, no commit informado (tag leve).
 
 Tag enviada pelo git (`git push origin <tag>`) **não** gera Release: o gatilho por push de tag foi retirado em 20/10/2026, porque a tag já existiria antes de qualquer conferência. Não envie tags de versão pelo git.
 
@@ -82,6 +82,7 @@ Testes: [`ferramentas/testes/testar_publicar_release.js`](../ferramentas/testes/
 
 | Conferência | Como | Por que assim |
 |---|---|---|
+| **Trava (antes de tudo)** | a rodada `GITHUB_RUN_ID` é do `release.yml`, no `main`, por `workflow_dispatch` e **em andamento**; e `actions/runs/{id}/approvals` traz uma revisão `approved`, de um usuário (não bot), no environment `release`. Faltou qualquer coisa, ou a consulta falhou: para sem conferir nem escrever nada | o GitHub só registra aprovação quando o environment tem revisor obrigatório e alguém aprovou **esta** rodada; sem environment, com ele vazio ou sem revisor, não há registro (abaixo) |
 | SHA completo e existente | 40 caracteres hexadecimais; `git rev-parse` | SHA curto pode ficar ambíguo |
 | **Estado do `main`** | o commit está na linha de **primeiros pais** do `main` | a ponta e os commits intermediários do ramo de um PR também são ancestrais do `main`, mas nunca foram o `main` nem tiveram CI de push |
 | **Commit de merge de PR aceito** | em `commits/{sha}/pulls`, um PR com `merged_at`, base `main` e `merge_commit_sha` **igual ao commit** | a API devolve o PR também para os commits do ramo dele (abaixo); só "há um PR associado" não prova nada |
@@ -107,7 +108,28 @@ Nenhum PR deste repositório foi integrado por rebase; os testes cobrem o caso c
 - Uma reexecução manual que passou conta como verde (a rodada guarda o resultado da última tentativa, e as notas registram a rodada). Reexecutar até passar não é aceito pelo [fluxo](governanca/FLUXO_DE_MUDANCAS.md); o Release não tem como distinguir.
 - Commits anteriores à etapa "CI concluída" (antes deste PR) não são elegíveis. Uma versão antiga só pode virar Release com um commit novo no `main` (por exemplo, o das notas), ou criada à mão pelo responsável em **Releases → Draft a new release**, registrando o motivo.
 - O workflow não confere se o número da versão bate com a constante no código; confere que as notas daquela tag estão no commit.
-- Sem o environment `release` configurado, ninguém aprova a rodada: quem pode rodar o workflow (escrita no repositório) publica.
+
+**A trava e as quatro perguntas.** São quatro coisas diferentes, e o script não as junta numa variável só:
+
+| Pergunta | Quem responde | Como o script sabe |
+|---|---|---|
+| O environment `release` está preparado? | a configuração do GitHub (revisor obrigatório, ramo `main`) | indiretamente: sem revisor, o GitHub não registra aprovação e a trava recusa |
+| Uma aprovação é exigida? | o GitHub, antes de a rodada começar | idem: o registro só existe se o GitHub exigiu |
+| Esta execução foi autorizada? | uma pessoa, em **Review deployments** | o registro `approved` desta rodada, de um usuário, no environment `release` |
+| O commit é elegível? | o histórico e a CI | as conferências da tabela acima (primeiros pais, PR, CI, tags) |
+
+Por que não uma variável marcadora (por exemplo `RELEASE_GOVERNANCE_READY=true` no environment): o contexto `vars` do Actions junta variáveis do repositório, da organização e do environment sem dizer de onde veio o valor, e quem cria uma no repositório cria a outra. Ela só diria "alguém escreveu isto", não que há revisor nem que esta rodada foi aprovada. Um segredo fictício teria o mesmo problema e daria aparência de segurança. Ler a configuração do environment pela API (`GET environments/release`) também não serve: o token do workflow não tem permissão para isso, e o resultado diria como o environment está, não se esta rodada foi aprovada. O registro de aprovação é a prova nativa e da rodada em andamento; os testes cobrem a variável marcadora sem aprovação (recusada).
+
+Fronteira: a trava fica no script, que roda antes de qualquer escrita, e não no YAML, para valer também se alguém o rodar num terminal (sem `GITHUB_RUN_ID`, ou com o número de uma rodada antiga já concluída, ele para). O workflow só chama o script.
+
+**Comportamento real conferido:** em 20/10/2026, `actions/runs/{id}/approvals` respondeu `[]` para uma rodada da CI deste repositório (sem environment), e a trava recusa `[]`. Ainda **não** foi visto o formato com um environment real e uma aprovação: a primeira rodada legítima do Release, depois de o responsável configurar o environment, é o teste. Se a API responder de outro jeito, a trava recusa (falha fechada) e o log mostra o motivo; nada é publicado.
+
+**O que a trava não cobre:**
+
+- Quem tem escrita no repositório pode criar uma Release à mão (**Releases → Draft a new release**) ou com o `gh` num terminal, sem passar pelo workflow. A trava protege o caminho do workflow, não substitui as permissões do repositório.
+- Quem é revisor do environment aprova a própria rodada no Modelo A (um mantenedor, *Prevent self-review* desligado); é o desenho escolhido, e a aprovação fica registrada com o nome. No Modelo B, ligar *Prevent self-review* exige uma segunda pessoa.
+- Um token pessoal do revisor (ou uma sessão dele) também aprova pela API; o GitHub registra como o próprio usuário. Não dá para distinguir.
+- O comportamento de administradores com permissão de ignorar regras do environment não foi testado.
 
 **Falha no meio de várias tags:** todas são conferidas antes; se a API falhar ao criar a segunda Release, a primeira fica (nada é apagado automaticamente, para não destruir uma versão válida por um erro de rede) e o erro diz o que foi criado. Rodar de novo com as mesmas entradas cria só o que faltou.
 

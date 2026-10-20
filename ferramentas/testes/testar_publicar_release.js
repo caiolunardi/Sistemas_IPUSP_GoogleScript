@@ -89,20 +89,79 @@ runs(C.m10, [run(C.pr1.m, 101), run(C.m10, 204, { conclusion: 'failure' })]); jo
 runs(C.m11, [run(C.m11, 205, { conclusion: 'failure', run_attempt: 2 })]); jobs(205);  // reexecução que falhou
 runs(C.m12, [run(C.m12, 206, { path: '.github/workflows/outro.yml' })]); jobs(206);
 
-function rodar(commitPedido, tags) {
+// Fase 0 (trava): a rodada 900 do workflow Release está em andamento no main
+// e tem aprovação humana no environment "release". Formato da resposta de
+// actions/runs/{id}/approvals conforme a documentação da API (uma lista de
+// revisões, com environments, state e user); num repositório sem environment
+// configurado, a API real devolveu [] (docs/VERSOES.md, seção 6).
+const RODADA = 900;
+const rodadaRelease = (id, extra = {}) => api(`repos/${REPO}/actions/runs/${id}`, { id, path: '.github/workflows/release.yml', head_branch: 'main', event: 'workflow_dispatch', status: 'in_progress', ...extra });
+const aprovacao = (extra = {}) => ({ state: 'approved', comment: '', environments: [{ id: 1, name: 'release' }], user: { login: 'responsavel', type: 'User' }, ...extra });
+const aprovacoes = (id, lista) => api(`repos/${REPO}/actions/runs/${id}/approvals`, lista);
+rodadaRelease(RODADA); aprovacoes(RODADA, [aprovacao()]);
+
+function rodar(commitPedido, tags, ambiente = {}) {
   fs.rmSync(path.join(falso, 'chamadas.log'), { force: true });
-  const r = spawnSync('bash', [SCRIPT], { cwd: clone, encoding: 'utf8', env: { ...process.env,
-    REPO, TAGS: tags, COMMIT_PEDIDO: commitPedido, GH, GH_FALSO: falso, GH_ORIGEM: origem, GH_REPO: REPO, RUNNER_TEMP: raiz } });
+  const env = { ...process.env, REPO, TAGS: tags, COMMIT_PEDIDO: commitPedido, GH, GH_FALSO: falso, GH_ORIGEM: origem, GH_REPO: REPO, RUNNER_TEMP: raiz,
+    GITHUB_RUN_ID: String(RODADA), ...ambiente };
+  for (const k of Object.keys(env)) if (env[k] === undefined) delete env[k];
+  const r = spawnSync('bash', [SCRIPT], { cwd: clone, encoding: 'utf8', env });
   const chamadas = fs.existsSync(path.join(falso, 'chamadas.log')) ? fs.readFileSync(path.join(falso, 'chamadas.log'), 'utf8') : '';
   return { cod: r.status, saida: r.stdout + r.stderr, criou: (chamadas.match(/^release create/mg) || []).length };
 }
 const tagEm = t => { try { return git(origem, 'rev-parse', `refs/tags/${t}^{commit}`); } catch { return null; } };
 const recusa = (nome, r, trecho) => chk(nome, r.cod !== 0 && r.criou === 0 && r.saida.includes(trecho), r.saida);
+const releasesCriadas = () => fs.readdirSync(falso).filter(f => f.startsWith('notas_')).length;
+const tagsNaOrigem = () => git(origem, 'tag', '--list');
+
+// --- 0. Trava: sem aprovação humana desta rodada no environment "release", nada é conferido nem escrito.
+{
+  const antes = { tags: tagsNaOrigem(), rel: releasesCriadas() };
+  // Toda recusa da trava: código de saída ≠ 0, nenhuma Release criada, nenhuma
+  // chamada além das leituras da trava (nem a conferência do commit começa),
+  // nenhuma tag nova na origem e o motivo na saída.
+  const trava = (nome, r, trecho) => {
+    const chamadas = fs.existsSync(path.join(falso, 'chamadas.log')) ? fs.readFileSync(path.join(falso, 'chamadas.log'), 'utf8') : '';
+    const soLeituras = chamadas.split('\n').filter(Boolean).every(l => /^api repos\/dono\/repo\/actions\/runs\/\d+(\/approvals)?$/.test(l));
+    chk(nome, r.cod !== 0 && r.criou === 0 && soLeituras && r.saida.includes(trecho) && !r.saida.includes('Commit ') &&
+      tagsNaOrigem() === antes.tags && releasesCriadas() === antes.rel, r.saida + '\n' + chamadas);
+  };
+  trava('trava: sem GITHUB_RUN_ID (fora do workflow, p. ex. num terminal)', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: undefined }), 'Sem GITHUB_RUN_ID');
+  trava('trava: GITHUB_RUN_ID inválido', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '900; x' }), 'Sem GITHUB_RUN_ID');
+  rodadaRelease(901); aprovacoes(901, []);
+  trava('trava: environment ausente, vazio ou sem revisor (nenhuma aprovação registrada)', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '901' }), 'não tem aprovação humana');
+  trava('trava: marcador por variável (RELEASE_GOVERNANCE_READY=true) sem aprovação não basta',
+    rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '901', RELEASE_GOVERNANCE_READY: 'true', RELEASE_ENVIRONMENT_READY: 'true' }), 'não tem aprovação humana');
+  rodadaRelease(902); aprovacoes(902, [aprovacao({ state: 'rejected' })]);
+  trava('trava: revisão rejeitada (valor errado)', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '902' }), 'não tem aprovação humana');
+  rodadaRelease(903); aprovacoes(903, [aprovacao({ environments: [{ id: 2, name: 'producao' }] })]);
+  trava('trava: aprovação de outro environment (configuração incompleta)', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '903' }), 'não tem aprovação humana');
+  rodadaRelease(904); aprovacoes(904, [aprovacao({ user: { login: 'algum-app[bot]', type: 'Bot' } })]);
+  trava('trava: aprovação feita por bot', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '904' }), 'não tem aprovação humana');
+  rodadaRelease(905); aprovacoes(905, [{ state: 'approved' }]);
+  trava('trava: resposta incompleta da API (sem environments nem user)', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '905' }), 'não tem aprovação humana');
+  rodadaRelease(906); fs.writeFileSync(path.join(falso, 'api', chave(`repos/${REPO}/actions/runs/906/approvals`) + '.erro'), '');
+  trava('trava: erro ao ler as aprovações', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '906' }), 'Não consegui consultar as aprovações');
+  rodadaRelease(907);
+  trava('trava: aprovações inacessíveis (404, p. ex. sem permissão actions: read)', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '907' }), 'Não consegui consultar as aprovações');
+  trava('trava: rodada inexistente', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '999' }), 'Não consegui consultar a rodada');
+  rodadaRelease(908, { status: 'completed' }); aprovacoes(908, [aprovacao()]);
+  trava('trava: rodada antiga já concluída, reaproveitada fora dela', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '908' }), 'não é uma rodada em andamento');
+  rodadaRelease(909, { path: '.github/workflows/ci.yml', event: 'push' }); aprovacoes(909, [aprovacao()]);
+  trava('trava: rodada aprovada de outro workflow', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '909' }), 'não é uma rodada em andamento');
+  rodadaRelease(910, { head_branch: 'claude/x' }); aprovacoes(910, [aprovacao()]);
+  trava('trava: rodada do Release disparada de outro ramo', rodar(C.pr1.m, 'alfa-v1.1', { GITHUB_RUN_ID: '910' }), 'não é uma rodada em andamento');
+  // Trava liberada não basta: a conferência do commit continua valendo (mais casos em 2.1 e 2.2).
+  recusa('aprovação válida, CI vermelha', rodar(C.m11, 'alfa-v1.3'), 'Não há rodada concluída e verde');
+  recusa('aprovação válida, commit não aprovado (push direto, sem PR)', rodar(C.d4, 'alfa-v1.3'), 'não é o commit de merge');
+  chk('… e nada foi escrito', tagsNaOrigem() === antes.tags && releasesCriadas() === antes.rel);
+}
 
 // --- 2.1 Origem do commit
 let r = rodar(C.pr1.m, 'alfa-v1.1');
 chk('merge commit de PR aceito: cria a Release', r.cod === 0 && r.criou === 1 && tagEm('alfa-v1.1') === C.pr1.m, r.saida);
-chk('notas trazem commit, PR e rodada', fs.readFileSync(path.join(falso, 'notas_alfa-v1.1'), 'utf8').includes(`\`${C.pr1.m}\` · merge do PR #1 · CI verde na rodada 101`));
+chk('notas trazem commit, PR, rodada da CI e quem aprovou', fs.readFileSync(path.join(falso, 'notas_alfa-v1.1'), 'utf8').includes(`\`${C.pr1.m}\` · merge do PR #1 · CI verde na rodada 101 · publicação aprovada por responsavel na rodada 900`));
+chk('saída diz quem aprovou a rodada', r.saida.includes('Rodada 900 aprovada no environment release por responsavel'), r.saida);
 recusa('ponta do ramo do PR (2º pai do merge, CI verde, PR associado)', rodar(C.pr1.b, 'alfa-v1.2'), 'não é um estado do main');
 recusa('commit intermediário do ramo do PR', rodar(C.pr1.a, 'alfa-v1.2'), 'não é um estado do main');
 r = rodar(C.s2, 'alfa-v1.2');

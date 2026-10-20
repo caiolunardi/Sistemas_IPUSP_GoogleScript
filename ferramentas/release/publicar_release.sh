@@ -8,8 +8,11 @@
 #   TAGS           tag(s) <sistema>-v<versão>, separadas por espaço
 #   COMMIT_PEDIDO  SHA completo do commit
 #   GH             comando do GitHub CLI (padrão: gh; os testes trocam por um falso)
+#   GITHUB_RUN_ID  rodada do workflow (o GitHub Actions define; fora dele, falta e o script para)
 #
-# Duas fases. Na primeira, tudo é conferido e nada é escrito: o commit, o pull
+# Antes de tudo, a trava (fase 0): sem registro de aprovação humana desta
+# rodada no environment "release", nada é conferido nem escrito.
+# Depois, duas fases. Na primeira, tudo é conferido e nada é escrito: o commit, o pull
 # request, a CI e cada tag. Só se tudo passar, a segunda cria as Releases.
 # A tag nasce junto com a Release (uma única chamada à API), então não existe
 # tag criada por este script sem Release. Nada é apagado nem movido, nunca.
@@ -18,6 +21,25 @@ set -f   # sem expansão de * e ? nas tags informadas
 
 GH="${GH:-gh}"
 falhar() { echo "::error::$*"; exit 1; }
+
+# ---------------------------------------------------------------- fase 0: trava
+# O GitHub só registra uma aprovação de environment quando o environment tem
+# revisores obrigatórios e alguém aprovou ESTA rodada. Sem environment, com
+# environment vazio (o GitHub o cria assim na primeira rodada) ou sem
+# revisores, não há registro e o script para. Uma variável (vars.*) não serve
+# de prova: o contexto vars junta repositório, organização e environment, sem
+# dizer de onde veio o valor. Fronteira: a aprovação em si é do GitHub; aqui só
+# se confere que ela existe para a rodada em andamento deste workflow no main.
+[[ "${GITHUB_RUN_ID:-}" =~ ^[0-9]+$ ]] || falhar "Sem GITHUB_RUN_ID: este script só publica dentro do workflow Release, depois da aprovação no environment \"release\"."
+RODADA=$("$GH" api "repos/$REPO/actions/runs/$GITHUB_RUN_ID" --jq \
+  'select(.path == ".github/workflows/release.yml" and .head_branch == "main" and .event == "workflow_dispatch" and .status == "in_progress") | .id') \
+  || falhar "Não consegui consultar a rodada $GITHUB_RUN_ID."
+[ "$RODADA" = "$GITHUB_RUN_ID" ] || falhar "A rodada $GITHUB_RUN_ID não é uma rodada em andamento do workflow Release no main."
+APROVADOR=$("$GH" api "repos/$REPO/actions/runs/$GITHUB_RUN_ID/approvals" --jq \
+  '[.[] | select(.state == "approved" and .user.type == "User" and any(.environments[]; .name == "release")) | .user.login] | first // empty') \
+  || falhar "Não consegui consultar as aprovações da rodada $GITHUB_RUN_ID."
+[ -n "$APROVADOR" ] || falhar "A rodada $GITHUB_RUN_ID não tem aprovação humana no environment \"release\". Configure o environment com revisor obrigatório (docs/governanca/PROTECAO_DO_MAIN.md, seção 4) e aprove a rodada."
+echo "Rodada $GITHUB_RUN_ID aprovada no environment release por $APROVADOR."
 
 # ---------------------------------------------------------------- fase 1: conferir
 [[ "${COMMIT_PEDIDO:-}" =~ ^[0-9a-f]{40}$ ]] || falhar "Informe o SHA completo do commit (40 caracteres hexadecimais)."
@@ -106,7 +128,7 @@ for TAG in "${CRIAR[@]}"; do
     git show "$COMMIT:notas-de-versao/$TAG.md"
     echo
     echo "---"
-    echo "Commit da versão: \`$COMMIT\` · merge do PR #$PR · CI verde na rodada $RUN_ID · conferido pelo workflow Release."
+    echo "Commit da versão: \`$COMMIT\` · merge do PR #$PR · CI verde na rodada $RUN_ID · publicação aprovada por $APROVADOR na rodada $GITHUB_RUN_ID do workflow Release."
   } > "$notas"
   if ! "$GH" release create "$TAG" --repo "$REPO" --target "$COMMIT" --title "$TAG" --notes-file "$notas"; then
     falhar "Falhou ao criar $TAG. Criadas nesta rodada: ${FEITAS[*]:-nenhuma}. Rode de novo com as mesmas entradas para completar."

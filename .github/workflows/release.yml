@@ -6,8 +6,10 @@
 # A conferência e a criação ficam em ferramentas/release/publicar_release.sh
 # (testado em ferramentas/testes/testar_publicar_release.js): o commit precisa
 # ser um estado do main criado pelo merge de um PR aceito, com a CI verde no
-# push do main. Tudo é conferido antes de qualquer escrita; a tag nasce junto
-# com a Release; nada é apagado nem movido.
+# push do main. Antes disso, uma trava confere que esta rodada foi aprovada
+# por uma pessoa no environment "release"; sem isso, para. Tudo é conferido
+# antes de qualquer escrita; a tag nasce junto com a Release; nada é apagado
+# nem movido.
 #
 # Não há gatilho por push de tag: uma tag enviada pelo git não gera Release.
 name: Release
@@ -38,11 +40,12 @@ jobs:
     timeout-minutes: 10
     # Com revisor obrigatório configurado no environment, a rodada espera a
     # aprovação no GitHub antes de começar. Sem o environment configurado, o
-    # GitHub o cria vazio e a rodada não espera ninguém.
+    # GitHub o cria vazio e a rodada não espera ninguém; aí a trava do script
+    # (fase 0) não encontra aprovação e para sem escrever nada.
     environment: release
     permissions:
       contents: write       # criar a Release (e a tag junto)
-      actions: read         # conferir a CI do commit
+      actions: read         # conferir a CI do commit e a aprovação desta rodada
       pull-requests: read   # conferir o PR do commit
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
