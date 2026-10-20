@@ -2,8 +2,12 @@
 .env
 .env.*
 !.env.example
+# clasp: ID do projeto (.clasp.json) e token de login (.clasprc.json, creds.json)
 .clasp.json
+.clasp*.json
 .clasprc.json
+creds.json
+client_secret*.json
 credentials*.json
 service-account*.json
 secrets*.json

@@ -6,7 +6,12 @@
 //   - IDs de planilha ou pasta do Drive em links fora da lista pública;
 //   - e-mails fora da lista de permitidos e dos domínios fictícios;
 //   - planilhas, PDFs e documentos versionados (podem ter dados reais);
-//   - imagens fora de evidencias/ e assets/.
+//   - imagens fora de evidencias/ e assets/;
+//   - arquivos locais do clasp (.clasp.json, .clasprc.json, creds.json) e
+//     scriptId de projeto Apps Script;
+//   - ID de planilha, arquivo ou pasta escrito direto no código (openById,
+//     constante *ID*); o lugar dele é o ID_INDEX ou as Script Properties;
+//   - pasta sistemas/**/src sem .claspignore (ver DEVELOPMENT_LOCAL.md).
 // Os valores permitidos ficam em ferramentas/publicos.json, cada grupo com o
 // motivo. Uso: node ferramentas/verificar_publicacao.js  (código 1 se achar algo)
 'use strict';
@@ -33,6 +38,14 @@ const CREDENCIAIS = [
   [/"client_secret"\s*:/, 'client_secret'],
   [/"private_key"\s*:/, 'chave de service account']
 ];
+// Arquivos que o clasp cria no computador e que guardam o ID do projeto ou o
+// token de login. Ficam no .gitignore; se entrarem no Git, é achado.
+const LOCAIS_CLASP = /(^|\/)(\.clasp[^/]*\.json|\.clasprc\.json|creds\.json|client_secret[^/]*\.json)$/i;
+// Um ID do Google mistura maiúsculas, minúsculas e dígitos. Os marcadores
+// CONFIGURAR_* e os nomes de elementos da página não passam nesse filtro.
+const ID_LITERAL = /(?:openById|getFileById|getFolderById)\(\s*['"]([A-Za-z0-9_-]{25,60})['"]|\b[A-Z0-9_]*ID[A-Z0-9_]*\s*[:=]\s*['"]([A-Za-z0-9_-]{25,60})['"]/g;
+const pareceIdGoogle = v => /[a-z]/.test(v) && /[A-Z]/.test(v) && /[0-9]/.test(v) && !/^CONFIGURAR/.test(v);
+const CODIGO = /\.(gs|js|html|json)$/i;
 const DOCUMENTOS = /\.(csv|tsv|xlsx?|ods|pdf|docx?|odt|pptx?|zip)$/i;
 const IMAGENS = /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i;
 const BINARIOS = /\.(png|jpe?g|gif|webp|bmp|tiff?|ico|woff2?|ttf|otf|eot|traineddata)$/i;
@@ -52,6 +65,7 @@ const achar = (arquivo, linha, motivo, trecho) =>
 const resumo = v => v.length > 12 ? v.slice(0, 8) + '…' : v;
 
 for (const arquivo of arquivos) {
+  if (LOCAIS_CLASP.test(arquivo)) { achar(arquivo, 0, 'arquivo local do clasp ou credencial (deve ficar só no computador; ver DEVELOPMENT_LOCAL.md)'); continue; }
   if (DOCUMENTOS.test(arquivo)) { achar(arquivo, 0, 'documento ou planilha versionado (pode ter dados reais)'); continue; }
   if (IMAGENS.test(arquivo) && !/(^|\/)(evidencias|assets)\//.test(arquivo)) {
     achar(arquivo, 0, 'imagem fora de evidencias/ ou assets/ (prints só com dados fictícios, em evidencias/)');
@@ -71,11 +85,28 @@ for (const arquivo of arquivos) {
     for (const m of linha.matchAll(/(?:\/d\/|\/folders\/|[?&]id=)([A-Za-z0-9_-]{25,})/g)) {
       if (!pastas.has(m[1])) achar(arquivo, n, 'ID de planilha ou pasta do Drive', resumo(m[1]));
     }
+    const script = linha.match(/"scriptId"\s*:\s*"([^"]+)"/);
+    if (script && pareceIdGoogle(script[1])) achar(arquivo, n, 'scriptId de projeto Apps Script', resumo(script[1]));
+    if (CODIGO.test(arquivo)) {
+      for (const m of linha.matchAll(ID_LITERAL)) {
+        const v = m[1] || m[2];
+        if (pareceIdGoogle(v) && !pastas.has(v)) achar(arquivo, n, 'ID escrito no código (use o ID_INDEX ou Script Properties)', resumo(v));
+      }
+    }
     for (const m of linha.matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)) {
       const email = m[0].toLowerCase();
       if (!emails.has(email) && !dominioPermitido(email)) achar(arquivo, n, 'e-mail fora da lista de permitidos', resumo(email));
     }
   });
+}
+
+// Toda pasta de código enviada pelo clasp precisa do .claspignore, para o
+// push levar só .gs, .js, .html e appsscript.json.
+const pastasSrc = new Set(arquivos
+  .filter(a => /^sistemas\/.+\/src\/[^/]+$/.test(a) && !a.includes('node_modules/'))
+  .map(a => a.replace(/\/[^/]+$/, '')));
+for (const pasta of pastasSrc) {
+  if (!arquivos.includes(pasta + '/.claspignore')) achar(pasta, 0, 'pasta de código sem .claspignore (copie o de outro sistema; ver DEVELOPMENT_LOCAL.md)');
 }
 
 if (achados.length) {

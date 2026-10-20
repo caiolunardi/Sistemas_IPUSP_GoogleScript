@@ -63,6 +63,7 @@ Antes de alterar a interface de qualquer sistema, leia:
 - [`docs/seguranca/README.md`](docs/seguranca/README.md): segurança, privacidade, LGPD e configuração segura;
 - [`docs/ATUALIZAR_DOCUMENTACAO.md`](docs/ATUALIZAR_DOCUMENTACAO.md): o que atualizar na documentação a cada mudança;
 - [`CLAUDE.md`](CLAUDE.md) e [`AGENTS.md`](AGENTS.md): instruções para agentes de código.
+- [`DEVELOPMENT_LOCAL.md`](DEVELOPMENT_LOCAL.md): desenvolvimento local com clasp (Git e Google, `.claspignore`, segurança e princípios de arquitetura).
 
 Base reutilizável:
 

@@ -34,7 +34,7 @@ Versão: suba a versão no código (constante ou rodapé, quando existir) e use 
 
 ## 3. Sistema novo: além da seção 2
 
-1. Crie `docs/sistemas/<sistema>/` com `README.md`, `MANUAL_OPERACAO.md`, `AJUDA.md`, `DADOS_E_SEGURANCA.md` e `HOMOLOGACAO.md`, e `sistemas/<sistema>/` com `README.md`, `src/` e `testes/`. Siga a [regra de origem e o preflight](sistemas/README.md).
+1. Crie `docs/sistemas/<sistema>/` com `README.md`, `MANUAL_OPERACAO.md`, `AJUDA.md`, `DADOS_E_SEGURANCA.md` e `HOMOLOGACAO.md`, e `sistemas/<sistema>/` com `README.md`, `src/` (com o `.claspignore` padrão copiado de outro sistema) e `testes/`. Configure o clasp pelo [desenvolvimento local](../DEVELOPMENT_LOCAL.md). Siga a [regra de origem e o preflight](sistemas/README.md).
 2. Inclua o sistema em:
    - [`README.md`](../README.md) geral: tabela "Para os alunos" ou "Para a equipe";
    - [`docs/SISTEMAS.md`](SISTEMAS.md): catálogo com estado;

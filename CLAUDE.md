@@ -106,6 +106,18 @@ Não "corrija" silenciosamente uma particularidade funcional ou editorial para f
 - Ao documentar cada sistema, criar/preencher `DADOS_E_SEGURANCA.md` usando `docs/seguranca/SYSTEM_SECURITY_TEMPLATE.md`.
 - Auditoria: ao auditar um sistema (ou criar uma função que grava num sistema já auditado), siga `docs/auditoria/MODELO.md`. `Auditoria.gs` é copiado sem mudança; toda gravação passa por `auditarAlteracao_`, e a alteração é recusada se a auditoria não puder gravar.
 
+## Desenvolvimento local, clasp e arquitetura
+
+Leia `DEVELOPMENT_LOCAL.md` antes de configurar o clasp, criar um sistema novo ou levar código ao Apps Script.
+
+- Git guarda o histórico público; o clasp leva o código ao Google com a conta institucional. Um push no Git não muda nenhum sistema em uso.
+- `.clasp.json`, `.clasprc.json` e `creds.json` ficam só no computador (o `.gitignore` bloqueia; a verificação acusa). Nunca commite o ID do script.
+- Cada pasta `sistemas/**/src/` tem o `.claspignore` padrão (só `.gs`, `.js`, `.html` e `appsscript.json` vão ao Google). Sistema novo copia o mesmo arquivo.
+- IDs de produção ficam no `ID_INDEX` ou em Script Properties, nunca no código. A verificação acusa `openById("…")` e constantes `*ID*` com ID real.
+- Interface em HTML, CSS e JavaScript nativos, sem framework nem etapa de build. Regra de negócio, validação, autorização e planilhas nos `.gs`; telas e estilos nos `.html`; a página só fala com o servidor por `google.script.run`.
+- Agente de IA nunca roda `clasp deploy`, `redeploy` ou `undeploy`, nem implanta pelo editor, sem a ordem explícita do responsável. `clasp push` só quando pedido, e depois de `clasp status`.
+- O Painel dos servidores ainda tem IDs escritos no código do projeto real (marcadores `CONFIGURAR_*` no Git): não faça `clasp push` dele a partir da pasta do repositório (ver a seção 8 do `DEVELOPMENT_LOCAL.md`).
+
 ## Regra de escopo
 
 Em rodadas de tema/UX, backend deve permanecer byte-idêntico sempre que possível.

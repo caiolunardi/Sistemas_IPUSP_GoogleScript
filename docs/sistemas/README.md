@@ -14,7 +14,8 @@ Antes de copiar qualquer código para este repositório:
 3. remover dados pessoais reais, logs, fixtures e screenshots de produção;
 4. identificar o modelo de acesso/execução do Web App;
 5. criar `DADOS_E_SEGURANCA.md` a partir de `docs/seguranca/SYSTEM_SECURITY_TEMPLATE.md`;
-6. executar `docs/seguranca/SECURITY_CHECKLIST.md`.
+6. executar `docs/seguranca/SECURITY_CHECKLIST.md`;
+7. pôr na pasta `src/` o `.claspignore` padrão e deixar o `.clasp.json` fora do Git ([desenvolvimento local](../../DEVELOPMENT_LOCAL.md)).
 
 ## Estrutura sugerida
 

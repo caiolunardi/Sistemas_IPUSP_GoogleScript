@@ -41,6 +41,7 @@ Termos que aparecem na documentação e nas telas, para quem não é do Serviço
 | **`/exec` e `/dev`** | Endereços de um Web App. O `/exec` é a versão publicada; o `/dev` é o teste do editor, que só quem edita o projeto abre. |
 | **Implantação** | Publicação de uma versão do Web App. Editar a implantação existente mantém o endereço; criar uma nova gera outro. Arquivar desativa o endereço. |
 | **Script Properties (Propriedades do script)** | Configurações guardadas no projeto, fora do código. É onde ficam o ID do `ID_INDEX` e as URLs internas. |
+| **clasp** | Ferramenta de linha de comando do Google que leva o código de uma pasta do computador ao projeto Apps Script (`clasp push`) e traz de volta (`clasp pull`). Usa a conta institucional, independente do GitHub. O `.clasp.json` (ID do projeto) fica fora do Git; o `.claspignore` de cada `src/` diz que só código vai ao Google. Ver [desenvolvimento local](../DEVELOPMENT_LOCAL.md). |
 | **`ID_INDEX`** | Planilha mestre que liga cada chave (por exemplo `PERIODOS`) ao ID da planilha correspondente. Ver [arquitetura geral](ARQUITETURA_GERAL.md). |
 | **Chave** | Nome estável de um recurso no `ID_INDEX`. A documentação cita a chave, nunca o ID. |
 | **Auditoria** | Registro de quem fez o quê, quando e onde num sistema, numa planilha própria que só acrescenta linhas. Ver [docs/auditoria](auditoria/README.md). |

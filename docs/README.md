@@ -31,6 +31,7 @@ Guias para quem chega de fora:
 - [Arquitetura geral](ARQUITETURA_GERAL.md) e [glossário](GLOSSARIO.md);
 - [Como participar](../CONTRIBUTING.md) e [roteiro de atualização da documentação](ATUALIZAR_DOCUMENTACAO.md);
 - [Verificação automática (CI)](CI.md);
+- [Desenvolvimento local com clasp](../DEVELOPMENT_LOCAL.md): Git e clasp, `.claspignore`, segurança e princípios de arquitetura;
 - [Versões e Releases](VERSOES.md);
 - [Como reaproveitar um sistema em outro setor](COMO_REAPROVEITAR.md);
 - [Ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md);

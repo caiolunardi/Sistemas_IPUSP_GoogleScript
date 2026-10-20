@@ -6,7 +6,9 @@ Use antes de incorporar um sistema ao repositório e antes de publicar mudanças
 - [ ] Nenhuma senha/token/chave/credencial está versionada.
 - [ ] IDs reais de Sheets/Drive/Forms/Scripts/Deployments foram removidos do código/documentação quando não são públicos por finalidade.
 - [ ] Configurações de produção usam nomes lógicos/Script Properties ou mecanismo aprovado.
-- [ ] `.clasp.json`, `.env` e credenciais locais não entraram no commit.
+- [ ] `.clasp.json`, `.clasprc.json`, `creds.json`, `.env` e credenciais locais não entraram no commit.
+- [ ] A pasta `src/` tem o `.claspignore` padrão e `clasp status` lista só `.gs`, `.js`, `.html` e `appsscript.json` ([desenvolvimento local](../../DEVELOPMENT_LOCAL.md)).
+- [ ] Nenhum ID de produção escrito no código: chave do `ID_INDEX` ou Script Property.
 - [ ] Histórico Git foi considerado, não apenas o estado atual.
 
 ## Dados pessoais
