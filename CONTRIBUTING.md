@@ -39,6 +39,8 @@ Siga [`docs/sistemas/README.md`](docs/sistemas/README.md): pasta `sistemas/<nome
 
 ## Testes locais
 
+A cada push e pull request, o GitHub roda estes testes e a varredura de dados sensíveis sozinho ([verificação automática](docs/CI.md)). Um pull request com ✗ não é aceito.
+
 Cada sistema tem `testes/README.md` com os comandos. Em geral:
 
 ```bash

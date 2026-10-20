@@ -49,7 +49,7 @@ Cada sistema registra no próprio README a versão que está no repositório e s
 
 **Para reaproveitar em outro setor:** veja [Como reaproveitar](docs/COMO_REAPROVEITAR.md). Em resumo, cada sistema é um projeto Apps Script independente: você cria o projeto, copia os arquivos de `src/`, aponta as configurações (Script Properties e `ID_INDEX`) para as suas planilhas e testa com dados fictícios no ambiente de homologação antes de publicar.
 
-**Para rodar os testes locais:** cada sistema tem uma pasta `testes/` com instruções. Os testes usam Node.js e, os de tela, Playwright com Chromium. Nenhum teste acessa planilhas reais ou a internet.
+**Para rodar os testes locais:** cada sistema tem uma pasta `testes/` com instruções. Os testes usam Node.js e, os de tela, Playwright com Chromium. Nenhum teste acessa planilhas reais ou a internet. Os mesmos testes, mais uma varredura de dados sensíveis, rodam sozinhos no GitHub a cada push ([verificação automática](docs/CI.md)).
 
 ## Padrões comuns
 

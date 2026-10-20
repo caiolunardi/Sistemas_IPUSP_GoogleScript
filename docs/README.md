@@ -30,6 +30,7 @@ O catálogo lista todos os sistemas já incorporados (painéis dos alunos e dos 
 Guias para quem chega de fora:
 - [Arquitetura geral](ARQUITETURA_GERAL.md) e [glossário](GLOSSARIO.md);
 - [Como participar](../CONTRIBUTING.md) e [roteiro de atualização da documentação](ATUALIZAR_DOCUMENTACAO.md);
+- [Verificação automática (CI)](CI.md);
 - [Como reaproveitar um sistema em outro setor](COMO_REAPROVEITAR.md);
 - [Ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md);
 - [Repositório público](seguranca/REPOSITORIO_PUBLICO.md): o que pode e o que não pode entrar.

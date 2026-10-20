@@ -27,7 +27,7 @@ Os arquivos ficam em `docs/sistemas/<sistema>/` e `sistemas/<sistema>/` (formul�
 | `DADOS_E_SEGURANCA.md` | mudou o que é lido, gravado, mostrado ou enviado; quem acessa; uma configuração | Seguindo o [modelo](seguranca/SYSTEM_SECURITY_TEMPLATE.md). Nada de valor real; base legal sem fonte = `A VALIDAR INSTITUCIONALMENTE`. |
 | `HOMOLOGACAO.md` | sempre que houver teste | O que foi testado, onde (local, `/dev`, `/exec` de homologação), com que resultado e o que falta. |
 | `evidencias/<versão>/` | a tela mudou | Prints gerados pelos testes, só com dados fictícios, e um `README.md` com legenda. Link a partir do `HOMOLOGACAO.md`. |
-| `sistemas/<sistema>/testes/README.md` | teste novo ou comando novo | Comando, o que confere e a contagem de resultados. |
+| `sistemas/<sistema>/testes/README.md` | teste novo ou comando novo | Comando, o que confere e a contagem de resultados. Suíte nova também entra no `.github/workflows/ci.yml` ([CI](CI.md#manutenção)). |
 | Documentos próprios (`ARQUITETURA.md`, `REGRAS.md`, `MODELO_DE_DADOS.md`, `VERSOES_E_DECISOES.md` etc.) | a mudança toca o assunto deles | Só nos sistemas que já têm esses arquivos. Não crie arquivo novo se um existente cobre o assunto. |
 
 Versão: suba a versão no código (constante ou rodapé, quando existir) e use o mesmo número em todos os documentos acima.
@@ -62,6 +62,6 @@ Versão: suba a versão no código (constante ou rodapé, quando existir) e use 
 
 - [ ] Os documentos das seções que se aplicam foram atualizados, com a mesma versão e data.
 - [ ] Os links novos funcionam (caminhos relativos ao arquivo).
-- [ ] Nenhum dado real, ID ou URL interna ([checklist do repositório público](seguranca/REPOSITORIO_PUBLICO.md#antes-de-cada-commit)).
+- [ ] Nenhum dado real, ID ou URL interna ([checklist do repositório público](seguranca/REPOSITORIO_PUBLICO.md#antes-de-cada-commit)); `node ferramentas/verificar_publicacao.js` sem achados.
 - [ ] A implantação no Google está descrita como **pendente** até alguém confirmar que publicou. O Git não informa o que está em uso.
 - [ ] A mensagem de commit ou o pull request diz o sistema, a versão, o que mudou e o que fazer no Apps Script.

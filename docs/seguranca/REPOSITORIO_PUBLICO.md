@@ -20,6 +20,14 @@ Desde outubro de 2026 este repositório é (ou está sendo preparado para ser) *
 
 ## Antes de cada commit
 
+A [CI](../CI.md) roda `ferramentas/verificar_publicacao.js` a cada push e marca ✗ quando acha credencial, ID interno, e-mail fora da lista ou documento versionado. Rode antes do push para não depender dela:
+
+```bash
+node ferramentas/verificar_publicacao.js
+```
+
+O que a varredura não pega (nomes, números USP, conteúdo de prints) continua sendo conferido à mão:
+
 1. Rode o [checklist de segurança](SECURITY_CHECKLIST.md).
 2. Procure no que vai entrar: `AKfyc`, `docs.google.com/spreadsheets/d/`, `drive.google.com`, sequências longas de letras e números (IDs), `@usp.br` diferente dos e-mails fictícios e números de 7 a 8 dígitos que não sejam códigos de disciplina.
 3. Abra cada print novo e confira que não há e-mail, nome ou nº USP reais.

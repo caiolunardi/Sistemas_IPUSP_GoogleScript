@@ -1,0 +1,106 @@
+# Verificação automática a cada push e pull request.
+# Documentação: docs/CI.md
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PLAYWRIGHT_VERSAO: "1.56.0"
+
+jobs:
+  varredura:
+    name: Dados sensíveis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node ferramentas/verificar_publicacao.js
+
+  servidor:
+    name: Servidor — ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - sistemas/busca-alunos/testes/testar_backend.js
+          - sistemas/grade-horaria-visual/testes/testar_backend.js
+          - sistemas/exclusao-disciplinas/formulario/testes/testar_backend.js
+          - sistemas/trancamento-parcial/formulario/testes/testar_backend.js
+          - sistemas/trancamento-total/formulario/testes/testar_backend.js
+          - sistemas/trancamento-total/gerenciador/testes/testar_backend.js
+          - sistemas/painel-solicitacoes/testes/testar_contagem.js
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rodar
+        run: cd "$(dirname "${{ matrix.suite }}")" && node "$(basename "${{ matrix.suite }}")"
+
+  tela:
+    name: Tela — ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - sistemas/busca-alunos/testes/testar_navegador.js
+          - sistemas/grade-horaria-visual/testes/testar_navegador.js
+          - sistemas/exclusao-disciplinas/formulario/testes/testar_navegador.js
+          - sistemas/trancamento-parcial/formulario/testes/testar_navegador.js
+          - sistemas/trancamento-total/formulario/testes/testar_navegador.js
+          - sistemas/painel-solicitacoes/testes/testar_navegador.js
+          - sistemas/painel-servidores/testes/testar_navegador.js
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar Playwright e Chromium
+        run: |
+          npm install -g "playwright@${PLAYWRIGHT_VERSAO}"
+          playwright install --with-deps chromium
+      - name: Rodar
+        run: cd "$(dirname "${{ matrix.suite }}")" && node "$(basename "${{ matrix.suite }}")"
+
+  estrutura:
+    name: Estrutura Curricular (suítes sintéticas)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: sistemas/estrutura-curricular/testes
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sistemas/estrutura-curricular/testes/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Só as suítes que não pedem exportações do Júpiter (ver testes/README.md).
+      - run: node testar_recomeco_google.js
+      - run: node testar_etapa7_trava_auditoria.js
+      - run: node testar_etapa8_previa_envio.js
+      - run: node testar_etapa9_auditoria_envio.js
+      - run: node testar_ajuda.js
+      - run: node testar_navegacao_visual.js
+      - run: node testar_navegador_etapa6.js
+      - run: node testar_navegador_etapa8.js
+      - run: node testar_navegador_etapa9.js

@@ -1,0 +1,53 @@
+{
+  "_sobre": "Valores que PODEM aparecer no repositório público. Cada um precisa de motivo. Ver docs/seguranca/REPOSITORIO_PUBLICO.md.",
+  "implantacoes_publicas": {
+    "_motivo": "Web Apps feitos para os alunos e divulgados a eles (Painel de Solicitações e formulários). Ferramentas da equipe nunca entram aqui.",
+    "ids": [
+      "AKfycbw5m0jlOTzpOm8X1qiCaFFGKZlzmKiKLofJI970GF07hQcSJhegB_0ObQ-PxZDZECQEjw",
+      "AKfycbwMCqkjfj7zNj-KDUwnevY7ufRPco5gkt-5wpZyRJ5zzOfvfCnDXZNh-GHqoie3kO7RKg",
+      "AKfycbwnom-UvotbcC-he2QrXBPMgy_U78-NAhcXgsgyan9VXETDlYW2zORQliGi-lBUK5a8SA",
+      "AKfycbx7l6oYJ8uI3ujGU_x-l51Py0DV5c0loCjYW9bFpmINrri_BbhE-uXInJeqg8-DKj3hxg",
+      "AKfycbyP0zFypGaLUA4Qy73lnCeWMrPJNXE_02HCM-w8MuEJ83qZOTlgq-HiPl84RMIS7UtH",
+      "AKfycbyWwG1K0W-Q5s2lRBeZ90DIbrghJf1r5W9YhuI7JrZepnzB2Vr-vIcu2sLTfPAzRaE3",
+      "AKfycbzXVgyn1He8Z5ymUvOwA24j9OwCbCK9KbPGQotvBK16RGNUTnZH-3MoITnxeChqyD4S",
+      "AKfycbzZRRbduzNLsqPKKvok13YFINGWVQoCCQv1fhVQE09myBWzCHBSqcxkjccd1zAviJ1r",
+      "AKfycbzewawdHrLiADc9sc2igr2TSc9mM2ET2XOz_s749FmJjQikEasFRVCNjaUuTMsxINhT"
+    ]
+  },
+  "pastas_drive_publicas": {
+    "_motivo": "Pasta institucional da identidade visual IPUSP, compartilhada por link (assets/ipusp/README.md).",
+    "ids": [
+      "12zkj_qpUVVBZlpDatPnqnG2vropxVr0T"
+    ]
+  },
+  "emails_permitidos": {
+    "_motivo": "Contato institucional público e e-mails fictícios dos testes (inclusive os que testam a recusa de domínios falsos).",
+    "enderecos": [
+      "ana@usp.br",
+      "b@usp.br",
+      "bruno@usp.br",
+      "gradip@usp.br",
+      "novo@usp.br",
+      "outro@usp.br",
+      "x@fakeusp.br",
+      "x@gmail.com",
+      "x@usp.br.evil.com"
+    ],
+    "dominios_ficticios": [
+      "unidade.example",
+      "exemplo.invalid",
+      "usp.example",
+      "exemplo.usp.br",
+      "example.invalid",
+      "externo.example",
+      "example.com",
+      "example.org"
+    ]
+  },
+  "arquivos_ignorados": {
+    "_motivo": "Arquivos gerados por ferramentas, sem conteúdo do projeto.",
+    "caminhos": [
+      "sistemas/estrutura-curricular/testes/package-lock.json"
+    ]
+  }
+}

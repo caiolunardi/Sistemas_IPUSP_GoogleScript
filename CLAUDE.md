@@ -39,7 +39,7 @@ Antes de adicionar código, configuração, exemplos, screenshots, logs ou docum
 
 ## Ao terminar qualquer mudança
 
-Atualize a documentação seguindo `docs/ATUALIZAR_DOCUMENTACAO.md`: arquivos do sistema, catálogo, mapa das chaves do `ID_INDEX` (`docs/ARQUITETURA_GERAL.md`), glossário e Central de Ajuda, conforme o tipo de mudança.
+Rode os testes do sistema e `node ferramentas/verificar_publicacao.js` (a CI em `.github/workflows/ci.yml` roda os mesmos a cada push; ver `docs/CI.md`). Atualize a documentação seguindo `docs/ATUALIZAR_DOCUMENTACAO.md`: arquivos do sistema, catálogo, mapa das chaves do `ID_INDEX` (`docs/ARQUITETURA_GERAL.md`), glossário e Central de Ajuda, conforme o tipo de mudança.
 
 ## Fonte de verdade e precedência
 
