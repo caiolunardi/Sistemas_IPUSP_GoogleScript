@@ -160,6 +160,12 @@ const SISTEMAS = [
   categoria também tem conteúdo em inglês (hoje, só
   Intercambistas). Quando ausente, a categoria é exibida
   só em português.
+
+  Campo "pagina" (v1.5) é opcional: a entrada do menu não
+  lista cards, abre uma página de texto no frame principal.
+  O valor é a chave registrada em PAGINAS_PAINEL (Painel.html)
+  pelo arquivo da página — hoje só "atendimento"
+  (PainelAtendimento.html, configurado em ATENDIMENTO_ONLINE).
 =====================================================*/
 const CATEGORIAS_SISTEMAS = {
   "matricula-disciplinas": {
@@ -190,8 +196,48 @@ const CATEGORIAS_SISTEMAS = {
     titulo: "Intercambistas / Exchange Students",
     descricao: "Solicitações de matrícula para estudantes intercambistas.",
     descricaoEn: "Enrollment requests for exchange students."
+  },
+  "atendimento-online": {
+    ordem: 5,
+    icone: "💬",
+    iconeMenu: "message-circle-more",
+    titulo: "Atendimento online",
+    descricao: "Fale com o Serviço de Graduação pelo WhatsApp institucional.",
+    pagina: "atendimento"
   }
 };
+
+/*=====================================================
+  ATENDIMENTO ONLINE (v1.5) — dados da página "Atendimento
+  online" (texto em PainelAtendimento.html). Para trocar o
+  número, o horário ou a mensagem que já vem escrita no
+  WhatsApp, edite só aqui.
+
+  whatsapp       — número só com dígitos, com 55 e DDD (vai no
+                   link https://wa.me/<número>).
+  telefoneTexto  — o mesmo número como aparece na página.
+  horarioTexto   — frase do horário, exibida na página.
+  diasSemana     — dias de atendimento (0 = domingo ... 6 = sábado).
+  inicio, fim    — horário em "HH:MM", hora de São Paulo. Servem
+                   só para o aviso "dentro/fora do horário";
+                   feriados e recessos não entram nessa conta.
+  mensagemModelo — texto que já abre escrito na conversa (cada
+                   \n é uma quebra de linha).
+=====================================================*/
+const ATENDIMENTO_ONLINE = {
+  whatsapp: "551130914177",
+  telefoneTexto: "(11) 3091-4177",
+  horarioTexto: "de segunda a sexta-feira, das 9h às 17h, exceto feriados e recessos da USP",
+  diasSemana: [1, 2, 3, 4, 5],
+  inicio: "09:00",
+  fim: "17:00",
+  fusoHorario: "America/Sao_Paulo",
+  mensagemModelo: "Olá! Sou aluno(a) de graduação do IPUSP.\nNome completo:\nNº USP:\nAssunto:"
+};
+
+function obterAtendimentoParaFrontend_() {
+  return Object.assign({}, ATENDIMENTO_ONLINE, { diasSemana: ATENDIMENTO_ONLINE.diasSemana.slice() });
+}
 
 // Devolve os metadados de categoria já ordenados, com o "id" embutido em
 // cada item (a chave do objeto acima não viaja sozinha pro frontend).
@@ -223,6 +269,10 @@ function obterCategoriasParaFrontend_() {
   "atalhoMenu: true" ganha também um atalho fixo no rodapé
   do menu lateral, acima da Ajuda, com o ícone "iconeMenu"
   (catálogo de PainelIcones.html).
+
+  Atalho para uma página do menu (v1.5): com "irPara" (id de
+  uma categoria com "pagina"), o card abre essa página no
+  frame principal. Serve para a busca encontrar a página.
 =====================================================*/
 const FERRAMENTAS_PAINEL = [
   {
@@ -245,6 +295,16 @@ const FERRAMENTAS_PAINEL = [
     atalhoMenu: true,
     iconeMenu: "calendar-days",
     palavrasChave: "grade horaria horario horarios aula aulas sala salas semestre turma turmas disciplinas consulta"
+  },
+  {
+    id: "atendimento-online",
+    nome: "Atendimento online pelo WhatsApp",
+    descricao: "Tire dúvidas com o Serviço de Graduação sem precisar vir ao Instituto.",
+    icone: "💬",
+    categoria: "atendimento-online",
+    selo: "Abre aqui no painel",
+    irPara: "atendimento-online",
+    palavrasChave: "whatsapp zap atendimento contato falar conversar mensagem duvida duvidas secretaria servico de graduacao telefone online"
   }
 ];
 

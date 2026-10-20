@@ -50,7 +50,7 @@ Consulte `docs/README.md` para o mapa completo e `docs/SISTEMAS.md` para o catá
 
 Sistemas já incorporados:
 
-- [Painel de Solicitações dos alunos v1.3](sistemas/painel-solicitacoes/README.md) — fonte Apps Script versionada (menu lateral e contagem de créditos) e documentação de homologação;
+- [Painel de Solicitações dos alunos v1.5](sistemas/painel-solicitacoes/README.md) — fonte Apps Script versionada (menu lateral, contagem de créditos, grade horária e atendimento online pelo WhatsApp) e documentação de homologação;
 - [Estrutura Curricular e Grade Horária 1.10.0](docs/sistemas/estrutura-curricular/README.md) — fonte sobre a baseline 1.9.3 auditada, sidebar padrão, alternância para abas, ícones e documentação de operação, implantação e manutenção; verificação local registrada, homologação no Google pendente.
 - [Painel de Sistemas dos servidores](sistemas/painel-servidores/README.md) — tema GRADIP, menu lateral/abas, card Pessoas do IPUSP e Central de Ajuda; [documentação](docs/sistemas/painel-servidores/README.md); verificação local registrada, homologação no Google pendente.
 

@@ -38,3 +38,11 @@ Em `Codigo.gs`, a resolução do índice virou genérica (`obterIdDoIndice_(chav
 Testes locais com dados fictícios ([como rodar](../../../sistemas/painel-solicitacoes/testes/README.md)): `testar_contagem.js` 36/36 e `testar_navegador.js` 184/184, cobrindo menu lateral, abas, busca, teclado, contagem, Central de Ajuda, três temas, contraste ≥ 4,5:1, 360/390/480/768 px e desktop, alvos ≥ 44 px e movimento reduzido.
 
 Para homologar: cadastrar `REGRAS_CURRICULARES` no `ID_INDEX`, rodar `diagnosticarContagemCreditos()` e conferir os critérios reconhecidos, testar a contagem com pelo menos um currículo real de cada habilitação e repetir o smoke do painel no `/exec`.
+
+## Fonte v1.5 — Atendimento online (20/10/2026)
+
+**Situação:** só no Git; não implantada no Apps Script nem conferida no `/exec`. Mudaram `Codigo.gs` (categoria `atendimento-online` com `pagina`, constante `ATENDIMENTO_ONLINE` e `obterAtendimentoParaFrontend_()`, item de busca em `FERRAMENTAS_PAINEL`), `Painel.html` (páginas de texto no quadro principal, card com `irPara`, includes), `PainelAjuda.html` ("Sobre o Painel" e "Categorias do Painel") e `PainelIcones.html` (ícone `message-circle-more`). São novos `PainelAtendimento.html` e `PainelAtendimentoEstilos.html`. `obterSistemas()`, os sete formulários, os períodos e a contagem de créditos não mudaram.
+
+Testes locais com dados fictícios: `testar_contagem.js` 36/36 e `testar_navegador.js` 235/235. Os novos conferem a página aberta pelo menu e pelas abas, o link `wa.me` com número e mensagem modelo em nova aba, o horário de São Paulo (9h abre, 17h fecha, fim de semana fechado), a busca por "whatsapp", o foco no título ao abrir pelo card, o atalho da Central de Ajuda, o contraste ≥ 4,5:1 nos dois temas (inclusive os dois estados do aviso de horário), 360 a 1024 px sem rolagem horizontal e o botão com ≥ 44 px. [Capturas](evidencias/1.5/README.md).
+
+Para homologar no `/exec`: abrir a página no computador e no celular, tocar o botão e conferir que o WhatsApp abre a conversa com o número do setor e a mensagem modelo, e conferir o aviso de horário dentro e fora do expediente.

@@ -13,6 +13,7 @@ O painel é uma página de entrada para estudantes. Contém catálogo de formul�
 | REGRAS_CURRICULARES | Chave do índice mestre (v1.3) | Linha única na primeira aba, tipo `spreadsheet`. Planilha de Regras Curriculares, **somente leitura**; a identidade de execução precisa de leitura. |
 | FORMULARIOS_ALUNOS | Sete Web Apps de destino | URLs `/exec` preservadas como links apresentados aos alunos; URL não concede autorização. |
 | MARCA_USP_CLARA/ESCURA | PNG externo e SVG incorporado | Mesmo comportamento visual da v1.2. |
+| ATENDIMENTO_ONLINE (v1.5) | Número institucional público do WhatsApp do Serviço de Graduação, horário e mensagem modelo | Em `Codigo.gs`, por ser canal público de atendimento. |
 
 O código não contém o ID literal da planilha de períodos nem o ID da planilha mestre. Também não utiliza `DriveApp`: a leitura do índice ocorre via `SpreadsheetApp.openById` com valor mantido nas Propriedades do script. Script Properties não protege o valor de editores autorizados do projeto.
 
@@ -36,3 +37,10 @@ Na v1.3, a verificação local usou apenas dados fictícios (curso `99999`, disc
 - Base legal e retenção: **A VALIDAR INSTITUCIONALMENTE**.
 - Incidentes: seguir o [procedimento comum](../../seguranca/INCIDENTES.md) e o fluxo institucional.
 - A homologação da interface v1.2 original não atesta a integração do índice mestre.
+
+## Atendimento online (v1.5)
+
+- A página só monta o link `https://wa.me/<número>?text=<mensagem modelo>`. O painel não envia, lê nem guarda nenhuma mensagem e não chama o servidor; o que o aluno escreve vai direto do aparelho dele para o WhatsApp.
+- A mensagem modelo tem só rótulos ("Nome completo:", "Nº USP:", "Assunto:"), sem dado preenchido.
+- As conversas ficam na conta e nos aparelhos do setor no WhatsApp, fora deste sistema. Quem tem acesso a esses aparelhos, por quanto tempo as conversas ficam guardadas e a base legal desse tratamento: A VALIDAR INSTITUCIONALMENTE.
+- A página orienta o aluno a não enviar senha e a mandar documentos só quando um servidor pedir.

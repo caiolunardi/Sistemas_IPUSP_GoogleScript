@@ -1,0 +1,111 @@
+<!-- Página "Atendimento online" (v1.5): abre no frame principal pelo menu
+     lateral/abas (categoria "atendimento-online" com pagina "atendimento"
+     em Codigo.gs). O TEXTO da página fica todo no modelo abaixo; número,
+     horário e mensagem pronta vêm de ATENDIMENTO_ONLINE (Codigo.gs) e são
+     preenchidos com textContent/href, nunca como HTML. Não chama
+     google.script.run. -->
+<template id="modeloAtendimento">
+  <div class="atendimento">
+
+    <section class="atendimentoCartao" aria-labelledby="atendimentoTitulo">
+      <h2 id="atendimentoTitulo">Fale com o Serviço de Graduação pelo WhatsApp</h2>
+      <p>Para evitar filas e deslocamentos, o Serviço de Graduação do IPUSP atende os alunos de graduação também pelo WhatsApp institucional, no número <strong data-atendimento="telefone"></strong>.</p>
+      <p><strong>Horário de atendimento:</strong> <span data-atendimento="horario"></span>.</p>
+
+      <p class="atendimentoStatus" data-atendimento="status"></p>
+
+      <a class="atendimentoBotao" data-atendimento="link" target="_blank" rel="noopener noreferrer">
+        <span class="atendimentoBotaoIcone" aria-hidden="true">💬</span>
+        <span>Abrir conversa no WhatsApp</span>
+        <span class="somenteLeitor"> (abre em nova aba)</span>
+      </a>
+      <p class="atendimentoNota">A conversa já abre com um modelo para você completar com seu nome, número USP e assunto.</p>
+    </section>
+
+    <section class="atendimentoCartao" aria-labelledby="atendimentoComoFunciona">
+      <h2 id="atendimentoComoFunciona">Como funciona</h2>
+      <ul>
+        <li>As mensagens entram em uma fila e são respondidas por ordem de chegada, por um servidor da equipe.</li>
+        <li>Mensagens enviadas fora do horário ficam registradas e são respondidas a partir do próximo dia útil.</li>
+        <li>Depois de enviar sua mensagem, aguarde o retorno. Reenviar a mesma mensagem não adianta o atendimento.</li>
+      </ul>
+      <p><strong>Para agilizar, envie tudo na primeira mensagem:</strong> nome completo, número USP e o assunto, de forma resumida.</p>
+    </section>
+
+    <section class="atendimentoCartao" aria-labelledby="atendimentoImportante">
+      <h2 id="atendimentoImportante">Importante</h2>
+      <ul>
+        <li>Pedidos formais, como trancamento, exclusão de disciplinas e colação de grau, continuam sendo feitos pelos formulários deste painel. O WhatsApp serve para orientações e dúvidas.</li>
+        <li>Nunca envie sua senha. Envie documentos ou fotos apenas quando um servidor pedir.</li>
+      </ul>
+    </section>
+
+  </div>
+</template>
+
+<script>
+(function () {
+  'use strict';
+
+  var DIAS = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+  function minutos(hhmm) {
+    var p = String(hhmm || '').split(':');
+    return Number(p[0]) * 60 + Number(p[1] || 0);
+  }
+
+  // Dentro ou fora do horário, pela hora de São Paulo (não pela do
+  // aparelho do aluno). Feriados e recessos não entram na conta, por isso
+  // o texto fala em "horário de atendimento", não em "aberto agora".
+  function dentroDoHorario(data) {
+    var c = ATENDIMENTO_ONLINE;
+    var partes = {};
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: c.fusoHorario || 'America/Sao_Paulo',
+      weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(data || new Date()).forEach(function (p) { partes[p.type] = p.value; });
+    var agora = Number(partes.hour) * 60 + Number(partes.minute);
+    return c.diasSemana.indexOf(DIAS[partes.weekday]) !== -1 &&
+      agora >= minutos(c.inicio) && agora < minutos(c.fim);
+  }
+
+  function linkWhatsApp() {
+    var c = ATENDIMENTO_ONLINE;
+    return 'https://wa.me/' + c.whatsapp + (c.mensagemModelo ? '?text=' + encodeURIComponent(c.mensagemModelo) : '');
+  }
+
+  PAGINAS_PAINEL.atendimento = function (container) {
+    var modelo = document.getElementById('modeloAtendimento');
+    if (!modelo) return;
+    var pagina = modelo.content.cloneNode(true);
+    var campo = function (nome) { return pagina.querySelector('[data-atendimento="' + nome + '"]'); };
+
+    campo('telefone').textContent = ATENDIMENTO_ONLINE.telefoneTexto;
+    campo('horario').textContent = ATENDIMENTO_ONLINE.horarioTexto;
+    campo('link').href = linkWhatsApp();
+
+    var status = campo('status');
+    if (dentroDoHorario(new Date())) {
+      status.classList.add('atendimentoStatus--dentro');
+      status.textContent = 'Agora é horário de atendimento.';
+    } else {
+      status.classList.add('atendimentoStatus--fora');
+      status.textContent = 'Agora está fora do horário de atendimento. Você pode enviar sua mensagem: ela será respondida a partir do próximo dia útil.';
+    }
+
+    container.appendChild(pagina);
+  };
+
+  // Atalhos para a página de fora do menu (ex.: "Sobre o Painel", na
+  // Central de Ajuda): fecham a Central, se estiver aberta, e abrem a página.
+  document.addEventListener('click', function (evento) {
+    var botao = evento.target.closest ? evento.target.closest('[data-abrir-pagina]') : null;
+    if (!botao) return;
+    var overlay = document.getElementById('painelAjudaOverlay');
+    if (overlay && !overlay.hidden && typeof painelAjudaFechar === 'function') painelAjudaFechar();
+    abrirPagina(botao.getAttribute('data-abrir-pagina'));
+  });
+
+  window.PainelAtendimento = Object.freeze({ dentroDoHorario: dentroDoHorario, linkWhatsApp: linkWhatsApp });
+})();
+</script>

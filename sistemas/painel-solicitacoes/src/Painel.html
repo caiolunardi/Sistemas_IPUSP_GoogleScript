@@ -778,6 +778,7 @@ button.cardSistema{
 <?!= include_('PainelAjudaEstilos') ?>
 <?!= include_('PainelNavegacaoEstilos') ?>
 <?!= include_('PainelContagemEstilos') ?>
+<?!= include_('PainelAtendimentoEstilos') ?>
 
 <header id="headerSistema">
     <div class="logoEsquerda">
@@ -886,6 +887,15 @@ const CATEGORIAS_SISTEMAS = <?!= JSON.stringify(obterCategoriasParaFrontend_()) 
 // Ferramentas do painel que não são formulários (ex.: contagem de
 // créditos). Mesma fonte de verdade: FERRAMENTAS_PAINEL em Codigo.gs.
 const FERRAMENTAS_PAINEL = <?!= JSON.stringify(obterFerramentasParaFrontend_()) ?>;
+
+// Número, horário e mensagem do Atendimento online (v1.5). Mesma fonte
+// de verdade: ATENDIMENTO_ONLINE em Codigo.gs.
+const ATENDIMENTO_ONLINE = <?!= JSON.stringify(obterAtendimentoParaFrontend_()) ?>;
+
+// Páginas de texto do menu (categorias com "pagina" em Codigo.gs). Cada
+// arquivo de página registra aqui a função que desenha o conteúdo
+// (ex.: PAGINAS_PAINEL.atendimento em PainelAtendimento.html).
+const PAGINAS_PAINEL = {};
 
 let sistemasCarregados = [];
 let loadingTimer;
@@ -1046,6 +1056,13 @@ function renderizarPainel() {
 
     container.appendChild(criarTituloArea(categoria));
 
+    // Página de texto (ex.: Atendimento online): sem cards.
+    if (categoria.pagina) {
+        const desenhar = PAGINAS_PAINEL[categoria.pagina];
+        if (typeof desenhar === "function") desenhar(container);
+        return;
+    }
+
     const itens = itensDaCategoria(categoria.id);
     if (itens.length === 0) {
         const vazio = document.createElement("div");
@@ -1166,6 +1183,8 @@ function criarListaCards(itens) {
 // Consulta externa (com "link", ex.: grade horária): é um <a> que abre
 // a página em nova aba, sem AccountChooser, porque ela é pública e o
 // aluno costuma consultá-la enquanto preenche um formulário.
+// Atalho de página (com "irPara", ex.: Atendimento online): abre a
+// página do menu no frame principal; aparece nos resultados da busca.
 function criarCardFerramenta(ferramenta) {
 
     const externo = Boolean(ferramenta.link);
@@ -1177,7 +1196,7 @@ function criarCardFerramenta(ferramenta) {
         card.rel = "noopener noreferrer";
     } else {
         card.type = "button";
-        card.setAttribute("aria-haspopup", "dialog");
+        if (!ferramenta.irPara) card.setAttribute("aria-haspopup", "dialog");
     }
 
     const icone = document.createElement("div");
@@ -1211,7 +1230,8 @@ function criarCardFerramenta(ferramenta) {
     card.appendChild(badge);
     card.appendChild(seta);
 
-    if (!externo) card.onclick = () => abrirFerramenta(ferramenta.id, card);
+    if (ferramenta.irPara) card.onclick = () => abrirPagina(ferramenta.irPara);
+    else if (!externo) card.onclick = () => abrirFerramenta(ferramenta.id, card);
     return card;
 
 }
@@ -1231,6 +1251,19 @@ const FERRAMENTAS_ABRIR = {};
 function abrirFerramenta(id, origem) {
     const abrir = FERRAMENTAS_ABRIR[id];
     if (typeof abrir === "function") abrir(origem);
+}
+
+// Abre uma entrada do menu pelo mesmo caminho do clique no menu (marca
+// o item, recolhe o menu no celular, volta ao topo) e leva o foco ao
+// título da página, para o leitor de tela anunciar onde o aluno chegou.
+function abrirPagina(id) {
+    if (window.PainelNavegacao) window.PainelNavegacao.irPara(id);
+    else selecionarCategoria(id);
+    const titulo = document.querySelector("#listaSistemasContainer .tituloArea h1");
+    if (titulo) {
+        titulo.tabIndex = -1;
+        titulo.focus();
+    }
 }
 
 // Cada card é montado só com createElement/textContent — nome,
@@ -1365,6 +1398,8 @@ function mostrarErro(erro) {
 
 <?!= include_('PainelContagemMotor') ?>
 <?!= include_('PainelContagemUI') ?>
+
+<?!= include_('PainelAtendimento') ?>
 
 <?!= include_('PainelIcones') ?>
 <?!= include_('PainelNavegacaoUI') ?>

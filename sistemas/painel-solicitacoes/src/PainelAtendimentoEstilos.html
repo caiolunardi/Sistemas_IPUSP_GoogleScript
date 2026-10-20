@@ -1,0 +1,121 @@
+<style>
+/* Página "Atendimento online" (v1.5, PainelAtendimento.html). Só tokens
+   do GradipTema, pelas receitas de docs/UX_COMPONENT_RECIPES.md: cartões
+   como o .cardSistema, botão primário (seção 4) e faixa de horário como
+   alerta de sucesso/aviso (seção 8; texto longo do aviso em
+   --gradip-text, a cor semântica fica no fundo e na borda). */
+.atendimento{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.atendimentoCartao{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    box-shadow:var(--gradip-shadow);
+    padding:18px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:var(--gradip-text);
+}
+
+.atendimentoCartao h2{
+    font-size:16px;
+    margin:0 0 8px;
+    color:var(--gradip-text);
+}
+
+.atendimentoCartao p{
+    margin:0 0 10px;
+}
+
+.atendimentoCartao ul{
+    margin:0 0 10px;
+    padding-left:20px;
+}
+
+.atendimentoCartao li + li{
+    margin-top:6px;
+}
+
+.atendimentoCartao > :last-child{
+    margin-bottom:0;
+}
+
+.atendimentoStatus{
+    display:inline-block;
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:13.5px;
+    font-weight:bold;
+    border:1px solid transparent;
+}
+
+.atendimentoStatus--dentro{
+    background:var(--gradip-success-bg);
+    border-color:var(--gradip-success-border);
+    color:var(--gradip-success);
+}
+
+.atendimentoStatus--fora{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+    color:var(--gradip-text);
+}
+
+.atendimentoBotao{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:44px;
+    box-sizing:border-box;
+    padding:10px 20px;
+    margin:4px 0 8px;
+    border:1px solid transparent;
+    border-radius:8px;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+    font-weight:600;
+    font-size:14.5px;
+    text-decoration:none;
+    transition:background .15s;
+}
+
+.atendimentoBotao:hover{
+    background:var(--gradip-primary-hover);
+}
+
+.atendimentoBotao:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.atendimentoBotaoIcone{
+    font-size:17px;
+    line-height:1;
+}
+
+.atendimentoNota{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+}
+
+@media (max-width:480px){
+    .atendimentoCartao{
+        padding:16px;
+    }
+    .atendimentoBotao{
+        display:flex;
+        width:100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .atendimentoBotao{
+        transition:none;
+    }
+}
+</style>

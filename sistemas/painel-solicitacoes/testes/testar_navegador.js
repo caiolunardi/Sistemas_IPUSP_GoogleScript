@@ -5,13 +5,18 @@
 // todas as categorias, cards por teclado, Central de Ajuda, contagem de
 // créditos (janela, teclado, cálculo, resultado), tema claro/escuro,
 // contraste e larguras de 360 a 1280 px. Uso: node testar_navegador.js
+// [pasta]; com a pasta, as capturas vão para ela (ex.: evidências de uma
+// versão); sem ela, para a pasta temporária do sistema.
 const path = require('path');
 const vm = require('vm');
 const { carregarCodigo, montarHtml, stubScript } = require('./pagina.js');
 const D = require('./dados_ficticios.js');
 function carregarPlaywright() { try { return require('playwright'); } catch (e) { return require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright'); } }
 const { chromium } = carregarPlaywright();
-const SAIDA = path.join(require('os').tmpdir(), 'painel-solicitacoes-');
+const SAIDA = process.argv[2] ? path.resolve(process.argv[2]) + path.sep : path.join(require('os').tmpdir(), 'painel-solicitacoes-');
+if (process.argv[2]) require('fs').mkdirSync(process.argv[2], { recursive: true });
+// Sem rede: a marca USP do tema claro (PNG externo) é servida pelo SVG do repositório.
+const MARCA_USP_OFFLINE = require('fs').readFileSync(path.join(__dirname, '..', '..', '..', 'assets', 'usp', 'logo-usp-preto.svg'), 'utf8');
 
 const codigo = carregarCodigo({ planilhas: D.PLANILHAS, propriedades: D.PROPRIEDADES });
 const sistemas = JSON.stringify(vm.runInContext('obterSistemas()', codigo));
@@ -31,7 +36,7 @@ const chk = (n, c, extra = '') => { if (c) { ok++; console.log('ok', n, extra); 
 
 async function load(p, falharContagem) {
   await p.route('http://painel.teste/**', r => r.fulfill({ contentType: 'text/html; charset=utf-8', body: html.replace('<head>', '<head><script>' + stub + (falharContagem ? 'window.__falharContagem=true;' : '') + '</script>') }));
-  await p.route(/^https:\/\//, r => r.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="97"><rect width="240" height="97" fill="#00509d"/></svg>' }));
+  await p.route(/^https:\/\//, r => r.fulfill({ contentType: 'image/svg+xml', body: MARCA_USP_OFFLINE }));
   await p.goto('http://painel.teste/');
   await p.waitForSelector('#listaSistemasContainer .cardSistema');
   await p.waitForTimeout(250);
@@ -53,8 +58,8 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
 
     chk(`${T} tema Sistema resolvido`, await p.evaluate(s => document.documentElement.dataset.theme === s, scheme));
     chk(`${T} abre no menu lateral`, await p.evaluate(() => document.getElementById('painelLayout').dataset.navegacao === 'sidebar' && document.querySelector('[data-painel-modo="sidebar"]').getAttribute('aria-pressed') === 'true'));
-    chk(`${T} um item de menu por categoria, na ordem`, (await p.$$eval('#painelMenu [data-pagina]', e => e.map(x => x.getAttribute('data-pagina')).join())) === 'matricula-disciplinas,formacao-conclusao,beneficios-servicos,intercambistas');
-    chk(`${T} ícones no menu`, await p.$$eval('.painelNavIcone svg', e => e.length) === 8);
+    chk(`${T} um item de menu por categoria, na ordem`, (await p.$$eval('#painelMenu [data-pagina]', e => e.map(x => x.getAttribute('data-pagina')).join())) === 'matricula-disciplinas,formacao-conclusao,beneficios-servicos,intercambistas,atendimento-online');
+    chk(`${T} ícones no menu`, await p.$$eval('.painelNavIcone svg', e => e.length) === 9);
     chk(`${T} primeira categoria aberta e marcada`, await p.getAttribute('#navCategoria-matricula-disciplinas', 'aria-current') === 'page' && (await p.textContent('.tituloArea h1')) === 'Matrícula e disciplinas');
     chk(`${T} cards da categoria`, (await visiveis(p)).length === 4);
 
@@ -65,6 +70,35 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
     const atalho = await p.evaluate(() => { const a = document.getElementById('navAtalho-grade-horaria'); return a && { pai: a.parentNode.className, proximo: a.nextElementSibling && a.nextElementSibling.id, target: a.target, rel: a.rel, href: a.getAttribute('href'), icone: !!a.querySelector('.painelNavIcone svg'), nome: a.querySelector('.painelNavTexto').textContent }; });
     chk(`${T} atalho da grade no rodapé do menu, acima da Ajuda`, atalho && atalho.pai === 'painelSidebar__apoio' && atalho.proximo === 'navAjuda' && atalho.icone && atalho.nome === 'Grade horária', JSON.stringify(atalho));
     chk(`${T} atalho abre em nova aba com o mesmo link do card`, atalho && atalho.target === '_blank' && /noopener/.test(atalho.rel) && grade && atalho.href === grade.href);
+
+    // atendimento online: página no frame principal, sem cards
+    await p.click('#navCategoria-atendimento-online');
+    const at = await p.evaluate(() => { const a = document.querySelector('#listaSistemasContainer .atendimentoBotao'); return a && { h1: document.querySelector('.tituloArea h1').textContent, cards: document.querySelectorAll('#listaSistemasContainer .cardSistema').length, href: a.getAttribute('href'), target: a.target, rel: a.rel, aviso: a.textContent.includes('(abre em nova aba)'), texto: document.getElementById('listaSistemasContainer').textContent, status: document.querySelector('.atendimentoStatus').className }; });
+    chk(`${T} Atendimento online abre no frame principal`, at && at.h1 === 'Atendimento online' && at.cards === 0 && await p.getAttribute('#navCategoria-atendimento-online', 'aria-current') === 'page', JSON.stringify(at && at.h1));
+    chk(`${T} botão do WhatsApp com número e mensagem modelo, em nova aba`, at && /^https:\/\/wa\.me\/551130914177\?text=/.test(at.href) && decodeURIComponent(at.href.split('text=')[1]).includes('Nº USP:') && at.target === '_blank' && /noopener/.test(at.rel) && at.aviso, at && at.href);
+    chk(`${T} texto com número e horário`, at && at.texto.includes('(11) 3091-4177') && at.texto.includes('de segunda a sexta-feira, das 9h às 17h') && at.texto.includes('Como funciona') && at.texto.includes('Nunca envie sua senha'));
+    chk(`${T} aviso de horário presente e escrito`, at && /atendimentoStatus--(dentro|fora)/.test(at.status));
+    const horarios = await p.evaluate(() => ['2026-10-20T12:00:00Z', '2026-10-20T11:59:00Z', '2026-10-20T19:59:00Z', '2026-10-20T20:00:00Z', '2026-10-24T15:00:00Z', '2026-10-25T15:00:00Z'].map(d => window.PainelAtendimento.dentroDoHorario(new Date(d))).join());
+    chk(`${T} horário de São Paulo: 9h–17h, seg–sex`, horarios === 'true,false,true,false,false,false', horarios);
+    for (const [cls, nome] of [['atendimentoStatus--dentro', 'dentro'], ['atendimentoStatus--fora', 'fora']]) {
+      await p.evaluate(c => { const e = document.querySelector('.atendimentoStatus'); e.className = 'atendimentoStatus ' + c; }, cls);
+      await contraste(p, scheme, ['.atendimentoStatus'], ' status ' + nome);
+    }
+    await contraste(p, scheme, ['.atendimentoCartao h2', '.atendimentoCartao p', '.atendimentoCartao li', '.atendimentoBotao', '.atendimentoNota', '#navCategoria-atendimento-online'], ' atendimento');
+    await p.evaluate(() => { const s = document.querySelector('.atendimentoStatus'); s.className = 'atendimentoStatus atendimentoStatus--fora'; s.textContent = 'Agora está fora do horário de atendimento. Você pode enviar sua mensagem: ela será respondida a partir do próximo dia útil.'; });
+    await p.waitForTimeout(250);
+    await p.screenshot({ path: SAIDA + `atendimento-${scheme}.png`, fullPage: true });
+    // busca acha a página e o card leva até ela
+    await p.fill('#caixaBusca', 'whatsapp');
+    chk(`${T} busca "whatsapp" acha o atendimento`, (await visiveis(p)).join('|') === 'Atendimento online pelo WhatsApp', (await visiveis(p)).join('|'));
+    chk(`${T} card do atendimento não se anuncia como janela`, await p.evaluate(() => !document.querySelector('#listaSistemasContainer button.cardSistema').hasAttribute('aria-haspopup')));
+    await p.click('#listaSistemasContainer button.cardSistema');
+    chk(`${T} card da busca abre a página e foca o título`, (await p.inputValue('#caixaBusca')) === '' && (await p.textContent('.tituloArea h1')) === 'Atendimento online' && await p.evaluate(() => document.activeElement.matches('.tituloArea h1')));
+    // atalho na Central de Ajuda
+    await p.click('#navCategoria-matricula-disciplinas');
+    await p.evaluate(() => painelAjudaAbrirEIrPara('sobre'));
+    await p.click('#painelAjudaSecao-sobre [data-abrir-pagina]');
+    chk(`${T} "Sobre o Painel" leva ao atendimento e fecha a Central`, await p.evaluate(() => document.getElementById('painelAjudaOverlay').hidden && document.body.style.overflow === '') && (await p.textContent('.tituloArea h1')) === 'Atendimento online');
 
     await p.click('#navCategoria-formacao-conclusao');
     const formacao = await visiveis(p);
@@ -107,11 +141,14 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
 
     // abas
     await p.click('[data-painel-modo="abas"]');
-    chk(`${T} abas: tablist/tab/tabpanel`, await p.evaluate(() => document.getElementById('painelMenu').getAttribute('role') === 'tablist' && document.querySelectorAll('[role="tab"]').length === 4 && document.getElementById('conteudo').getAttribute('role') === 'tabpanel' && document.getElementById('conteudo').getAttribute('aria-labelledby') === 'navCategoria-matricula-disciplinas'));
+    chk(`${T} abas: tablist/tab/tabpanel`, await p.evaluate(() => document.getElementById('painelMenu').getAttribute('role') === 'tablist' && document.querySelectorAll('[role="tab"]').length === 5 && document.getElementById('conteudo').getAttribute('role') === 'tabpanel' && document.getElementById('conteudo').getAttribute('aria-labelledby') === 'navCategoria-matricula-disciplinas'));
     await p.focus('#navCategoria-matricula-disciplinas'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('Enter');
     chk(`${T} abas: seta + Enter abre a próxima`, (await p.textContent('.tituloArea h1')) === 'Formação e conclusão' && await p.getAttribute('#navCategoria-formacao-conclusao', 'aria-selected') === 'true');
     await p.keyboard.press('End');
-    chk(`${T} abas: End vai para a última`, await p.evaluate(() => document.activeElement.id === 'navCategoria-intercambistas'));
+    chk(`${T} abas: End vai para a última`, await p.evaluate(() => document.activeElement.id === 'navCategoria-atendimento-online'));
+    await p.keyboard.press('Enter');
+    chk(`${T} abas: Atendimento online abre como aba`, (await p.textContent('.tituloArea h1')) === 'Atendimento online' && await p.getAttribute('#navCategoria-atendimento-online', 'aria-selected') === 'true' && !!(await p.$('.atendimentoBotao')));
+    await p.click('#navCategoria-formacao-conclusao');
     await contraste(p, scheme, ['#navCategoria-formacao-conclusao', '#navCategoria-matricula-disciplinas'], ' abas');
     await p.screenshot({ path: SAIDA + `abas-${scheme}.png`, fullPage: true });
     await p.click('[data-painel-modo="sidebar"]');
@@ -212,8 +249,14 @@ const visiveis = p => p.$$eval('#listaSistemasContainer .cardSistema', e => e.ma
     } else {
       await p.click('#navCategoria-formacao-conclusao');
     }
-    const pequenos = await p.evaluate(() => [...document.querySelectorAll('.painelNavItem,.painelModo,.painelMenuMovel,.botaoAjuda')].filter(e => e.getClientRects().length && (e.getBoundingClientRect().height < 43.5)).map(e => e.textContent.trim()));
+    const pequenos = await p.evaluate(() => [...document.querySelectorAll('.painelNavItem,.painelModo,.painelMenuMovel,.botaoAjuda,.atendimentoBotao')].filter(e => e.getClientRects().length && (e.getBoundingClientRect().height < 43.5)).map(e => e.textContent.trim()));
     chk(`${w}px alvos ≥ 44 px`, pequenos.length === 0, pequenos.join('|'));
+    if (w <= 900) await p.click('#painelMenuMovel');
+    await p.click('#navCategoria-atendimento-online');
+    chk(`${w}px atendimento sem rolagem horizontal e botão ≥ 44 px`, await semRolagem() && await p.evaluate(() => document.querySelector('.atendimentoBotao').getBoundingClientRect().height >= 43.5));
+    if (w === 360) { await p.waitForTimeout(250); await p.screenshot({ path: SAIDA + 'atendimento-360.png', fullPage: true }); }
+    if (w <= 900) await p.click('#painelMenuMovel');
+    await p.click('#navCategoria-formacao-conclusao');
     await p.click('button.cardSistema'); await p.waitForSelector('input[data-habilitacao]');
     await p.check('input[data-habilitacao="99999|100"]'); await p.check('input[data-habilitacao="99999|200"]');
     await p.selectOption('select[data-estrutura="99999|100"]', 'RS-A-V2'); await p.click('.contagemBotao--principal');
