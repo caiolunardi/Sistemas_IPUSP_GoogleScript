@@ -6,7 +6,7 @@
 
 **Estado:** enviada ao editor pelo clasp em 20/10/2026 (36 arquivos, sem IDs para recolocar; junto foi a correção da aba "Página 1"). Publicação no `/exec` pendente. As quatro chaves novas foram criadas no `ID_INDEX` pelo responsável em 20/10/2026.
 
-- `diagnosticarPlanilhasPainel` no editor (20/10): 12 das 13 chaves `ok`, com os nomes das planilhas esperadas; `TRANCAMENTO_TOTAL_MATRICULA` deu tempo esgotado do Drive (a chave é a mesma da 1.3, conferida no clone). A mensagem do Google trazia o ID do documento no registro; corrigido no Git (o diagnóstico troca qualquer ID por `[ID omitido]`), vai no próximo envio.
+- `diagnosticarPlanilhasPainel` no editor (20/10): 12 das 13 chaves `ok`, com os nomes das planilhas esperadas; `TRANCAMENTO_TOTAL_MATRICULA` deu tempo esgotado do Drive (a chave é a mesma da 1.3, conferida no clone). A mensagem do Google trazia o ID do documento no registro; corrigido no Git (o diagnóstico troca qualquer ID por `[ID omitido]`), vai no próximo envio. Na segunda execução, as 13 chaves deram `ok`.
 
 - `testar_acesso.js` (114 ok): nenhum ID nem marcador no código; as 9 planilhas abertas por `idNoIndicePainel_`; índice lido uma vez por execução, cache do script reaproveitado, chave recém-criada relida, erro com o nome da chave; `diagnosticarPlanilhasPainel` mostra nomes e nunca IDs, aponta a chave que falta e é só para administrador.
 - `testar_auditoria.js` (69 ok), `testar_saudacao.js` (18 ok) e `testar_navegador.js` sem mudança de resultado.
