@@ -98,6 +98,8 @@ No container do agente, Node 22.22, Playwright 1.56.1, sobre `71f6a25`:
 | 10 suítes de servidor da CI | todas com 0 falha |
 | 7 suítes de tela da CI | todas com 0 falha (Comunidade 268, Grade 148, Exclusão 197, Parcial 183, Total 149, Painel dos alunos 246, Painel dos servidores 365 verificações) |
 | `trancamento-total/formulario` `testar_navegador.js`, 10 vezes seguidas | 10 de 10 com 149 ok, 0 falha |
+| Segunda rodada: os três formulários (`testar_navegador.js`) **em paralelo**, 5 rodadas | 15 de 15 sem falha (197, 183 e 149 ok) |
+| Segunda rodada: abrir a ajuda e digitar no mesmo quadro × esperar dois quadros, 20 vezes cada | 20 de 20 com a busca apagada × 20 de 20 com a busca mantida |
 
 Limites: os testes simulam o Apps Script e as planilhas. Nenhum deles mostra a configuração da implantação, o código que está no editor nem o comportamento no `/exec`.
 
