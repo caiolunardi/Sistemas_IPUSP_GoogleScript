@@ -38,14 +38,18 @@ Mudança só em documentação ou em testes não sobe a versão nem gera tag.
 
 1. Termine a mudança, a documentação e os testes, e confira que a [CI](CI.md) ficou ✓ no commit.
 2. Escreva `notas-de-versao/<tag>.md` (veja os existentes): o que mudou para quem usa, o que copiar para o Apps Script e a linha **Implantação: ainda não implantada**. Commit e push.
-3. Crie a tag no commit que tem o código e as notas, e envie:
+3. Crie a tag de um destes jeitos:
+   - **Pelo GitHub, sem linha de comando:** **Actions → Release → Run workflow**, escreva a tag (por exemplo `exclusao-disciplinas-v1.3`; várias, separadas por espaço) e clique em **Run workflow**. A tag é criada no último commit do `main`.
+   - **Pelo git**, num commit específico:
 
-   ```bash
-   git tag -a exclusao-disciplinas-v1.3 -m "Exclusão de Disciplinas 1.3"
-   git push origin exclusao-disciplinas-v1.3
-   ```
+     ```bash
+     git tag -a exclusao-disciplinas-v1.3 -m "Exclusão de Disciplinas 1.3"
+     git push origin exclusao-disciplinas-v1.3
+     ```
 
-4. O workflow [`.github/workflows/release.yml`](../.github/workflows/release.yml) cria a Release com o texto das notas. Se o arquivo de notas não existir, a Release lista os commits do sistema desde a tag anterior.
+     Envie no máximo três tags por push: com mais que isso o GitHub não dispara o workflow.
+
+4. O workflow [`.github/workflows/release.yml`](../.github/workflows/release.yml) confere o formato da tag e a pasta do sistema e cria a Release com o texto das notas. Se o arquivo de notas não existir, a Release lista os commits do sistema desde a tag anterior. Rodar de novo com uma tag que já tem Release não muda nada.
 
 A tag precisa apontar para um commit que já tenha o `release.yml`. Não mova nem apague uma tag já enviada; se algo saiu errado, crie a versão seguinte.
 
@@ -55,7 +59,7 @@ Edite a Release no GitHub (**Releases → a versão → editar**) e troque a lin
 
 ## 5. Primeiras tags (20/10/2026)
 
-As tags abaixo foram criadas de uma vez, quando o versionamento começou, e todas apontam para o mesmo commit (o que trouxe o `release.yml`). A mensagem de cada tag e as notas dizem em que commit anterior a versão foi concluída. As versões seguintes apontam para o próprio commit.
+As tags abaixo foram criadas de uma vez pelo **Run workflow**, quando o versionamento começou, e todas apontam para o mesmo commit do `main` (posterior ao `release.yml`). As notas de cada uma dizem em que commit anterior a versão foi concluída. As versões seguintes apontam para o próprio commit.
 
 | Tag | Versão concluída no commit |
 |---|---|
