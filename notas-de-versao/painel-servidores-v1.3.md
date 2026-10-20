@@ -18,6 +18,6 @@ Como funciona:
 
 Primeiro sistema auditado: o núcleo `Auditoria.gs` é o modelo para os outros ([docs/auditoria](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/blob/main/docs/auditoria/README.md)). Central de Ajuda: "O painel registra o que eu faço?" e o problema "A auditoria está indisponível". Novo teste `testar_auditoria.js` (na CI).
 
-**Implantação:** ainda não implantada. Antes, criar a planilha e a chave no `ID_INDEX` e rodar `prepararAuditoriaPainel` ([manual, passo 2d](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/blob/main/docs/sistemas/painel-servidores/MANUAL_OPERACAO.md#instalar-ou-atualizar)). Esta Release marca o código do repositório; ela não atualiza o Apps Script.
+**Implantação:** publicada no `/exec` em 20/10/2026 (com a 1.1 e a 1.2). Para instalar em outro projeto: criar a planilha e a chave no `ID_INDEX` e rodar `prepararAuditoriaPainel` ([manual, passo 2d](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/blob/main/docs/sistemas/painel-servidores/MANUAL_OPERACAO.md#instalar-ou-atualizar)). Esta Release marca o código do repositório; ela não atualiza o Apps Script.
 
 Detalhes: [docs/sistemas/painel-servidores/README.md](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/blob/main/docs/sistemas/painel-servidores/README.md).

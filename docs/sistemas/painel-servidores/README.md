@@ -1,6 +1,6 @@
 # Painel de Sistemas — servidores
 
-**Estado:** versão 1.3 (auditoria), verificada localmente. A 1.1 (controle de acesso) e a 1.2 (saudação) foram enviadas ao editor pelo clasp e conferidas no `/dev` em 20/10/2026; a publicação no `/exec` está pendente. O GitHub não informa qual versão está implantada no Apps Script. [Código](../../../sistemas/painel-servidores/README.md).
+**Estado:** versão 1.3 (auditoria) **publicada no `/exec` em 20/10/2026** pelo responsável, com 1.1 (controle de acesso) e 1.2 (saudação). Auditoria conferida na planilha (acesso, cards, alteração com antes/depois, integridade `ok`). O GitHub não informa qual versão está implantada no Apps Script. [Código](../../../sistemas/painel-servidores/README.md).
 
 ## Finalidade e público
 
@@ -94,4 +94,4 @@ Os avisos são lidos uma vez, quando a página abre (`obterContadoresPendencias`
 | 1.0 (20/10/2026) | Primeiro número de versão (tag `painel-servidores-v1.0`). URLs das ferramentas da equipe saem do código e passam a vir da Script Property `URLS_SISTEMAS_EQUIPE` (`UrlsSistemas.gs`). Implantação pendente. |
 | 1.1 (20/10/2026) | Controle de acesso pela aba `PAINEL_SERVIDORES` (`AcessoPainel.gs`, `PainelSemAcesso.html`): administrador altera, leitor só vê, quem está fora não abre. Todas as funções chamadas pela página conferem o acesso; acesso da implantação `DOMAIN`. Aviso "Somente leitura" e ajuda nova. Enviada ao editor e conferida no `/dev` (20/10). [Notas](../../../notas-de-versao/painel-servidores-v1.1.md). |
 | 1.2 (20/10/2026) | Saudação "Bom dia/Boa tarde/Boa noite, {nome}" no cabeçalho (`SaudacaoPainel.gs`), com o nome tirado dos cadastros de servidores e docentes. Enviada ao editor e conferida no `/dev` (20/10), nos dois temas. [Notas](../../../notas-de-versao/painel-servidores-v1.2.md). |
-| 1.3 (20/10/2026) | Auditoria de acessos, navegação, cards, ajuda, buscas e alterações (com antes e depois), numa planilha própria (`AUDITORIA_PAINEL_SERVIDORES`), com selo encadeado; alteração recusada se a auditoria não puder gravar. Aba das Regras ganha a coluna `evento_id`. Pergunta nova na ajuda. Implantação pendente. [Notas](../../../notas-de-versao/painel-servidores-v1.3.md). |
+| 1.3 (20/10/2026) | Auditoria de acessos, navegação, cards, ajuda, buscas e alterações (com antes e depois), numa planilha própria (`AUDITORIA_PAINEL_SERVIDORES`), com selo encadeado; alteração recusada se a auditoria não puder gravar. Aba das Regras ganha a coluna `evento_id`. Pergunta nova na ajuda. Publicada no `/exec` em 20/10/2026. [Notas](../../../notas-de-versao/painel-servidores-v1.3.md). |

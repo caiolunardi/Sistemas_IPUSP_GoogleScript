@@ -4,7 +4,16 @@
 
 ## Versão 1.3: auditoria (20/10/2026)
 
-**Estado:** verificada localmente; não enviada ao Apps Script.
+**Estado:** enviada ao editor pelo clasp (36 arquivos, IDs reais mantidos) e **publicada no `/exec` em 20/10/2026** pelo responsável. Conferido na planilha da auditoria, com a conta institucional:
+
+- `prepararAuditoriaPainel` criou as abas, o `DICIONARIO` (37 códigos) e o `LEIA-ME`; a aba vazia da planilha nova se chamava "Página 1" (com espaço) e não foi apagada — corrigido depois (o código passa a reconhecer os dois nomes);
+- `FORMULARIO.SALVAR` com nome, tipo de conta, perfil e duração, e em `ALTERACOES_2026` o campo "C tipo" de `Continuo` para `continuo`;
+- `verificarIntegridadeAuditoria`: `ok: true`;
+- `PENDENCIAS` gravada;
+- pelo `/exec` publicado: `ACESSO.ABRIR` e dois `CARD.ABRIR` (pelo nome do sistema), com sessão, navegador, largura, tema e modo. No primeiro teste, pelo editor, os eventos da página não chegaram; pelo `/exec` chegaram. A conferir: abrir de novo pelo `/dev` com F12 aberto.
+- `duracao_ms` do `ACESSO.ABRIR` mede só a página do painel dentro da moldura do Google (dezenas de ms), não o tempo total até aparecer.
+
+A conferir ainda: LEITOR gerando `PERMISSAO.RECUSAR`; `evento_id` na aba das Regras numa correção de ruleset ativo; `SESSOES` e `RESUMO_DIARIO` no dia seguinte.
 
 - Novos: `Auditoria.gs` (núcleo genérico), `AuditoriaPainel.gs`, `AuditoriaPainelUI.html`, `testes/testar_auditoria.js`, [docs/auditoria](../../auditoria/README.md).
 - Alterados:

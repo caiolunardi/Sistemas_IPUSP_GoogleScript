@@ -76,4 +76,4 @@ página (AuditoriaPainelUI.html)          servidor (Apps Script)
 
 | Sistema | Versão | Planilha (chave) | Estado |
 |---|---|---|---|
-| Painel de Sistemas dos servidores | 1.3 | `AUDITORIA_PAINEL_SERVIDORES` | no repositório, testes locais; teste no `/dev` pendente |
+| Painel de Sistemas dos servidores | 1.3 | `AUDITORIA_PAINEL_SERVIDORES` | publicado em 20/10/2026 |

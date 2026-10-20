@@ -453,7 +453,7 @@ function prepararAuditoria_(nomeFuncaoGatilho) {
   acrescentarLinhas_(leia, AUDITORIA_CONFIG.leiaMe(), 2);
 
   // A aba vazia que vem com a planilha nova sai, se estiver vazia.
-  ["Página1", "Sheet1"].forEach(nome => {
+  ["Página1", "Página 1", "Sheet1", "Sheet 1"].forEach(nome => {
     const vazia = planilha.getSheetByName(nome);
     if (vazia && vazia.getLastRow() === 0 && planilha.getSheets().length > 1) planilha.deleteSheet(vazia);
   });
