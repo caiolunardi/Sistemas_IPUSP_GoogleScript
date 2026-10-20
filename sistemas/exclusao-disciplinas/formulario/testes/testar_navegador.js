@@ -180,9 +180,10 @@ const turma=(i,v)=>`${linha(i)} .inputTurma`;
   await p.click('.botaoAjuda');await p.waitForSelector('[data-gradip-help-overlay]:not([hidden])');
   chk(`${T} ajuda abre com scroll lock`,await p.evaluate(()=>document.body.style.overflow==='hidden'));
   await p.fill('[data-gradip-help-search]','REVERSIVEL');
-  chk(`${T} busca sem acento`,(await p.textContent('[data-gradip-help-search-status]')).match(/^\d+ resultados?$/)&&await p.$$eval('#ajuda-inicio [data-gradip-help-search-item]:not([hidden])',e=>e.length)>=1);
+  // a busca atualiza depois do input; espera em vez de conferir na hora (evita corrida na CI)
+  chk(`${T} busca sem acento`,await p.waitForFunction(()=>/^\d+ resultados?$/.test(document.querySelector('[data-gradip-help-search-status]').textContent)&&document.querySelectorAll('#ajuda-inicio [data-gradip-help-search-item]:not([hidden])').length>=1,null,{timeout:5000}).then(()=>true,()=>false));
   await p.fill('[data-gradip-help-search]','trocar de turma');
-  chk(`${T} busca acha troca de turma`,await p.$$eval('#ajuda-faq [data-gradip-help-search-item]:not([hidden])',e=>e.length)===1);
+  chk(`${T} busca acha troca de turma`,await p.waitForFunction(()=>document.querySelectorAll('#ajuda-faq [data-gradip-help-search-item]:not([hidden])').length===1,null,{timeout:5000}).then(()=>true,()=>false));
   await p.fill('[data-gradip-help-search]','');
   const faq=await p.$('#ajuda-faq .gradip-help-faq-toggle');await faq.click();
   chk(`${T} FAQ expande`,await faq.getAttribute('aria-expanded')==='true'&&await visivel(p,'#faq-na-hora'));
