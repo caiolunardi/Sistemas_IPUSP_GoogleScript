@@ -31,7 +31,7 @@ Abra uma issue do tipo **Sugestão**. Diga qual sistema, quem usaria (alunos, eq
 5. Atualize a documentação seguindo o [roteiro de atualização](docs/ATUALIZAR_DOCUMENTACAO.md): arquivos do sistema e, conforme o caso, catálogo, mapa das chaves, glossário e Central de Ajuda.
 6. Abra um **pull request**, preenchendo o modelo.
 
-O mantenedor revisa, aceita no `main` e leva a mudança ao Google. **Um merge no Git não muda nenhum sistema em uso**: os arquivos são copiados para o projeto Apps Script e publicados numa nova versão, depois da homologação.
+O mantenedor revisa, aceita no `main` e leva a mudança ao Google. **Um merge no Git não muda nenhum sistema em uso**: os arquivos são copiados para o projeto Apps Script e publicados numa nova versão, depois da homologação. Cada versão de sistema vira uma tag e uma Release no GitHub ([versões](docs/VERSOES.md)).
 
 ### Sistema novo
 

@@ -39,7 +39,7 @@ Os formulários só aceitam quem está logado com uma conta `@usp.br`, e o e-mai
 
 Ideia em desenvolvimento, ainda sem código: [Gerenciador de Ofícios e Modelos](docs/sistemas/gerenciador-oficios/README.md).
 
-Cada sistema registra no próprio README a versão que está no repositório e se ela já foi implantada. **O código daqui não atualiza os sistemas sozinho**: a equipe copia os arquivos para o projeto no Google e publica uma nova versão.
+Cada sistema registra no próprio README a versão que está no repositório e se ela já foi implantada. Cada versão também aparece na aba **Releases**, com o que mudou ([versões](docs/VERSOES.md)). **O código daqui não atualiza os sistemas sozinho**: a equipe copia os arquivos para o projeto no Google e publica uma nova versão.
 
 ## Como usar este repositório
 

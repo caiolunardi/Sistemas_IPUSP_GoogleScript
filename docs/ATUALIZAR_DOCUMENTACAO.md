@@ -30,7 +30,7 @@ Os arquivos ficam em `docs/sistemas/<sistema>/` e `sistemas/<sistema>/` (formul�
 | `sistemas/<sistema>/testes/README.md` | teste novo ou comando novo | Comando, o que confere e a contagem de resultados. Suíte nova também entra no `.github/workflows/ci.yml` ([CI](CI.md#manutenção)). |
 | Documentos próprios (`ARQUITETURA.md`, `REGRAS.md`, `MODELO_DE_DADOS.md`, `VERSOES_E_DECISOES.md` etc.) | a mudança toca o assunto deles | Só nos sistemas que já têm esses arquivos. Não crie arquivo novo se um existente cobre o assunto. |
 
-Versão: suba a versão no código (constante ou rodapé, quando existir) e use o mesmo número em todos os documentos acima.
+Versão: suba a versão no código (constante ou rodapé, quando existir) e use o mesmo número em todos os documentos acima. Escreva `notas-de-versao/<sistema>-v<versão>.md` e crie a tag, que gera a Release no GitHub ([versões](VERSOES.md)). Quando a versão for implantada, edite a Release com a data.
 
 ## 3. Sistema novo: além da seção 2
 

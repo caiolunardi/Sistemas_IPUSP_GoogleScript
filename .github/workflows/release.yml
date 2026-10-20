@@ -1,0 +1,39 @@
+# Cria a Release no GitHub quando uma tag de versão é enviada.
+# Formato da tag: <sistema>-v<versão>, por exemplo exclusao-disciplinas-v1.2.
+# Documentação: docs/VERSOES.md
+name: Release
+
+on:
+  push:
+    tags: ["*-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Criar a Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          sistema="${TAG%-v*}"
+          pasta="sistemas/${sistema}"
+          case "$sistema" in *-gerenciador) pasta="sistemas/${sistema%-gerenciador}/gerenciador" ;; esac
+          notas="notas-de-versao/${TAG}.md"
+          if [ ! -f "$notas" ]; then
+            # Sem notas escritas: lista os commits desde a versão anterior do mesmo sistema.
+            anterior=$(git tag --list "${sistema}-v*" --sort=-v:refname | grep -vx "$TAG" | head -1 || true)
+            {
+              echo "Versão sem notas escritas em notas-de-versao/. Commits incluídos:"
+              echo
+              git log --format='- %s (%h)' ${anterior:+$anterior..}"$TAG" -- "$pasta" "docs/sistemas/${sistema%-gerenciador}"
+            } > /tmp/notas.md
+            notas=/tmp/notas.md
+          fi
+          gh release create "$TAG" --title "$TAG" --notes-file "$notas" --verify-tag
