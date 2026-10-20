@@ -61,6 +61,8 @@ async function load(p){
 }
 let ok=0, fail=0;
 const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}else{fail++;console.log('FALHA',n,extra)}};
+// A ajuda move o foco logo depois de abrir; espera em vez de conferir na hora (evita corrida na CI).
+const focoNaSecao=(p,id)=>p.waitForFunction(id=>{const o=document.querySelector('[data-gradip-help-overlay]');const s=document.activeElement&&document.activeElement.closest('section');return o&&!o.hidden&&s&&s.id===id}, id, {timeout:5000}).then(()=>true, ()=>false);
 async function contraste(p, scheme, seletores, rotulo=''){
   const pares = await p.evaluate(([sel,bgsrc])=>{const bg=eval('('+bgsrc+')');return sel.map(s=>{const e=document.querySelector(s);if(!e)return [s,null,null];return [s,getComputedStyle(e).color,bg(e)]})},[seletores,BG]);
   for (const [s,c,b] of pares){ if(!c){chk(`[${scheme}]${rotulo} existe ${s}`,false);continue} const r=cr(c,b); chk(`[${scheme}]${rotulo} contraste ${s}`, r>=4.5, r.toFixed(2)); }
@@ -111,7 +113,7 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await contraste(p, scheme, ['#tituloModalConfig','#sem1AberturaData'], ' modal');
   await p.screenshot({path:SAIDA+`modal-${scheme}.png`});
   await p.click('#modalConfigFormulario .ajudaModalConfig button, #modalConfigFormulario [data-gradip-help-open]');
-  chk(`${T} ajuda do modal abre por cima`, await p.evaluate(()=>{const o=document.querySelector('[data-gradip-help-overlay]');return !o.hidden&&document.activeElement.closest('section').id==='ajuda-formularios'}));
+  chk(`${T} ajuda do modal abre por cima`, await focoNaSecao(p,'ajuda-formularios'));
   await p.keyboard.press('Escape');
   chk(`${T} ESC fecha só a ajuda`, await p.evaluate(()=>document.querySelector('[data-gradip-help-overlay]').hidden&&document.getElementById('modalConfigFormulario').style.display==='flex'));
   await p.evaluate(()=>fecharModalConfigFormulario());
@@ -150,7 +152,7 @@ async function contraste(p, scheme, seletores, rotulo=''){
   // Central de Ajuda
   await p.click('#navPainelSistemas');
   await p.click('.linkAjudaContextual[data-gradip-help-open="ajuda-pendencias"]');
-  chk(`${T} ajuda contextual abre seção`, await p.evaluate(()=>!document.querySelector('[data-gradip-help-overlay]').hidden&&document.activeElement.closest('section').id==='ajuda-pendencias'));
+  chk(`${T} ajuda contextual abre seção`, await focoNaSecao(p,'ajuda-pendencias'));
   chk(`${T} scroll lock`, await p.evaluate(()=>document.body.style.overflow==='hidden'));
   await contraste(p, scheme, ['.gradip-help-title, [data-gradip-help-dialog] h2','#ajuda-pendencias h3','#ajuda-pendencias p','.painelAjudaTabela th','.painelAjudaTabela td','.painelAjudaAtalhos .painelAjudaLink','#ajuda-pendencias .painelAjudaLink','.painelAjudaBotao'], ' ajuda');
   await p.fill('#gradip-help-search','trancamento'); await p.waitForTimeout(100);
@@ -164,7 +166,7 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await p.click(`[aria-controls="${faq}"]`);
   chk(`${T} FAQ aria-expanded`, await p.evaluate(id=>document.querySelector(`[aria-controls="${id}"]`).getAttribute('aria-expanded')==='true'&&!document.getElementById(id).hidden, faq));
   await p.click('.painelAjudaAtalhos [data-gradip-help-target="ajuda-regras"]'); await p.waitForTimeout(100);
-  chk(`${T} atalho interno`, await p.evaluate(()=>document.activeElement.closest('section').id==='ajuda-regras'));
+  chk(`${T} atalho interno`, await focoNaSecao(p,'ajuda-regras'));
   await p.screenshot({path:SAIDA+`ajuda-${scheme}.png`});
   await p.click('#ajuda-regras .painelAjudaBotao[data-painel-abrir-manual-regras="ordem-preenchimento"]'); await p.waitForTimeout(200);
   chk(`${T} botão abre o manual das Regras`, await p.evaluate(()=>document.querySelector('[data-gradip-help-overlay]').hidden&&[...document.querySelectorAll('.telaAjudaOverlay')].some(e=>getComputedStyle(e).display!=='none')));
