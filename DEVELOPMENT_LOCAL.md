@@ -13,7 +13,7 @@ Como editar os sistemas no seu computador e levar o código ao Google Apps Scrip
 
 As duas contas são independentes. Você pode usar o GitHub com uma conta pessoal e o clasp com a conta institucional. O clasp nunca precisa do GitHub, e o Git nunca precisa da conta do Google.
 
-O caminho de uma mudança é sempre o mesmo: **editar → testar localmente → commit e push no Git (a CI confere) → `clasp push` → conferir no `/dev` → implantação pelo responsável**. Detalhes da publicação em [versões](docs/VERSOES.md).
+O caminho de uma mudança é sempre o mesmo: **editar num ramo → testar localmente → pull request (a CI confere) → merge pelo responsável → `clasp push` do `main` → conferir no `/dev` → implantação pelo responsável** ([fluxo de mudanças](docs/governanca/FLUXO_DE_MUDANCAS.md#6-do-main-ao-google)). Detalhes da publicação em [versões](docs/VERSOES.md).
 
 ## 2. Preparar o computador (uma vez)
 
