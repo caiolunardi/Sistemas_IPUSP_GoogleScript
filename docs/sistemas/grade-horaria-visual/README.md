@@ -1,6 +1,6 @@
 # Grade Horária visual — página pública da grade
 
-**Versão:** v2.0 (13/10/2026), sobre o código em uso recebido em 13/10/2026 (25 arquivos do projeto vinculado à planilha original da grade). O [código Apps Script](../../../sistemas/grade-horaria-visual/README.md) está versionado e foi verificado localmente; **ainda não foi homologado no `/exec`**. O GitHub não informa qual versão está implantada.
+**Versão:** v2.1 (15/10/2026, no main em 20/10/2026): a edição na planilha das secretarias aparece no próximo F5. A v2.0 (13/10/2026) partiu do código em uso recebido em 13/10/2026 (25 arquivos do projeto vinculado à planilha original da grade). O [código Apps Script](../../../sistemas/grade-horaria-visual/README.md) está versionado e foi verificado localmente; **ainda não foi homologado no `/exec`**. O GitHub não informa qual versão está implantada.
 
 ## Finalidade e escopo
 
@@ -50,3 +50,4 @@ O link público da grade é a implantação `/exec` do projeto Apps Script **vin
 |---|---|
 | 1.0 (em uso) | Projeto da planilha original: a página lia as abas da própria planilha (`getActiveSpreadsheet`), botões pela célula `DataBase!V3` (PAR/ÍMPAR), tema GRADIP Claro/Escuro; o mesmo projeto tinha menu, backup, novo semestre, registro de edições, validações e preenchimento das abas. |
 | 2.0 | Lê a planilha das secretarias e as grades anteriores pelo `ID_INDEX`; seletor **Consultar Grades Anteriores**; botões pela paridade do semestre da grade + extras; regras de entrada explícitas (outros cursos fora); Sala pelo título; tipos novos e antigos; Central de Ajuda; ficha com ×, Esc e teclado; avisos de semestre vazio, horário fora do quadro e falha; escape de HTML; PDF da grade selecionada. Removidos 19 arquivos sem uso. Não homologado no `/exec`. |
+| 2.1 | Grade atual sem cache: lida da planilha das secretarias a cada carregamento, então a edição aparece no próximo F5 (antes, 1 a 2 min de atraso). Só a referência (ID e semestre) fica 10 min no cache. `VERSAO_CACHE` v3. Mudam `Codigo.gs` e `GradeAjuda.html`. Homologação no `/exec` pendente. |
