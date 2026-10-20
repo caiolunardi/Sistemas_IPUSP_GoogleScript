@@ -2,7 +2,9 @@
 // sem Google: Session, PropertiesService, CacheService, SpreadsheetApp e
 // HtmlService simulados com planilhas fictícias (nenhum e-mail real).
 // Confere também que toda função pública dos .gs, menos doGet, começa
-// com exigirAcessoPainel_() ou exigirAdminPainel_(). Uso: node testar_acesso.js
+// com exigirAcessoPainel_() ou exigirAdminPainel_() (o gatilho diário da
+// auditoria: exigirGatilhoOuAdminPainel_(e)), e que toda função que grava
+// passa pela auditoria (1.3). Uso: node testar_acesso.js
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -16,19 +18,29 @@ const lanca = fn => { try { fn(); return null; } catch (e) { return e; } };
 const ESCRITA = ['salvarConfigColacao', 'salvarConfigExclusaoDisciplinas', 'desativarFormulario', 'salvarConfigFormulario',
   'salvarDadosGeraisRuleset', 'salvarRequisitoCurricular', 'excluirRequisitoCurricular', 'salvarDisciplinaCurricular',
   'excluirDisciplinaCurricular', 'salvarGrupoCurricular', 'excluirGrupoCurricular', 'ativarRulesetCurricular',
-  'inativarRulesetCurricular', 'criarNovaVersaoRuleset', 'criarRulesetParaOutroCurriculo'];
+  'inativarRulesetCurricular', 'criarNovaVersaoRuleset', 'criarRulesetParaOutroCurriculo',
+  'migrarRegrasCurricularesMultiCurriculoERevisaoV1'];
 const publicas = {};
 for (const arq of fs.readdirSync(SRC).filter(f => f.endsWith('.gs'))) {
   const txt = fs.readFileSync(path.join(SRC, arq), 'utf8');
-  const re = /^function\s+([A-Za-z0-9]+)\s*\([^)]*\)\s*\{\s*\n?\s*([^\n]*)/gm;
+  const re = /^function\s+([A-Za-z0-9]+)\s*\([^)]*\)\s*\{\s*\n?\s*([^\n]*)([\s\S]*?)\n\}/gm;
   let m;
-  while ((m = re.exec(txt))) publicas[m[1]] = { arq, primeira: m[2].trim() };
+  while ((m = re.exec(txt))) publicas[m[1]] = { arq, primeira: m[2].trim(), corpo: m[3] };
 }
-for (const [nome, { arq, primeira }] of Object.entries(publicas)) {
+for (const [nome, { arq, primeira, corpo }] of Object.entries(publicas)) {
   if (nome === 'doGet') continue;
-  const guarda = primeira.startsWith('exigirAdminPainel_();') ? 'admin' : primeira.startsWith('exigirAcessoPainel_();') ? 'acesso' : null;
+  const guarda = primeira.startsWith('exigirAdminPainel_();') ? 'admin' : primeira.startsWith('exigirAcessoPainel_();') ? 'acesso'
+    : nome === 'consolidarAuditoriaPainel' && primeira === 'exigirGatilhoOuAdminPainel_(e);' ? 'gatilho' : null;
   chk(`guarda em ${nome} (${arq})`, guarda !== null, primeira);
-  if (ESCRITA.includes(nome)) chk(`${nome} grava: exige administrador`, guarda === 'admin', primeira);
+  if (ESCRITA.includes(nome)) {
+    chk(`${nome} grava: exige administrador`, guarda === 'admin', primeira);
+    chk(`${nome} grava: passa pela auditoria`, /\b(alteracaoPainel_|auditarAlteracao_)\(/.test(corpo) && corpo.includes(nome + 'SemAuditoria_('), arq);
+  }
+}
+{
+  const gatilho = fs.readFileSync(path.join(SRC, 'AuditoriaPainel.gs'), 'utf8').match(/function exigirGatilhoOuAdminPainel_\(e\) \{([\s\S]*?)\n\}/)[1];
+  chk('gatilho diário: confere o triggerUid nos gatilhos do projeto, senão exige administrador',
+    /getProjectTriggers\(\)[\s\S]*getUniqueId\(\)/.test(gatilho) && /exigirAdminPainel_\(\);\s*$/.test(gatilho.trim()));
 }
 chk('todas as funções que gravam foram encontradas', ESCRITA.every(n => publicas[n]), ESCRITA.filter(n => !publicas[n]).join(', '));
 const doGet = fs.readFileSync(path.join(SRC, 'Code.gs'), 'utf8').match(/function doGet\(e\) \{([\s\S]*?)\n\}/)[1];

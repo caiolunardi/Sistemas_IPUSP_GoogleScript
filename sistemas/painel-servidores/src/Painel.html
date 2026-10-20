@@ -993,6 +993,10 @@ if (PAPEL_USUARIO !== "admin") document.getElementById("avisoSomenteLeitura").hi
 // (SaudacaoPainel.gs; "" se não estiver nos cadastros). O período segue
 // o relógio do computador e é conferido de minuto em minuto.
 const NOME_USUARIO = <?!= saudacaoParaPagina_() ?>;
+
+// Identificador desta aba aberta, para a auditoria agrupar as ações
+// numa sessão (AuditoriaPainel.gs; AuditoriaPainelUI.html envia).
+const SESSAO_AUDITORIA = <?!= sessaoAuditoriaParaPagina_() ?>;
 function atualizarSaudacao_() {
     const hora = new Date().getHours();
     const periodo = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
@@ -1436,6 +1440,7 @@ function travarBotao_(botao, textoEnquantoTrava) {
 <?!= include_('PainelAjuda'); ?>
 <?!= include_('PainelAjudaUI'); ?>
 <?!= include_('PainelNavegacaoUI'); ?>
+<?!= include_('AuditoriaPainelUI'); ?>
 
 </body>
 </html>

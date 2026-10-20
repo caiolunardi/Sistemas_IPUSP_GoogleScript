@@ -26,8 +26,8 @@ function normalizarSemestreColacao_(valor) {
   return normalizarSemestreAaaaS_(valor, "Semestre da colação");
 }
 
-function salvarConfigColacao(dados) {
-  exigirAdminPainel_();
+// Chamada só por salvarConfigColacao (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function salvarConfigColacaoSemAuditoria_(dados) {
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");

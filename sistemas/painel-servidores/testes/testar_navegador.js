@@ -4,7 +4,9 @@
 // aberta), contraste WCAG, menu lateral x abas, teclado, card "Pessoas do
 // IPUSP", Central de Ajuda, modais de Formulários, lista de Regras
 // Curriculares, perfil LEITOR (aviso fixo e recusa do servidor), página
-// de quem não tem acesso e larguras de 360/390/480/768 px. Uso: node testar_navegador.js
+// de quem não tem acesso, eventos da auditoria (o que a página envia e
+// que ela segue igual se a auditoria falhar) e larguras de 360/390/480/768
+// px. Uso: node testar_navegador.js
 const fs = require('fs');
 const path = require('path');
 function carregarPlaywright(){try{return require('playwright')}catch(e){return require(require('child_process').execSync('npm root -g').toString().trim()+'/playwright')}}
@@ -28,6 +30,8 @@ function build(papel, nome){
   h = h.replace('<?!= papelParaPagina_() ?>', JSON.stringify(papel));
   // Nome que o servidor achou nos cadastros (SaudacaoPainel.gs); "" = não achou.
   h = h.replace('<?!= saudacaoParaPagina_() ?>', JSON.stringify(nome));
+  // Sessão que o servidor sorteia para a auditoria (AuditoriaPainel.gs).
+  h = h.replace('<?!= sessaoAuditoriaParaPagina_() ?>', JSON.stringify('11111111-2222-4333-8444-555555555555'));
   if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
   return h;
 }
@@ -52,7 +56,7 @@ const RULESETS = [
   {ruleset_id:'RS-TESTE-A-V2', curso_codigo:'99999', habilitacao_codigo:'1', habilitacao_nome:'Habilitação Fictícia A', versao:2, revisao:0, status:'RASCUNHO'},
   {ruleset_id:'RS-TESTE-B-V1', curso_codigo:'99999', habilitacao_codigo:'2', habilitacao_nome:'Habilitação Fictícia B', versao:1, revisao:0, status:'INATIVO'}
 ];
-const stub = (papel='admin') => `(function(){window.__chamadas=[];window.__abertos=[];window.open=function(u){window.__abertos.push(u);return null};
+const stub = (papel='admin') => `(function(){window.__chamadas=[];window.__abertos=[];window.__auditoria=[];window.__lotes=[];window.open=function(u){window.__abertos.push(u);return null};
 var F=${JSON.stringify(FORMULARIOS)},R=${JSON.stringify(RULESETS)};
 var API={
  obterContadoresPendencias:function(){return {diplomas:3,habilitacoes:1,trancamentoTotal:0,trancamentoParcial:2,busp:1,buspAguardando:4,intercambistasInclusao:1,intercambistasExclusao:0,exclusaoDisciplinas:5}},
@@ -60,7 +64,8 @@ var API={
  salvarConfigFormulario:function(p){return {ok:true}},salvarConfigColacao:function(){return {ok:true}},salvarConfigExclusaoDisciplinas:function(){return {ok:true}},
  listarRulesetsCurriculares:function(){return JSON.parse(JSON.stringify(R))},
  obterDicionarioRegrasCurriculares:function(){return {}},
- obterRulesetCurricular:function(id){throw new Error('editor não simulado neste teste')}};
+ obterRulesetCurricular:function(id){throw new Error('editor não simulado neste teste')},
+ registrarEventosPainel:function(l){if(window.__auditoriaFalha)throw new Error('A auditoria está indisponível no momento');window.__lotes.push(l);l.eventos.forEach(function(e){window.__auditoria.push(e)});return {gravados:l.eventos.length}}};
 if(${JSON.stringify(papel)}!=='admin'){['salvarConfigFormulario','salvarConfigColacao','salvarConfigExclusaoDisciplinas'].forEach(function(n){API[n]=function(){throw new Error(${JSON.stringify(MENSAGEM_SO_LEITURA)})}})}
 function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:function(x){s=x;return o},withFailureHandler:function(x){f=x;return o}};
  Object.keys(API).forEach(function(n){o[n]=function(arg){window.__chamadas.push(n);setTimeout(function(){try{s(API[n](arg))}catch(e){f(e)}},30)}});return o}
@@ -195,7 +200,40 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await p.click('.botaoAjuda'); await p.keyboard.press('Escape');
   chk(`${T} ESC fecha e devolve foco`, await p.evaluate(()=>document.querySelector('[data-gradip-help-overlay]').hidden&&document.activeElement.classList.contains('botaoAjuda')&&document.body.style.overflow===''));
 
+  // Auditoria: o que a página mandou ao longo do roteiro acima
+  await p.evaluate(()=>{const c=document.getElementById('caixaBusca');c.value='diplomas';filtrarSistemas()});
+  await p.waitForTimeout(1700);
+  await p.evaluate(()=>PainelAuditoria.enviar()); await p.waitForFunction(()=>PainelAuditoria.fila().length===0&&!PainelAuditoria.enviando(), null, {timeout:5000}).catch(()=>{});
+  const aud = await p.evaluate(()=>({ev:window.__auditoria, lotes:window.__lotes.map(l=>({sessao:l.sessao_id, ctx:l.contexto}))}));
+  const tem = (cod, f=()=>true) => aud.ev.some(e=>e.evento===cod&&f(e));
+  chk(`${T} auditoria: ACESSO.ABRIR com tempo de carga`, tem('ACESSO.ABRIR', e=>e.duracao_ms>0&&e.detalhes.papel==='admin'));
+  chk(`${T} auditoria: lotes com a sessão e o contexto`, aud.lotes.length>0&&aud.lotes.every(l=>l.sessao==='11111111-2222-4333-8444-555555555555'&&l.ctx.tema===scheme&&l.ctx.largura_tela===1280&&/·/.test(l.ctx.navegador)), JSON.stringify(aud.lotes[0]));
+  chk(`${T} auditoria: CARD.ABRIR com o nome, sem a URL`, tem('CARD.ABRIR', e=>e.alvo_id==='Pessoas do IPUSP')&&!JSON.stringify(aud.ev).includes('FICTICIO_'));
+  chk(`${T} auditoria: TELA.ABRIR de Formulários e Regras`, tem('TELA.ABRIR', e=>e.alvo_id==='Configurações › Formulários')&&tem('TELA.ABRIR', e=>e.alvo_id==='Configurações › Regras Curriculares'));
+  chk(`${T} auditoria: FORMULARIO.ABRIR e FECHAR com duração`, tem('FORMULARIO.ABRIR', e=>e.alvo_id==='Formulário de Teste Sazonal')&&tem('FORMULARIO.FECHAR', e=>e.alvo_id==='Pedido de Colação de Grau'&&e.duracao_ms>=0));
+  chk(`${T} auditoria: modo de navegação`, tem('NAVEGACAO.MODO', e=>e.alvo_id==='abas')&&tem('NAVEGACAO.MODO', e=>e.alvo_id==='sidebar'));
+  chk(`${T} auditoria: ajuda contextual e FAQ`, tem('AJUDA.ABRIR', e=>e.alvo_id==='ajuda-pendencias')&&tem('AJUDA.FAQ', e=>e.alvo_id===faq&&e.detalhes.aberta===true));
+  chk(`${T} auditoria: busca de sistemas com o termo e o total`, tem('BUSCA.SISTEMAS', e=>e.mensagem==='diplomas'&&e.detalhes.resultados>=1));
+  chk(`${T} auditoria: nenhum ERRO.NAVEGADOR`, !tem('ERRO.NAVEGADOR'));
   chk(`${T} sem erros de JS`, errs.length===0, errs.join(' | '));
+  await ctx.close();
+ }
+
+ // Auditoria fora do ar: a página segue igual e guarda os eventos
+ {
+  const ctx = await b.newContext({viewport:{width:1280, height:900}});
+  const p = await ctx.newPage(); const errs=[]; p.on('pageerror', e=>errs.push(e.message));
+  await p.addInitScript(()=>{window.__auditoriaFalha=true});
+  await load(p);
+  await p.click('#listaCategorias .cardSistema >> nth=0');
+  await p.click('#navPainelFormularios'); await p.waitForSelector('#listaFormulariosConfig .cardSistema');
+  await p.fill('#gradip-help-search','x').catch(()=>{});
+  await p.evaluate(()=>PainelAuditoria.enviar()); await p.waitForTimeout(200);
+  chk('auditoria fora do ar: card abriu e Formulários carregou', await p.evaluate(()=>window.__abertos.length===1&&document.querySelectorAll('#listaFormulariosConfig .cardSistema').length===4));
+  chk('auditoria fora do ar: eventos ficam na fila', await p.evaluate(()=>PainelAuditoria.fila().length>=3&&window.__auditoria.length===0));
+  await p.evaluate(()=>{window.__auditoriaFalha=false;PainelAuditoria.enviar()}); await p.waitForFunction(()=>PainelAuditoria.fila().length===0&&!PainelAuditoria.enviando(), null, {timeout:5000}).catch(()=>{});
+  chk('auditoria volta: a fila é enviada', await p.evaluate(()=>window.__auditoria.some(e=>e.evento==='CARD.ABRIR')&&PainelAuditoria.fila().length===0));
+  chk('auditoria fora do ar: sem erros de JS', errs.length===0, errs.join(' | '));
   await ctx.close();
  }
 
@@ -260,6 +298,8 @@ async function contraste(p, scheme, seletores, rotulo=''){
   chk('Sistema acompanha mudança com a página aberta', await p.evaluate(()=>document.documentElement.dataset.theme==='dark'));
   await p.selectOption('.gradip-theme-control__select','light');
   chk('preferência Claro aplicada em sistema escuro', await p.evaluate(()=>document.documentElement.dataset.theme==='light'&&localStorage.getItem('gradip-theme')==='light'));
+  const temas = await p.evaluate(()=>PainelAuditoria.fila().concat(window.__auditoria).filter(e=>e.evento==='TEMA.TROCAR').map(e=>e.detalhes.antes+'>'+e.alvo_id));
+  chk('auditoria: TEMA.TROCAR com a preferência (não o tema resolvido)', temas.join()==='dark>system,system>light', temas.join());
   await ctx.close();
  }
 

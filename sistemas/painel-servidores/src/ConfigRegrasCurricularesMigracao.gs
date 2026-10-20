@@ -51,8 +51,8 @@
   liberação garantida em "finally" mesmo se qualquer etapa lançar erro.
 =====================================================*/
 
-function migrarRegrasCurricularesMultiCurriculoERevisaoV1() {
-  exigirAdminPainel_();
+// Chamada só por migrarRegrasCurricularesMultiCurriculoERevisaoV1 (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function migrarRegrasCurricularesMultiCurriculoERevisaoV1SemAuditoria_() {
 
   const relatorio = {
     colunasCriadasCurriculos: [],

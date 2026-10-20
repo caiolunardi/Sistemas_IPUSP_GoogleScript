@@ -55,6 +55,7 @@ jobs:
           - sistemas/painel-solicitacoes/testes/testar_contagem.js
           - sistemas/painel-servidores/testes/testar_acesso.js
           - sistemas/painel-servidores/testes/testar_saudacao.js
+          - sistemas/painel-servidores/testes/testar_auditoria.js
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

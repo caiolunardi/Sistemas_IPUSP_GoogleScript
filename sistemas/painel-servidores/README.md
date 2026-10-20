@@ -9,6 +9,8 @@ A fonte foi recebida em 13/10/2026 (19 arquivos). Nesta versão foram acrescenta
 - card **Pessoas do IPUSP**, que abre a busca de alunos e vai reunir as futuras consultas de docentes e servidores;
 - **Central de Ajuda** com guia, solução de problemas, FAQ e ajuda contextual (`?`) nas telas.
 
+Na versão 1.3 (20/10/2026) entrou a auditoria: `Auditoria.gs` (núcleo genérico, modelo para os outros sistemas), `AuditoriaPainel.gs` (o que é deste painel, inclusive as funções públicas que gravam, agora envolvidas pela auditoria) e `AuditoriaPainelUI.html` (eventos da página). As funções originais que gravam ganharam `SemAuditoria_` no nome e perderam a linha de guarda; o corpo não mudou. Ver [docs/auditoria](../../docs/auditoria/README.md).
+
 Na versão 1.1 (20/10/2026) entrou o controle de acesso: `AcessoPainel.gs` e uma linha de guarda no início de cada função pública dos `.gs`. Fora isso, os `.gs` não mudaram em comportamento. Três deles diferem da fonte recebida apenas porque os IDs reais das planilhas foram trocados por marcadores (`CONFIGURAR_ID_PLANILHA_*`). **No Apps Script, mantenha os `.gs` atuais, que já têm os IDs reais.** Veja [DADOS_E_SEGURANCA.md](../../docs/sistemas/painel-servidores/DADOS_E_SEGURANCA.md).
 
 O GitHub não sincroniza com o Apps Script. Documentação: [visão geral](../../docs/sistemas/painel-servidores/README.md), [manual de operação e instalação](../../docs/sistemas/painel-servidores/MANUAL_OPERACAO.md), [Central de Ajuda](../../docs/sistemas/painel-servidores/AJUDA.md), [homologação](../../docs/sistemas/painel-servidores/HOMOLOGACAO.md).
@@ -19,7 +21,10 @@ O GitHub não sincroniza com o Apps Script. Documentação: [visão geral](../..
 |---|---|---|
 | `Code.gs` | `doGet`, `include_`, contagem dos avisos de pendência | IDs trocados por marcadores; resto idêntico |
 | `AcessoPainel.gs` | quem abre e quem altera o painel (aba `PAINEL_SERVIDORES`); `diagnosticarAcessoPainel` | novo (1.1) |
-| `SaudacaoPainel.gs` | nome da saudação do cabeçalho, pelos cadastros `SERVIDORES` e `PLANILHA_DOCENTES` | novo (1.2) |
+| `SaudacaoPainel.gs` | nome da saudação do cabeçalho, pelos cadastros `SERVIDORES` e `PLANILHA_DOCENTES`; nome completo e tipo de conta para a auditoria (`pessoaDoPainel_`) | novo (1.2); 1.3: cache com nome completo e tipo |
+| `Auditoria.gs` | núcleo da auditoria: abas por ano, selo encadeado, antes/depois, recusa se a auditoria não abrir, conferência, consolidação, preparação | novo (1.3), genérico |
+| `AuditoriaPainel.gs` | dicionário de eventos, usuário, leitura do estado de Formulários e Regras, as 16 funções públicas que gravam, `registrarEventosPainel`, `prepararAuditoriaPainel`, `verificarIntegridadeAuditoria`, `consolidarAuditoriaPainel` | novo (1.3) |
+| `AuditoriaPainelUI.html` | fila de eventos da página (acesso, telas, cards, ajuda, tema, buscas, erros) | novo (1.3) |
 | `PainelSemAcesso.html` | página de quem não tem acesso | novo (1.1) |
 | `UrlsSistemas.gs` | lê as URLs dos sistemas da Script Property `URLS_SISTEMAS_EQUIPE`; `diagnosticarUrlsSistemas` | novo (20/10/2026) |
 | `ConfigFormulariosCore.gs` | Leitura e gravação dos períodos dos formulários | IDs trocados por marcadores; resto idêntico |

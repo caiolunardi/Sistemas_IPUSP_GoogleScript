@@ -2,9 +2,41 @@
 
 **Estado:** verificado localmente em Chromium (Playwright) em 13/10/2026. **Não implantado nem conferido no `/exec`.** Depois de implantar, registre aqui a data, a versão da implantação e o resultado do roteiro do [manual](MANUAL_OPERACAO.md#instalar-ou-atualizar).
 
-## Versão 1.2: saudação (20/10/2026)
+## Versão 1.3: auditoria (20/10/2026)
 
 **Estado:** verificada localmente; não enviada ao Apps Script.
+
+- Novos: `Auditoria.gs` (núcleo genérico), `AuditoriaPainel.gs`, `AuditoriaPainelUI.html`, `testes/testar_auditoria.js`, [docs/auditoria](../../auditoria/README.md).
+- Alterados:
+  - as 16 funções públicas que gravam (`salvarConfigFormulario`, `salvarConfigColacao`, `salvarConfigExclusaoDisciplinas`, `desativarFormulario`, as dez das Regras Curriculares, `criarRulesetParaOutroCurriculo` e a migração) passam para `AuditoriaPainel.gs`, com a mesma guarda. A original ganha `SemAuditoria_` no nome e perde só a linha de guarda: `ConfigFormulariosCore.gs`, `ConfigFormularioColacaoGrau.gs`, `ConfigFormularioExclusaoDisciplinas.gs`, `ConfigRegrasCurriculares.gs`, `ConfigRegrasCurricularesMigracao.gs`;
+  - `ConfigRegrasCurriculares.gs`: `validarRulesetCurricular` registra a validação;
+  - `ConfigRegrasCurricularesRepository.gs`: `repoInserirAuditoria_` preenche a coluna `evento_id` (criada no fim da aba se faltar);
+  - `AcessoPainel.gs`: recusas vão para a auditoria, sem mudar a resposta;
+  - `Code.gs`: `obterContadoresPendencias` grava a aba `PENDENCIAS` (1x por hora);
+  - `SaudacaoPainel.gs`: o cache guarda também nome completo e tipo de conta (`pessoaDoPainel_`); a saudação não muda;
+  - `UrlsSistemas.gs`: o diagnóstico é registrado;
+  - `Painel.html`: `SESSAO_AUDITORIA` e o include de `AuditoriaPainelUI`;
+  - `PainelAjuda.html`: pergunta "O painel registra o que eu faço?" e o problema "A auditoria está indisponível".
+- Byte-idênticos à 1.2: todas as telas (`ConfigFormulariosUI`, `ConfigRegrasCurricularesUI`, `PainelNavegacaoUI` etc.), o tema, a ajuda comum e `appsscript.json`. Nada visual muda.
+- Testes:
+  - `testar_auditoria.js`: **69 checagens, 0 falhas**;
+  - `testar_acesso.js`: **99, 0 falhas** (novas: toda função que grava passa pela auditoria; guarda do gatilho diário);
+  - `testar_saudacao.js`: 18, 0 falhas;
+  - `testar_navegador.js`: **365 checagens, 0 falhas** (novas: os eventos que a página envia, e a página igual com a auditoria fora do ar).
+
+A conferir no `/dev`, depois do `prepararAuditoriaPainel`:
+
+- abrir o painel cria a linha `ACESSO.ABRIR` com o seu nome e perfil;
+- um card gera `CARD.ABRIR`;
+- salvar um formulário de teste gera `FORMULARIO.SALVAR` e as linhas de antes/depois em `ALTERACOES_2026`;
+- com o perfil trocado para LEITOR, Salvar gera `PERMISSAO.RECUSAR`;
+- uma correção de ruleset ativo preenche `evento_id` na aba das Regras;
+- `verificarIntegridadeAuditoria` dá `ok: true`;
+- no dia seguinte, `SESSOES` e `RESUMO_DIARIO` aparecem.
+
+## Versão 1.2: saudação (20/10/2026)
+
+**Estado:** enviada ao editor pelo clasp e conferida no `/dev` em 20/10/2026, nos dois temas. Publicação no `/exec` pendente.
 
 - Novo: `SaudacaoPainel.gs`, `testes/testar_saudacao.js`.
 - Alterados: `Painel.html` (elemento `#saudacaoUsuario`, CSS e script), `AcessoPainel.gs` (a leitura do `ID_INDEX` passa a servir para qualquer chave, `idNoIndicePainel_`; mesmo comportamento), `PainelAjuda.html` (pergunta sobre a saudação).

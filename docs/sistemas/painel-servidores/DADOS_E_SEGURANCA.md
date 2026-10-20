@@ -8,7 +8,7 @@ Preenchido a partir do código recebido em 13/10/2026, segundo [`SYSTEM_SECURITY
 - Público: equipe.
 - Ambiente: produção (implantação `/exec` existente); a fonte do Git ainda não foi implantada.
 - Responsável funcional: Serviço de Graduação (A VALIDAR INSTITUCIONALMENTE o nome do responsável).
-- Última revisão: 20/10/2026 (versão 1.1, controle de acesso), com o código do projeto Apps Script lido pelo clasp e a aba de permissões conferida. A revisão de 13/10/2026 foi só de código.
+- Última revisão: 20/10/2026 (versão 1.3, auditoria; 1.1, controle de acesso), com o código do projeto Apps Script lido pelo clasp e a aba de permissões conferida. A revisão de 13/10/2026 foi só de código.
 
 ## 2. Dados tratados
 
@@ -21,7 +21,9 @@ Preenchido a partir do código recebido em 13/10/2026, segundo [`SYSTEM_SECURITY
 | Lista de acesso | e-mail institucional e perfil (ADMINISTRADOR/LEITOR) | quem abre e quem altera o painel | aba `PAINEL_SERVIDORES` da planilha de permissões | só no servidor (cache de 60 s); o navegador recebe só o papel (`admin`/`leitor`) | não grava | Pessoal (e-mail institucional) |
 | Nome para a saudação (1.2) | primeiro nome, nome do setor, Prof./Profª. | "Bom dia, {nome}" no cabeçalho | cadastros `SERVIDORES` e `PLANILHA_DOCENTES` (e-mail, nome, setor, tipo, M / F) | servidor (cache de 10 min com e-mail e nome de todos); o navegador recebe **só o nome de quem abriu** | não grava | Pessoal (nome institucional) |
 | Conta de quem usa | e-mail `@usp.br` | conferir a lista | `Session.getActiveUser()` | só no servidor | não grava (a auditoria das Regras continua gravando, como antes) | Pessoal |
-| Preferência de aparência | `system`/`light`/`dark` | tema | navegador | `localStorage["gradip-theme"]` | só no navegador | Não pessoal |
+| Preferência de aparência | `system`/`light`/`dark` | tema | navegador | `localStorage["gradip-theme"]` | só no navegador (e na auditoria, quando muda) | Não pessoal |
+| Auditoria do painel (1.3) | e-mail, nome completo, tipo de conta e perfil de quem usa; data e hora; tela; sistema aberto (nome do card); termos buscados na lista de sistemas e na ajuda; valores de antes e depois de cada campo alterado em Formulários e Regras; navegador e versão, sistema operacional, largura da tela, aparência; sessão (identificador sorteado por aba aberta) | rastrear quem fez o quê; base para o painel de auditoria | `Session`, aba `PAINEL_SERVIDORES`, cadastros `SERVIDORES`/`PLANILHA_DOCENTES`, a própria página | planilha `AUDITORIA_PAINEL_SERVIDORES` (abas por ano, só acrescenta linhas, protegidas) | grava; nada é apagado automaticamente | Pessoal (institucional) |
+| Contagem dos avisos (1.3) | números por sistema | acompanhar a fila de trabalho | `obterContadoresPendencias` | aba `PENDENCIAS` da auditoria, no máximo 1x por hora | grava | Interna |
 
 Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 
@@ -41,6 +43,7 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 | Índice mestre | Sheets | Script Property `ID_INDEX_SPREADSHEET_ID` | Não | leitura (primeira aba, colunas "Chave" e "ID de Produção") |
 | Cadastros de servidores e de docentes | Sheets | chaves `SERVIDORES` e `PLANILHA_DOCENTES` no `ID_INDEX` (primeira aba) | Não | leitura pela conta que executa (1.2, só para a saudação) |
 | Planilha de permissões | Sheets | chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`; aba `PAINEL_SERVIDORES` | Não | leitura pela conta que executa |
+| Planilha da auditoria (1.3) | Sheets | chave `AUDITORIA_PAINEL_SERVIDORES` no `ID_INDEX` | Não | escrita pela conta que executa; **só ela abre** (decisão de 20/10/2026) |
 | Sistemas da equipe | Web Apps `/exec` | Script Property `URLS_SISTEMAS_EQUIPE` (JSON lido por `UrlsSistemas.gs`) | Não | cada sistema controla o próprio acesso |
 
 No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valores reais ficam só no projeto Apps Script.
@@ -58,6 +61,8 @@ No Git, os nove IDs foram trocados por `CONFIGURAR_ID_PLANILHA_<NOME>`. Os valor
   - a lista fica em cache por 60 s: tirar ou rebaixar alguém vale em até 1 minuto;
   - `migrarRegrasCurricularesMultiCurriculoERevisaoV1`, `TESTE`, `TESTE3`, `diagnosticarUrlsSistemas` e `diagnosticarAcessoPainel` exigem administrador.
 - O aviso "Somente leitura" na tela é só informação; quem protege é o servidor. `testes/testar_acesso.js` confere que nenhuma função pública fica sem guarda.
+- Auditoria (1.3, `Auditoria.gs` e `AuditoriaPainel.gs`): toda função que grava passa por `auditarAlteracao_`, que abre a planilha da auditoria **antes** de alterar; se não abrir, a alteração é recusada. A página envia os eventos dela por `registrarEventosPainel`, que confere o acesso, aceita só os códigos de origem "navegador" (até 50 por lote) e grava e-mail, nome e perfil lidos no servidor, ignorando o que a página mandar. Recusas de acesso (`ACESSO.NEGAR`, `PERMISSAO.RECUSAR`) são gravadas sem mudar a resposta. `consolidarAuditoriaPainel` só roda pelo gatilho do projeto (o `triggerUid` é conferido) ou por administrador.
+- Integridade: cada evento leva `seq` e `hash` (SHA-256 da linha + hash anterior). Quem edita a planilha consegue mudar uma linha, mas não sem a conferência apontar. A proteção das abas e o compartilhamento restrito são a primeira barreira; o selo é a segunda. Não é cofre contra a conta dona do projeto.
 - Dados enviados ao cliente: contadores numéricos, configuração de períodos (com links de formulários), regras curriculares, o papel (`admin`/`leitor`) e o nome da própria pessoa para a saudação. Nenhum e-mail da lista nem nome de outras pessoas.
 
 ## 5. Configuração
@@ -97,6 +102,7 @@ Hoje são constantes no código do projeto Apps Script. Pendência: migrar para 
 
 ## 6. Logs
 
+- A auditoria (1.3) vai para a planilha própria, não para o log. No log ficam só as falhas dela ("Auditoria indisponível", "evento ... não gravado", "pendências não gravadas"), sem e-mail nem nome. Se aparecer "alteração ... feita, mas o evento não foi gravado", a alteração aconteceu sem registro: anote data e hora a partir do log de execuções.
 - Eventos registrados: falhas de contagem, falhas de `Session`, `TESTE`/`TESTE3` (lista de rulesets), falha ao ler a lista de acesso ou um cadastro da saudação (só a mensagem técnica) e `diagnosticarAcessoPainel` (contagem por perfil, sem e-mails).
 - Dados pessoais em log: as funções de contagem registram só mensagens de erro. Não foram vistos logs com nomes ou e-mails de alunos; conferir os registros de execução reais (A VALIDAR).
 - O navegador registra no console só a falha de busca dos contadores.
@@ -105,18 +111,21 @@ Hoje são constantes no código do projeto Apps Script. Pendência: migrar para 
 
 - Planilhas: a conta que implanta precisa ler as sete planilhas de sistemas e editar as de Períodos e Regras. Revisão de permissões: A VALIDAR.
 - Projeto Apps Script: editores do projeto veem os IDs reais.
+- Planilha da auditoria: só a conta institucional do Serviço de Graduação; não compartilhar. Quem tiver de consultar recebe um relatório ou o futuro painel de auditoria, não a planilha. O `LEIA-ME` dela explica as abas.
+- Coluna `evento_id` (1.3) na aba `AUDITORIA_REGRAS_CURRICULARES`: liga a correção de ruleset ativo ao evento da auditoria geral. Criada sozinha na primeira correção; o histórico de revisões não muda.
 - Lista de acesso: aba `PAINEL_SERVIDORES` (A N. USP, B Nome, C e-mail, D Observação, E Perfil). Quem edita a planilha de permissões decide quem abre e quem altera o painel; mantenha essa edição restrita ao Serviço de Graduação. Revisão periódica: A VALIDAR.
 
 ## 8. Dados de teste
 
 - `testes/testar_navegador.js` usa formulários, rulesets e contadores fictícios, sem planilhas nem rede.
-- `testes/testar_acesso.js` e `testes/testar_saudacao.js` usam e-mails do domínio fictício `exemplo.usp.br` e nomes inventados ("Pessoa Fictícia A", "Maria Fictícia").
+- `testes/testar_acesso.js`, `testes/testar_saudacao.js` e `testes/testar_auditoria.js` usam e-mails do domínio fictício `exemplo.usp.br` e nomes inventados ("Pessoa Fictícia A", "Maria Fictícia").
 - Capturas de tela ficam na pasta temporária e não são versionadas.
 
 ## 9. Pontos LGPD/institucionais
 
 - Finalidade: gestão interna dos pedidos e das configurações do Serviço de Graduação.
-- Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
+- Base legal e retenção: A VALIDAR INSTITUCIONALMENTE. A auditoria não apaga nada sozinha; o prazo de guarda dela também está A VALIDAR INSTITUCIONALMENTE.
+- Transparência: a Central de Ajuda tem a pergunta "O painel registra o que eu faço?", que diz o que é anotado e quem vê.
 - Compartilhamentos externos: nenhum identificado.
 
 ## 10. Incidentes

@@ -34,7 +34,8 @@ Guias para quem chega de fora:
 - [Versões e Releases](VERSOES.md);
 - [Como reaproveitar um sistema em outro setor](COMO_REAPROVEITAR.md);
 - [Ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md);
-- [Repositório público](seguranca/REPOSITORIO_PUBLICO.md): o que pode e o que não pode entrar.
+- [Repositório público](seguranca/REPOSITORIO_PUBLICO.md): o que pode e o que não pode entrar;
+- [Auditoria](auditoria/README.md): o que os sistemas registram e o [modelo](auditoria/MODELO.md) para auditar um sistema novo.
 
 Ordem de incorporação:
 1. painéis/dashboards;

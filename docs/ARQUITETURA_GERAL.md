@@ -26,10 +26,10 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 | Chave | O que é | Quem usa | Onde está o formato |
 |---|---|---|---|
 | `PLANILHA_ALUNOS` | cadastro dos alunos (nº USP, nome, ingresso, e-mails) | Comunidade IPUSP (L/G ficha); formulários de Exclusão, Trancamento Parcial e Total (L); Estrutura Curricular, auditoria (L) | [Comunidade IPUSP](sistemas/busca-alunos/DADOS_E_SEGURANCA.md) |
-| `PLANILHA_DOCENTES` | cadastro dos docentes | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação (L) | idem |
-| `SERVIDORES` | cadastro de servidores e setores | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação (L) | idem |
+| `PLANILHA_DOCENTES` | cadastro dos docentes | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
+| `SERVIDORES` | cadastro de servidores e setores | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
 | `PERIODOS` | abertura e fechamento de cada formulário | Painel de Solicitações (L); Exclusão e Trancamento Parcial (L); Painel dos servidores (L/G, literal) | [Painel de Solicitações](sistemas/painel-solicitacoes/DADOS_E_SEGURANCA.md) |
-| `REGRAS_CURRICULARES` | regras de cada currículo para a contagem de créditos | Painel de Solicitações (L); Painel dos servidores (L/G, literal) | [Contagem de créditos](sistemas/painel-solicitacoes/CONTAGEM_DE_CREDITOS.md) |
+| `REGRAS_CURRICULARES` | regras de cada currículo para a contagem de créditos (a aba `AUDITORIA_REGRAS_CURRICULARES` ganha `evento_id` na 1.3 do Painel dos servidores) | Painel de Solicitações (L); Painel dos servidores (L/G, literal) | [Contagem de créditos](sistemas/painel-solicitacoes/CONTAGEM_DE_CREDITOS.md) |
 | `DISCIPLINAS` | cadastro de disciplinas (código, nome, créditos) | Exclusão e Trancamento Parcial (L) | [Exclusão](sistemas/exclusao-disciplinas/DADOS_E_SEGURANCA.md) |
 | `EXCLUSAO_DISCIPLINAS` | respostas do formulário de exclusão | formulário (G); Painel dos servidores (L, literal); gerenciador (fora do repositório) | [Exclusão](sistemas/exclusao-disciplinas/README.md) |
 | `TRANCAMENTO_PARCIAL_MATRICULA` | respostas do trancamento parcial | formulário (G); Painel dos servidores (L, literal); gerenciador (fora do repositório) | [Trancamento Parcial](sistemas/trancamento-parcial/README.md) |
@@ -40,6 +40,7 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 | `INDEX_GRADE_HORARIA_VERSOES_ANTERIORES` | índice das cópias de semestres anteriores | Estrutura Curricular (G); Grade Horária visual (L) | idem |
 | `BACKUP_GRADES_ANTERIORES` | pasta das cópias da grade | Estrutura Curricular (G) | idem |
 | `AUDITORIA_GRADES_ANTERIORES` | pasta das auditorias por semestre | Estrutura Curricular (G) | [modelo de dados](sistemas/estrutura-curricular/MODELO_DE_DADOS.md#auditoria-por-semestre) |
+| `AUDITORIA_PAINEL_SERVIDORES` | auditoria do Painel dos servidores: eventos, alterações (antes/depois), sessões, resumo diário, pendências | Painel dos servidores 1.3 (G) | [docs/auditoria](auditoria/README.md) |
 | `OFICIOS` | pasta do futuro Gerenciador de Ofícios | ainda sem código | [ideia](sistemas/gerenciador-oficios/README.md) |
 
 O Painel dos servidores também lê, por ID literal, as planilhas de Diplomas, Habilitações, BUSP e Intercambistas, que pertencem a sistemas ainda fora do repositório.
@@ -48,7 +49,7 @@ O Painel dos servidores também lê, por ID literal, as planilhas de Diplomas, H
 
 | Propriedade | Projetos | Conteúdo |
 |---|---|---|
-| `ID_INDEX_SPREADSHEET_ID` | todos (no Painel dos servidores, desde a 1.1, para achar `PERMISSOES_DE_ACESSO` e, na 1.2, os cadastros da saudação) | ID da planilha mestre |
+| `ID_INDEX_SPREADSHEET_ID` | todos (no Painel dos servidores, desde a 1.1, para achar `PERMISSOES_DE_ACESSO`, na 1.2, os cadastros da saudação e, na 1.3, a planilha da auditoria) | ID da planilha mestre |
 | `AMBIENTE` | Exclusão, Trancamento Parcial e Total (só nas cópias de teste) | `homologacao` |
 | `URLS_SISTEMAS_EQUIPE` | Painel dos servidores | JSON com as URLs `/exec` das ferramentas da equipe |
 

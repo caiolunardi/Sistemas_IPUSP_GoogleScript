@@ -42,8 +42,8 @@ const COL_PERIODOS_SEM1_RETIF_FIM = 15;    // O
 const COL_PERIODOS_SEM2_RETIF_INICIO = 16; // P
 const COL_PERIODOS_SEM2_RETIF_FIM = 17;    // Q
 
-function salvarConfigExclusaoDisciplinas(dados) {
-  exigirAdminPainel_();
+// Chamada só por salvarConfigExclusaoDisciplinas (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function salvarConfigExclusaoDisciplinasSemAuditoria_(dados) {
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");

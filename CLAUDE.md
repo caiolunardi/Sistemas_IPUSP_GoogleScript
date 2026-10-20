@@ -104,6 +104,7 @@ Não "corrija" silenciosamente uma particularidade funcional ou editorial para f
 - Se detectar segredo ou dado pessoal real no material a ser commitado, pare a publicação, preserve o mínimo necessário e aplique `docs/seguranca/INCIDENTES.md` quando houver exposição.
 - Não inventar base legal, prazo de retenção ou política LGPD. Quando não houver fonte institucional, marcar `A VALIDAR INSTITUCIONALMENTE`.
 - Ao documentar cada sistema, criar/preencher `DADOS_E_SEGURANCA.md` usando `docs/seguranca/SYSTEM_SECURITY_TEMPLATE.md`.
+- Auditoria: ao auditar um sistema (ou criar uma função que grava num sistema já auditado), siga `docs/auditoria/MODELO.md`. `Auditoria.gs` é copiado sem mudança; toda gravação passa por `auditarAlteracao_`, e a alteração é recusada se a auditoria não puder gravar.
 
 ## Regra de escopo
 

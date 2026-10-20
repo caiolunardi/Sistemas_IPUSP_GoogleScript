@@ -80,8 +80,8 @@ function obterUltimaColunaLeituraPeriodos_() {
 // coluna de leitura inteira. Não mexe em B (link) nem em C (tipo) —
 // só limpa datas/horários/semestre, o que já é suficiente pra nenhum
 // formulário achar uma janela válida.
-function desativarFormulario(dados) {
-  exigirAdminPainel_();
+// Chamada só por desativarFormulario (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function desativarFormularioSemAuditoria_(dados) {
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");
@@ -159,8 +159,8 @@ function obterFormulariosConfig() {
 
 }
 
-function salvarConfigFormulario(dados) {
-  exigirAdminPainel_();
+// Chamada só por salvarConfigFormulario (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function salvarConfigFormularioSemAuditoria_(dados) {
 
   if (!dados || !dados.linha || !dados.indicador) {
     throw new Error("Dados do formulário incompletos.");

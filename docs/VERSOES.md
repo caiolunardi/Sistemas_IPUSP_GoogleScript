@@ -11,7 +11,7 @@ Uma Release **marca o código do repositório**. Ela não publica nada no Google
 | Sistema | Exemplo de tag |
 |---|---|
 | Painel de Solicitações | `painel-solicitacoes-v1.5` |
-| Painel de Sistemas (servidores) | `painel-servidores-v1.2` |
+| Painel de Sistemas (servidores) | `painel-servidores-v1.3` |
 | Grade Horária visual | `grade-horaria-visual-v2.0` |
 | Estrutura Curricular e Grade Horária | `estrutura-curricular-v1.11.3` |
 | Comunidade IPUSP | `busca-alunos-v1.3` |

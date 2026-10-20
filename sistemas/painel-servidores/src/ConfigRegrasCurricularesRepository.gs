@@ -679,6 +679,12 @@ function repoGarantirAbaAuditoriaExiste_() {
 // deixar a linha de auditoria parcialmente escrita.
 function repoInserirAuditoria_(dados) {
 
+  // 1.3: liga a linha ao evento da auditoria do painel (Auditoria.gs),
+  // pela coluna evento_id no fim da aba (criada aqui se faltar; fica
+  // fora de CABECALHOS_AUDITORIA para não ser exigida das abas antigas).
+  const eventoId = eventoAuditoriaAtual_();
+  if (eventoId) repoGarantirColunasNoFinal_(ABA_REGRAS_AUDITORIA, ["evento_id"]);
+
   const aba = obterAbaRegras_(ABA_REGRAS_AUDITORIA);
   const mapa = mapearCabecalhosObrigatorios_(aba, CABECALHOS_AUDITORIA);
   const novaLinha = aba.getLastRow() + 1;
@@ -692,6 +698,10 @@ function repoInserirAuditoria_(dados) {
     const col = mapa[chave];
     if (col) valoresLinha[col - 1] = linhaCompleta[chave];
   });
+  if (eventoId) {
+    const colEvento = aba.getRange(1, 1, 1, ultimaColuna).getValues()[0].map(v => String(v || "").trim()).indexOf("evento_id");
+    if (colEvento > -1) valoresLinha[colEvento] = eventoId;
+  }
 
   aba.getRange(novaLinha, 1, 1, ultimaColuna).setValues([valoresLinha]);
 

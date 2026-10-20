@@ -88,7 +88,7 @@ function include_(nomeArquivo) {
 function obterContadoresPendencias() {
   exigirAcessoPainel_();
   const intercambistas = contarPendentesIntercambistas_();
-  return {
+  const contadores = {
     diplomas: contarPendentesDiplomas_(),
     habilitacoes: contarPendentesHabilitacoes_(),
     trancamentoTotal: contarPendentesTrancamentoTotal_(),
@@ -99,6 +99,8 @@ function obterContadoresPendencias() {
     intercambistasExclusao: intercambistas.exclusao,
     exclusaoDisciplinas: contarPendentesExclusaoDisciplinas_()
   };
+  registrarPendenciasPainel_(contadores); // aba PENDENCIAS da auditoria, no máximo 1x por hora
+  return contadores;
 }
 
 // Utilitário genérico de mapeamento de cabeçalhos — TOLERANTE (não

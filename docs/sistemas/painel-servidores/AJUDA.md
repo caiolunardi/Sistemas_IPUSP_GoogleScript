@@ -17,8 +17,8 @@ A Central segue o contrato de [`docs/ajuda/`](../../ajuda/README.md): `PainelAju
 | `ajuda-colacao` | Colação de Grau | período único, semestre da colação |
 | `ajuda-exclusao` | Exclusão de Disciplinas | datas de retificação, sem Contínuo |
 | `ajuda-regras` | Regras Curriculares | resumo, ordem de trabalho e botões para o manual existente |
-| `ajuda-problemas` | Problemas comuns | avisos ausentes, sistema que não abre, busca vazia, erros ao carregar ou salvar, “Você não tem permissão para fazer alterações” (perfil de leitura), aparência não guardada |
-| `ajuda-faq` | Perguntas frequentes | 13 perguntas (`painel-faq-*`), entre elas “Somente leitura” e a saudação sem nome |
+| `ajuda-problemas` | Problemas comuns | avisos ausentes, sistema que não abre, busca vazia, erros ao carregar ou salvar, “Você não tem permissão para fazer alterações” (perfil de leitura), “A auditoria está indisponível…” (1.3), aparência não guardada |
+| `ajuda-faq` | Perguntas frequentes | 14 perguntas (`painel-faq-*`), entre elas “Somente leitura”, a saudação sem nome e “O painel registra o que eu faço?” (1.3) |
 
 ## Gatilhos contextuais
 

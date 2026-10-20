@@ -324,8 +324,8 @@ function normalizarNumeroOpcional_(valor, rotuloCampo) {
 // (Instruções da tarefa: "campos que nunca podem ser alterados em
 // ruleset ativo" + "mantenha selecao_automatica/criterio_selecao sob
 // a política atual/reservada").
-function salvarDadosGeraisRuleset(dados) {
-  exigirAdminPainel_();
+// Chamada só por salvarDadosGeraisRuleset (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function salvarDadosGeraisRulesetSemAuditoria_(dados) {
 
   if (!dados || !dados.rulesetId) throw new Error("Dados do ruleset incompletos.");
 
@@ -475,8 +475,8 @@ function salvarDadosGeraisRuleset(dados) {
   REQUISITOS NUMÉRICOS
 =====================================================*/
 
-function salvarRequisitoCurricular(dados) {
-  exigirAdminPainel_();
+// Chamada só por salvarRequisitoCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function salvarRequisitoCurricularSemAuditoria_(dados) {
 
   if (!dados || !dados.rulesetId) throw new Error("Dados do requisito incompletos.");
 
@@ -630,8 +630,8 @@ function salvarRequisitoCurricular(dados) {
 
 }
 
-function excluirRequisitoCurricular(requisitoId, snapshotToken, motivoCorrecaoAtiva) {
-  exigirAdminPainel_();
+// Chamada só por excluirRequisitoCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function excluirRequisitoCurricularSemAuditoria_(requisitoId, snapshotToken, motivoCorrecaoAtiva) {
 
   if (!requisitoId) throw new Error("Requisito não informado.");
 
@@ -692,8 +692,8 @@ function excluirRequisitoCurricular(requisitoId, snapshotToken, motivoCorrecaoAt
   DISCIPLINAS
 =====================================================*/
 
-function salvarDisciplinaCurricular(dados) {
-  exigirAdminPainel_();
+// Chamada só por salvarDisciplinaCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function salvarDisciplinaCurricularSemAuditoria_(dados) {
 
   if (!dados || !dados.rulesetId) throw new Error("Dados da disciplina incompletos.");
 
@@ -818,8 +818,8 @@ function salvarDisciplinaCurricular(dados) {
 
 }
 
-function excluirDisciplinaCurricular(regraDisciplinaId, snapshotToken, motivoCorrecaoAtiva) {
-  exigirAdminPainel_();
+// Chamada só por excluirDisciplinaCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function excluirDisciplinaCurricularSemAuditoria_(regraDisciplinaId, snapshotToken, motivoCorrecaoAtiva) {
 
   if (!regraDisciplinaId) throw new Error("Disciplina não informada.");
 
@@ -880,8 +880,8 @@ function excluirDisciplinaCurricular(regraDisciplinaId, snapshotToken, motivoCor
   GRUPOS_REGRAS
 =====================================================*/
 
-function salvarGrupoCurricular(dados) {
-  exigirAdminPainel_();
+// Chamada só por salvarGrupoCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function salvarGrupoCurricularSemAuditoria_(dados) {
 
   if (!dados || !dados.rulesetId) throw new Error("Dados do grupo incompletos.");
 
@@ -1015,8 +1015,8 @@ function salvarGrupoCurricular(dados) {
 
 }
 
-function excluirGrupoCurricular(grupoId, snapshotToken, motivoCorrecaoAtiva) {
-  exigirAdminPainel_();
+// Chamada só por excluirGrupoCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function excluirGrupoCurricularSemAuditoria_(grupoId, snapshotToken, motivoCorrecaoAtiva) {
 
   if (!grupoId) throw new Error("Grupo não informado.");
 
@@ -1090,7 +1090,14 @@ function excluirGrupoCurricular(grupoId, snapshotToken, motivoCorrecaoAtiva) {
 function validarRulesetCurricular(rulesetId) {
   exigirAcessoPainel_();
   if (!rulesetId) throw new Error("Ruleset não informado.");
-  return validarRulesetParaAtivacao_(rulesetId);
+  const resultado = validarRulesetParaAtivacao_(rulesetId);
+  const ctx = contextoAuditoriaPainel_();
+  registrarEventoSemFalhar_({
+    evento: "RULESET.VALIDAR", alvo_tipo: "ruleset", alvo_id: rulesetId,
+    detalhes: { valido: !!resultado.valido, erros: (resultado.erros || []).length },
+    sessao_id: ctx.sessao_id, tela: ctx.tela, contexto: ctx.contexto
+  });
+  return resultado;
 }
 
 // Ao ativar, se já existir outro ruleset ATIVO para a MESMA
@@ -1104,8 +1111,8 @@ function validarRulesetCurricular(rulesetId) {
 // validarRulesetParaAtivacao_): sem ela não dá pra saber o escopo, e
 // o sistema nunca adivinha — mais seguro recusar do que arriscar
 // inativar (ou deixar de inativar) o ruleset errado.
-function ativarRulesetCurricular(rulesetId, snapshotToken) {
-  exigirAdminPainel_();
+// Chamada só por ativarRulesetCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function ativarRulesetCurricularSemAuditoria_(rulesetId, snapshotToken) {
 
   if (!rulesetId) throw new Error("Ruleset não informado.");
 
@@ -1191,8 +1198,8 @@ function ativarRulesetCurricular(rulesetId, snapshotToken) {
 
 }
 
-function inativarRulesetCurricular(rulesetId, snapshotToken) {
-  exigirAdminPainel_();
+// Chamada só por inativarRulesetCurricular (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function inativarRulesetCurricularSemAuditoria_(rulesetId, snapshotToken) {
 
   if (!rulesetId) throw new Error("Ruleset não informado.");
 
@@ -1247,8 +1254,8 @@ function derivarPrefixoRulesetId_(rulesetIdOrigem, cursoCodigo, habilitacaoCodig
 // + disciplinas + grupos do ruleset de origem, com IDs novos pra
 // tudo (Instruções.txt item 10). O ruleset de origem NUNCA é
 // alterado. selecao_automatica sempre volta pra NAO "por segurança".
-function criarNovaVersaoRuleset(rulesetIdOrigem) {
-  exigirAdminPainel_();
+// Chamada só por criarNovaVersaoRuleset (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function criarNovaVersaoRulesetSemAuditoria_(rulesetIdOrigem) {
 
   if (!rulesetIdOrigem) throw new Error("Ruleset de origem não informado.");
 
@@ -1387,8 +1394,8 @@ function criarNovaVersaoRuleset(rulesetIdOrigem) {
   atual) — o curso NOVO só entra na hora de montar o
   novoRulesetId.
 =====================================================*/
-function criarRulesetParaOutroCurriculo(dados) {
-  exigirAdminPainel_();
+// Chamada só por criarRulesetParaOutroCurriculo (AuditoriaPainel.gs), que confere o acesso e grava a auditoria.
+function criarRulesetParaOutroCurriculoSemAuditoria_(dados) {
 
   if (!dados || !dados.rulesetIdOrigem) throw new Error("Ruleset de origem não informado.");
 

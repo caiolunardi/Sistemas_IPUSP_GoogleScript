@@ -65,14 +65,29 @@ function usuarioDoPainel_() {
 
 /** No início de toda função pública só de leitura. */
 function exigirAcessoPainel_() {
-  return usuarioDoPainel_();
+  try {
+    return usuarioDoPainel_();
+  } catch (erro) {
+    registrarRecusaNaAuditoria_(erro);
+    throw erro;
+  }
 }
 
 /** No início de toda função pública que grava em planilha. */
 function exigirAdminPainel_() {
-  const usuario = usuarioDoPainel_();
-  if (usuario.papel !== "admin") throw erroAcessoPainel_("SO_LEITURA", MENSAGEM_SO_LEITURA);
+  const usuario = exigirAcessoPainel_();
+  if (usuario.papel !== "admin") {
+    const erro = erroAcessoPainel_("SO_LEITURA", MENSAGEM_SO_LEITURA);
+    registrarRecusaNaAuditoria_(erro);
+    throw erro;
+  }
   return usuario;
+}
+
+// A recusa vai para a auditoria (AuditoriaPainel.gs) sem nunca mudar a
+// resposta: se a auditoria falhar, a recusa continua igual.
+function registrarRecusaNaAuditoria_(erro) {
+  try { registrarRecusaPainel_(erro); } catch (falha) { /* auditoria indisponível */ }
 }
 
 /** Usado pelo doGet: nunca lança erro. */
@@ -89,6 +104,7 @@ function verificarAcessoPainel_() {
 
 /** Página de acesso negado (tema GRADIP, sem nada do painel). */
 function paginaSemAcessoPainel_(acesso) {
+  try { registrarPaginaNegadaPainel_(acesso); } catch (falha) { /* auditoria indisponível */ }
   const pagina = HtmlService.createTemplateFromFile("PainelSemAcesso");
   pagina.titulo = acesso.codigo === "SEM_CONTA" ? "Conta não identificada"
     : acesso.codigo === "SEM_ACESSO" ? "Sem acesso a este painel"
@@ -177,6 +193,7 @@ function diagnosticarAcessoPainel() {
     else if (perfil === ACESSO_PAINEL.PERFIL_LEITOR) contagem.LEITOR++;
     else contagem["vazio ou desconhecido (= LEITOR)"]++;
   });
+  try { registrarManutencaoPainel_("diagnosticarAcessoPainel", contagem); } catch (falha) { /* auditoria indisponível */ }
   console.log("Aba " + ACESSO_PAINEL.ABA + " lida: " + JSON.stringify(contagem));
   return contagem;
 }

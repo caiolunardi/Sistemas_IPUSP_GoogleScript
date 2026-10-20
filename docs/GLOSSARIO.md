@@ -43,6 +43,9 @@ Termos que aparecem na documentação e nas telas, para quem não é do Serviço
 | **Script Properties (Propriedades do script)** | Configurações guardadas no projeto, fora do código. É onde ficam o ID do `ID_INDEX` e as URLs internas. |
 | **`ID_INDEX`** | Planilha mestre que liga cada chave (por exemplo `PERIODOS`) ao ID da planilha correspondente. Ver [arquitetura geral](ARQUITETURA_GERAL.md). |
 | **Chave** | Nome estável de um recurso no `ID_INDEX`. A documentação cita a chave, nunca o ID. |
+| **Auditoria** | Registro de quem fez o quê, quando e onde num sistema, numa planilha própria que só acrescenta linhas. Ver [docs/auditoria](auditoria/README.md). |
+| **Selo encadeado (hash)** | Código calculado de cada linha da auditoria junto com o da linha anterior. Mudar, apagar ou inserir uma linha à mão quebra a corrente, e a conferência aponta onde. |
+| **Sessão (auditoria)** | Uma aba do navegador aberta num sistema, do momento em que abre até a última ação registrada. |
 | **Homologação** | Teste com o sistema publicado numa cópia do projeto, que grava em cópias vazias das planilhas (Script Property `AMBIENTE = homologacao`). Ver [ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md). |
 | **Ruleset** | Conjunto versionado de regras de um currículo, usado na contagem de créditos e editado no Painel dos servidores. |
 | **Central de Ajuda** | Ajuda dentro de cada tela (botão **Ajuda** e os `?`), com busca e perguntas frequentes. Padrão em [`ajuda/`](ajuda/README.md). |

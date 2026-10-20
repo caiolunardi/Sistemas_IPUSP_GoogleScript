@@ -18,12 +18,15 @@
 // painel abre normalmente. O período do dia (bom dia/boa tarde/boa
 // noite) é calculado no navegador. Os nomes ficam em cache por 10 min
 // e não vão para o log; a página recebe só o nome de quem a abriu.
+//
+// A auditoria (1.3) usa o mesmo cadastro: pessoaDoPainel_ devolve o
+// nome completo e o tipo de conta (SERVIDOR, SETOR ou DOCENTE).
 const SAUDACAO_PAINEL = {
   CADASTROS: [
     { chave: "SERVIDORES", email: "email", nome: "nome", setor: "setor", tipo: "tipo", secundario: "emailsecundario" },
     { chave: "PLANILHA_DOCENTES", email: "email", nome: "nome", genero: "mf", secundario: "emailsecundario" }
   ],
-  CACHE: "nomesPainelServidores",
+  CACHE: "pessoasPainelServidores",
   CACHE_SEGUNDOS: 600,
   PALAVRAS_MINUSCULAS: ["de", "da", "do", "das", "dos", "e"]
 };
@@ -33,7 +36,8 @@ function saudacaoParaPagina_() {
   let nome = "";
   try {
     const email = normalizarEmailPainel_(Session.getActiveUser().getEmail());
-    if (email) nome = nomesDoPainel_()[email] || "";
+    const pessoa = email && nomesDoPainel_()[email];
+    if (pessoa) nome = pessoa.s || "";
   } catch (erro) {
     console.warn("Saudação sem nome: " + (erro && erro.message));
   }
@@ -61,6 +65,12 @@ function nomesDoPainel_() {
   return mapa;
 }
 
+/** Nome completo e tipo de conta para a auditoria ({} se não achar). */
+function pessoaDoPainel_(email) {
+  const pessoa = nomesDoPainel_()[normalizarEmailPainel_(email)];
+  return pessoa ? { nome: pessoa.n || "", tipo: pessoa.t || "" } : {};
+}
+
 function tituloSaudacao_(texto) {
   return normalizarSemAcento_(texto).replace(/[^a-z0-9]/g, "");
 }
@@ -76,8 +86,14 @@ function lerNomesDoCadastro_(cadastro, principais, secundarios) {
   const celula = (linha, campo) => (col[campo] >= 0 ? String(linha[col[campo]] || "").trim() : "");
   for (let i = 1; i < valores.length; i++) {
     const linha = valores[i];
-    const nome = nomeParaSaudacao_(cadastro, celula(linha, "nome"), celula(linha, "setor"), celula(linha, "tipo"), celula(linha, "genero"));
-    if (!nome) continue;
+    const saudacao = nomeParaSaudacao_(cadastro, celula(linha, "nome"), celula(linha, "setor"), celula(linha, "tipo"), celula(linha, "genero"));
+    if (!saudacao) continue;
+    const ehSetor = cadastro.tipo !== undefined && (normalizarSemAcento_(celula(linha, "tipo")) === "setor" || !celula(linha, "nome"));
+    const nome = {
+      s: saudacao,
+      n: capitalizarSaudacao_(celula(linha, "nome") || celula(linha, "setor")),
+      t: cadastro.genero !== undefined ? "DOCENTE" : ehSetor ? "SETOR" : "SERVIDOR"
+    };
     const email = normalizarEmailPainel_(celula(linha, "email"));
     if (email && principais[email] === undefined) principais[email] = nome;
     const outro = normalizarEmailPainel_(celula(linha, "secundario"));

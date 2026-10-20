@@ -51,6 +51,7 @@ function diagnosticarUrlsSistemas() {
   exigirAdminPainel_();
   const urls = lerUrlsSistemas_();
   const faltando = CHAVES_URLS_SISTEMAS.filter(chave => !urls[chave]);
+  try { registrarManutencaoPainel_("diagnosticarUrlsSistemas", { faltando: faltando }); } catch (falha) { /* auditoria indisponível */ }
   console.log(faltando.length
     ? "Faltam (ou são inválidas) as chaves: " + faltando.join(", ")
     : "As " + CHAVES_URLS_SISTEMAS.length + " URLs estão configuradas.");
