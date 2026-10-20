@@ -46,6 +46,15 @@ Mudança funcional pedida pelo responsável funcional em 13/10/2026; backend e s
 
 **`GradeGrid.html`**: cabeçalho com o seletor, Ajuda e quebra em duas faixas abaixo de 1180 px; faixa da grade exibida com legenda; aviso de semestre vazio, horário fora do quadro e falha; botões de semestre com `aria-pressed`, filtrando no navegador; tipos novos (`Obrigatória/Eletiva/Livre`, normalizados no servidor); escape de HTML no post-it e na ficha (antes `innerHTML` com texto da planilha); ficha com ×, Esc, foco e Enter no post-it; disciplina fora do quadro não é mais desenhada no canto (antes ia para 0,0); PDF da grade selecionada, com o semestre no título e no nome do arquivo, e `try/finally` para não deixar a tela travada; respostas atrasadas descartadas; `console.log` de depuração removidos. Mantidos: desenho do quadro, horários, post-its, deslocamento em escada, hover, cores, mapa de departamentos, tela de carregamento e exportação lado a lado em paleta clara. Tokens novos usados: `input-bg`, `input-text`, `info-bg`, `info-border`, `warning`, `warning-bg`, `warning-border`, `danger-bg`, `danger-border`, `focus`.
 
+## v2.1 — grade atual sem atraso (15/10/2026)
+
+Pedido do responsável funcional: uma edição na planilha das secretarias tem de aparecer no próximo F5 da grade visual (antes levava 1 a 2 min).
+
+- **Causa:** `obterGrade('')` guardava a grade atual inteira no `CacheService` por 120 s; durante esse tempo, qualquer F5 recebia a cópia guardada.
+- **`Codigo.gs`:** o conteúdo da grade atual deixou de ir para o cache e é lido da planilha a cada carregamento. Para não abrir também o `ID_INDEX` a cada F5, só a referência à grade atual (`referenciaGradeAtual_()`: ID e semestre) fica 10 min no cache do script, que fica no servidor e nunca vai ao navegador. Grades anteriores e a lista delas continuam com o cache de antes. `lidaEm` passou a ter segundos, para conferir se a leitura é nova. `VERSAO_CACHE` foi para `v3`, então nada guardado pela v2.0 é reaproveitado.
+- **`GradeAjuda.html`:** os dois textos que falavam em "alguns minutos" de atraso agora dizem que a grade é lida a cada carregamento.
+- **Testes:** `testar_backend.js` ganhou o caso "a secretaria edita, a próxima leitura mostra a edição sem reabrir o `ID_INDEX`" e confere que a grade anterior continua em cache: 40 ok. `testar_navegador.js`: 148 ok.
+
 ## Verificação local
 
 Ambiente: Node 22 e Chromium (Playwright 1.56), com `SpreadsheetApp`, `PropertiesService`, `CacheService`, `HtmlService`, `Utilities` e `google.script.run` simulados; html2canvas/jsPDF substituídos por versões locais que registram páginas e nome do arquivo. Scripts em [`sistemas/grade-horaria-visual/testes/`](../../../sistemas/grade-horaria-visual/testes/README.md).

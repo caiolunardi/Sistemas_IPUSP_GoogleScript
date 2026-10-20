@@ -40,7 +40,7 @@ function run(props, files, opts = {}) {
       put: (k, v) => { if (v.length > 100000) throw new Error('grande'); cache[k] = v; },
       removeAll: ks => ks.forEach(k => delete cache[k]) }) },
     SpreadsheetApp: { openById: id => { aberturas.push(id); if (!files[id]) throw new Error('Você não tem permissão para acessar o documento ' + id + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'); return files[id]; } },
-    Utilities: { formatDate: () => '13/10/2026 às 19:40' },
+    Utilities: { formatDate: (d, tz, fmt) => '13/10/2026 às 19:40' + (/:ss/.test(fmt) ? ':05' : '') },
     HtmlService: {
       createTemplateFromFile: n => ({ evaluate: () => ({ setTitle() { return this; }, addMetaTag() { return this; }, arquivo: n }) }),
       createHtmlOutputFromFile: n => ({ getContent: () => fs.readFileSync(SRC + n + '.html', 'utf8') })
@@ -151,9 +151,26 @@ const json = v => JSON.stringify(v);
   chk('"Obrigatórias" vira "Obrigatória"', g.disciplinas.find(d => d.codigo === 'MAE0116').tipo === 'Obrigatória');
   chk('marcada como atual, com rótulo', g.atual === true && g.semestre === '2027/1' && g.rotulo === '2027 - 1º Semestre' && g.lidaEm);
   chk('nenhum ID na resposta', !/ATUAL|IDX|MESTRE|B26/.test(json(g)));
-  const antes = c.aberturas.length;
+}
+
+// ---------- grade atual sempre fresca ----------
+{
+  const f = arquivos();
+  const c = run(PROPS, f);
   c.obterGrade('');
-  chk('segunda leitura vem do cache', c.aberturas.length === antes);
+  // A secretaria edita a planilha: nova disciplina na PSA.
+  f.ATUAL = planilha('Grade Horária - 1º Semestre de 2027', [sheet('PSA', vazias.concat([T3,
+    L('PSA2000', 'Recém-incluída', 'Livre', '', 'SIM', 'Docente', '3', '2', 'Sexta-Feira', '08:00', '10:00')]))]);
+  const antes = c.aberturas.length;
+  const g2 = c.obterGrade('');
+  const novas = c.aberturas.slice(antes);
+  chk('edição na planilha aparece na leitura seguinte (sem cache do conteúdo)', g2.disciplinas.some(d => d.codigo === 'PSA2000') && !g2.disciplinas.some(d => d.codigo === 'PSA1001'), json(g2.disciplinas.map(d => d.codigo)));
+  chk('leitura seguinte não reabre o ID_INDEX (referência em cache)', json(novas) === json(['ATUAL']), json(novas));
+  chk('conteúdo da grade atual não vai para o cache', !Object.keys(c.cache).some(k => /^grade:.*atual/.test(k)), json(Object.keys(c.cache)));
+  chk('lidaEm com segundos', /\d{2}:\d{2}:\d{2}$/.test(g2.lidaEm), g2.lidaEm);
+  const c2 = run(PROPS, arquivos());
+  c2.obterGrade('2026/2'); const a2 = c2.aberturas.length; c2.obterGrade('2026/2');
+  chk('grade anterior continua em cache', c2.aberturas.length === a2);
 }
 
 // ---------- grade anterior ----------
@@ -194,7 +211,7 @@ const json = v => JSON.stringify(v);
   const tudo = c.logs.join('\n');
   chk('diagnóstico lista abas, contagem e anteriores', /aba PSA: ok/.test(tudo) && /aba PSE: AUSENTE/.test(tudo) && /disciplinas na grade visual: 5/.test(tudo) && /2026\/2, 2026\/1, 2025\/2/.test(tudo), tudo);
   chk('diagnóstico sem IDs', !/MESTRE|ATUAL|IDX|B26/.test(tudo));
-  chk('diagnóstico limpa o cache da grade atual', !Object.keys(c.cache).some(k => /atual/.test(k)));
+  chk('diagnóstico limpa o cache da referência à grade atual', !Object.keys(c.cache).some(k => /atual|anteriores/i.test(k)), json(Object.keys(c.cache)));
 }
 
 // ---------- fonte sem IDs reais ----------

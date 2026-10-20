@@ -1,8 +1,19 @@
-# Grade Horária visual — fonte v2.0
+# Grade Horária visual — fonte v2.1
 
 Página pública da grade horária dos alunos do IP. O projeto Apps Script continua **vinculado à planilha original da grade** (a do link que todos já têm), mas a v2.0 deixa de ler as abas dela: a página lê a **planilha que as secretarias preenchem** (chave `GRADE_HORARIA_PREENCHIMENTO` no `ID_INDEX`) e, pelo seletor **Consultar Grades Anteriores**, as cópias de semestres anteriores registradas no índice `INDEX_GRADE_HORARIA_VERSOES_ANTERIORES`. Também ganhou a Central de Ajuda e perdeu todo o código de validação, preenchimento, backup e registro de edições, que hoje roda no [sistema Estrutura Curricular](../estrutura-curricular/README.md) e no `Validacoes.gs` da [planilha das secretarias](../estrutura-curricular/planilha-grade/README.md).
 
 O GitHub é a referência de código, mas **não sincroniza** com o Apps Script. Consulte a [documentação funcional](../../docs/sistemas/grade-horaria-visual/README.md), o [manual de operação](../../docs/sistemas/grade-horaria-visual/MANUAL_OPERACAO.md), a [homologação](../../docs/sistemas/grade-horaria-visual/HOMOLOGACAO.md) e o [inventário de segurança](../../docs/sistemas/grade-horaria-visual/DADOS_E_SEGURANCA.md).
+
+## Atualizar da v2.0 para a v2.1 (grade atual sem atraso)
+
+A v2.1 lê a grade atual na hora, a cada carregamento, em vez de guardá-la 2 min no cache. No editor do Apps Script da grade visual, troque o conteúdo de 2 arquivos e publique uma nova versão da implantação existente (**Implantar → Gerenciar implantações → lápis → Nova versão**):
+
+| No editor | Cole o conteúdo de |
+|---|---|
+| `Codigo.gs` | [`src/Codigo.gs`](src/Codigo.gs) |
+| `GradeAjuda.html` | [`src/GradeAjuda.html`](src/GradeAjuda.html) |
+
+Os outros arquivos não mudam. Detalhes em [HOMOLOGACAO](../../docs/sistemas/grade-horaria-visual/HOMOLOGACAO.md#v21--grade-atual-sem-atraso-15102026).
 
 ## Arquivos (9)
 

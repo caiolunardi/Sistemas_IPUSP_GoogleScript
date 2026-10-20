@@ -6,8 +6,8 @@ A fonte está em [`sistemas/grade-horaria-visual/src/`](../../../sistemas/grade-
 
 Nada a fazer: a página lê sozinha a planilha que as secretarias preenchem. Quando o Estrutura Curricular envia uma grade nova para preenchimento, ele renomeia a planilha das secretarias ("Grade Horária - Xº semestre de AAAA") e registra a cópia do semestre que terminou no índice das grades anteriores; a página passa a mostrar a grade nova como atual e a anterior no seletor, sem mudança de código.
 
-- Mudanças das secretarias aparecem em até ~2 minutos (cache da grade atual).
-- Para forçar a releitura (ex.: logo depois de um envio), execute `diagnosticarGradeVisual` no editor; ele limpa o cache da grade atual e da lista de anteriores.
+- Mudanças das secretarias aparecem no próximo carregamento da página (F5): a grade atual é lida na hora, sem cache (v2.1).
+- Logo depois de um envio de grade nova, a página pode seguir mostrando a planilha anterior por até 10 min (a referência à grade atual fica no cache). Para trocar na hora, execute `diagnosticarGradeVisual` no editor; ele limpa essa referência e a lista de anteriores.
 - Uma grade anterior que não aparece no seletor: confira, no índice das grades anteriores, se a linha tem o semestre no formato `AAAA/S` na coluna `Semestre` e o ID na coluna `ID`. Linhas acrescentadas à mão (por exemplo, para uma grade antiga guardada fora do sistema) funcionam do mesmo jeito, desde que a planilha tenha as seis abas no layout da grade.
 
 ## Instalar ou atualizar
