@@ -31,9 +31,9 @@ Abra uma issue do tipo **Sugestão**. Diga qual sistema, quem usaria (alunos, eq
 5. Atualize a documentação seguindo o [roteiro de atualização](docs/ATUALIZAR_DOCUMENTACAO.md): arquivos do sistema e, conforme o caso, catálogo, mapa das chaves, glossário e Central de Ajuda.
 6. Abra um **pull request**, preenchendo o modelo.
 
-O mantenedor revisa, aceita no `main` e leva a mudança ao Google pelo clasp ([desenvolvimento local](DEVELOPMENT_LOCAL.md)). **Um merge no Git não muda nenhum sistema em uso**: os arquivos são copiados para o projeto Apps Script e publicados numa nova versão, depois da homologação. Cada versão de sistema vira uma tag e uma Release no GitHub ([versões](docs/VERSOES.md)).
+O mantenedor revisa, decide o merge no `main` e leva a mudança ao Google pelo clasp ([desenvolvimento local](DEVELOPMENT_LOCAL.md)). **Um merge no Git não muda nenhum sistema em uso**: os arquivos são copiados para o projeto Apps Script e publicados numa nova versão, depois da homologação. Cada versão de sistema vira uma tag e uma Release no GitHub ([versões](docs/VERSOES.md)).
 
-No repositório principal, o único ramo permanente é o `main`. Um pull request aceito é incorporado com merge (não squash), e o ramo dele é apagado. Um pull request parado que ficou para trás em relação ao `main` é incorporado em parte ou fechado, com um comentário dizendo o que entrou e em que versão (como o #5, em 20/10/2026).
+**Ninguém commita direto no `main`, nem o mantenedor nem agentes de IA**: toda mudança entra por pull request com a CI verde, e o merge é decidido por uma pessoa ([fluxo de mudanças](docs/governanca/FLUXO_DE_MUDANCAS.md), com as classes de risco e o que cada uma exige). No repositório principal, o único ramo permanente é o `main`. Um pull request aceito é incorporado com merge (não squash), e o ramo dele é apagado. Um pull request parado que ficou para trás em relação ao `main` é incorporado em parte ou fechado, com um comentário dizendo o que entrou e em que versão (como o #5, em 20/10/2026).
 
 ### Sistema novo
 
@@ -59,7 +59,8 @@ O [`CLAUDE.md`](CLAUDE.md) é a instrução para agentes (Claude Code, Cursor, C
 
 - não cole dados reais no pedido (planilhas, prints do `/exec`, e-mails de alunos);
 - peça que ele leia os documentos que o `CLAUDE.md` lista antes de mexer na interface ou na segurança;
-- revise o resultado como revisaria o de uma pessoa: rode os testes e confira a documentação.
+- revise o resultado como revisaria o de uma pessoa: rode os testes e confira a documentação;
+- o agente trabalha num ramo e abre PR; ele não faz merge, Release nem implantação sem a sua ordem para aquela ação, e o parecer dele não é aprovação ([fluxo de mudanças](docs/governanca/FLUXO_DE_MUDANCAS.md#2-o-que-um-agente-de-ia-pode-e-não-pode-fazer), [revisão](docs/governanca/REVISAO.md)).
 
 ## Dúvidas
 
