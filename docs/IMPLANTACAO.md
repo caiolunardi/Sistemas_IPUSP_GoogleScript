@@ -1,6 +1,6 @@
-# Implantação: do commit aprovado ao Apps Script, com volta garantida
+# Implantação: do commit aprovado ao Apps Script, e como voltar atrás
 
-Como se leva um commit do `main` ao Google de modo que dê para provar depois **qual código está rodando** e **voltar atrás**. Complementa o [desenvolvimento local com clasp](../DEVELOPMENT_LOCAL.md) (como usar o clasp) e o [fluxo de mudanças](governanca/FLUXO_DE_MUDANCAS.md#6-do-main-ao-google) (quem autoriza). Nada aqui é feito por agente sem ordem explícita do responsável.
+Como se leva um commit do `main` ao Google de modo que fique registrado **qual commit foi para o editor e para cada versão da implantação**, e que dê para **voltar atrás**. A conferência automática alcança só o código do editor (seção 4); o resto depende do registro (seção 6). Complementa o [desenvolvimento local com clasp](../DEVELOPMENT_LOCAL.md) (como usar o clasp) e o [fluxo de mudanças](governanca/FLUXO_DE_MUDANCAS.md#6-do-main-ao-google) (quem autoriza). Nada aqui é feito por agente sem ordem explícita do responsável.
 
 ## 1. Três coisas diferentes
 
@@ -45,9 +45,11 @@ commit do main com CI ✓ ──(ordem explícita)──▶ projeto de PRODUÇÃ
 - **Manifesto por ambiente:** o mesmo `appsscript.json` vale para os dois projetos. Se a homologação precisar de opção diferente (por exemplo, acesso mais restrito), registre a diferença no README do sistema em vez de manter dois manifestos.
 - **Migração gradual:** os três formulários já seguem o modelo. Os outros entram um por vez, quando cada um tiver mudança a implantar: primeiro o manifesto (seção 5), depois, se fizer sentido, a coluna `Homologação` e a propriedade `AMBIENTE`.
 
-## 4. Provar qual código está no Google
+## 4. Conferir o código do editor
 
-A ferramenta [`ferramentas/conferir_implantacao.js`](../ferramentas/conferir_implantacao.js) compara uma pasta trazida pelo `clasp pull` com o repositório **sem mostrar conteúdo** (só nomes, impressões digitais e quantas linhas diferem). Não envia nada e recusa uma pasta de pull dentro do repositório.
+A ferramenta [`ferramentas/conferir_implantacao.js`](../ferramentas/conferir_implantacao.js) compara uma pasta trazida pelo `clasp pull` com o repositório **sem mostrar conteúdo** (só nomes, impressões digitais e quantas linhas diferem). Testes: [`ferramentas/testes/testar_conferir_implantacao.js`](../ferramentas/testes/testar_conferir_implantacao.js), na CI.
+
+**O `clasp pull` só é feito pelo responsável, ou por um agente com ordem explícita para aquele pull**, porque lê o projeto real com a conta institucional. Ele não muda nada no Google, mas traz para o computador código que pode ter IDs reais (versões antigas).
 
 No computador com o clasp, **fora do clone do repositório**:
 
@@ -61,19 +63,45 @@ node ferramentas/conferir_implantacao.js ~/conferencia/<sistema> sistemas/<siste
 
 - `--procurar`: diz qual commit do histórico tem exatamente o código do editor. Se nenhum tiver, o editor tem alterações que não estão no Git: **registre como divergência** no README do sistema (sem colar o código) e decida, num PR, se elas entram no repositório ou se o próximo push as substitui.
 - `--commit <sha>`: compara com um commit específico (por exemplo, o da Release).
-- O `clasp pull` traz o código do **editor** (o que o `/dev` usa). O `/exec` usa uma versão numerada; para conferir o `/exec`, compare com o commit registrado na implantação (seção 6).
+- Código de saída: `0` idêntico (incluindo o manifesto), `1` há diferença ou o manifesto não pôde ser comparado, `2` erro de uso. Erro nunca vira "idêntico".
 
-Não apague a pasta de conferência antes de terminar e não a copie para o repositório (pode ter IDs reais, no caso de versões antigas).
+### O que a ferramenta prova e o que não prova
+
+| Prova (equivalência do código-fonte do editor) | Não prova (configuração e comportamento do ambiente) |
+|---|---|
+| os `.gs`/`.js`/`.html` do editor são iguais, linha a linha, aos do repositório naquele commit, com as mesmas exclusões do `.claspignore` (ocultos, `testes/`, `node_modules/`), incluindo subpastas | que o `/exec` roda esse código: ele usa uma **versão numerada** da implantação, que pode ser anterior ao editor |
+| o `appsscript.json` do editor é igual ao do repositório, **quando o repositório o versiona** | Script Properties (`ID_INDEX_SPREADSHEET_ID`, `AMBIENTE`, `URLS_SISTEMAS_EQUIPE`…) e os IDs que elas apontam |
+| qual commit do histórico da pasta (até 300) tem exatamente esse código | identidade de execução e quem pode acessar, se o manifesto não estiver versionado; escopos já autorizados |
+| | gatilhos instaláveis, permissões das planilhas e pastas, ID e versão da implantação |
+
+Regras que evitam falso "idêntico" (cada uma tem teste):
+
+- `.gs` e `.js` são o mesmo arquivo no Apps Script; se os dois existirem com o mesmo nome, é **erro**, não escolha silenciosa.
+- Finais de linha (`CRLF`/`LF`) e espaços no **fim do arquivo** são ignorados; qualquer outra diferença de espaço ou linha em branco conta.
+- Arquivo de um lado só aparece como `SÓ NO GOOGLE` ou `SÓ NO REPOSITÓRIO`. Pasta vazia, inexistente ou sem código é erro.
+- Manifesto ausente no repositório: a comparação direta acusa `SÓ NO GOOGLE appsscript.json (manifesto não versionado)`; o `--procurar` compara só o código e diz que o manifesto **não foi comparado** (saída `1`).
+- Links simbólicos não são seguidos. A pasta do `clasp pull` dentro do repositório é recusada.
+- A ferramenta só lê arquivos e roda `git` (sem rede, sem clasp, sem escrever nada); um teste confere isso no código.
+
+Limites conhecidos: se a pasta `src/` mudou de lugar no histórico, o `--procurar` não olha os commits de antes da mudança (rode com o caminho antigo e `--commit`); nomes que só diferem em maiúsculas podem colidir num sistema de arquivos que não diferencia (macOS, Windows).
+
+Não apague a pasta de conferência antes de terminar e não a copie para o repositório.
 
 ## 5. Versionar o manifesto (um sistema por vez)
 
-Para cada projeto sem `appsscript.json` no Git, o responsável (ou um agente com ordem explícita):
+Para cada projeto sem `appsscript.json` no Git, **com autorização específica do responsável para aquele projeto**:
 
-1. Faz o `clasp pull` da seção 4 e copia **só** o `appsscript.json` da pasta de conferência para `sistemas/<sistema>/src/`.
-2. Confere o arquivo: não deve ter ID de planilha, de pasta nem de script. Se `webapp.access` ou `executeAs` estiverem diferentes do que o `DADOS_E_SEGURANCA.md` do sistema diz, a diferença é um achado.
-3. Abre um PR (classe **crítica**: configuração de produção) com o manifesto, atualizando a seção 4 do `DADOS_E_SEGURANCA.md` com o que ele diz.
+1. `clasp pull` numa pasta de conferência isolada, fora do repositório (seção 4). Nada é enviado ao Google.
+2. Copie **só** o `appsscript.json` para `sistemas/<sistema>/src/` e inspecione antes de qualquer `git add`: não pode ter ID de planilha, pasta, script ou implantação, nem e-mail ou URL privada. O manifesto costuma ter `timeZone`, `runtimeVersion`, `webapp` (`executeAs`, `access`), `oauthScopes`, `dependencies`; nenhum deles é segredo, mas um valor inesperado é achado e vai para o PR (sem colar dados sensíveis).
+3. Compare `webapp.access` e `executeAs` com o `DADOS_E_SEGURANCA.md` do sistema; diferença é achado.
+4. Abra um PR (classe **crítica**: configuração de produção) só com o manifesto e a seção 4 do `DADOS_E_SEGURANCA.md` atualizada. `node ferramentas/verificar_publicacao.js` precisa passar.
 
-Depois disso, o `clasp push` daquela pasta envia o manifesto certo e o repositório passa a descrever a configuração do Web App. A configuração da **implantação** (quem acessa) é lida do manifesto da versão implantada, então uma mudança de acesso também passa a ser um diff revisável.
+Limites do procedimento:
+
+- Pôr o manifesto no Git **não muda nada no Google**: nem permissões, nem implantações. Ele só passa a valer no próximo `clasp push` daquela pasta, que já exige ordem explícita.
+- Depois desse push, uma **nova versão** da implantação usaria o manifesto do push. As versões já implantadas não mudam.
+- O manifesto não diz quem pode acessar uma implantação **já existente** se ela foi criada antes com outra configuração; isso só se confere na tela **Gerenciar implantações**.
+- Nenhum projeto é sobrescrito por este procedimento: ele só lê (pull) e escreve no clone local.
 
 ## 6. Registro de cada implantação
 
@@ -92,7 +120,7 @@ O número da versão da implantação não é segredo (é um inteiro do projeto)
 |---|---|---|
 | `/exec` com problema depois de nova versão | **Implantar → Gerenciar implantações → editar → Versão:** escolher a anterior | imediato; mesma URL. Não precisa do Git |
 | editor/`/dev` com problema depois do `clasp push` | `clasp push` do commit anterior registrado (seção 6), com `clasp status` antes | só com ordem explícita; os gatilhos usam o código do editor |
-| código anterior desconhecido | `conferir_implantacao.js --procurar` numa pasta de pull feita **antes** do push | por isso: puxe e confira antes de cada push |
+| código anterior desconhecido | `conferir_implantacao.js --procurar` numa pasta de pull feita **antes** do push | por isso: puxe e confira antes de cada push (o pull também é com autorização) |
 | dado gravado errado | histórico de versões da planilha | o código não desfaz gravações |
 
 Antes de cada `clasp push` em produção: `clasp pull` numa pasta de conferência e `conferir_implantacao.js --procurar`. Se o editor tiver algo que não está no Git, **pare**: o push apagaria essa alteração.

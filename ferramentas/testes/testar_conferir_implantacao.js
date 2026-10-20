@@ -38,5 +38,79 @@ chk('recusa pasta do Google dentro do repositório', cod2 === 2);
 chk('código 2 sem argumentos', cod3 === 2);
 chk('saída sem conteúdo dos arquivos', !saida.join('\n').includes('return 2'));
 
+
+// --- Segunda rodada: casos que podiam dar falso "idêntico"
+const { execFileSync } = require('child_process');
+const silencio = f => { const l = console.log, e = console.error, out = []; console.log = console.error = m => out.push(String(m)); try { return [f(), out.join('\n')]; } finally { console.log = l; console.error = e; } };
+
+// Subpastas: o clasp envia "sub/arquivo"; antes eram ignoradas dos dois lados.
+const comSub = escrever(tmp(), { 'Code.gs': 'a\n' }); fs.mkdirSync(path.join(comSub, 'lib')); fs.writeFileSync(path.join(comSub, 'lib', 'Util.gs'), 'u\n');
+const semSub = escrever(tmp(), { 'Code.gs': 'a\n' });
+r = comparar(lerPasta(comSub), lerPasta(semSub));
+chk('arquivo em subpasta só de um lado é acusado', r.soNoGoogle.join() === 'lib/Util.gs');
+
+// Mesmo nome com .gs e .js na mesma pasta: viram um só no Apps Script.
+const dup = escrever(tmp(), { 'Code.gs': 'a\n', 'Code.js': 'b\n' });
+let erroDup = null; try { lerPasta(dup); } catch (e) { erroDup = e.message; }
+chk('Code.gs e Code.js juntos: erro, não escolha silenciosa', /mesmo no Apps Script/.test(erroDup || ''));
+const [codDup] = silencio(() => main([dup, repo]));
+chk('… e a ferramenta sai com código 2', codDup === 2);
+
+// Exclusões do .claspignore: testes/, node_modules/, ocultos; links não são seguidos.
+const comLixo = escrever(tmp(), { 'Code.gs': 'a\n', '.oculto.gs': 'x\n' });
+for (const d of ['testes', 'node_modules']) { fs.mkdirSync(path.join(comLixo, d)); fs.writeFileSync(path.join(comLixo, d, 'T.js'), 't\n'); }
+fs.symlinkSync(path.join(repo, 'Pagina.html'), path.join(comLixo, 'Link.html'));
+chk('ignora testes/, node_modules/, ocultos e links', [...lerPasta(comLixo).keys()].join() === 'script:Code');
+
+// Manifesto só no Google: não pode sair "ok".
+const gManif = escrever(tmp(), { 'Code.gs': 'a\n', 'appsscript.json': '{}\n' });
+const [codManif, outManif] = silencio(() => main([gManif, semSub]));
+chk('manifesto só no Google: código 1 e aviso de não versionado', codManif === 1 && outManif.includes('manifesto não versionado'));
+r = comparar(lerPasta(gManif), lerPasta(semSub), { semManifestoNoRepo: true });
+chk('busca no histórico marca o manifesto como não comparado', r.manifestoNaoComparado && r.iguais.length === 1);
+
+// Pastas vazias ou inexistentes não viram "idêntico".
+const [codVazia] = silencio(() => main([gManif, tmp()]));
+chk('pasta do repositório sem código: código 2', codVazia === 2);
+const [codInex] = silencio(() => main([gManif, path.join(tmp(), 'nao-existe')]));
+chk('pasta do repositório inexistente: código 2', codInex === 2);
+
+// "ok" sempre vem com o aviso de que não prova o /exec nem a configuração.
+const gIgual = escrever(tmp(), { 'Code.gs': 'a\n' });
+const [codIgual, outIgual] = silencio(() => main([gIgual, semSub]));
+chk('idêntico: código 0 e aviso sobre /exec e configuração', codIgual === 0 && outIgual.includes('/exec') && outIgual.includes('Script Properties'));
+
+// --commit com valor que parece opção do git: recusado, sem executar nada.
+const [codOpc] = silencio(() => main([gIgual, 'sistemas/busca-alunos/src', '--commit', '--output=/tmp/x']));
+chk('--commit que parece opção do git: código 2', codOpc === 2 && !fs.existsSync('/tmp/x'));
+const [codOpc2] = silencio(() => main([gIgual, 'sistemas/busca-alunos/src', '--qualquer']));
+chk('opção desconhecida: código 2', codOpc2 === 2);
+
+// --commit e --procurar no histórico real do repositório (só leitura).
+const RAIZ = path.join(__dirname, '..', '..');
+const srcRel = 'sistemas/busca-alunos/src';
+const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: RAIZ, encoding: 'utf8' }).trim();
+const copia = tmp();
+for (const f of execFileSync('git', ['ls-tree', '-r', '--name-only', 'HEAD', '--', srcRel + '/'], { cwd: RAIZ, encoding: 'utf8' }).split('\n').filter(Boolean)) {
+  const dentro = f.slice(srcRel.length + 1); if (dentro.split('/').some(n => n.startsWith('.') || n === 'testes')) continue;
+  fs.mkdirSync(path.join(copia, path.dirname(dentro)), { recursive: true });
+  fs.writeFileSync(path.join(copia, dentro), execFileSync('git', ['show', `HEAD:${f}`], { cwd: RAIZ, encoding: 'utf8' }));
+}
+const [codC] = silencio(() => main([copia, srcRel, '--commit', head]));
+chk('--commit HEAD com cópia exata: código 0', codC === 0);
+const [codP, outP] = silencio(() => main([copia, srcRel, '--procurar']));
+chk('--procurar acha um commit idêntico', codP === 0 && outP.startsWith('Código idêntico ao commit'));
+fs.appendFileSync(path.join(copia, fs.readdirSync(copia).find(n => n.endsWith('.gs'))), '// mudança só no editor\n');
+const [codP2, outP2] = silencio(() => main([copia, srcRel, '--procurar']));
+chk('--procurar com mudança só no editor: nenhum commit', codP2 === 1 && outP2.includes('Nenhum dos'));
+chk('saída do --procurar não mostra conteúdo', !outP2.includes('mudança só no editor'));
+
+// A ferramenta só lê: nenhum módulo de rede e nenhum processo além do git.
+const fonte = fs.readFileSync(path.join(__dirname, '..', 'conferir_implantacao.js'), 'utf8');
+chk('sem http/https/net', !/require\(['"](https?|net|dgram|tls)['"]\)/.test(fonte));
+chk('só executa git', (fonte.match(/execFileSync\(/g) || []).length === 1 && /execFileSync\('git'/.test(fonte) && !/(?<![.\w])(spawn|spawnSync|exec|execSync|fork)\(/.test(fonte));
+chk('não chama clasp', !/['"]clasp['"]/.test(fonte));
+chk('não escreve arquivos', !/fs\.(write|append|rm|unlink|mkdir|copy|rename)/.test(fonte));
+
 console.log(`\n${ok} ok, ${falhas} falha(s)`);
 process.exitCode = falhas ? 1 : 0;
