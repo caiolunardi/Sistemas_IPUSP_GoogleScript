@@ -37,22 +37,24 @@ Mudança só em documentação ou em testes não sobe a versão nem gera tag.
 
 ## 3. Como criar uma versão
 
-1. Termine a mudança, a documentação e os testes, e confira que a [CI](CI.md) ficou ✓ no commit.
-2. Escreva `notas-de-versao/<tag>.md` (veja os existentes): o que mudou para quem usa, o que copiar para o Apps Script e a linha **Implantação: ainda não implantada**. Commit e push.
+Uma Release só marca código **integrado e aprovado**: o workflow confere, antes de criar qualquer coisa, que o commit (1) está no `main`, (2) entrou por um pull request aceito e (3) tem a [CI](CI.md) verde no push do `main`. Se uma dessas condições falhar, nada é criado e o log diz qual.
+
+1. A mudança, a documentação, os testes e `notas-de-versao/<tag>.md` (o que mudou para quem usa, o que copiar para o Apps Script e a linha **Implantação: ainda não implantada**) entram no `main` **pelo mesmo pull request**.
+2. Depois do merge, espere a CI do commit de merge no `main` ficar ✓ e copie o SHA completo dele (na página do commit, botão de copiar).
 3. Crie a tag de um destes jeitos:
-   - **Pelo GitHub, sem linha de comando:** **Actions → Release → Run workflow**, escreva a tag (por exemplo `exclusao-disciplinas-v1.3`; várias, separadas por espaço) e clique em **Run workflow**. A tag é criada no último commit do `main`.
-   - **Pelo git**, num commit específico:
+   - **Pelo GitHub:** **Actions → Release → Run workflow**, informe a tag (por exemplo `exclusao-disciplinas-v1.3`; várias, separadas por espaço) e o **commit** (SHA completo). Se o environment `release` estiver configurado ([proteção](governanca/PROTECAO_DO_MAIN.md#3-segurança-e-actions)), a rodada espera você aprovar em **Review deployments**.
+   - **Pelo git**, num commit do `main`:
 
      ```bash
-     git tag -a exclusao-disciplinas-v1.3 -m "Exclusão de Disciplinas 1.3"
+     git tag -a exclusao-disciplinas-v1.3 <sha> -m "Exclusão de Disciplinas 1.3"
      git push origin exclusao-disciplinas-v1.3
      ```
 
-     Envie no máximo três tags por push: com mais que isso o GitHub não dispara o workflow.
+     O workflow faz as mesmas conferências; se falharem, a tag fica sem Release (avise e crie a versão seguinte: tag não se move). Envie no máximo três tags por push: com mais que isso o GitHub não dispara o workflow.
 
-4. O workflow [`.github/workflows/release.yml`](../.github/workflows/release.yml) confere o formato da tag e a pasta do sistema e cria a Release com o texto das notas. Se o arquivo de notas não existir, a Release lista os commits do sistema desde a tag anterior. Rodar de novo com uma tag que já tem Release não muda nada.
+4. A Release usa o texto de `notas-de-versao/<tag>.md` **daquele commit** e acrescenta no fim o SHA conferido. Sem notas, lista os commits do sistema desde a tag anterior. Rodar de novo com uma tag que já tem Release não muda nada; uma tag que já existe em outro commit é recusada.
 
-A tag precisa apontar para um commit que já tenha o `release.yml`. Não mova nem apague uma tag já enviada; se algo saiu errado, crie a versão seguinte.
+Não mova nem apague uma tag já enviada; se algo saiu errado, crie a versão seguinte. Um agente de IA não cria tag nem roda o Release sem ordem explícita do responsável para aquela versão ([fluxo](governanca/FLUXO_DE_MUDANCAS.md)).
 
 ## 4. Quando a versão for implantada no Google
 
@@ -73,3 +75,11 @@ As tags abaixo foram criadas de uma vez pelo **Run workflow**, quando o versiona
 | `trancamento-parcial-v1.2` | `d127b0c` |
 | `trancamento-total-v1.3` | `d127b0c` |
 | `trancamento-total-gerenciador-v1.1` | `519ee25` |
+
+### Tags anteriores à verificação (registro)
+
+As tags criadas antes da verificação acima não passaram por ela ([diagnóstico](governanca/DIAGNOSTICO_2026-10-20.md), achados R2 e R3) e **não são movidas**:
+
+- as 9 tags da tabela acima apontam para `a7c3120`, cuja rodada da CI foi cancelada por um push seguinte (sem veredito);
+- `estrutura-curricular-v1.12.0`, `grade-horaria-visual-v2.1` e `planilha-secretarias-v1.1` apontam para `930e677`, cuja CI falhou num teste de tela intermitente de outro sistema (corrigido em `fa89877`);
+- `painel-servidores-v1.1` e `v1.2` apontam para `a36a33f`, que já contém o código da 1.3. O código de cada versão está em `9a3d6fb` (1.1) e `03617d0` (1.2).

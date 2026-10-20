@@ -16,6 +16,12 @@ A CI não acessa o Google, planilhas reais nem a internet (fora a instalação d
 
 Cada suíte roda em paralelo e uma falha não interrompe as outras, para o relatório mostrar tudo de uma vez. A mais lenta (Painel dos servidores) leva cerca de 5 minutos.
 
+No fim, a etapa **CI concluída** fica verde só se todas as outras passaram (uma etapa cancelada ou pulada conta como falha). É essa a verificação que o ruleset do `main` exige ([proteção do `main`](governanca/PROTECAO_DO_MAIN.md)), para que uma suíte nova entre na exigência sem mexer no ruleset.
+
+### Todo commit do `main` tem veredito
+
+Num pull request, um push novo cancela a rodada anterior (só o último commit importa). No `main`, nenhuma rodada é cancelada: cada commit integrado termina com ✓ ou ✗, e o workflow **Release** só aceita commit com ✓ ([versões](VERSOES.md)). Até 20/10/2026 o cancelamento valia também no `main`, e 8 commits ficaram sem veredito ([diagnóstico](governanca/DIAGNOSTICO_2026-10-20.md), achado C2).
+
 ## Quando der ✗
 
 1. Abra **Actions**, clique no commit e na etapa com ✗. O log mostra a linha `FALHA` de cada verificação.
@@ -35,9 +41,17 @@ cd sistemas/<sistema>/testes && node testar_backend.js && node testar_navegador.
 
 Para os testes de tela: `npm install -g playwright@1.56.0` e `playwright install chromium`.
 
+## Segurança dos workflows
+
+- **Permissões mínimas:** a CI só lê o repositório (`contents: read`) e não guarda o token no clone (`persist-credentials: false`). O Release pede `contents: write`, `actions: read` e `pull-requests: read`, só no job que cria a tag.
+- **Actions fixadas por SHA:** `uses:` aponta para o commit da Action, com a versão em comentário (`# v4`). Uma tag como `v4` pode ser movida por quem mantém a Action; o SHA não. Só Actions publicadas pelo próprio GitHub (`actions/*`).
+- **Sem segredos:** nenhum workflow usa segredo do repositório. Os testes não acessam o Google. A CI roda em `pull_request` (nunca `pull_request_target`), então o PR de um fork roda sem acesso de escrita e sem segredos. Nunca acrescente credencial do Google, do clasp ou de serviço de IA à CI.
+- **Dependabot** (`.github/dependabot.yml`): toda segunda-feira propõe, por PR, a atualização das Actions e das dependências de teste da Estrutura Curricular. O PR passa pela CI e pelo merge humano como qualquer outro. O Playwright fica de fora porque muda junto com `PLAYWRIGHT_VERSAO` (abaixo). Os alertas de vulnerabilidade dependem de ligar **Dependabot alerts** nas configurações ([proteção](governanca/PROTECAO_DO_MAIN.md#3-segurança-e-actions)).
+- **Instalação das suítes de tela:** `npm install -g playwright@<versão fixa>`, sem lockfile das dependências transitivas. A Estrutura Curricular usa `npm ci` com `package-lock.json`. Aceitável por enquanto (só testes, nada vai ao Google); se um dia der diferença entre rodadas, passar as suítes de tela para um `package.json` com lockfile.
+
 ## Manutenção
 
-- **Suíte nova:** acrescente o caminho na lista (`matrix.suite`) da etapa certa em `ci.yml`, e registre no `testes/README.md` do sistema. Siga o [roteiro de atualização](ATUALIZAR_DOCUMENTACAO.md).
+- **Suíte nova:** acrescente o caminho na lista (`matrix.suite`) da etapa certa em `ci.yml`, e registre no `testes/README.md` do sistema. Job novo: inclua-o em `needs` da etapa **CI concluída**. Siga o [roteiro de atualização](ATUALIZAR_DOCUMENTACAO.md).
 - **Formulário novo dos alunos com link `/exec` no código:** o ID da implantação vai em `implantacoes_publicas` de `publicos.json`. Ferramentas da equipe nunca entram ali (elas usam `URLS_SISTEMAS_EQUIPE`).
 - **Playwright:** a versão está em `PLAYWRIGHT_VERSAO` no `ci.yml` e no `package.json` da Estrutura Curricular. Mude as duas juntas.
 - **Custo:** em repositório público, o GitHub Actions é gratuito. Em privado, cada rodada consome cerca de 50 minutos da cota mensal da conta.

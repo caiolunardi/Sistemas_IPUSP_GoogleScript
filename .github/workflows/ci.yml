@@ -1,5 +1,7 @@
-# Verificação automática a cada push e pull request.
+# Verificação automática a cada push no main e em cada pull request.
 # Documentação: docs/CI.md
+# Actions fixadas por SHA do commit (comentário = versão); o Dependabot
+# propõe as atualizações por PR (.github/dependabot.yml).
 name: CI
 
 on:
@@ -11,9 +13,11 @@ on:
 permissions:
   contents: read
 
+# Num PR, um push novo cancela a rodada anterior. No main, nunca: cada
+# commit integrado precisa do próprio veredito (o Release confere).
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   PLAYWRIGHT_VERSAO: "1.56.0"
@@ -22,9 +26,12 @@ jobs:
   varredura:
     name: Dados sensíveis
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       - run: node ferramentas/verificar_publicacao.js
@@ -32,9 +39,12 @@ jobs:
   copias:
     name: Cópias de shared/
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       - run: node ferramentas/verificar_copias_shared.js
@@ -42,6 +52,7 @@ jobs:
   servidor:
     name: Servidor — ${{ matrix.suite }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -57,8 +68,10 @@ jobs:
           - sistemas/painel-servidores/testes/testar_saudacao.js
           - sistemas/painel-servidores/testes/testar_auditoria.js
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       - name: Rodar
@@ -80,8 +93,10 @@ jobs:
           - sistemas/painel-solicitacoes/testes/testar_navegador.js
           - sistemas/painel-servidores/testes/testar_navegador.js
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       - name: Instalar Playwright e Chromium
@@ -99,8 +114,10 @@ jobs:
       run:
         working-directory: sistemas/estrutura-curricular/testes
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -120,3 +137,21 @@ jobs:
       - run: node testar_navegador_etapa6.js
       - run: node testar_navegador_etapa8.js
       - run: node testar_navegador_etapa9.js
+
+  # Verificação única para o ruleset do main exigir (docs/governanca/PROTECAO_DO_MAIN.md):
+  # verde só se todas as etapas acima passaram. Etapa pulada ou cancelada conta como falha.
+  concluida:
+    name: CI concluída
+    if: always()
+    needs: [varredura, copias, servidor, tela, estrutura]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Conferir as etapas
+        env:
+          RESULTADOS: ${{ toJSON(needs.*.result) }}
+        run: |
+          echo "Resultados: $RESULTADOS"
+          if ! echo "$RESULTADOS" | jq -e 'length > 0 and all(. == "success")' >/dev/null; then
+            echo "::error::Alguma etapa não passou (falha, cancelada ou pulada)."; exit 1
+          fi
