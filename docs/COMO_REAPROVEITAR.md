@@ -6,6 +6,8 @@ Antes de começar, combine o reaproveitamento com o Serviço de Graduação do I
 
 ## 1. Entenda como os sistemas são montados
 
+O mapa completo das planilhas e a ordem de montagem estão na [arquitetura geral](ARQUITETURA_GERAL.md).
+
 - **Cada sistema é um projeto Apps Script independente**, publicado como Web App (`/exec`). Não há servidor próprio nem banco de dados: os dados ficam em planilhas do Google.
 - **O código não tem nenhum ID de planilha.** Cada projeto guarda em **Propriedades do script** só o ID de uma planilha mestre, o `ID_INDEX`. Nela, cada linha liga uma **chave** (por exemplo `PERIODOS`, `DISCIPLINAS`, `EXCLUSAO_DISCIPLINAS`) ao ID da planilha correspondente, com uma coluna para produção (`ID de Produção`) e outra para testes (`Homologação`).
 - **A interface é HTML/CSS/JS nativo**, com o tema GRADIP (`shared/GradipTema.html`) e a Central de Ajuda (`shared/ajuda/`). Nada depende de biblioteca externa.

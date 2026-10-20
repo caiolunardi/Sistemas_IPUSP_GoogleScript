@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Falha de segurança ou dado exposto
+    url: https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/security/advisories/new
+    about: Não abra issue pública. Reporte em particular, como descrito no SECURITY.md.
+  - name: Dúvida sobre um pedido ou formulário
+    url: https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript#segurança-e-contato
+    about: Pedidos de alunos são tratados pelo Serviço de Graduação (gradip@usp.br), não aqui.

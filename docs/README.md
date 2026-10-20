@@ -28,6 +28,8 @@ Pasta `sistemas/`. Consulte também o [catálogo geral](SISTEMAS.md).
 O catálogo lista todos os sistemas já incorporados (painéis dos alunos e dos servidores, Grade Horária visual, Estrutura Curricular, Comunidade IPUSP, formulários de exclusão e trancamento) com o estado de cada um.
 
 Guias para quem chega de fora:
+- [Arquitetura geral](ARQUITETURA_GERAL.md) e [glossário](GLOSSARIO.md);
+- [Como participar](../CONTRIBUTING.md);
 - [Como reaproveitar um sistema em outro setor](COMO_REAPROVEITAR.md);
 - [Ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md);
 - [Repositório público](seguranca/REPOSITORIO_PUBLICO.md): o que pode e o que não pode entrar.

@@ -30,6 +30,8 @@ Este catálogo apresenta os sistemas incorporados ao repositório e separa **doc
 
 ## Guias comuns
 
+- [Arquitetura geral](ARQUITETURA_GERAL.md) e [glossário](GLOSSARIO.md)
+- [Como participar](../CONTRIBUTING.md)
 - [Como reaproveitar um sistema em outro setor](COMO_REAPROVEITAR.md)
 - [Ambiente de homologação dos formulários](sistemas/AMBIENTE_DE_HOMOLOGACAO.md)
 - [Repositório público: o que pode entrar](seguranca/REPOSITORIO_PUBLICO.md)

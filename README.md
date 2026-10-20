@@ -43,6 +43,8 @@ Cada sistema registra no próprio README a versão que está no repositório e s
 
 ## Como usar este repositório
 
+**Para ter a visão de conjunto:** [arquitetura geral](docs/ARQUITETURA_GERAL.md) (como os sistemas se ligam pelas planilhas, mapa das chaves do `ID_INDEX` e ordem de montagem) e [glossário](docs/GLOSSARIO.md).
+
 **Para entender um sistema:** comece pelo README da pasta `docs/sistemas/<sistema>/`. O `MANUAL_OPERACAO.md` explica o uso no dia a dia, o `AJUDA.md` traz o mesmo conteúdo da Central de Ajuda da tela e o `DADOS_E_SEGURANCA.md` diz quais dados o sistema usa.
 
 **Para reaproveitar em outro setor:** veja [Como reaproveitar](docs/COMO_REAPROVEITAR.md). Em resumo, cada sistema é um projeto Apps Script independente: você cria o projeto, copia os arquivos de `src/`, aponta as configurações (Script Properties e `ID_INDEX`) para as suas planilhas e testa com dados fictícios no ambiente de homologação antes de publicar.
@@ -82,6 +84,10 @@ Base reutilizável:
 10. **Documentação a partir do código real**, um sistema de cada vez.
 11. **Privacidade por padrão.** Dados pessoais, credenciais e identificadores de produção não entram no repositório.
 12. **Git não é cofre, e este repositório é público.** Tudo o que entra aqui pode ser lido por qualquer pessoa, inclusive o histórico. A proteção dos sistemas vem do login USP, da autorização no servidor e do compartilhamento das planilhas, nunca de um endereço "escondido".
+
+## Como participar
+
+Auditar, sugerir e contribuir, com ou sem agentes de IA: veja [`CONTRIBUTING.md`](CONTRIBUTING.md). Sugestões e erros entram como issue; mudanças, como pull request a partir de um fork.
 
 ## Segurança e contato
 
