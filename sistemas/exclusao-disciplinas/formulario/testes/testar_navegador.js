@@ -178,6 +178,8 @@ const turma=(i,v)=>`${linha(i)} .inputTurma`;
   // Central de Ajuda
   p=await abrir(ctx,'normal');
   await p.click('.botaoAjuda');await p.waitForSelector('[data-gradip-help-overlay]:not([hidden])');
+  // a ajuda abre na seção num requestAnimationFrame que limpa a busca; espera esse quadro antes de digitar
+  await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   chk(`${T} ajuda abre com scroll lock`,await p.evaluate(()=>document.body.style.overflow==='hidden'));
   await p.fill('[data-gradip-help-search]','REVERSIVEL');
   // a busca atualiza depois do input; espera em vez de conferir na hora (evita corrida na CI)
