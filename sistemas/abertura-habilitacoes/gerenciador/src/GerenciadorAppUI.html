@@ -1,0 +1,1170 @@
+<script>
+/* Gerenciador de Abertura de Habilitações — comportamento da página.
+
+   Regras desta página (docs/sistemas/abertura-habilitacoes/UX_E_NAVEGACAO.md):
+   - dados da planilha só entram na tela por textContent/createElement,
+     nunca por innerHTML;
+   - toda resposta do servidor é conferida antes de ser usada: null,
+     lista que não é lista ou objeto incompleto viram erro visível, não
+     "lista vazia";
+   - cada área carrega só quando é aberta (Concluídos e Relatórios sob
+     demanda) e reaproveita o que já leu por 60 s; respostas que chegam
+     fora de ordem são descartadas;
+   - o perfil vem do servidor e esconder/desativar botões aqui é só
+     conveniência: quem autoriza é o servidor (Acesso.gs);
+   - nada de dados pessoais no console. */
+(function () {
+  'use strict';
+  if (window.GerenciadorApp) return;
+
+  var CONFIG = window.GERENCIADOR_CONFIG || {};
+  var ADMIN = CONFIG.perfil === 'ADMINISTRADOR';
+  var FRESCOR_MS = 60000;
+  var LIMITE_OBSERVACOES = 2000;
+  var FORMATO_ID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  var RESULTADOS_EMAIL = ['NAO_SOLICITADO', 'ENVIADO', 'FALHOU', 'ENVIADO_SEM_REGISTRO'];
+
+  function $(id) { return document.getElementById(id); }
+
+  /*---------------- UTILIDADES DE TELA ----------------*/
+
+  function texto(valor) {
+    return valor === null || valor === undefined ? '' : String(valor);
+  }
+
+  function normalizar(valor) {
+    var t = texto(valor).toLowerCase();
+    return typeof t.normalize === 'function' ? t.normalize('NFD').replace(/[̀-ͯ]/g, '') : t;
+  }
+
+  function criar(tag, classe, conteudo) {
+    var no = document.createElement(tag);
+    if (classe) no.className = classe;
+    if (conteudo !== undefined && conteudo !== null) no.textContent = String(conteudo);
+    return no;
+  }
+
+  function limpar(no) {
+    while (no.firstChild) no.removeChild(no.firstChild);
+  }
+
+  function plural(n, um, varios) {
+    return n + ' ' + (n === 1 ? um : varios);
+  }
+
+  function botaoAjuda(secao, rotulo) {
+    var b = criar('button', 'linkAjudaContextual', rotulo || '? Ajuda');
+    b.type = 'button';
+    b.setAttribute('data-gradip-help-open', secao);
+    return b;
+  }
+
+  /*---------------- ÍCONES (decorativos) ----------------*/
+
+  var modeloIcones = $('gerenciadorIcones');
+
+  function aplicarIcones(raiz) {
+    if (!modeloIcones || !modeloIcones.content) return;
+    (raiz || document).querySelectorAll('[data-icone]').forEach(function (alvo) {
+      if (alvo.querySelector('svg')) return;
+      var svg = modeloIcones.content.querySelector('[data-gerenciador-icone="' + alvo.getAttribute('data-icone') + '"]');
+      if (svg) alvo.appendChild(svg.cloneNode(true));
+    });
+  }
+
+  /*---------------- CHAMADAS AO SERVIDOR ----------------*/
+
+  // Mensagens mostradas como vieram do servidor: textos escritos para a
+  // equipe, sem IDs nem dados internos. Os demais códigos (e erros sem
+  // código) recebem uma mensagem genérica.
+  var CODIGOS_COM_MENSAGEM = ['ENTRADA', 'CONFLITO_VERSAO', 'TRAVA_OCUPADA', 'ENVIO_EM_ANDAMENTO', 'SEM_EMAIL',
+    'GRAVACAO_PARCIAL', 'REFERENCIA_DESATUALIZADA', 'MIGRACAO_NECESSARIA', 'NAO_ENCONTRADO', 'INTEGRIDADE',
+    'ESTRUTURA', 'SO_LEITURA', 'SEM_ACESSO', 'SEM_IDENTIFICACAO'];
+
+  var AJUDA_POR_CODIGO = {
+    CONFLITO_VERSAO: 'ajuda-conflito',
+    TRAVA_OCUPADA: 'ajuda-conflito',
+    ENVIO_EM_ANDAMENTO: 'ajuda-reenvio',
+    SEM_EMAIL: 'ajuda-email',
+    MIGRACAO_NECESSARIA: 'ajuda-sem-identificador',
+    REFERENCIA_DESATUALIZADA: 'ajuda-sem-identificador',
+    INTEGRIDADE: 'ajuda-sem-identificador',
+    SO_LEITURA: 'ajuda-acesso',
+    SEM_ACESSO: 'ajuda-acesso',
+    SEM_IDENTIFICACAO: 'ajuda-acesso',
+    ACESSO_INDISPONIVEL: 'ajuda-acesso',
+    CONFIGURACAO: 'ajuda-acesso',
+    ESTRUTURA: 'ajuda-acesso'
+  };
+
+  var MENSAGENS_LOCAIS = {
+    RESPOSTA_INVALIDA: 'O servidor devolveu uma resposta vazia ou incompleta. Tente de novo; se continuar, avise o responsável pelo sistema.',
+    SEM_CONEXAO: 'A página não conseguiu falar com o servidor. Confira a conexão e recarregue a página.',
+    ACESSO_INDISPONIVEL: 'Não foi possível conferir o seu acesso agora. Tente de novo em alguns minutos; se continuar, avise o responsável pelo sistema.',
+    CONFIGURACAO: 'O sistema está sem configuração válida e não pôde abrir a planilha. Avise o responsável pelo sistema; nada foi alterado.',
+    GENERICO: 'Algo deu errado no servidor. Tente de novo; se continuar, avise o responsável pelo sistema.'
+  };
+
+  function erroDaTela(codigo, mensagem) {
+    return { codigo: codigo, mensagem: mensagem || MENSAGENS_LOCAIS[codigo] || MENSAGENS_LOCAIS.GENERICO, ajuda: AJUDA_POR_CODIGO[codigo] || '' };
+  }
+
+  function interpretarErro(erro) {
+    var bruto = texto(erro && erro.message !== undefined ? erro.message : erro);
+    var m = bruto.match(/^(?:Error:\s*)?(?:Exception:\s*)?([A-Z_]{4,}):\s*([\s\S]*)$/);
+    if (!m) return erroDaTela('GENERICO');
+    var codigo = m[1];
+    if (CODIGOS_COM_MENSAGEM.indexOf(codigo) !== -1) return erroDaTela(codigo, m[2].trim().slice(0, 400));
+    return erroDaTela(codigo, MENSAGENS_LOCAIS[codigo] || MENSAGENS_LOCAIS.GENERICO);
+  }
+
+  function chamar(funcao, argumentos, validar) {
+    return new Promise(function (resolver, rejeitar) {
+      var gs = window.google && window.google.script && window.google.script.run;
+      if (!gs) { rejeitar(erroDaTela('SEM_CONEXAO')); return; }
+      var runner = gs
+        .withSuccessHandler(function (resposta) {
+          var valida = false;
+          try { valida = validar(resposta); } catch (e) { valida = false; }
+          if (valida) resolver(resposta); else rejeitar(erroDaTela('RESPOSTA_INVALIDA'));
+        })
+        .withFailureHandler(function (erro) { rejeitar(interpretarErro(erro)); });
+      runner[funcao].apply(runner, argumentos);
+    });
+  }
+
+  /*---------------- VALIDAÇÃO DAS RESPOSTAS ----------------*/
+
+  function ehObjeto(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+  function ehTexto(v) { return typeof v === 'string'; }
+
+  function resumoValido(p) {
+    return ehObjeto(p) && ehTexto(p.nome) && ehTexto(p.registroId) && ehTexto(p.inconsistencia || '');
+  }
+
+  function listaDePedidosValida(r) {
+    return Array.isArray(r) && r.every(resumoValido);
+  }
+
+  function resultadoDeBuscaValido(r) {
+    return Array.isArray(r) && r.every(function (p) {
+      return ehObjeto(p) && ehTexto(p.nome) && ehTexto(p.origem) && ehTexto(p.registroId) && ehTexto(p.situacao);
+    });
+  }
+
+  function contagensValidas(lista) {
+    return Array.isArray(lista) && lista.every(function (i) {
+      return ehObjeto(i) && ehTexto(i.chave) && typeof i.quantidade === 'number' && isFinite(i.quantidade);
+    });
+  }
+
+  function relatorioValido(r) {
+    return ehObjeto(r) && typeof r.total === 'number' && typeof r.semData === 'number' &&
+      contagensValidas(r.porHabilitacao) && contagensValidas(r.porAno) && contagensValidas(r.porMes) &&
+      ehObjeto(r.fontes) && typeof r.fontes.atual === 'number';
+  }
+
+  function detalheValido(d, registroId) {
+    return ehObjeto(d) && d.registroId === registroId && typeof d.versao === 'number' && d.versao >= 1 &&
+      ehTexto(d.nome) && ehTexto(d.observacoes) && typeof d.concluido === 'boolean' &&
+      ehTexto(d.emailEnviado) && typeof d.envioReservado === 'boolean' && typeof d.envioInterrompido === 'boolean';
+  }
+
+  function salvamentoValido(r) {
+    if (!ehObjeto(r)) return false;
+    if (r.resultado === 'REENVIO_NECESSARIO') return typeof r.versao === 'number' && ehTexto(r.mensagem) && ehTexto(r.motivo);
+    return r.resultado === 'SALVO' && typeof r.versao === 'number' && typeof r.concluido === 'boolean' &&
+      RESULTADOS_EMAIL.indexOf(r.email) !== -1 && ehTexto(r.situacao) && ehTexto(r.emailEnviado);
+  }
+
+  /*---------------- ESTADOS DAS ÁREAS ----------------*/
+
+  // tipo: carregando | vazio | erro | aviso | sucesso | info
+  function mostrarEstado(container, tipo, opcoes) {
+    limpar(container);
+    if (!tipo) return;
+    opcoes = opcoes || {};
+    if (tipo === 'carregando') {
+      container.appendChild(criar('p', 'carregando', opcoes.mensagem || 'Carregando…'));
+      return;
+    }
+    if (tipo === 'vazio') {
+      container.appendChild(criar('p', 'vazio', opcoes.mensagem));
+      return;
+    }
+    var caixa = criar('div', 'alerta alerta--' + tipo);
+    if (opcoes.titulo) caixa.appendChild(criar('strong', '', opcoes.titulo));
+    if (opcoes.mensagem) caixa.appendChild(criar('p', '', opcoes.mensagem));
+    if (opcoes.acao || opcoes.ajuda) {
+      var linha = criar('p');
+      if (opcoes.acao) {
+        var b = criar('button', 'botaoSecundario', opcoes.acao.rotulo);
+        b.type = 'button';
+        b.addEventListener('click', opcoes.acao.executar);
+        linha.appendChild(b);
+      }
+      if (opcoes.ajuda) linha.appendChild(botaoAjuda(opcoes.ajuda, '? O que fazer'));
+      caixa.appendChild(linha);
+    }
+    container.appendChild(caixa);
+  }
+
+  function mostrarErro(container, erro, titulo, tentarDeNovo) {
+    mostrarEstado(container, 'erro', {
+      titulo: titulo,
+      mensagem: erro.mensagem,
+      ajuda: erro.ajuda,
+      acao: tentarDeNovo ? { rotulo: 'Tentar de novo', executar: tentarDeNovo } : null
+    });
+  }
+
+  /*---------------- AVISO RÁPIDO ----------------*/
+
+  var avisoGeral = $('avisoGeral');
+  var temporizadorAviso = null;
+
+  function avisar(mensagem) {
+    clearTimeout(temporizadorAviso);
+    avisoGeral.textContent = mensagem;
+    avisoGeral.hidden = false;
+    temporizadorAviso = setTimeout(function () { avisoGeral.hidden = true; }, 6000);
+  }
+
+  /*---------------- ESTADO ----------------*/
+
+  var areas = {
+    pendentes: { dados: null, carregadoEm: 0, seq: 0, carregando: false },
+    concluidos: { dados: null, carregadoEm: 0, seq: 0, carregando: false, modo: 'recentes', termo: '' },
+    relatorios: { dados: null, carregadoEm: 0, seq: 0, carregando: false }
+  };
+  var areaAtual = 'pendentes';
+
+  function marcarDesatualizadas() {
+    Object.keys(areas).forEach(function (k) { areas[k].carregadoEm = 0; });
+  }
+
+  function botoesAtualizar(area, ocupado) {
+    document.querySelectorAll('[data-atualizar="' + area + '"]').forEach(function (b) {
+      b.disabled = ocupado;
+      b.setAttribute('aria-busy', ocupado ? 'true' : 'false');
+    });
+  }
+
+  function carregarArea(area, forcar) {
+    var a = areas[area];
+    if (!a) return;
+    if (!forcar && a.dados && Date.now() - a.carregadoEm < FRESCOR_MS) return;
+    if (area === 'pendentes') carregarPendentes();
+    else if (area === 'concluidos') {
+      if (a.modo === 'busca' && a.termo) buscar(a.termo); else carregarConcluidos();
+    } else if (area === 'relatorios') carregarRelatorios();
+  }
+
+  /*---------------- CARTÕES DE PEDIDO ----------------*/
+
+  var ROTULO_INCONSISTENCIA = {
+    SEM_IDENTIFICADOR: 'Sem identificador',
+    IDENTIFICADOR_INVALIDO: 'Identificador inválido',
+    IDENTIFICADOR_REPETIDO: 'Identificador repetido'
+  };
+
+  function linhaMeta(partes) {
+    return partes.filter(function (p) { return p; }).join(' · ');
+  }
+
+  // Cartão clicável (abre o detalhe) quando há identificador utilizável;
+  // sem ele, o cartão aparece mesmo assim, sem ação, com explicação.
+  function cartaoPedido(p, opcoes) {
+    var clicavel = !!p.registroId && FORMATO_ID.test(p.registroId) && !p.inconsistencia;
+    var cartao = criar(clicavel ? 'button' : 'div', 'cartaoPedido' + (clicavel ? '' : ' cartaoPedido--inerte'));
+    if (clicavel) {
+      cartao.type = 'button';
+      cartao.setAttribute('aria-haspopup', 'dialog');
+      cartao.addEventListener('click', function () { abrirDetalhe(p.registroId, cartao); });
+    }
+    var info = criar('span', 'cartaoPedido__info');
+    info.appendChild(criar('span', 'cartaoPedido__nome', p.nome || '(sem nome)'));
+    info.appendChild(criar('span', 'cartaoPedido__meta', linhaMeta([
+      p.nUsp ? 'Nº USP ' + p.nUsp : '', p.habilitacao, p.carimbo ? 'pedido em ' + p.carimbo : ''])));
+    if (p.email) info.appendChild(criar('span', 'cartaoPedido__email', p.email));
+    (opcoes.linhasExtras || []).forEach(function (l) { if (l) info.appendChild(criar('span', 'cartaoPedido__meta', l)); });
+    cartao.appendChild(info);
+
+    var lado = criar('span', 'cartaoPedido__lado');
+    (opcoes.selos || []).forEach(function (s) { lado.appendChild(criar('span', 'selo selo--' + s[0], s[1])); });
+    if (p.inconsistencia) {
+      lado.appendChild(criar('span', 'selo selo--problema', ROTULO_INCONSISTENCIA[p.inconsistencia] || 'Registro inconsistente'));
+      if (p.inconsistencia === 'SEM_IDENTIFICADOR' && ADMIN && p.referencia && opcoes.permitirPreparar) {
+        var preparar = criar('button', 'botaoSecundario', 'Preparar pedido');
+        preparar.type = 'button';
+        preparar.addEventListener('click', function () { prepararPedido(p, preparar); });
+        lado.appendChild(preparar);
+      }
+      lado.appendChild(botaoAjuda('ajuda-sem-identificador', '? Por que não abre'));
+    } else if (!clicavel && opcoes.motivoInerte) {
+      lado.appendChild(criar('span', 'cartaoPedido__meta', opcoes.motivoInerte));
+    }
+    cartao.appendChild(lado);
+
+    var li = criar('li');
+    li.appendChild(cartao);
+    return li;
+  }
+
+  /*---------------- PENDENTES ----------------*/
+
+  var buscaPendentes = $('buscaPendentes');
+
+  function carregarPendentes() {
+    var a = areas.pendentes;
+    var seq = ++a.seq;
+    a.carregando = true;
+    botoesAtualizar('pendentes', true);
+    if (!a.dados) {
+      mostrarEstado($('estadoPendentes'), 'carregando', { mensagem: 'Carregando pedidos pendentes…' });
+      $('statusPendentes').textContent = 'Carregando pedidos pendentes.';
+    }
+    chamar('obterPendentes', [], listaDePedidosValida).then(function (lista) {
+      if (seq !== a.seq) return;
+      a.dados = lista;
+      a.carregadoEm = Date.now();
+      mostrarEstado($('estadoPendentes'), null);
+      desenharPendentes();
+    }, function (erro) {
+      if (seq !== a.seq) return;
+      mostrarErro($('estadoPendentes'), erro, 'Não foi possível carregar os pedidos pendentes.', function () { carregarPendentes(); });
+      $('statusPendentes').textContent = 'Erro ao carregar os pedidos pendentes.';
+      if (!a.dados) {
+        $('contadorPendentes').textContent = '—';
+        $('navContagemPendentes').textContent = '';
+      }
+    }).then(function () {
+      if (seq !== a.seq) return;
+      a.carregando = false;
+      botoesAtualizar('pendentes', false);
+    });
+  }
+
+  function desenharPendentes() {
+    var lista = areas.pendentes.dados || [];
+    var termo = normalizar(buscaPendentes.value.trim());
+    var visiveis = !termo ? lista : lista.filter(function (p) {
+      return normalizar(p.nome).indexOf(termo) !== -1 || normalizar(p.nUsp).indexOf(termo) !== -1;
+    });
+    var ul = $('listaPendentes');
+    limpar(ul);
+    visiveis.forEach(function (p) {
+      ul.appendChild(cartaoPedido(p, { selos: [['pendente', 'Pendente']], permitirPreparar: true }));
+    });
+    $('contadorPendentes').textContent = String(lista.length);
+    $('navContagemPendentes').textContent = lista.length ? String(lista.length) : '';
+    var semId = lista.filter(function (p) { return p.inconsistencia; }).length;
+    var status;
+    if (!lista.length) {
+      status = 'Nenhum pedido pendente.';
+      mostrarEstado($('estadoPendentes'), 'vazio', { mensagem: 'Nenhum pedido pendente. Quando um aluno enviar o formulário, o pedido aparece aqui.' });
+    } else if (termo) {
+      status = visiveis.length + ' de ' + plural(lista.length, 'pedido pendente', 'pedidos pendentes') + ' correspondem à busca.';
+      if (!visiveis.length) mostrarEstado($('estadoPendentes'), 'vazio', { mensagem: 'Nenhum pedido pendente corresponde à busca. Confira o nome ou o Nº USP.' });
+      else mostrarEstado($('estadoPendentes'), null);
+    } else {
+      status = plural(lista.length, 'pedido pendente', 'pedidos pendentes') + '.';
+      mostrarEstado($('estadoPendentes'), null);
+    }
+    if (semId) {
+      status += ' ' + plural(semId, 'pedido precisa', 'pedidos precisam') + ' de conferência (sem identificador utilizável).';
+    }
+    $('statusPendentes').textContent = status;
+  }
+
+  buscaPendentes.addEventListener('input', function () {
+    if (areas.pendentes.dados) desenharPendentes();
+  });
+
+  function prepararPedido(p, botao) {
+    confirmar({
+      titulo: 'Preparar este pedido?',
+      texto: 'O sistema vai criar um identificador para o pedido de ' + (p.nome || 'este aluno') +
+        ', para que ele possa ser aberto e atendido. Nenhum outro dado do pedido é alterado.',
+      ok: 'Preparar pedido'
+    }).then(function (sim) {
+      if (!sim) return;
+      botao.disabled = true;
+      botao.textContent = 'Preparando…';
+      chamar('atribuirIdentificador', [p.referencia], function (r) {
+        return ehObjeto(r) && ehTexto(r.registroId) && FORMATO_ID.test(r.registroId) && r.versao === 1;
+      }).then(function () {
+        avisar('Pedido preparado. Ele já pode ser aberto.');
+        marcarDesatualizadas();
+        carregarPendentes();
+      }, function (erro) {
+        botao.disabled = false;
+        botao.textContent = 'Preparar pedido';
+        mostrarErro($('estadoPendentes'), erro, 'Não foi possível preparar o pedido.', null);
+      });
+    });
+  }
+
+  /*---------------- CONCLUÍDOS E BUSCA NO HISTÓRICO ----------------*/
+
+  var buscaHistorico = $('buscaHistorico');
+
+  function situacaoDoEmail(p) {
+    if (p.envioReservado) return 'Aviso por e-mail sem confirmação de envio';
+    if (p.emailEnviado) return 'Aluno avisado em ' + p.emailEnviado;
+    return 'Aluno não avisado por e-mail';
+  }
+
+  function carregarConcluidos() {
+    var a = areas.concluidos;
+    var seq = ++a.seq;
+    a.carregando = true;
+    a.modo = 'recentes';
+    a.termo = '';
+    botoesAtualizar('concluidos', true);
+    if (!a.dados || a.dadosModo !== 'recentes') {
+      limpar($('listaConcluidos'));
+      mostrarEstado($('estadoConcluidos'), 'carregando', { mensagem: 'Carregando os concluídos mais recentes…' });
+      $('statusConcluidos').textContent = 'Carregando os concluídos mais recentes.';
+    }
+    ajustarCabecalhoConcluidos();
+    chamar('obterConcluidosRecentes', [], function (r) {
+      return listaDePedidosValida(r) && r.every(function (p) { return ehTexto(p.dataConclusao) && ehTexto(p.emailEnviado); });
+    }).then(function (lista) {
+      if (seq !== a.seq) return;
+      a.dados = lista;
+      a.dadosModo = 'recentes';
+      a.carregadoEm = Date.now();
+      desenharConcluidos();
+    }, function (erro) {
+      if (seq !== a.seq) return;
+      mostrarErro($('estadoConcluidos'), erro, 'Não foi possível carregar os concluídos.', function () { carregarConcluidos(); });
+      $('statusConcluidos').textContent = 'Erro ao carregar os concluídos.';
+      if (!a.dados) $('contadorConcluidos').textContent = '—';
+    }).then(function () {
+      if (seq !== a.seq) return;
+      a.carregando = false;
+      botoesAtualizar('concluidos', false);
+      $('botaoBuscarHistorico').disabled = false;
+    });
+  }
+
+  function desenharConcluidos() {
+    var lista = areas.concluidos.dados || [];
+    var ul = $('listaConcluidos');
+    limpar(ul);
+    lista.forEach(function (p) {
+      ul.appendChild(cartaoPedido(p, {
+        selos: [['concluido', 'Concluído']],
+        linhasExtras: [p.dataConclusao ? 'Concluído em ' + p.dataConclusao : '', situacaoDoEmail(p)]
+      }));
+    });
+    $('contadorConcluidos').textContent = String(lista.length);
+    if (!lista.length) {
+      mostrarEstado($('estadoConcluidos'), 'vazio', { mensagem: 'Ainda não há pedidos concluídos na planilha atual. Para pedidos antigos, use a busca no histórico.' });
+      $('statusConcluidos').textContent = 'Nenhum pedido concluído na planilha atual.';
+    } else {
+      mostrarEstado($('estadoConcluidos'), null);
+      $('statusConcluidos').textContent = 'Mostrando ' + plural(lista.length, 'pedido concluído', 'pedidos concluídos') + ', do mais recente para o mais antigo.';
+    }
+  }
+
+  function ajustarCabecalhoConcluidos() {
+    var busca = areas.concluidos.modo === 'busca';
+    $('tituloConcluidos').textContent = busca ? 'Resultado da busca' : 'Últimos concluídos';
+    $('subtituloConcluidos').textContent = busca
+      ? 'Pedidos da planilha atual e do histórico 2021–2022 que correspondem à busca, do mais recente para o mais antigo.'
+      : 'Os 10 pedidos concluídos mais recentes da planilha atual. Para pedidos mais antigos, use a busca no histórico.';
+    $('botaoLimparBusca').hidden = !busca;
+  }
+
+  function buscar(termo) {
+    var a = areas.concluidos;
+    var seq = ++a.seq;
+    a.modo = 'busca';
+    a.termo = termo;
+    a.carregando = true;
+    ajustarCabecalhoConcluidos();
+    botoesAtualizar('concluidos', true);
+    $('botaoBuscarHistorico').disabled = true;
+    limpar($('listaConcluidos'));
+    mostrarEstado($('estadoConcluidos'), 'carregando', { mensagem: 'Buscando na planilha atual e no histórico…' });
+    $('statusConcluidos').textContent = 'Buscando.';
+    chamar('buscarHistorico', [termo], resultadoDeBuscaValido).then(function (lista) {
+      if (seq !== a.seq) return;
+      a.dados = lista;
+      a.dadosModo = 'busca';
+      a.carregadoEm = Date.now();
+      desenharBusca(termo);
+    }, function (erro) {
+      if (seq !== a.seq) return;
+      mostrarErro($('estadoConcluidos'), erro, 'Não foi possível fazer a busca.', function () { buscar(termo); });
+      $('statusConcluidos').textContent = 'Erro na busca.';
+      $('contadorConcluidos').textContent = '—';
+    }).then(function () {
+      if (seq !== a.seq) return;
+      a.carregando = false;
+      botoesAtualizar('concluidos', false);
+      $('botaoBuscarHistorico').disabled = false;
+    });
+  }
+
+  function desenharBusca(termo) {
+    var lista = areas.concluidos.dados || [];
+    var ul = $('listaConcluidos');
+    limpar(ul);
+    lista.forEach(function (p) {
+      var historico = p.origem !== 'Atual';
+      var concluido = normalizar(p.situacao).indexOf('conclu') !== -1;
+      ul.appendChild(cartaoPedido(p, {
+        selos: [
+          ['origem', historico ? 'Histórico 2021–2022' : 'Planilha atual'],
+          concluido ? ['concluido', 'Concluído'] : ['pendente', 'Pendente']
+        ],
+        motivoInerte: historico ? 'Somente consulta' : 'Sem identificador utilizável'
+      }));
+    });
+    $('contadorConcluidos').textContent = String(lista.length);
+    if (!lista.length) {
+      mostrarEstado($('estadoConcluidos'), 'vazio', { mensagem: 'Nenhum pedido encontrado para "' + termo + '". Confira a grafia ou tente parte do nome, o Nº USP ou o e-mail.' });
+      $('statusConcluidos').textContent = 'Nenhum resultado.';
+    } else {
+      mostrarEstado($('estadoConcluidos'), null);
+      $('statusConcluidos').textContent = plural(lista.length, 'resultado', 'resultados') + ' para a busca.';
+    }
+  }
+
+  $('formBuscaHistorico').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var termo = buscaHistorico.value.trim();
+    if (!termo) { carregarConcluidos(); return; }
+    if (termo.length < 2) {
+      $('statusConcluidos').textContent = 'Digite ao menos 2 caracteres para buscar.';
+      buscaHistorico.focus();
+      return;
+    }
+    buscar(termo.slice(0, 100));
+  });
+
+  $('botaoLimparBusca').addEventListener('click', function () {
+    buscaHistorico.value = '';
+    carregarConcluidos();
+    buscaHistorico.focus();
+  });
+
+  /*---------------- RELATÓRIOS ----------------*/
+
+  function carregarRelatorios() {
+    var a = areas.relatorios;
+    var seq = ++a.seq;
+    a.carregando = true;
+    botoesAtualizar('relatorios', true);
+    if (!a.dados) {
+      mostrarEstado($('estadoRelatorios'), 'carregando', { mensagem: 'Calculando os relatórios…' });
+      $('statusRelatorios').textContent = 'Calculando os relatórios.';
+    }
+    chamar('obterRelatorio', [], relatorioValido).then(function (r) {
+      if (seq !== a.seq) return;
+      a.dados = r;
+      a.carregadoEm = Date.now();
+      mostrarEstado($('estadoRelatorios'), null);
+      desenharRelatorios(r);
+    }, function (erro) {
+      if (seq !== a.seq) return;
+      mostrarErro($('estadoRelatorios'), erro, 'Não foi possível calcular os relatórios.', function () { carregarRelatorios(); });
+      $('statusRelatorios').textContent = 'Erro ao calcular os relatórios.';
+    }).then(function () {
+      if (seq !== a.seq) return;
+      a.carregando = false;
+      botoesAtualizar('relatorios', false);
+    });
+  }
+
+  function rotuloMes(chave) {
+    var m = /^(\d{4})-(\d{2})$/.exec(chave);
+    return m ? m[2] + '/' + m[1] : chave;
+  }
+
+  function blocoBarras(titulo, itens, opcoes) {
+    var bloco = criar('section', 'blocoRelatorio' + (opcoes.largo ? ' blocoRelatorio--largo' : ''));
+    var idTitulo = 'relatorio-' + opcoes.id;
+    var h2 = criar('h2', '', titulo);
+    h2.id = idTitulo;
+    bloco.setAttribute('aria-labelledby', idTitulo);
+    bloco.appendChild(h2);
+    if (opcoes.nota) bloco.appendChild(criar('p', '', opcoes.nota));
+    if (!itens.length) {
+      bloco.appendChild(criar('p', 'vazio', 'Sem dados.'));
+      return bloco;
+    }
+    var maximo = itens.reduce(function (m, i) { return Math.max(m, i.quantidade); }, 0) || 1;
+    var ul = criar('ul', 'listaBarras');
+    itens.forEach(function (i) {
+      var li = criar('li', 'linhaBarra');
+      var rotulo = criar('div', 'linhaBarra__rotulo');
+      rotulo.appendChild(criar('span', '', opcoes.formatar ? opcoes.formatar(i.chave) : i.chave));
+      rotulo.appendChild(criar('span', '', String(i.quantidade)));
+      li.appendChild(rotulo);
+      var trilha = criar('div', 'linhaBarra__trilha');
+      trilha.setAttribute('aria-hidden', 'true');
+      var preenchido = criar('div', 'linhaBarra__preenchido');
+      preenchido.style.width = Math.max(2, Math.round(i.quantidade / maximo * 100)) + '%';
+      trilha.appendChild(preenchido);
+      li.appendChild(trilha);
+      ul.appendChild(li);
+    });
+    bloco.appendChild(ul);
+    return bloco;
+  }
+
+  function desenharRelatorios(r) {
+    var grade = $('gradeRelatorios');
+    limpar(grade);
+    var total = criar('section', 'blocoRelatorio');
+    total.setAttribute('aria-labelledby', 'relatorio-total');
+    var h2 = criar('h2', '', 'Total de pedidos');
+    h2.id = 'relatorio-total';
+    total.appendChild(h2);
+    total.appendChild(criar('p', 'totalGrande', String(r.total)));
+    var fontes = plural(r.fontes.atual, 'pedido', 'pedidos') + ' da planilha atual';
+    fontes += typeof r.fontes.historico === 'number'
+      ? ' e ' + plural(r.fontes.historico, 'pedido', 'pedidos') + ' do histórico 2021–2022.'
+      : '. A aba do histórico 2021–2022 não foi encontrada.';
+    total.appendChild(criar('p', '', fontes));
+    if (r.semData) total.appendChild(criar('p', '', plural(r.semData, 'pedido sem data reconhecível fica', 'pedidos sem data reconhecível ficam') + ' fora das contagens por ano e por mês.'));
+    grade.appendChild(total);
+    grade.appendChild(blocoBarras('Por habilitação', r.porHabilitacao, {
+      id: 'habilitacao', nota: 'Um pedido com mais de uma habilitação conta uma vez em cada.'
+    }));
+    grade.appendChild(blocoBarras('Por ano', r.porAno, { id: 'ano', nota: 'Pela data da solicitação.' }));
+    grade.appendChild(blocoBarras('Por mês', r.porMes, { id: 'mes', largo: true, formatar: rotuloMes, nota: 'Do mês mais recente para o mais antigo.' }));
+    $('statusRelatorios').textContent = 'Relatórios atualizados: ' + plural(r.total, 'pedido', 'pedidos') + ' no total.';
+  }
+
+  /*---------------- CONFIRMAÇÃO (substitui confirm()) ----------------*/
+
+  var modalConfirmacao = $('modalConfirmacao');
+  var confirmacaoPendente = null;
+
+  function confirmar(opcoes) {
+    return new Promise(function (resolver) {
+      if (confirmacaoPendente) confirmacaoPendente.resolver(false);
+      $('confirmacaoTitulo').textContent = opcoes.titulo;
+      $('confirmacaoTexto').textContent = opcoes.texto;
+      $('confirmacaoOk').textContent = opcoes.ok || 'Confirmar';
+      confirmacaoPendente = { resolver: resolver, foco: document.activeElement };
+      modalConfirmacao.hidden = false;
+      travarRolagem(true);
+      $('confirmacaoCancelar').focus();
+    });
+  }
+
+  function responderConfirmacao(resposta) {
+    if (!confirmacaoPendente) return;
+    var p = confirmacaoPendente;
+    confirmacaoPendente = null;
+    modalConfirmacao.hidden = true;
+    travarRolagem(false);
+    if (p.foco && document.contains(p.foco) && typeof p.foco.focus === 'function') p.foco.focus();
+    p.resolver(resposta);
+  }
+
+  $('confirmacaoOk').addEventListener('click', function () { responderConfirmacao(true); });
+  $('confirmacaoCancelar').addEventListener('click', function () { responderConfirmacao(false); });
+  modalConfirmacao.addEventListener('click', function (e) { if (e.target === modalConfirmacao) responderConfirmacao(false); });
+
+  var travasDeRolagem = 0;
+  var overflowAnterior = '';
+  function travarRolagem(sim) {
+    if (sim) {
+      if (travasDeRolagem++ === 0) { overflowAnterior = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
+    } else if (travasDeRolagem > 0 && --travasDeRolagem === 0) {
+      document.body.style.overflow = overflowAnterior;
+    }
+  }
+
+  /*---------------- DETALHE DO PEDIDO ----------------*/
+
+  var modalDetalhe = $('modalDetalhe');
+  var painelDetalhe = modalDetalhe.querySelector('.modalPainel');
+  var campoObservacoes = $('campoObservacoes');
+  var checkConcluir = $('checkConcluir');
+  var checkAvisar = $('checkAvisar');
+  var botaoSalvar = $('botaoSalvar');
+  var iconeSalvar = botaoSalvar.querySelector('[data-icone]');
+  var textoSalvar = criar('span', '', 'Salvar');
+  Array.prototype.slice.call(botaoSalvar.childNodes).forEach(function (n) { if (n.nodeType === 3) botaoSalvar.removeChild(n); });
+  botaoSalvar.appendChild(textoSalvar);
+
+  var detalhe = { aberto: false, registroId: '', versao: 0, dados: null, seq: 0, salvando: false, origem: null };
+
+  function infoTexto(id, valor) {
+    $(id).textContent = valor ? valor : '—';
+  }
+
+  function mensagemDetalhe(tipo, titulo, mensagem, ajuda, acao) {
+    var caixa = $('mensagemDetalhe');
+    limpar(caixa);
+    if (!tipo) { caixa.hidden = true; caixa.className = 'alerta'; return; }
+    caixa.className = 'alerta alerta--' + tipo;
+    if (titulo) caixa.appendChild(criar('strong', '', titulo));
+    if (mensagem) caixa.appendChild(criar('p', '', mensagem));
+    if (acao || ajuda) {
+      var linha = criar('p');
+      if (acao) {
+        var b = criar('button', 'botaoSecundario', acao.rotulo);
+        b.type = 'button';
+        b.addEventListener('click', acao.executar);
+        linha.appendChild(b);
+      }
+      if (ajuda) linha.appendChild(botaoAjuda(ajuda, '? O que fazer'));
+      caixa.appendChild(linha);
+    }
+    caixa.hidden = false;
+    if (typeof caixa.scrollIntoView === 'function') caixa.scrollIntoView({ block: 'nearest' });
+  }
+
+  function atualizarContagem() {
+    var n = campoObservacoes.value.trim().length;
+    $('contagemObservacoes').textContent = n + ' de ' + LIMITE_OBSERVACOES + ' caracteres';
+  }
+
+  function atualizarBotaoSalvar() {
+    var avisar = checkAvisar.checked && !checkAvisar.disabled;
+    textoSalvar.textContent = avisar ? 'Salvar e avisar aluno' : 'Salvar';
+    if (iconeSalvar) iconeSalvar.hidden = !avisar;
+    botaoSalvar.disabled = !ADMIN || detalhe.salvando || !detalhe.dados;
+  }
+
+  function descreverEmail(d) {
+    if (d.envioInterrompido) return 'Envio interrompido: não há confirmação de que o e-mail saiu';
+    if (d.envioReservado) return 'Envio em andamento em outra sessão';
+    if (d.emailEnviado) return 'Enviado em ' + d.emailEnviado;
+    return 'Não enviado';
+  }
+
+  function dicaAvisar(d) {
+    if (!d.email) return 'este pedido não tem e-mail cadastrado';
+    if (d.envioInterrompido) return 'um envio anterior foi interrompido; será pedida confirmação';
+    if (d.emailEnviado) return 'o aluno já foi avisado; será pedida confirmação para reenviar';
+    return 'envia o aviso ao E-mail USP do aluno';
+  }
+
+  // manter = true: atualiza os dados sem apagar o que a pessoa digitou
+  // nem as opções marcadas (usado depois de conflito ou de falha no e-mail).
+  function preencherDetalhe(d, manter) {
+    detalhe.dados = d;
+    detalhe.versao = d.versao;
+    $('detalheNome').textContent = d.nome || '(sem nome)';
+    infoTexto('infoNUsp', d.nUsp);
+    infoTexto('infoEmail', d.email);
+    infoTexto('infoHabilitacao', d.habilitacao);
+    infoTexto('infoAnoIngresso', d.anoIngresso);
+    infoTexto('infoTrancamento', d.trancamento);
+    infoTexto('infoCarimbo', d.carimbo);
+    var selo = $('infoSituacao');
+    var situacaoBruta = texto(d.situacao).trim();
+    selo.className = 'selo selo--' + (d.concluido ? 'concluido' : 'pendente');
+    selo.textContent = d.concluido ? 'Concluído'
+      : (situacaoBruta && normalizar(situacaoBruta) !== 'pendente' ? 'Pendente (' + situacaoBruta + ')' : 'Pendente');
+    infoTexto('infoDataConclusao', d.dataConclusao
+      ? d.dataConclusao + (d.concluido ? '' : ' (conclusão anterior; o pedido foi reaberto)') : '');
+    $('infoEmailEnviado').textContent = descreverEmail(d);
+    $('dicaAvisar').textContent = '— ' + dicaAvisar(d);
+
+    if (!manter) {
+      campoObservacoes.value = d.observacoes;
+      $('observacoesAtuais').hidden = true;
+      // Padrões da versão 1.0: pedido pendente abre com as duas opções
+      // marcadas; concluído abre com "Concluir" marcado e sem aviso.
+      checkConcluir.checked = true;
+      checkAvisar.checked = !d.concluido;
+    }
+    checkAvisar.disabled = !ADMIN || !d.email;
+    if (!d.email) checkAvisar.checked = false;
+    checkConcluir.disabled = !ADMIN;
+    campoObservacoes.disabled = !ADMIN;
+    $('avisoLeitorDetalhe').hidden = ADMIN;
+    atualizarContagem();
+    atualizarBotaoSalvar();
+  }
+
+  function abrirDetalhe(registroId, origem) {
+    if (detalhe.aberto) return;
+    clearTimeout(temporizadorAviso);
+    avisoGeral.hidden = true;
+    detalhe = { aberto: true, registroId: registroId, versao: 0, dados: null, seq: detalhe.seq + 1, salvando: false, origem: origem || null };
+    $('detalheNome').textContent = 'Carregando…';
+    $('detalheConteudo').hidden = true;
+    mensagemDetalhe(null);
+    $('statusSalvamento').textContent = '';
+    atualizarBotaoSalvar();
+    modalDetalhe.hidden = false;
+    travarRolagem(true);
+    painelDetalhe.focus();
+    carregarDetalhe(false);
+  }
+
+  function carregarDetalhe(manter) {
+    var seq = ++detalhe.seq;
+    var registroId = detalhe.registroId;
+    if (!manter) mostrarEstado($('estadoDetalhe'), 'carregando', { mensagem: 'Carregando o pedido…' });
+    else $('statusSalvamento').textContent = 'Recarregando o pedido…';
+    return chamar('obterDetalhe', [registroId], function (d) { return detalheValido(d, registroId); }).then(function (d) {
+      if (seq !== detalhe.seq || !detalhe.aberto) return;
+      mostrarEstado($('estadoDetalhe'), null);
+      $('detalheConteudo').hidden = false;
+      preencherDetalhe(d, manter);
+      if (manter) {
+        $('statusSalvamento').textContent = 'Pedido recarregado.';
+        var atuais = $('observacoesAtuais');
+        limpar(atuais);
+        if (campoObservacoes.value !== d.observacoes) {
+          atuais.appendChild(criar('strong', '', 'Observações gravadas agora na planilha:'));
+          atuais.appendChild(criar('p', '', d.observacoes || '(vazio)'));
+          atuais.appendChild(criar('p', '', 'O texto que você digitou continua no campo abaixo. Ajuste o que for preciso e salve de novo.'));
+          atuais.hidden = false;
+        } else {
+          atuais.hidden = true;
+        }
+      }
+    }, function (erro) {
+      if (seq !== detalhe.seq || !detalhe.aberto) return;
+      if (manter) {
+        $('statusSalvamento').textContent = '';
+        mensagemDetalhe('erro', 'Não foi possível recarregar o pedido.', erro.mensagem, erro.ajuda,
+          { rotulo: 'Tentar de novo', executar: function () { carregarDetalhe(true); } });
+      } else {
+        $('detalheNome').textContent = 'Pedido indisponível';
+        mostrarErro($('estadoDetalhe'), erro, 'Não foi possível abrir o pedido.', function () { carregarDetalhe(false); });
+      }
+    });
+  }
+
+  function fecharDetalhe() {
+    if (!detalhe.aberto) return;
+    if (detalhe.salvando) {
+      $('statusSalvamento').textContent = 'Aguarde o fim do salvamento para fechar.';
+      return;
+    }
+    detalhe.aberto = false;
+    detalhe.seq++;
+    modalDetalhe.hidden = true;
+    travarRolagem(false);
+    var origem = detalhe.origem;
+    if (origem && document.contains(origem)) origem.focus();
+    else $('conteudo').focus();
+    carregarArea(areaAtual, false);
+  }
+
+  modalDetalhe.querySelectorAll('[data-fechar-modal]').forEach(function (b) {
+    b.addEventListener('click', fecharDetalhe);
+  });
+  modalDetalhe.addEventListener('click', function (e) { if (e.target === modalDetalhe) fecharDetalhe(); });
+
+  campoObservacoes.addEventListener('input', atualizarContagem);
+  checkAvisar.addEventListener('change', atualizarBotaoSalvar);
+  checkConcluir.addEventListener('change', atualizarBotaoSalvar);
+
+  function setSalvando(sim, mensagem) {
+    detalhe.salvando = sim;
+    botaoSalvar.setAttribute('aria-busy', sim ? 'true' : 'false');
+    campoObservacoes.readOnly = sim;
+    if (sim) {
+      checkConcluir.disabled = true;
+      checkAvisar.disabled = true;
+    } else if (detalhe.dados) {
+      checkConcluir.disabled = !ADMIN;
+      checkAvisar.disabled = !ADMIN || !detalhe.dados.email;
+    }
+    modalDetalhe.querySelectorAll('[data-fechar-modal]').forEach(function (b) { b.disabled = sim; });
+    $('statusSalvamento').textContent = mensagem || '';
+    atualizarBotaoSalvar();
+  }
+
+  botaoSalvar.addEventListener('click', function () {
+    if (!ADMIN || detalhe.salvando || !detalhe.dados) return;
+    var d = detalhe.dados;
+    var dados = {
+      observacoes: campoObservacoes.value,
+      concluirSolicitacao: checkConcluir.checked,
+      avisarAluno: checkAvisar.checked && !checkAvisar.disabled,
+      reenviar: false
+    };
+    if (dados.observacoes.trim().length > LIMITE_OBSERVACOES) {
+      mensagemDetalhe('erro', 'Observações longas demais.', 'Resuma o texto para até ' + LIMITE_OBSERVACOES + ' caracteres e salve de novo.');
+      campoObservacoes.focus();
+      return;
+    }
+    mensagemDetalhe(null);
+    var pergunta = null;
+    if (dados.avisarAluno) {
+      pergunta = {
+        titulo: 'Enviar o aviso ao aluno?',
+        texto: (d.nome || 'O aluno') + ' vai receber um e-mail informando que a habilitação solicitada foi aberta.' +
+          (dados.concluirSolicitacao ? ' O pedido também será marcado como concluído.' : ' O pedido continuará pendente.'),
+        ok: 'Salvar e enviar'
+      };
+    } else if (!dados.concluirSolicitacao && d.concluido) {
+      pergunta = {
+        titulo: 'Reabrir este pedido?',
+        texto: 'O pedido volta para a lista de pendentes. Nenhum e-mail será enviado.',
+        ok: 'Reabrir pedido'
+      };
+    }
+    var seguir = pergunta ? confirmar(pergunta) : Promise.resolve(true);
+    seguir.then(function (sim) {
+      if (sim && detalhe.aberto && !detalhe.salvando) enviarSalvamento(dados);
+    });
+  });
+
+  function enviarSalvamento(dados) {
+    var registroId = detalhe.registroId;
+    setSalvando(true, dados.avisarAluno ? 'Salvando e enviando o e-mail…' : 'Salvando…');
+    chamar('salvarPedido', [registroId, detalhe.versao, dados], salvamentoValido).then(function (r) {
+      if (detalhe.registroId !== registroId) return;
+      if (r.resultado === 'REENVIO_NECESSARIO') {
+        setSalvando(false, 'Nada foi gravado ainda.');
+        return confirmar({
+          titulo: r.motivo === 'ENVIO_INTERROMPIDO' ? 'Confirmar novo envio?' : 'Confirmar reenvio?',
+          texto: r.mensagem + ' Deseja enviar o aviso mesmo assim?',
+          ok: 'Reenviar e salvar'
+        }).then(function (sim) {
+          if (sim && detalhe.aberto && detalhe.registroId === registroId) {
+            enviarSalvamento({ observacoes: dados.observacoes, concluirSolicitacao: dados.concluirSolicitacao, avisarAluno: true, reenviar: true });
+          } else {
+            $('statusSalvamento').textContent = 'Nada foi gravado.';
+          }
+        });
+      }
+      marcarDesatualizadas();
+      setSalvando(false, '');
+      var d = Object.assign({}, detalhe.dados, {
+        versao: r.versao,
+        situacao: r.situacao,
+        concluido: r.concluido,
+        dataConclusao: r.dataConclusao,
+        emailEnviado: r.emailEnviado,
+        envioReservado: false,
+        envioInterrompido: false,
+        observacoes: dados.observacoes.trim()
+      });
+      if (r.email === 'NAO_SOLICITADO' || r.email === 'ENVIADO') {
+        fecharDetalhe(); // recarrega a área atual (marcada como desatualizada)
+        avisar(r.email === 'ENVIADO' ? 'Pedido salvo e aluno avisado por e-mail.' : 'Pedido salvo.');
+        return;
+      }
+      if (!detalhe.aberto) return;
+      preencherDetalhe(d, true);
+      if (r.email === 'FALHOU') {
+        $('statusSalvamento').textContent = 'Salvo; e-mail não enviado.';
+        mensagemDetalhe('aviso', 'O pedido foi salvo, mas o e-mail não foi enviado.',
+          texto(r.mensagem) || 'Você pode tentar avisar o aluno de novo mais tarde.', 'ajuda-email-falhou');
+      } else {
+        // ENVIADO_SEM_REGISTRO: o e-mail saiu; desmarcar evita reenvio por engano.
+        checkAvisar.checked = false;
+        atualizarBotaoSalvar();
+        $('statusSalvamento').textContent = 'E-mail enviado; data não registrada.';
+        mensagemDetalhe('aviso', 'O e-mail foi enviado, mas a data do envio não foi registrada.',
+          texto(r.mensagem) || 'Não reenvie agora. Recarregue o pedido e, se precisar, avise o responsável.', 'ajuda-email-falhou');
+      }
+    }, function (erro) {
+      if (detalhe.registroId !== registroId) return;
+      setSalvando(false, '');
+      if (erro.codigo === 'CONFLITO_VERSAO') {
+        mensagemDetalhe('aviso', 'Este pedido mudou em outra sessão.', erro.mensagem, 'ajuda-conflito',
+          { rotulo: 'Recarregar pedido', executar: function () { mensagemDetalhe(null); carregarDetalhe(true); } });
+      } else if (erro.codigo === 'TRAVA_OCUPADA' || erro.codigo === 'ENVIO_EM_ANDAMENTO') {
+        mensagemDetalhe('aviso', 'Nada foi gravado.', erro.mensagem, erro.ajuda);
+      } else if (erro.codigo === 'GRAVACAO_PARCIAL' || erro.codigo === 'RESPOSTA_INVALIDA' || erro.codigo === 'GENERICO' || erro.codigo === 'SEM_CONEXAO') {
+        marcarDesatualizadas();
+        mensagemDetalhe('erro', 'Não foi possível confirmar o salvamento.',
+          erro.codigo === 'GRAVACAO_PARCIAL' ? erro.mensagem
+            : 'Não dá para saber se o pedido foi salvo. Recarregue o pedido e confira antes de tentar de novo.',
+          'ajuda-conflito',
+          { rotulo: 'Recarregar pedido', executar: function () { mensagemDetalhe(null); carregarDetalhe(true); } });
+      } else {
+        mensagemDetalhe('erro', 'Não foi possível salvar.', erro.mensagem, erro.ajuda);
+      }
+    });
+  }
+
+  /*---------------- TECLADO NOS DIÁLOGOS ----------------*/
+
+  var overlayAjuda = document.querySelector('[data-gradip-help-overlay]');
+
+  function focaveis(raiz) {
+    var seletor = 'a[href],button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    return Array.prototype.filter.call(raiz.querySelectorAll(seletor), function (el) {
+      return !el.hidden && el.getClientRects().length > 0;
+    });
+  }
+
+  function prenderFoco(e, raiz) {
+    var lista = focaveis(raiz);
+    if (!lista.length) { e.preventDefault(); raiz.focus(); return; }
+    var primeiro = lista[0], ultimo = lista[lista.length - 1], ativo = document.activeElement;
+    if (!raiz.contains(ativo) || ativo === raiz) { e.preventDefault(); (e.shiftKey ? ultimo : primeiro).focus(); return; }
+    if (e.shiftKey && ativo === primeiro) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && ativo === ultimo) { e.preventDefault(); primeiro.focus(); }
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.defaultPrevented) return;
+    if (overlayAjuda && !overlayAjuda.hidden) return; // a Central de Ajuda cuida do próprio teclado
+    if (confirmacaoPendente) {
+      if (e.key === 'Escape') { e.preventDefault(); responderConfirmacao(false); }
+      else if (e.key === 'Tab') prenderFoco(e, modalConfirmacao.querySelector('.modalPainel'));
+      return;
+    }
+    if (detalhe.aberto) {
+      if (e.key === 'Escape') { e.preventDefault(); fecharDetalhe(); }
+      else if (e.key === 'Tab') prenderFoco(e, painelDetalhe);
+    }
+  });
+
+  /*---------------- NAVEGAÇÃO: MENU LATERAL x ABAS ----------------*/
+
+  var layout = $('layout');
+  var sidebar = $('sidebar');
+  var menu = $('menuAreas');
+  var conteudo = $('conteudo');
+  var menuMovel = $('menuMovel');
+  var estreito = window.matchMedia ? window.matchMedia('(max-width: 900px)') : null;
+  var modo = 'sidebar';
+  var temporizadorTransicao = null;
+
+  function itensMenu() {
+    return Array.prototype.slice.call(menu.querySelectorAll('[data-area]'));
+  }
+
+  function sincronizarMenu() {
+    var abas = modo === 'abas';
+    var selecionado = null;
+    itensMenu().forEach(function (b) {
+      var ativo = b.getAttribute('data-area') === areaAtual;
+      if (ativo) selecionado = b;
+      if (abas) {
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', ativo ? 'true' : 'false');
+        b.removeAttribute('aria-current');
+        b.tabIndex = ativo ? 0 : -1;
+      } else {
+        b.removeAttribute('role');
+        b.removeAttribute('aria-selected');
+        if (ativo) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+        b.tabIndex = 0;
+      }
+    });
+    if (abas) {
+      menu.setAttribute('role', 'tablist');
+      menu.setAttribute('aria-orientation', 'horizontal');
+      conteudo.setAttribute('role', 'tabpanel');
+      if (selecionado) conteudo.setAttribute('aria-labelledby', selecionado.id);
+    } else {
+      menu.removeAttribute('role');
+      menu.removeAttribute('aria-orientation');
+      conteudo.removeAttribute('role');
+      conteudo.removeAttribute('aria-labelledby');
+    }
+  }
+
+  function transicao() {
+    clearTimeout(temporizadorTransicao);
+    conteudo.classList.remove('conteudo--transicao');
+    void conteudo.offsetWidth;
+    conteudo.classList.add('conteudo--transicao');
+    temporizadorTransicao = setTimeout(function () { conteudo.classList.remove('conteudo--transicao'); }, 200);
+  }
+
+  function irPara(area) {
+    if (!areas[area]) return;
+    var mudou = area !== areaAtual;
+    areaAtual = area;
+    document.querySelectorAll('[data-area-painel]').forEach(function (s) {
+      s.hidden = s.getAttribute('data-area-painel') !== area;
+    });
+    sincronizarMenu();
+    if (mudou) transicao();
+    if (estreito && estreito.matches && modo === 'sidebar') recolher(true);
+    var topo = layout.getBoundingClientRect().top + window.pageYOffset;
+    if (window.pageYOffset > topo) window.scrollTo(0, topo);
+    carregarArea(area, false);
+  }
+
+  itensMenu().forEach(function (b) {
+    b.addEventListener('click', function () { irPara(b.getAttribute('data-area')); });
+  });
+
+  menu.addEventListener('keydown', function (e) {
+    if (modo !== 'abas' || ['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
+    var lista = itensMenu();
+    var i = lista.indexOf(e.target.closest ? e.target.closest('[data-area]') : null);
+    if (i < 0) return;
+    var n = lista.length;
+    var proximo = e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : (i + (e.key === 'ArrowRight' ? 1 : n - 1)) % n;
+    e.preventDefault();
+    lista.forEach(function (b, k) { b.tabIndex = k === proximo ? 0 : -1; });
+    lista[proximo].focus();
+  });
+
+  function recolher(sim) {
+    sidebar.setAttribute('data-recolhido', sim ? 'true' : 'false');
+    menuMovel.setAttribute('aria-expanded', sim ? 'false' : 'true');
+    menuMovel.textContent = sim ? 'Mostrar menu' : 'Recolher menu';
+  }
+
+  menuMovel.addEventListener('click', function () {
+    recolher(sidebar.getAttribute('data-recolhido') !== 'true');
+  });
+
+  function ajustarLargura() {
+    recolher(!!(estreito && estreito.matches) && modo === 'sidebar');
+  }
+  if (estreito) {
+    if (estreito.addEventListener) estreito.addEventListener('change', ajustarLargura);
+    else if (estreito.addListener) estreito.addListener(ajustarLargura);
+  }
+
+  function setModo(novo, anunciar) {
+    if (novo !== 'sidebar' && novo !== 'abas') return;
+    var foco = document.activeElement;
+    var mudou = modo !== novo;
+    modo = novo;
+    layout.setAttribute('data-navegacao', modo);
+    document.querySelectorAll('.botaoModo[data-modo]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-modo') === modo));
+    });
+    if (modo === 'abas') recolher(false); else ajustarLargura();
+    sincronizarMenu();
+    if (foco && foco !== document.body && foco.getClientRects().length) foco.focus({ preventScroll: true });
+    if (mudou) transicao();
+    if (anunciar) $('modoStatus').textContent = modo === 'sidebar' ? 'Menu lateral ativado.' : 'Navegação por abas ativada.';
+  }
+
+  document.querySelectorAll('.botaoModo[data-modo]').forEach(function (b) {
+    b.addEventListener('click', function () { setModo(b.getAttribute('data-modo'), true); });
+  });
+
+  document.querySelectorAll('[data-atualizar]').forEach(function (b) {
+    b.addEventListener('click', function () { carregarArea(b.getAttribute('data-atualizar'), true); });
+  });
+
+  /*---------------- INÍCIO ----------------*/
+
+  aplicarIcones(document);
+  $('faixaHomologacao').hidden = !CONFIG.homologacao;
+  $('avisoSomenteLeitura').hidden = ADMIN;
+  $('versaoSistema').textContent = texto(CONFIG.versao) || '—';
+  if (!ADMIN) $('secaoAcoes').setAttribute('aria-describedby', 'avisoLeitorDetalhe');
+  setModo('sidebar', false); // sempre abre no menu lateral; o modo não é guardado
+  irPara('pendentes');
+
+  window.GerenciadorApp = Object.freeze({
+    irPara: irPara,
+    getArea: function () { return areaAtual; },
+    getModo: function () { return modo; },
+    setModo: function (m) { setModo(m, true); }
+  });
+})();
+</script>
