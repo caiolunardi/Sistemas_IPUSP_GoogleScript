@@ -21,6 +21,7 @@ Cada linha leva e-mail, nome completo, tipo de conta (servidor, setor, docente),
 Propostas no documento "Auditoria do Painel dos servidores: proposta" e aprovadas pelo responsável funcional:
 
 1. **Se a auditoria não puder gravar, a alteração é recusada** e nada muda ("A auditoria está indisponível no momento, então nada foi alterado…"). Navegação, leitura e ajuda nunca são bloqueadas.
+   *Limite da implementação (registrado em 20/10/2026):* a recusa vale quando a planilha da auditoria não abre **antes** da alteração. Se ela abrir, a alteração for feita e o registro final falhar (trava ocupada por mais de 20 s, cota, erro do Sheets), a alteração **fica feita sem evento** e só o log de execuções guarda o aviso. Não há atomicidade entre a planilha alterada e a planilha da auditoria. Análise e opções: [falhas parciais da auditoria](../seguranca/propostas/AUDITORIA_FALHAS_PARCIAIS.md).
 2. **Tudo é registrado**: telas, janelas, abas do editor, ajuda e aparência.
 3. **Os termos de busca são gravados** (lista de sistemas e Central de Ajuda).
 4. A aba `AUDITORIA_REGRAS_CURRICULARES` (planilha das Regras Curriculares, com os snapshots completos das correções de ruleset ativo) **continua**. Uma coluna nova `evento_id`, no fim, liga cada linha dela ao evento da auditoria geral. A visualização do histórico de revisões não muda.
