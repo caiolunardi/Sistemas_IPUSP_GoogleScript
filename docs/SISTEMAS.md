@@ -1,6 +1,6 @@
 # Catálogo de sistemas — GRADIP / IPUSP
 
-Este catálogo apresenta os sistemas incorporados ao repositório e separa **documentação**, **fonte versionada** e **estado de implantação**. A versão implantada de cada sistema é a que está publicada no Google; o Git não a atualiza sozinho. Estado conferido em 20/10/2026.
+Este catálogo apresenta os sistemas incorporados ao repositório e separa **documentação**, **fonte versionada** e **estado de implantação**. A versão implantada de cada sistema é a que está publicada no Google; o Git não a atualiza sozinho. Estado conferido em 20/10/2026 (Gerenciador de Abertura de Habilitações em 21/10/2026).
 
 ## Alunos
 
@@ -20,6 +20,7 @@ Este catálogo apresenta os sistemas incorporados ao repositório e separa **doc
 | Estrutura Curricular e Grade Horária | importar o Júpiter, preparar e enviar a grade, auditar o preenchimento | [docs](sistemas/estrutura-curricular/README.md) | [fonte](../sistemas/estrutura-curricular/README.md) | documentação até 1.12.0 (base `DISCIPLINAS`); homologação no Google pendente |
 | Planilha das secretarias | validações e proteção da planilha que as secretarias preenchem | [docs](sistemas/planilha-grade-secretarias/README.md) | [fonte](../sistemas/estrutura-curricular/planilha-grade/README.md) | `Validacoes.gs` 1.1 (caixa de aviso de conflito) e `Protecao.gs`; colagem e teste no Google pendentes |
 | Comunidade IPUSP (antiga Busca de Alunos) | busca de alunos, docentes, servidores e setores; ficha e exportação | [docs](sistemas/busca-alunos/README.md) | [fonte v1.3](../sistemas/busca-alunos/README.md) | verificada localmente; homologação pendente; modelo de acesso à leitura para decisão |
+| Gerenciador de Abertura de Habilitações | tratamento dos pedidos de abertura de habilitação: pendentes, concluídos, histórico 2021–2022, observações, conclusão, aviso por e-mail e relatórios | [docs](sistemas/abertura-habilitacoes/README.md) | [fonte v2.0](../sistemas/abertura-habilitacoes/gerenciador/README.md) | v2.0 no repositório (21/10/2026): **não homologada, não implantada**; em uso a v1.0, fora do repositório |
 | Gerenciador de Trancamento Total | tratamento dos pedidos de trancamento total | [docs](sistemas/trancamento-total/README.md) | [fonte v1.1](../sistemas/trancamento-total/gerenciador/README.md) | não implantado, por decisão do responsável funcional |
 
 ## Ideias em desenvolvimento

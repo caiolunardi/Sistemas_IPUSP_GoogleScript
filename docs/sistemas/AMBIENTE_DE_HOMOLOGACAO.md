@@ -59,5 +59,5 @@ O projeto de produção **não** recebe a propriedade `AMBIENTE`.
 
 ## Limites
 
-- O Painel dos servidores e os gerenciadores ainda leem só a produção. Para ver um pedido de homologação no Painel, eles também precisariam de uma cópia com `AMBIENTE`.
+- O Painel dos servidores e os gerenciadores ainda leem só a produção (exceção: o [Gerenciador de Abertura de Habilitações](abertura-habilitacoes/INSTALACAO_E_ATUALIZACAO.md#3-montar-a-homologação-recomendado-antes-de-tudo) 2.0, ainda não implantado, já aceita `AMBIENTE=homologacao`). Para ver um pedido de homologação no Painel, eles também precisariam de uma cópia com `AMBIENTE`.
 - Os caches são separados por ambiente, mas valem por projeto: depois de trocar um ID na coluna `Homologação`, rode `diagnosticarConfiguracao` (que limpa o cache) ou espere 10 minutos.

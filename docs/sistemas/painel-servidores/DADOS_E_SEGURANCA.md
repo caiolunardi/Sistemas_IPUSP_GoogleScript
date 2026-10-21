@@ -32,7 +32,7 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 | Nome lógico | Tipo | Chave do `ID_INDEX` (desde a 1.4; constante no código) | Público? | Permissão esperada |
 |---|---|---|---|---|
 | Planilha de Diplomas | Sheets | `EMISSAO_DIPLOMAS` (`CHAVE_PLANILHA_DIPLOMAS`, `Code.gs`) | Não | leitura pela conta que executa |
-| Planilha de Habilitações | Sheets | `ABERTURA_HABILITACOES` (`CHAVE_PLANILHA_HABILITACOES`) | Não | leitura |
+| Planilha de Habilitações | Sheets | `ABERTURA_HABILITACOES` (`CHAVE_PLANILHA_HABILITACOES`) | Não | leitura (a mesma planilha é gravada pelo [Gerenciador de Abertura de Habilitações](../abertura-habilitacoes/REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas), que mantém a situação na coluna K e o valor `pendente`) |
 | Planilha de Trancamento Total | Sheets | `TRANCAMENTO_TOTAL_MATRICULA` (`CHAVE_PLANILHA_TRANCAMENTO_TOTAL`) | Não | leitura |
 | Planilha de Trancamento Parcial | Sheets | `TRANCAMENTO_PARCIAL_MATRICULA` (`CHAVE_PLANILHA_TRANCAMENTO_PARCIAL`) | Não | leitura |
 | Planilha do BUSP | Sheets | `SEGUNDA_VIA_BUSP` (`CHAVE_PLANILHA_BUSP`) | Não | leitura |
