@@ -173,7 +173,7 @@ Esta seção responde às críticas que um arquiteto habituado a bancos relacion
 
 | Aspecto | O que se sabe | Classe |
 |---|---|---|
-| Capacidade | Uma planilha Google tem até 10 milhões de células e 18.278 colunas | LIMITAÇÃO OFICIAL DA PLATAFORMA |
+| Capacidade | Uma planilha Google tem até 20 milhões de células. O limite anterior era de 10 milhões; o aumento foi disponibilizado de forma geral em setembro de 2026, para arquivos novos, existentes e importados | LIMITAÇÃO OFICIAL DA PLATAFORMA |
 | Volume atual dos sistemas | O repositório não registra quantas linhas ou células cada planilha tem hoje | NÃO VERIFICADO |
 | Desempenho | Leituras e escritas são chamadas a um serviço remoto; ler ou escrever célula por célula num laço é muito mais lento do que ler um intervalo de uma vez com `getValues()`/`setValues()`. Os formulários leem intervalos inteiros (por exemplo `pedidosDoEmail_`, que lê da linha 2 à última) | EVIDÊNCIA DO REPOSITÓRIO (forma de acesso); tempo real NÃO VERIFICADO |
 | Crescimento do histórico | Funções que leem a aba inteira a cada pedido ficam mais lentas à medida que a aba cresce. Não há medição de que isso já seja um problema | RISCO POTENCIAL |
@@ -192,7 +192,7 @@ Não há evidência de colapso iminente. Crescimento é um risco a medir (ver [g
 | Tempo por execução | 6 minutos por execução, para contas de consumidor e Workspace | LIMITAÇÃO OFICIAL DA PLATAFORMA |
 | Execuções simultâneas | 30 por usuário e 1.000 por script | LIMITAÇÃO OFICIAL DA PLATAFORMA |
 | E-mail | Destinatários por dia com `MailApp`: 100 em conta de consumidor e 1.500 em Workspace (valores marcados com ressalva na própria página) | LIMITAÇÃO OFICIAL DA PLATAFORMA |
-| Tempo total de gatilhos por dia | Há limite diário, diferente por tipo de conta. O valor não foi confirmado na página oficial nesta redação | NÃO VERIFICADO (valor) |
+| Tempo total de gatilhos por dia | 90 minutos por dia em contas de consumidor e 6 horas por dia em Google Workspace. As cotas podem mudar, e a edição e a política efetivamente aplicáveis à conta institucional usada pelos sistemas não foram confirmadas | LIMITAÇÃO OFICIAL DA PLATAFORMA (valores publicados); aplicação à conta institucional NÃO VERIFICADO |
 | Ao estourar uma cota | O script lança exceção e a execução para | LIMITAÇÃO OFICIAL DA PLATAFORMA |
 | Processamento em lote | Trabalho longo precisa ser dividido em partes que caibam numa execução e possam ser retomadas. A Estrutura Curricular faz isso: importação preparada em abas ocultas, ativada por uma escrita única e recuperada por um diário quando para no meio ([`Gravacao.gs`](../../sistemas/estrutura-curricular/src/Gravacao.gs)) | EVIDÊNCIA DO REPOSITÓRIO |
 | Gatilhos | Gatilho simples (`onEdit` em `Validacoes.gs`) roda com limites próprios e sem autorização ampla; gatilho instalável (auditoria diária do Painel dos servidores, verificação horária de `Protecao.gs`, `onEdit`/`onOpen` da auditoria da grade) roda com a conta de quem o instalou e **não existe só porque o código existe**: precisa ser instalado. A Estrutura Curricular registrou auditoria sem edições porque o acionador não tinha sido instalado | EVIDÊNCIA DO REPOSITÓRIO e PROBLEMA COMPROVADO (histórico, 03/10) |
@@ -278,7 +278,7 @@ Divergências conhecidas entre Git e Google estão no [inventário](../IMPLANTAC
 
 As telas usam HTML, CSS e JavaScript nativos servidos pelo HTML Service, sem framework nem etapa de build ([desenvolvimento local](../../DEVELOPMENT_LOCAL.md)). Benefícios: nenhuma ferramenta de compilação para manter, código que o editor do Apps Script aceita como está, e menos dependências a atualizar. Limites: interfaces grandes ficam em arquivos HTML longos, sem componentes reutilizáveis além das cópias de `shared/`, e a página roda dentro do iframe do Apps Script.
 
-"Sem dependências" não é absoluto (**EVIDÊNCIA DO REPOSITÓRIO**): a Estrutura Curricular carrega `pdfjs-dist` e `tesseract.js` de `cdn.jsdelivr.net`, com versão fixa, para ler e fazer OCR do PDF do Júpiter no navegador ([`LeitorPdfFontes.html`](../../sistemas/estrutura-curricular/src/LeitorPdfFontes.html)); a Grade Horária visual carrega `html2canvas` e `jspdf` de `cdnjs.cloudflare.com` para exportar PDF; e as marcas USP e IP de várias telas vêm de um servidor da USP. Essas cargas não levam dados do servidor do Apps Script ao CDN, mas dependem da disponibilidade e da integridade desses endereços (RISCO POTENCIAL).
+"Sem dependências" não é absoluto (**EVIDÊNCIA DO REPOSITÓRIO**): a Estrutura Curricular carrega `pdfjs-dist` e `tesseract.js` de `cdn.jsdelivr.net`, com versão fixa, para ler e fazer OCR do PDF do Júpiter no navegador ([`LeitorPdfFontes.html`](../../sistemas/estrutura-curricular/src/LeitorPdfFontes.html)); a Grade Horária visual carrega `html2canvas` e `jspdf` de `cdnjs.cloudflare.com` para exportar PDF; e as marcas USP e IP de várias telas vêm de um servidor da USP. Carregar uma biblioteca não implica, por si, enviar documentos ou dados acadêmicos ao provedor do CDN. Mas um script externo executado na página é uma **fronteira de confiança**: ele roda com os mesmos poderes do código da própria página, pode ler os dados disponíveis no navegador naquele momento (por exemplo, o conteúdo do PDF do Júpiter que está sendo lido ou a grade que está sendo exportada) e pode fazer requisições de rede. Se a dependência ou o endereço de onde ela vem for comprometido, isso pode acontecer sem nenhuma mudança no código do GRADIP. É um **RISCO POTENCIAL de cadeia de suprimentos**; não há evidência de vazamento. A versão fixa reduz a chance de receber uma versão nova inesperada, mas não garante que o arquivo servido seja o esperado; mitigações possíveis estão no [guia da OWASP sobre JavaScript de terceiros](https://cheatsheetseries.owasp.org/cheatsheets/Third_Party_Javascript_Management_Cheat_Sheet.html). Também há dependência da disponibilidade desses endereços.
 
 Frameworks e bibliotecas **não estão proibidos por princípio.** Adotar um é uma decisão (um novo ADR) que pesa segurança (origem, integridade, atualização), manutenção pela equipe, empacotamento (o Apps Script não tem build), compatibilidade com o HTML Service e as condições institucionais.
 
@@ -316,7 +316,7 @@ Não há integração automática com o Júpiter (nem API nem acesso ao banco de
 | Sem implantação contínua | Limitação da plataforma / governança | Sim | CI só testa | Implantação manual com autorização | Erro humano no push | Possível em infraestrutura própria, se autorizada |
 | Testes simulam o Google | Limitação da plataforma | Sim | `mockGoogle.js` e simuladores nas suítes | Lições incorporadas aos simuladores | Diferenças ainda não observadas | Em parte: banco e API locais são mais fáceis de testar |
 | Dependência do Júpiter por arquivo | Dependência externa | Sim | Importação CSV/PDF | Validação no navegador e no servidor; comparação CSV x PDF | Mudança de layout do relatório | **Não** |
-| Bibliotecas por CDN | Dependência externa | Sim | `LeitorPdfFontes.html`, `GradeGrid.html` | Versões fixas | Indisponibilidade ou adulteração do CDN | Não por si |
+| Bibliotecas por CDN | Dependência externa / risco potencial de cadeia de suprimentos | Sim | `LeitorPdfFontes.html`, `GradeGrid.html` | Versões fixas | Indisponibilidade; script comprometido lendo dados do navegador ou fazendo requisições (sem evidência de ocorrência) | Não por si |
 | Mantenedor único e identidade compartilhada com agentes | Governança institucional | Sim | [Riscos R1, R2, R9](../governanca/RELATORIO_FINAL_IMPLANTACAO_2026.md#8-riscos-residuais) | Fluxo de mudanças, ruleset, autorização escrita | Continuidade depende de uma pessoa | **Não** |
 | Base legal e retenção indefinidas | Governança institucional | — | `A VALIDAR INSTITUCIONALMENTE` em cada `DADOS_E_SEGURANCA.md` | — | Tratamento sem definição formal registrada | **Não** |
 | Desempenho com o crescimento do histórico | Risco potencial | NÃO VERIFICADO | Leituras de aba inteira nos formulários | Cache do catálogo de disciplinas (`CacheService`) | Lentidão futura | Sim, se o problema se confirmar |
@@ -380,8 +380,12 @@ A revisão pode concluir por manter a plataforma, migrar parte dos sistemas ou m
 
 **Fontes oficiais do Google** (consultadas por busca em 21/10/2026; conferir a versão vigente):
 
-- Cotas do Apps Script (tempo por execução, execuções simultâneas, destinatários de e-mail, variação por tipo de conta e possibilidade de mudança sem aviso): https://developers.google.com/apps-script/guides/services/quotas
-- Arquivos que podem ser armazenados no Google Drive (limite de células e colunas das planilhas): https://support.google.com/drive/answer/37603
+- Cotas do Apps Script (tempo por execução, execuções simultâneas, destinatários de e-mail, tempo total diário de gatilhos, variação por tipo de conta e possibilidade de mudança sem aviso): https://developers.google.com/apps-script/guides/services/quotas
+- Arquivos que podem ser armazenados no Google Drive (limite de 20 milhões de células por planilha): https://support.google.com/drive/answer/37603
+
+**Outras fontes:**
+
+- OWASP, *Third Party JavaScript Management Cheat Sheet* (scripts de terceiros como fronteira de confiança): https://cheatsheetseries.owasp.org/cheatsheets/Third_Party_Javascript_Management_Cheat_Sheet.html
 - Lock Service (tipos de trava, `tryLock`/`waitLock`): https://developers.google.com/apps-script/reference/lock/lock-service
 - Web Apps e identidade de execução: https://developers.google.com/apps-script/guides/web?hl=pt-br
 - Properties Service: https://developers.google.com/apps-script/guides/properties?hl=pt-br
