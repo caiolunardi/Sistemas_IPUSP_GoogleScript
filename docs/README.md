@@ -29,6 +29,7 @@ O catálogo lista todos os sistemas já incorporados (painéis dos alunos e dos 
 
 Guias para quem chega de fora:
 - [Arquitetura geral](ARQUITETURA_GERAL.md) e [glossário](GLOSSARIO.md);
+- [Governança técnica](governanca/README.md): fluxo de mudanças, classes de risco, revisão, proteção do `main` e decisões pendentes;
 - [Como participar](../CONTRIBUTING.md) e [roteiro de atualização da documentação](ATUALIZAR_DOCUMENTACAO.md);
 - [Verificação automática (CI)](CI.md);
 - [Desenvolvimento local com clasp](../DEVELOPMENT_LOCAL.md): Git e clasp, `.claspignore`, segurança e princípios de arquitetura;

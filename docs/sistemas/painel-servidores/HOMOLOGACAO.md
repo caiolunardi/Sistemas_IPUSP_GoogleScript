@@ -110,7 +110,7 @@ IDs de elementos, textos operacionais, fluxos e chamadas `google.script.run` for
 
 - O manual das Regras Curriculares (já existente) não fecha com ESC; foi mantido como estava.
 - A busca de sistemas continua sensível a acentos; a ajuda explica isso. Tornar a busca tolerante a acentos é uma mudança de comportamento e não foi feita.
-- Modelo de acesso anônimo sem autorização no backend: ver [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md#4-web-app).
+- (até a 1.0) Modelo de acesso anônimo sem autorização no backend; resolvido na 1.1 (acesso pela aba de permissões, conferido no servidor). Ver [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md#4-web-app).
 
 ## Tokens usados
 

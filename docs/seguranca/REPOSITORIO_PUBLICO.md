@@ -65,5 +65,8 @@ A alternativa, não adotada, é reescrever o histórico do Git (por exemplo com 
 
 Tornar o repositório público não muda quem consegue abrir cada sistema, mas deixa o funcionamento de cada um à vista. Os pontos abaixo já estavam registrados para decisão e ficam mais urgentes:
 
-- **Painel dos servidores** aceita acesso anônimo e não confere quem chama as funções de gravação (períodos dos formulários e Regras Curriculares). Ver [seção 4](../sistemas/painel-servidores/DADOS_E_SEGURANCA.md#4-web-app).
+- **Painel dos servidores**: resolvido na versão 1.1 (acesso só para quem está na aba de permissões, conferido no servidor em toda função; publicado no `/exec` com a 1.3 em 20/10/2026). Ver [seção 4](../sistemas/painel-servidores/DADOS_E_SEGURANCA.md#4-web-app).
 - **Comunidade IPUSP** envia o cadastro completo a quem abre a página, sem conferir a leitura no servidor. Ver [seção 4](../sistemas/busca-alunos/DADOS_E_SEGURANCA.md#4-web-app).
+- **Gerenciador de Trancamento Total** não confere a conta em nenhuma função (leitura de justificativas e envio de e-mail). Ver [dados e segurança do gerenciador](../sistemas/trancamento-total/DADOS_E_SEGURANCA_GERENCIADOR.md#4-web-app).
+
+Os dois estão implantados com acesso "Somente eu" (informado pelo responsável em 20/10/2026), então hoje só a conta institucional os abre. Antes de abrir qualquer um a outras contas, aplicar a [proposta de autorização](propostas/ACESSO_LEITURA_EQUIPE.md).
