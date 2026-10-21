@@ -63,6 +63,7 @@ O código de cada sistema fica em `sistemas/<sistema>/src/` (formulários com ge
 | Trazer o que alguém mudou no editor | `clasp pull` | sobrescreve os arquivos locais. Faça com o `git status` limpo e confira o `git diff` antes de commitar (pode trazer IDs reais) |
 | Abrir o editor | `clasp open-script` | |
 | Ver as implantações | `clasp deployments` | só leitura |
+| Conferir se o editor tem o mesmo código de um commit | `clasp pull` numa pasta **fora** do repositório e `node ferramentas/conferir_implantacao.js <pasta> sistemas/<sistema>/src --procurar` | só leitura; ver [implantação](docs/IMPLANTACAO.md#4-conferir-o-código-do-editor) |
 
 **Implantar (`clasp deploy`, `clasp redeploy`, `clasp undeploy`) muda o `/exec` que as pessoas usam.** Só o responsável pelo sistema faz isso, depois da homologação no `/dev`, e um agente de IA nunca implanta sem a ordem explícita dele. O mais seguro é implantar pelo editor (**Implantar → Gerenciar implantações → editar → Nova versão**), que mantém a mesma URL.
 
@@ -99,7 +100,11 @@ Valem para todo sistema novo e para cada mudança, e estão também no [`CLAUDE.
 
 Até a versão 1.3, o projeto real do Painel dos servidores tinha os IDs das planilhas escritos no código, e o Git tinha marcadores `CONFIGURAR_ID_PLANILHA_…` no lugar deles; por isso ele era enviado de um clone separado, com os IDs recolocados à mão. Desde a 1.4 o painel acha todas as planilhas pelo `ID_INDEX`, e a pasta `sistemas/painel-servidores/src/` vai ao Google como está. O clone antigo deixa de ser necessário depois do primeiro envio da 1.4; não copie arquivos dele de volta para o repositório.
 
-## 9. Problemas comuns
+## 9. Manifesto, ambientes e volta atrás
+
+Só o Painel dos servidores tem o `appsscript.json` no repositório. Antes do primeiro `clasp push` de qualquer outro sistema, versione o manifesto dele, e antes de cada push confira se o editor tem algo que não está no Git: [implantação](docs/IMPLANTACAO.md) (inventário, modelo homologação → produção, registro de cada implantação e como voltar atrás).
+
+## 10. Problemas comuns
 
 | Sintoma | Causa provável e solução |
 |---|---|
