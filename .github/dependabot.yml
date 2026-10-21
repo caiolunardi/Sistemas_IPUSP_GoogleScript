@@ -1,0 +1,34 @@
+# Atualizações de dependências por pull request, uma vez por semana.
+# Cada PR do Dependabot passa pela CI e pelo merge humano como qualquer
+# outro (docs/governanca/FLUXO_DE_MUDANCAS.md). Documentação: docs/CI.md
+version: 2
+updates:
+  # Actions dos workflows (fixadas por SHA; o Dependabot troca SHA e comentário)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "CI"
+
+  # Dependências das suítes de teste da Estrutura Curricular (só testes;
+  # nada disto vai ao Apps Script)
+  - package-ecosystem: npm
+    directory: /sistemas/estrutura-curricular/testes
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    # Playwright muda junto com PLAYWRIGHT_VERSAO do ci.yml (docs/CI.md): à mão.
+    ignore:
+      - dependency-name: playwright
+    groups:
+      testes:
+        patterns: ["*"]
+    commit-message:
+      prefix: "Testes"
