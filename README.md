@@ -43,13 +43,25 @@ Cada sistema registra no próprio README a versão que está no repositório e s
 
 ## Como usar este repositório
 
-**Para ter a visão de conjunto:** [arquitetura geral](docs/ARQUITETURA_GERAL.md) (como os sistemas se ligam pelas planilhas, mapa das chaves do `ID_INDEX` e ordem de montagem) e [glossário](docs/GLOSSARIO.md).
+**Para ter a visão de conjunto:** [arquitetura geral](docs/ARQUITETURA_GERAL.md) (como os sistemas se ligam pelas planilhas, mapa das chaves do `ID_INDEX` e ordem de montagem), [glossário](docs/GLOSSARIO.md) e [decisões de arquitetura](docs/arquitetura/README.md) (por que a plataforma é esta, como manter e como migrar).
 
 **Para entender um sistema:** comece pelo README da pasta `docs/sistemas/<sistema>/`. O `MANUAL_OPERACAO.md` explica o uso no dia a dia, o `AJUDA.md` traz o mesmo conteúdo da Central de Ajuda da tela e o `DADOS_E_SEGURANCA.md` diz quais dados o sistema usa.
 
 **Para reaproveitar em outro setor:** veja [Como reaproveitar](docs/COMO_REAPROVEITAR.md). Em resumo, cada sistema é um projeto Apps Script independente: você cria o projeto, copia os arquivos de `src/`, aponta as configurações (Script Properties e `ID_INDEX`) para as suas planilhas e testa com dados fictícios no ambiente de homologação antes de publicar.
 
 **Para rodar os testes locais:** cada sistema tem uma pasta `testes/` com instruções. Os testes usam Node.js e, os de tela, Playwright com Chromium. Nenhum teste acessa planilhas reais ou a internet. Os mesmos testes, mais uma varredura de dados sensíveis, rodam sozinhos no GitHub a cada push ([verificação automática](docs/CI.md)).
+
+## Por que Google Sheets e Google Apps Script?
+
+Os sistemas nasceram dentro do Serviço de Graduação, desenvolvidos por um servidor do próprio setor, e não por uma equipe de TI com infraestrutura própria. Segundo o responsável pelo projeto, ele não tinha acesso a banco de dados nem a servidor ou hospedagem institucionais para este trabalho. O que estava disponível era o Google Drive, as planilhas Google e o Apps Script do ambiente Google Workspace usado no trabalho institucional. E boa parte dos dados, inclusive o histórico dos pedidos, já estava em planilhas Google.
+
+Montar banco e aplicação em serviços externos administrados por ele mesmo (Cloudflare, Supabase, Vercel e semelhantes) seria tecnicamente possível, mas levaria dados acadêmicos de estudantes para fora da custódia institucional. A escolha real era entre automatizar com o que havia ou continuar com processos manuais.
+
+Por isso o GRADIP guarda os dados em planilhas e roda em Apps Script. **Não é uma afirmação de que planilhas sejam melhores que um banco relacional**: as limitações (sem transações, cotas, concorrência, configuração fora do Git) são reais e estão descritas, junto com o que já as mitiga e o que ainda precisa ser corrigido. Uma migração para outra tecnologia é possível e pode vir a ser desejável, quando houver infraestrutura e autorização institucional, preservando as regras e os dados.
+
+- [ADR-001: escolha da plataforma institucional](docs/arquitetura/ADR-001_ESCOLHA_DA_PLATAFORMA_INSTITUCIONAL.md): contexto, alternativas comparadas, limitações e o princípio da adequação institucional da arquitetura.
+- [Guia de continuidade e legado](docs/arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md): para quem herdar a manutenção.
+- [Guia de migração tecnológica](docs/arquitetura/GUIA_DE_MIGRACAO_TECNOLOGICA.md): como reconstruir os sistemas em outra tecnologia sem perder regras nem dados.
 
 ## Padrões comuns
 

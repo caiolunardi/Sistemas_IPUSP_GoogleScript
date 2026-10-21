@@ -36,6 +36,7 @@ Termos que aparecem na documentação e nas telas, para quem não é do Serviço
 
 | Termo | Significado |
 |---|---|
+| **ADR** | *Architecture Decision Record*, registro de decisão arquitetural: documento curto que diz o que foi decidido, por quê, quais alternativas havia e quando rever. Ficam em [`arquitetura/`](arquitetura/README.md). |
 | **Google Apps Script** | Plataforma do Google para programar sobre Planilhas, Drive e Gmail. Todos os sistemas daqui são feitos nela. |
 | **Web App** | Projeto Apps Script publicado como página. **Executar como** diz com que conta o código roda; **Quem pode acessar** diz quem abre a página. |
 | **`/exec` e `/dev`** | Endereços de um Web App. O `/exec` é a versão publicada; o `/dev` é o teste do editor, que só quem edita o projeto abre. |

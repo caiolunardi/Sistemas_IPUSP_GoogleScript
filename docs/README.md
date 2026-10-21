@@ -29,6 +29,7 @@ O catálogo lista todos os sistemas já incorporados (painéis dos alunos e dos 
 
 Guias para quem chega de fora:
 - [Arquitetura geral](ARQUITETURA_GERAL.md) e [glossário](GLOSSARIO.md);
+- [Decisões de arquitetura, continuidade e migração](arquitetura/README.md) (seção 5);
 - [Governança técnica](governanca/README.md): fluxo de mudanças, classes de risco, revisão, proteção do `main` e decisões pendentes;
 - [Como participar](../CONTRIBUTING.md) e [roteiro de atualização da documentação](ATUALIZAR_DOCUMENTACAO.md);
 - [Verificação automática (CI)](CI.md);
@@ -45,6 +46,14 @@ Ordem de incorporação:
 2. sistemas internos da equipe;
 3. formulários e módulos associados, um por vez;
 4. integrações compartilhadas quando existirem.
+
+## 5. Arquitetura, continuidade e migração
+
+Pasta `arquitetura/`. Comece por aqui se você vai herdar os sistemas ou avaliar a arquitetura:
+
+- [ADR-001: escolha da plataforma institucional](arquitetura/ADR-001_ESCOLHA_DA_PLATAFORMA_INSTITUCIONAL.md): por que Google Sheets e Apps Script, alternativas comparadas, limitações e análise crítica;
+- [Guia de continuidade e legado](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md): onde está cada informação, contratos que não se mudam sem querer, como assumir a manutenção e investigar lentidão;
+- [Guia de migração tecnológica](arquitetura/GUIA_DE_MIGRACAO_TECNOLOGICA.md): como reconstruir os sistemas em outra tecnologia sem perder regras, dados nem continuidade.
 
 ## Regra de separação
 
