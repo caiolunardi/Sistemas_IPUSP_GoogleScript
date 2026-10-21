@@ -27,17 +27,22 @@ function ehReserva_(valor) {
   return typeof valor === "string" && valor.indexOf(PREFIXO_RESERVA) === 0;
 }
 
-// Reserva = "ENVIANDO… aaaa-mm-dd hh:mm:ss" (Brasília). A da 1.0, sem
-// data, conta como interrompida.
+// Reserva = "ENVIANDO… aaaa-mm-dd hh:mm:ss #xxxxxxxx" (Brasília). O
+// sufixo é uma marca aleatória da operação: duas reservas no mesmo
+// segundo nunca são iguais, e só a operação dona da reserva confirma o
+// envio. A da 1.0, sem data, conta como interrompida.
 function reservaInterrompida_(valor) {
-  const quando = String(valor || "").slice(PREFIXO_RESERVA.length).trim();
-  if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(quando)) return true;
+  const m = String(valor || "").slice(PREFIXO_RESERVA.length).trim()
+    .match(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?: #[0-9a-f]{8})?$/);
+  if (!m) return true;
+  const quando = m[1];
   const limite = Utilities.formatDate(new Date(Date.now() - MINUTOS_RESERVA_ENVIO * 60 * 1000), TIMEZONE, "yyyy-MM-dd HH:mm:ss");
   return quando < limite;
 }
 
 function novaReserva_() {
-  return PREFIXO_RESERVA + " " + Utilities.formatDate(new Date(), TIMEZONE, "yyyy-MM-dd HH:mm:ss");
+  const marca = String(Utilities.getUuid()).replace(/-/g, "").slice(0, 8).toLowerCase();
+  return PREFIXO_RESERVA + " " + Utilities.formatDate(new Date(), TIMEZONE, "yyyy-MM-dd HH:mm:ss") + " #" + marca;
 }
 
 // Texto de "E-mail Enviado" para a página: a reserva nunca aparece
@@ -73,6 +78,10 @@ function resumoDaLinha_(tabela, linhaDados, numeroLinha, contagemIds) {
     resumo.inconsistencia = "IDENTIFICADOR_INVALIDO";
   } else if (contagemIds[registroId] > 1) {
     resumo.inconsistencia = "IDENTIFICADOR_REPETIDO";
+  } else if (resumo.versao === null) {
+    // ID bom, Versão vazia ou malformada: aparece, marcado, e não abre
+    // (sem versão não há como conferir conflito ao salvar).
+    resumo.inconsistencia = "VERSAO_INVALIDA";
   } else {
     resumo.registroId = registroId;
   }
@@ -147,7 +156,7 @@ function detalheDaLinha_(tabela, linha) {
   const emailBruto = celula_(l, colunaOpcional_(tabela, "emailEnviado"));
   return {
     registroId: registroIdDaLinha_(tabela, l),
-    versao: versaoDaLinha_(tabela, l),
+    versao: exigirVersaoDaLinha_(tabela, l),
     nome: textoSeguro_(celula_(l, colunaObrigatoria_(tabela, "nome"))),
     nUsp: textoSeguro_(celula_(l, colunaObrigatoria_(tabela, "nUsp"))),
     email: textoSeguro_(celula_(l, colunaObrigatoria_(tabela, "email"))),
@@ -230,7 +239,7 @@ function buscarHistorico(termo) {
       const id = registroIdDaLinha_(atual, l);
       resultados.push({
         origem: "Atual",
-        registroId: FORMATO_REGISTRO_ID.test(id) && contagemIds[id] === 1 ? id : "",
+        registroId: FORMATO_REGISTRO_ID.test(id) && contagemIds[id] === 1 && versaoDaLinha_(atual, l) !== null ? id : "",
         nome: nome,
         nUsp: nUsp,
         email: email,

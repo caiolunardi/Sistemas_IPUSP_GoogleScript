@@ -78,7 +78,7 @@
   // equipe, sem IDs nem dados internos. Os demais códigos (e erros sem
   // código) recebem uma mensagem genérica.
   var CODIGOS_COM_MENSAGEM = ['ENTRADA', 'CONFLITO_VERSAO', 'TRAVA_OCUPADA', 'ENVIO_EM_ANDAMENTO', 'SEM_EMAIL',
-    'GRAVACAO_PARCIAL', 'REFERENCIA_DESATUALIZADA', 'MIGRACAO_NECESSARIA', 'NAO_ENCONTRADO', 'INTEGRIDADE',
+    'GRAVACAO_PARCIAL', 'REFERENCIA_DESATUALIZADA', 'MIGRACAO_NECESSARIA', 'NAO_ENCONTRADO', 'INTEGRIDADE', 'VERSAO_INVALIDA',
     'ESTRUTURA', 'SO_LEITURA', 'SEM_ACESSO', 'SEM_IDENTIFICACAO'];
 
   var AJUDA_POR_CODIGO = {
@@ -88,6 +88,7 @@
     SEM_EMAIL: 'ajuda-email',
     MIGRACAO_NECESSARIA: 'ajuda-sem-identificador',
     REFERENCIA_DESATUALIZADA: 'ajuda-sem-identificador',
+    VERSAO_INVALIDA: 'ajuda-sem-identificador',
     INTEGRIDADE: 'ajuda-sem-identificador',
     SO_LEITURA: 'ajuda-acesso',
     SEM_ACESSO: 'ajuda-acesso',
@@ -265,7 +266,8 @@
   var ROTULO_INCONSISTENCIA = {
     SEM_IDENTIFICADOR: 'Sem identificador',
     IDENTIFICADOR_INVALIDO: 'Identificador inválido',
-    IDENTIFICADOR_REPETIDO: 'Identificador repetido'
+    IDENTIFICADOR_REPETIDO: 'Identificador repetido',
+    VERSAO_INVALIDA: 'Versão inválida'
   };
 
   function linhaMeta(partes) {
@@ -392,7 +394,7 @@
       botao.disabled = true;
       botao.textContent = 'Preparando…';
       chamar('atribuirIdentificador', [p.referencia], function (r) {
-        return ehObjeto(r) && ehTexto(r.registroId) && FORMATO_ID.test(r.registroId) && r.versao === 1;
+        return ehObjeto(r) && ehTexto(r.registroId) && FORMATO_ID.test(r.registroId) && typeof r.versao === 'number' && r.versao >= 1;
       }).then(function () {
         avisar('Pedido preparado. Ele já pode ser aberto.');
         marcarDesatualizadas();

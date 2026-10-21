@@ -254,5 +254,70 @@ t('DIFERENÇA: observações acima de 2.000 caracteres — a 1.0 corta; a 2.0 re
   assert(/^ENTRADA:/.test(tentar(() => p.n('salvarPedido', D.uuid(1), 1, { observacoes: 'z'.repeat(2500) })).erro));
 });
 
+t('DIFERENÇA: reserva alterada durante o envio — a 1.0 grava a data por cima; a 2.0 preserva a alteração', () => {
+  const p = par(linhasConsistentes);
+  const editar = m => () => { m.atual.valores[1][14] = 'conferido por telefone'; };
+  p.antigo.amb.antesDoEnvio = editar(p.antigo);
+  p.novo.amb.antesDoEnvio = editar(p.novo);
+  p.a('salvarPedido', D.uuid(1), 1, { avisarAluno: true });
+  const n = p.n('salvarPedido', D.uuid(1), 1, { avisarAluno: true });
+  assert(ehData(p.antigo.atual.valores[1][14]), '1.0: a edição feita durante o envio some');
+  assert.strictEqual(p.novo.atual.valores[1][14], 'conferido por telefone');
+  assert.deepStrictEqual([n.email, n.motivo], ['ENVIADO_SEM_REGISTRO', 'RESERVA_ALTERADA']);
+  assert.deepStrictEqual([p.antigo.amb.emails.length, p.novo.amb.emails.length], [1, 1]);
+});
+
+t('DIFERENÇA: versão malformada na planilha — a 1.0 lê como 1 e salva; a 2.0 marca e recusa', () => {
+  const fabrica = () => { const l = linhasConsistentes(); l[1][13] = 'abc'; l[2][13] = 0; return l; };
+  const p = par(fabrica);
+  const a = p.a('obterPendentes'), n = p.n('obterPendentes');
+  assert.deepStrictEqual(n.map(x => x.nome), a.map(x => x.nome), 'mesmos pedidos na lista');
+  assert.deepStrictEqual([a.find(x => x.nome === 'Bruna Exemplo').versao, a.find(x => x.nome === 'Bruna Exemplo').registroId], [1, D.uuid(1)]);
+  ['Bruna Exemplo', 'Álvaro Fictício'].forEach(nome => assert.strictEqual(n.find(x => x.nome === nome).inconsistencia, 'VERSAO_INVALIDA'));
+  assert(tentar(() => p.a('salvarPedido', D.uuid(1), 1, { observacoes: 'x' })).ok);
+  const antes = celulas(p.novo.atual);
+  assert(/^VERSAO_INVALIDA:/.test(tentar(() => p.n('salvarPedido', D.uuid(1), 1, { observacoes: 'x' })).erro));
+  assert.deepStrictEqual(celulas(p.novo.atual), antes);
+});
+
+t('DIFERENÇA: migração com versão malformada — a 1.0 troca 0 e texto por 1; a 2.0 preserva e informa', () => {
+  const fabrica = () => { const l = D.linhasAtuais(); l[1][13] = 'abc'; l[2][13] = 0; return l; };
+  const p = par(fabrica);
+  p.a('doGet', {});
+  assert.deepStrictEqual([p.antigo.atual.valores[1][13], p.antigo.atual.valores[2][13]], [1, 1]);
+  const r = p.n('diagnosticarMigracaoRegistroId');
+  assert.strictEqual(r.versaoMalformada, 2);
+  p.novo.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = r.codigoConfirmacao;
+  p.n('executarMigracaoRegistroId');
+  assert.deepStrictEqual([p.novo.atual.valores[1][13], p.novo.atual.valores[2][13]], ['abc', 0]);
+  assert.strictEqual(p.novo.atual.valores[5][13], p.antigo.atual.valores[5][13], 'versão vazia: as duas põem 1');
+});
+
+t('volta à 1.0: com o diagnóstico da 2.0 limpo, abrir a 1.0 não grava nada; sem ele, grava', () => {
+  // Condição documentada em INSTALACAO_E_ATUALIZACAO.md §5: precisaMigrar
+  // false, versaoMalformada 0 e reservasDeEnvio 0 antes de voltar.
+  const p = par(() => { const l = D.linhasAtuais(); l[1][13] = 'abc'; return l; });
+  const plano = p.n('diagnosticarMigracaoRegistroId');
+  p.novo.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = plano.codigoConfirmacao;
+  p.n('executarMigracaoRegistroId');
+  [2, 10].forEach(linha => {
+    p.novo.amb.propriedades.RECUPERACAO_REGISTRO = String(linha);
+    p.novo.amb.propriedades.RECUPERACAO_REGISTRO = p.n('diagnosticarRecuperacaoRegistro').codigoConfirmacao;
+    p.n('executarRecuperacaoRegistro');
+  });
+  const limpo = p.n('diagnosticarMigracaoRegistroId');
+  assert.deepStrictEqual([limpo.precisaMigrar, limpo.versaoMalformada, limpo.identificadoresForaDoFormato, p.n('diagnosticarPlanilha').reservasDeEnvio], [false, 0, 0, 0]);
+  // a 1.0 roda sobre a planilha deixada pela 2.0
+  const v1 = D.montar({ atual: p.novo.atual.valores.map(l => l.slice()) });
+  v1.amb.arquivos[D.IDS.BASELINE] = v1.amb.arquivos[D.IDS.RESPOSTAS];
+  S.executar(v1.amb, ANTIGO, 'doGet', [{}]);
+  assert.strictEqual(v1.atual.contadores.setValue + v1.atual.contadores.setValues, 0, 'a 1.0 não devia gravar nada');
+  // sem a recuperação, a mesma visita reescreve as colunas e troca a versão malformada
+  const sujo = D.montar({ atual: p.antigo.atual.valores.map(l => l.slice()) });
+  sujo.amb.arquivos[D.IDS.BASELINE] = sujo.amb.arquivos[D.IDS.RESPOSTAS];
+  S.executar(sujo.amb, ANTIGO, 'doGet', [{}]);
+  assert(sujo.atual.contadores.setValues > 0);
+});
+
 console.log(`\n${ok} ok, ${falhas} falha(s)`);
 process.exit(falhas ? 1 : 0);

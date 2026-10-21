@@ -188,10 +188,43 @@ function registroIdDaLinha_(tabela, linhaDados) {
   return col ? String(celula_(linhaDados, col) || "").trim() : "";
 }
 
+/*
+ * Contrato único da Versão (2.0). Válida = inteiro >= 1, guardado como
+ * número ou como texto só de algarismos ("3"). Qualquer outra coisa
+ * (0, negativo, fracionário, infinito, texto, data, booleano) é
+ * MALFORMADA; célula vazia ou só espaços é AUSENTE. Nenhuma das duas é
+ * corrigida sem ação expressa: ausente recebe 1 na migração ou em
+ * "Preparar pedido"; malformada só pela recuperação administrativa
+ * (Migracao.gs), porque o valor existente pode ter sido digitado por
+ * alguém e não há como saber o que significava.
+ */
+function versaoValida_(valor) {
+  let n = null;
+  if (typeof valor === "number") n = valor;
+  else if (typeof valor === "string" && /^\d+$/.test(valor.trim())) n = Number(valor.trim());
+  return n !== null && Number.isSafeInteger(n) && n >= 1 ? n : null;
+}
+
+/** "VALIDA" | "AUSENTE" | "MALFORMADA" */
+function estadoDaVersao_(valor) {
+  if (valor === null || valor === undefined || (typeof valor === "string" && !valor.trim())) return "AUSENTE";
+  return versaoValida_(valor) === null ? "MALFORMADA" : "VALIDA";
+}
+
+/** Versão da linha, ou null quando ausente ou malformada. */
 function versaoDaLinha_(tabela, linhaDados) {
   const col = colunaOpcional_(tabela, "versao");
-  const v = col ? Number(celula_(linhaDados, col)) : NaN;
-  return v && !isNaN(v) ? v : 1;
+  return col ? versaoValida_(celula_(linhaDados, col)) : null;
+}
+
+/** Para ler o detalhe ou gravar: versão inválida para tudo, sem gravar. */
+function exigirVersaoDaLinha_(tabela, linhaDados) {
+  const versao = versaoDaLinha_(tabela, linhaDados);
+  if (versao === null) {
+    throw erroGerenciador_("VERSAO_INVALIDA",
+      "A versão desse pedido na planilha está vazia ou inválida. Nada foi alterado. Avise o responsável pelo sistema (veja a Central de Ajuda).");
+  }
+  return versao;
 }
 
 /** Contagem de cada Registro ID entre as linhas com nome (para achar repetidos). */
@@ -204,6 +237,16 @@ function contarRegistroIds_(tabela) {
     if (id) contagem[id] = (contagem[id] || 0) + 1;
   });
   return contagem;
+}
+
+/** Todos os IDs da coluna, com ou sem Nome (para nunca gerar um repetido). */
+function idsDaColuna_(tabela, colId) {
+  const ids = {};
+  tabela.linhas.forEach(l => {
+    const id = String(celula_(l, colId) || "").trim();
+    if (id) ids[id] = true;
+  });
+  return ids;
 }
 
 function validarFormatoRegistroId_(registroId) {

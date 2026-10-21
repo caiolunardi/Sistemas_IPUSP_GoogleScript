@@ -193,9 +193,10 @@
             <h4>“O pedido foi salvo, mas o e-mail não foi enviado”</h4>
             <p>As observações e a situação foram gravadas; só o aviso não saiu. O gerenciador não registra o e-mail como enviado. A janela continua aberta: você pode tentar de novo mais tarde, com “Avisar aluno por e-mail” marcado.</p>
           </article>
-          <article class="gradip-help-card" data-gradip-help-search-item data-search="email enviado data nao registrada nao reenviar">
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="email enviado data nao registrada nao reenviar alterado outra sessao">
             <h4>“O e-mail foi enviado, mas a data do envio não foi registrada”</h4>
-            <p>O aluno recebeu o aviso, mas a planilha ficou sem a data. Não reenvie: a opção de aviso é desmarcada para evitar um segundo e-mail. Avise o responsável pelo sistema para conferir o registro.</p>
+            <p>O aviso saiu, mas a planilha ficou sem a data. Isso acontece quando a gravação falha ou quando o pedido foi alterado por outra pessoa (ou na própria planilha) enquanto o e-mail era enviado; nesse caso, o gerenciador não grava a data por cima da alteração.</p>
+            <p>Não reenvie: a opção de aviso é desmarcada para evitar um segundo e-mail. Recarregue o pedido, anote nas observações que o aviso foi enviado e, se precisar, avise o responsável pelo sistema para conferir o registro.</p>
           </article>
         </section>
 
@@ -246,9 +247,10 @@
             <p>Cada pedido precisa de um identificador interno para ser alterado com segurança. Pedidos recém-chegados pelo formulário podem ainda não ter um. Eles continuam na lista, marcados como “Sem identificador”, mas não abrem até serem preparados.</p>
             <p>Quem tem perfil de administrador vê o botão <strong>Preparar pedido</strong>: ele cria o identificador só daquele pedido, sem mudar mais nada. Depois disso, o pedido abre normalmente.</p>
           </article>
-          <article class="gradip-help-card" data-gradip-help-search-item data-search="identificador repetido invalido migracao responsavel">
-            <h4>Identificador repetido ou inválido</h4>
-            <p>Esses casos não são corrigidos pela tela, para não alterar o pedido errado. Avise o responsável pelo sistema, que faz a conferência e, se preciso, a preparação controlada de todos os pedidos (procedimento no manual de operação).</p>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="identificador repetido invalido versao invalida migracao recuperacao responsavel">
+            <h4>Identificador repetido, identificador inválido ou versão inválida</h4>
+            <p>Esses casos não são corrigidos pela tela, para não alterar o pedido errado. O pedido continua na lista, marcado, e não abre. Também não edite as colunas “Registro ID” e “Versão” na planilha.</p>
+            <p>Avise o responsável pelo sistema e diga qual pedido é (nome e data do pedido). Ele confere a planilha e corrige um pedido por vez, com um procedimento próprio que só altera aquele pedido (descrito no manual de operação).</p>
           </article>
         </section>
 

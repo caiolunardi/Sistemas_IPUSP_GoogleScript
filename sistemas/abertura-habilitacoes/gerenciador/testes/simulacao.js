@@ -164,7 +164,14 @@ function criarAmbiente(opcoes = {}) {
       },
       Utilities: {
         formatDate: formatarData,
-        getUuid: () => crypto.randomUUID()
+        getUuid: () => crypto.randomUUID(),
+        // Como no Apps Script: bytes com sinal (-128 a 127).
+        computeDigest: (algoritmo, texto, charset) => {
+          if (algoritmo !== 'SHA_256' || charset !== 'UTF_8') throw new Error('computeDigest: parâmetros inesperados');
+          return Array.from(crypto.createHash('sha256').update(String(texto), 'utf8').digest()).map(b => (b > 127 ? b - 256 : b));
+        },
+        DigestAlgorithm: { SHA_256: 'SHA_256' },
+        Charset: { UTF_8: 'UTF_8' }
       },
       HtmlService: {
         createTemplateFromFile: nome => {

@@ -19,12 +19,18 @@
        pedido é recusado (na 1.0, as observações eram gravadas antes
        de recusas como "já avisado");
     2. fora da trava: o envio do e-mail (rede, lento);
-    3. nova trava: a linha é achada de novo pelo Registro ID, a
-       reserva vira a data do envio e a Versão sobe de novo.
+    3. nova trava: a linha é achada de novo pelo Registro ID e, SÓ se
+       "E-mail Enviado" ainda tiver a reserva DESTA operação (cada
+       reserva tem uma marca própria), a reserva vira a data do envio
+       e a Versão sobe de novo. Se a célula mudou durante o envio
+       (edição manual, outra operação), nada é gravado por cima: o
+       resultado é ENVIADO_SEM_REGISTRO e o e-mail não é reenviado.
 
   Resultados (sempre um objeto):
     { resultado: "SALVO", email: "NAO_SOLICITADO" | "ENVIADO" |
       "FALHOU" | "ENVIADO_SEM_REGISTRO", versao, ... }
+      (ENVIADO_SEM_REGISTRO traz motivo: "RESERVA_ALTERADA" ou
+      "REGISTRO_FALHOU"; nos dois, o e-mail saiu e não é reenviado)
     { resultado: "REENVIO_NECESSARIO", motivo: "JA_AVISADO" |
       "ENVIO_INTERROMPIDO", mensagem } — nada foi gravado; a página
       pede confirmação expressa e chama de novo com reenviar = true.
@@ -92,7 +98,7 @@ function salvarPedido(registroId, versaoEsperada, dados) {
     const tabela = lerTabelaAtual_();
     const linha = localizarLinhaPorId_(tabela, registroId);
     const l = tabela.linhas[linha - 2];
-    const versaoAtual = versaoDaLinha_(tabela, l);
+    const versaoAtual = exigirVersaoDaLinha_(tabela, l);
     if (versaoAtual !== pedido.versao) {
       throw erroGerenciador_("CONFLITO_VERSAO",
         "Este pedido foi alterado em outra sessão depois que você o abriu. Recarregue o pedido antes de continuar; o texto que você digitou continua na tela.");
@@ -203,15 +209,29 @@ function salvarPedido(registroId, versaoEsperada, dados) {
     }), "salvamento");
   }
 
-  // 4) Confirmação do envio, numa nova trava.
+  // 4) Confirmação do envio, numa nova trava, só sobre a nossa reserva.
   const carimbo = new Date();
   try {
     const lockFinal = travar_(10000);
     try {
       const tabela = lerTabelaAtual_();
       const linha = localizarLinhaPorId_(tabela, registroId);
-      gravarCelula_(tabela, linha, obterOuCriarColuna_(tabela, "emailEnviado"), carimbo);
-      const versaoFinal = versaoDaLinha_(tabela, tabela.linhas[linha - 2]) + 1;
+      const l = tabela.linhas[linha - 2];
+      const colEmailEnviado = colunaOpcional_(tabela, "emailEnviado");
+      const versaoLida = versaoDaLinha_(tabela, l);
+      if (!colEmailEnviado || celula_(l, colEmailEnviado) !== reserva || versaoLida === null) {
+        // Alguém mudou a célula (ou a Versão) durante o envio. Gravar a
+        // data por cima apagaria essa mudança; desfazer também. Fica
+        // como está, e quem salvou recebe o aviso de que o e-mail SAIU.
+        console.warn("E-mail enviado, mas a reserva desta operação não estava mais na planilha; a data do envio não foi gravada.");
+        return paraPagina_(Object.assign(base, {
+          email: "ENVIADO_SEM_REGISTRO",
+          motivo: "RESERVA_ALTERADA",
+          mensagem: "O e-mail foi enviado, mas o pedido foi alterado em outra sessão ou na planilha durante o envio, e a data do aviso não foi registrada para não apagar essa alteração. Não reenvie: recarregue o pedido, anote nas observações que o aviso foi enviado agora e, se precisar, avise o responsável."
+        }), "salvamento");
+      }
+      gravarCelula_(tabela, linha, colEmailEnviado, carimbo);
+      const versaoFinal = versaoLida + 1;
       gravarCelula_(tabela, linha, obterOuCriarColuna_(tabela, "versao"), versaoFinal);
       SpreadsheetApp.flush();
       return paraPagina_(Object.assign(base, {
@@ -224,6 +244,7 @@ function salvarPedido(registroId, versaoEsperada, dados) {
     console.error("E-mail enviado, mas a data do envio não foi registrada: " + textoParaLog_(erroRegistro && erroRegistro.message));
     return paraPagina_(Object.assign(base, {
       email: "ENVIADO_SEM_REGISTRO",
+      motivo: "REGISTRO_FALHOU",
       mensagem: "O e-mail foi enviado, mas não foi possível registrar a data do envio na planilha. Não reenvie agora: recarregue o pedido e, se precisar, avise o responsável."
     }), "salvamento");
   }
@@ -255,11 +276,13 @@ function desfazerReserva_(registroId, reserva, valorAnterior) {
 
 /*-----------------------------------------------------
   PREPARAR UM PEDIDO SEM IDENTIFICADOR (operação expressa)
-  Atribui Registro ID e Versão 1 a UMA linha, a pedido de
-  quem administra, conferindo que a linha ainda é a mesma
-  que estava na lista (carimbo e Nº USP). Não cria colunas:
-  se Registro ID/Versão não existirem, é preciso a migração
-  controlada (Migracao.gs).
+  Atribui Registro ID a UMA linha, a pedido de quem
+  administra, conferindo que a linha ainda é a mesma que
+  estava na lista (carimbo e Nº USP). Versão vazia recebe 1;
+  Versão válida é mantida; Versão malformada recusa tudo
+  (só a recuperação administrativa mexe nela). Não cria
+  colunas: se Registro ID/Versão não existirem, é preciso a
+  migração controlada (Migracao.gs).
 ------------------------------------------------------*/
 
 function atribuirIdentificador(referencia) {
@@ -287,14 +310,21 @@ function atribuirIdentificador(referencia) {
     if (registroIdDaLinha_(tabela, l)) {
       throw erroGerenciador_("REFERENCIA_DESATUALIZADA", "Esse pedido já tem identificador. Recarregue a lista.");
     }
-    const existentes = contarRegistroIds_(tabela);
+    const versaoBruta = celula_(l, colVersao);
+    const estadoVersao = estadoDaVersao_(versaoBruta);
+    if (estadoVersao === "MALFORMADA") {
+      throw erroGerenciador_("VERSAO_INVALIDA",
+        "A versão desse pedido na planilha está inválida. Nada foi alterado. Avise o responsável pelo sistema (veja a Central de Ajuda).");
+    }
+    const existentes = idsDaColuna_(tabela, colId);
     let novoId = Utilities.getUuid();
     while (existentes[novoId]) novoId = Utilities.getUuid();
     gravarCelula_(tabela, linha, colId, novoId);
-    gravarCelula_(tabela, linha, colVersao, 1);
+    const versao = estadoVersao === "VALIDA" ? versaoValida_(versaoBruta) : 1;
+    if (estadoVersao === "AUSENTE") gravarCelula_(tabela, linha, colVersao, 1);
     SpreadsheetApp.flush();
     console.log("atribuirIdentificador: 1 pedido preparado.");
-    return paraPagina_({ registroId: novoId, versao: 1 }, "identificador");
+    return paraPagina_({ registroId: novoId, versao: versao }, "identificador");
   } finally {
     lock.releaseLock();
   }

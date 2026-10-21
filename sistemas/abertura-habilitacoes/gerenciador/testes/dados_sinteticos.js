@@ -123,9 +123,13 @@ function montar(opcoes = {}) {
   return { amb, atual, historico, atualHomologacao, arquivos };
 }
 
-/** Reserva de envio no formato da 2.0, com X minutos de idade. */
-function reserva(minutosAtras) {
-  return 'ENVIANDO… ' + formatarData(new Date(Date.now() - minutosAtras * 60000), TZ, 'yyyy-MM-dd HH:mm:ss');
+/**
+ * Reserva de envio com X minutos de idade. Com marca (8 hexadecimais),
+ * no formato atual da 2.0; sem marca, no formato com data e sem marca
+ * (também aceito).
+ */
+function reserva(minutosAtras, marca) {
+  return 'ENVIANDO… ' + formatarData(new Date(Date.now() - minutosAtras * 60000), TZ, 'yyyy-MM-dd HH:mm:ss') + (marca ? ' #' + marca : '');
 }
 
 module.exports = { IDS, ADMIN, LEITOR, ESTRANHO, HAB_B, HAB_L, TITULOS_ATUAL, TITULOS_HISTORICO, uuid, brt, linha,

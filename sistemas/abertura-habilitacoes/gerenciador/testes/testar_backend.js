@@ -132,9 +132,10 @@ t('nenhum ID literal nem openById com texto fixo no código', () => {
 /*==================== ACESSO ====================*/
 
 const PUBLICAS = ['atribuirIdentificador', 'buscarHistorico', 'diagnosticarConfiguracao', 'diagnosticarMigracaoRegistroId',
-  'diagnosticarPlanilha', 'doGet', 'executarMigracaoRegistroId', 'obterConcluidosRecentes', 'obterDetalhe',
-  'obterPendentes', 'obterRelatorio', 'salvarPedido'];
-const DE_ESCRITA = ['atribuirIdentificador', 'diagnosticarMigracaoRegistroId', 'diagnosticarPlanilha', 'executarMigracaoRegistroId', 'salvarPedido'];
+  'diagnosticarPlanilha', 'diagnosticarRecuperacaoRegistro', 'doGet', 'executarMigracaoRegistroId', 'executarRecuperacaoRegistro',
+  'obterConcluidosRecentes', 'obterDetalhe', 'obterPendentes', 'obterRelatorio', 'salvarPedido'];
+const DE_ESCRITA = ['atribuirIdentificador', 'diagnosticarMigracaoRegistroId', 'diagnosticarPlanilha', 'diagnosticarRecuperacaoRegistro',
+  'executarMigracaoRegistroId', 'executarRecuperacaoRegistro', 'salvarPedido'];
 const ARGS = {
   obterDetalhe: [D.uuid(1)], buscarHistorico: ['bruna'], salvarPedido: [D.uuid(1), 1, { concluirSolicitacao: true }],
   atribuirIdentificador: [{ linha: 6, carimbo: D.brt(2026, 5, 5).getTime(), nUsp: '9000005' }]
@@ -365,6 +366,9 @@ t('aba histórica nunca é escrita nem reordenada (todas as operações)', () =>
   const plano = chamar(m, 'diagnosticarMigracaoRegistroId');
   m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = plano.codigoConfirmacao;
   chamar(m, 'executarMigracaoRegistroId');
+  m.amb.propriedades.RECUPERACAO_REGISTRO = '10';
+  m.amb.propriedades.RECUPERACAO_REGISTRO = chamar(m, 'diagnosticarRecuperacaoRegistro').codigoConfirmacao;
+  chamar(m, 'executarRecuperacaoRegistro');
   assert.strictEqual(retrato(m.historico), antes);
   assert.strictEqual(m.historico.contadores.setValue + m.historico.contadores.setValues, 0);
 });
@@ -517,7 +521,7 @@ t('já avisado: pede reenvio sem gravar nada (nem observações); reenviar envia
 
 t('reserva recente bloqueia; reserva antiga ou da 1.0 pede confirmação', () => {
   const linhas = D.linhasAtuais();
-  linhas[1][14] = D.reserva(1);
+  linhas[1][14] = D.reserva(1, '0a1b2c3d');
   const m = D.montar({ atual: linhas });
   const antes = retrato(m.atual);
   assert.throws(() => salvar(m, D.uuid(1), 1, { avisarAluno: true }), codigo('ENVIO_EM_ANDAMENTO'));
@@ -525,7 +529,7 @@ t('reserva recente bloqueia; reserva antiga ou da 1.0 pede confirmação', () =>
   // sem avisar, salvar continua possível e não mexe na reserva
   salvar(m, D.uuid(1), 1, { observacoes: 'só nota' });
   assert.strictEqual(linhaDe(m, 'Bruna Exemplo')[14], linhas[1][14]);
-  ['ENVIANDO…', D.reserva(15)].forEach(valor => {
+  ['ENVIANDO…', D.reserva(15), D.reserva(15, '0a1b2c3d'), 'ENVIANDO… 2026-01-01 10:00:00 #marca-estranha'].forEach(valor => {
     const l2 = D.linhasAtuais(); l2[1][14] = valor;
     const m2 = D.montar({ atual: l2 });
     const r = salvar(m2, D.uuid(1), 1, { avisarAluno: true });
@@ -672,10 +676,13 @@ t('diagnóstico da migração: só leitura, contagens e código de confirmação
   const antes = retrato(m.atual);
   const r = chamar(m, 'diagnosticarMigracaoRegistroId');
   assert.strictEqual(retrato(m.atual), antes);
-  assert.deepStrictEqual([r.precisaMigrar, r.semIdentificador, r.identificadoresRepetidos, r.versaoInvalida, r.identificadoresForaDoFormato], [true, 1, 1, 1, 1]);
+  assert.deepStrictEqual([r.precisaMigrar, r.semIdentificador, r.identificadoresRepetidos, r.versaoAusente, r.versaoMalformada,
+    r.identificadoresForaDoFormato, r.linhasQueSeraoAlteradas], [true, 1, 1, 1, 0, 1, 2]);
   assert.deepStrictEqual(r.linhas.semIdentificador, [6]);
   assert.deepStrictEqual(r.linhas.identificadoresRepetidos, [9]);
-  assert.strictEqual(r.codigoConfirmacao, 'MIGRAR-1-1-1-0-12');
+  assert(/^MIGRAR-1-1-1-0-[0-9a-f]{16}$/.test(r.codigoConfirmacao), r.codigoConfirmacao);
+  assert.strictEqual(chamar(m, 'diagnosticarMigracaoRegistroId').codigoConfirmacao, r.codigoConfirmacao, 'determinístico');
+  assert.strictEqual(chamar(D.montar(), 'diagnosticarMigracaoRegistroId').codigoConfirmacao, r.codigoConfirmacao, 'mesma planilha, mesmo código');
   assert(!m.amb.logs.join('\n').includes('Elisa'), 'nome no registro');
 });
 
@@ -685,6 +692,11 @@ t('migração: sem confirmação ou com código errado não grava', () => {
   assert.throws(() => chamar(m, 'executarMigracaoRegistroId'), codigo('CONFIRMACAO_MIGRACAO'));
   m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = 'MIGRAR-0-0-0-0-12';
   assert.throws(() => chamar(m, 'executarMigracaoRegistroId'), codigo('CONFIRMACAO_MIGRACAO'));
+  // mesmas contagens, outra impressão digital (o formato antigo, só com quantidades, também não vale)
+  ['MIGRAR-1-1-1-0-0000000000000000', 'MIGRAR-1-1-1-0-12'].forEach(c => {
+    m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = c;
+    assert.throws(() => chamar(m, 'executarMigracaoRegistroId'), codigo('CONFIRMACAO_MIGRACAO'));
+  });
   assert.strictEqual(retrato(m.atual), antes);
 });
 
@@ -712,6 +724,7 @@ t('migração: grava só Registro ID e Versão, mantém o primeiro repetido, é 
   assert.strictEqual(linhaDe(m, 'Elisa Sem Identificador')[13], 1);
   assert.strictEqual(linhaDe(m, 'Hugo Inválido')[12], 'abc', 'ID fora do formato só é informado');
   assert.strictEqual(m.atual.valores[6][12], '', 'linha sem nome não recebe ID');
+  assert.strictEqual(linhaDe(m, 'Daniel Teste')[12], antes[4][12], 'ID único mantido');
   assert.strictEqual(linhaDe(m, 'Álvaro Fictício')[13], 3, 'versão válida mantida');
   const segunda = chamar(m, 'executarMigracaoRegistroId');
   assert.deepStrictEqual([segunda.executada, segunda.motivo], [false, 'NADA_A_FAZER']);
@@ -729,6 +742,345 @@ t('migração cria as colunas que faltam depois de K, mesmo com J e K vazias', (
   assert.strictEqual(chamar(m, 'obterPendentes').filter(p => !p.inconsistencia).length, 10);
 });
 
+/*==================== MIGRAÇÃO: O CÓDIGO IDENTIFICA O PLANO ====================*/
+
+// Diagnostica, aplica uma mudança que mantém as contagens e confere que
+// a execução recusa sem gravar; depois, um novo diagnóstico executa.
+function mudancaComMesmasContagens(mudar, rotulo) {
+  const m = D.montar();
+  const antesDiag = chamar(m, 'diagnosticarMigracaoRegistroId');
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = antesDiag.codigoConfirmacao;
+  mudar(m.atual.valores);
+  const depoisDiag = chamar(m, 'diagnosticarMigracaoRegistroId');
+  const contagens = r => [r.semIdentificador, r.identificadoresRepetidos, r.versaoAusente, r.versaoMalformada, r.identificadoresForaDoFormato,
+    r.linhasQueSeraoAlteradas, r.colunasFaltando.length, r.linhasComNome];
+  assert.deepStrictEqual(contagens(depoisDiag), contagens(antesDiag), rotulo + ': as contagens deviam ser iguais');
+  assert.strictEqual(depoisDiag.codigoConfirmacao.split('-').slice(0, 5).join('-'), antesDiag.codigoConfirmacao.split('-').slice(0, 5).join('-'));
+  assert.notStrictEqual(depoisDiag.codigoConfirmacao, antesDiag.codigoConfirmacao, rotulo + ': o código devia mudar');
+  const antes = retrato(m.atual);
+  assert.throws(() => chamar(m, 'executarMigracaoRegistroId'), codigo('CONFIRMACAO_MIGRACAO'), rotulo);
+  assert.strictEqual(retrato(m.atual), antes, rotulo + ': gravou algo');
+  assert.strictEqual(m.atual.escritas.length, 0, rotulo);
+  assert(!m.amb.logs.join('\n').includes('Gabriela') && !m.amb.logs.join('\n').includes('9000007'), rotulo + ': dado pessoal no registro');
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = depoisDiag.codigoConfirmacao;
+  assert.strictEqual(chamar(m, 'executarMigracaoRegistroId').executada, true, rotulo + ': novo diagnóstico devia executar');
+  return m;
+}
+
+t('migração: linhas trocadas de lugar com as mesmas contagens → recusa sem gravar', () => {
+  // os dois repetidos trocam de posição: quem mantém o ID passaria a ser outra pessoa
+  const m = mudancaComMesmasContagens(v => { const x = v[7]; v[7] = v[8]; v[8] = x; }, 'repetidos trocados');
+  assert.strictEqual(linhaDe(m, 'Gabriela Repetida')[12], D.uuid(6), 'depois do novo diagnóstico, a primeira ocorrência (agora Gabriela) fica');
+  // linha sem ID troca de lugar com uma linha com ID
+  mudancaComMesmasContagens(v => { const x = v[4]; v[4] = v[5]; v[5] = x; }, 'sem ID trocado com outra linha');
+});
+
+t('migração: registros alterados com as mesmas contagens → recusa sem gravar', () => {
+  mudancaComMesmasContagens(v => { v[8][2] = 9000099; }, 'Nº USP da linha que recebe ID novo');
+  mudancaComMesmasContagens(v => { v[7][12] = D.uuid(77); v[8][12] = D.uuid(77); }, 'ID do grupo repetido trocado');
+  mudancaComMesmasContagens(v => { v[9][12] = 'abd'; }, 'ID fora do formato editado');
+  mudancaComMesmasContagens(v => { v[2][13] = 4; }, 'Versão válida editada');
+  mudancaComMesmasContagens(v => { v[1][13] = '1'; }, 'Versão de número para texto');
+  mudancaComMesmasContagens(v => { v[5][0] = D.brt(2026, 5, 6); }, 'carimbo da linha sem ID');
+});
+
+t('migração: linha substituída por outro pedido com as mesmas contagens → recusa sem gravar', () => {
+  mudancaComMesmasContagens(v => {
+    v[5] = D.linha({ nome: 'Outra Pessoa Sem ID', nUsp: 9000055, email: 'outra@exemplo.invalid', id: '', versao: '', carimbo: D.brt(2026, 5, 9) });
+  }, 'linha sem ID substituída');
+  mudancaComMesmasContagens(v => {
+    v[1] = D.linha({ nome: 'Pessoa No Lugar Da Bruna', nUsp: 9000056, email: 'pessoa@exemplo.invalid', id: D.uuid(1), carimbo: D.brt(2026, 3, 2, 10) });
+  }, 'linha com ID substituída mantendo o ID');
+});
+
+t('migração: mudança fora das colunas de identificação não invalida o código', () => {
+  const m = D.montar();
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = chamar(m, 'diagnosticarMigracaoRegistroId').codigoConfirmacao;
+  m.atual.valores[1][9] = 'observação nova'; m.atual.valores[2][10] = 'Concluído';
+  assert.strictEqual(chamar(m, 'executarMigracaoRegistroId').executada, true);
+});
+
+t('migração: trava ocupada recusa sem gravar e mantém a confirmação', () => {
+  const m = D.montar();
+  const c = chamar(m, 'diagnosticarMigracaoRegistroId').codigoConfirmacao;
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = c;
+  m.amb.travaOcupada = true;
+  const antes = retrato(m.atual);
+  assert.throws(() => chamar(m, 'executarMigracaoRegistroId'), codigo('TRAVA_OCUPADA'));
+  assert.strictEqual(retrato(m.atual), antes);
+  assert.strictEqual(m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO, c);
+});
+
+/*==================== VERSÃO: CONTRATO ÚNICO ====================*/
+
+t('versaoValida_ e estadoDaVersao_: um só critério para todos os valores', () => {
+  const m = D.montar();
+  const casos = [
+    [1, 1, 'VALIDA'], [3, 3, 'VALIDA'], ['3', 3, 'VALIDA'], [' 4 ', 4, 'VALIDA'], ['007', 7, 'VALIDA'],
+    ['', null, 'AUSENTE'], ['   ', null, 'AUSENTE'], [null, null, 'AUSENTE'],
+    [0, null, 'MALFORMADA'], ['0', null, 'MALFORMADA'], [-2, null, 'MALFORMADA'], ['-2', null, 'MALFORMADA'],
+    [1.5, null, 'MALFORMADA'], ['1.5', null, 'MALFORMADA'], ['1.0', null, 'MALFORMADA'], ['1e3', null, 'MALFORMADA'],
+    [Infinity, null, 'MALFORMADA'], [NaN, null, 'MALFORMADA'], [2 ** 53, null, 'MALFORMADA'], ['abc', null, 'MALFORMADA'],
+    ['#NUM!', null, 'MALFORMADA'], [true, null, 'MALFORMADA'], [D.brt(2026, 1, 1), null, 'MALFORMADA']
+  ];
+  casos.forEach(([valor, valida, estado]) => {
+    assert.strictEqual(S.executar(m.amb, ARQ, 'versaoValida_', [valor]), valida, 'versaoValida_(' + String(valor) + ')');
+    assert.strictEqual(S.executar(m.amb, ARQ, 'estadoDaVersao_', [valor]), estado, 'estadoDaVersao_(' + String(valor) + ')');
+  });
+});
+
+// Bruna (pendente) e Carla (concluída) com Versão malformada.
+function comVersoesMalformadas(vBruna, vCarla) {
+  const linhas = D.linhasAtuais();
+  linhas[1][13] = vBruna; linhas[3][13] = vCarla;
+  return D.montar({ atual: linhas });
+}
+
+t('leitura: versão malformada aparece marcada e não abre (pendentes, concluídos, busca, detalhe)', () => {
+  [[0, 'abc'], [-2, 1.5], ['1.0', Infinity]].forEach(([vb, vc]) => {
+    const m = comVersoesMalformadas(vb, vc);
+    const bruna = chamar(m, 'obterPendentes').find(p => p.nome === 'Bruna Exemplo');
+    assert.deepStrictEqual([bruna.inconsistencia, bruna.registroId], ['VERSAO_INVALIDA', ''], String(vb));
+    const carla = chamar(m, 'obterConcluidosRecentes').find(p => p.nome === 'Carla Modelo');
+    assert.deepStrictEqual([carla.inconsistencia, carla.registroId], ['VERSAO_INVALIDA', ''], String(vc));
+    assert.strictEqual(chamar(m, 'buscarHistorico', 'bruna').find(r => r.origem === 'Atual').registroId, '');
+    assert.throws(() => chamar(m, 'obterDetalhe', D.uuid(1)), codigo('VERSAO_INVALIDA'));
+    assert.throws(() => chamar(m, 'obterDetalhe', D.uuid(3)), codigo('VERSAO_INVALIDA'));
+    assert.strictEqual(m.atual.escritas.length, 0, 'consultar não corrige a versão');
+  });
+  // vazia com ID bom também não abre
+  const m = comVersoesMalformadas('', 2);
+  assert.strictEqual(chamar(m, 'obterPendentes').find(p => p.nome === 'Bruna Exemplo').inconsistencia, 'VERSAO_INVALIDA');
+  assert.throws(() => chamar(m, 'obterDetalhe', D.uuid(1)), codigo('VERSAO_INVALIDA'));
+});
+
+t('salvamento: versão malformada ou vazia na planilha recusa sem gravar nem enviar', () => {
+  [0, -2, 1.5, 'abc', '', Infinity].forEach(v => {
+    const m = comVersoesMalformadas(v, 2);
+    const antes = retrato(m.atual);
+    [1, 0, -2].forEach(enviada => assert.throws(() => salvar(m, D.uuid(1), enviada, { avisarAluno: true, concluirSolicitacao: true, observacoes: 'x' }),
+      e => /^(VERSAO_INVALIDA|ENTRADA):/.test(e.message), String(v)));
+    assert.strictEqual(retrato(m.atual), antes, String(v));
+    assert.strictEqual(m.amb.emails.length, 0);
+  });
+});
+
+t('migração: só versão vazia recebe 1; malformada é informada e preservada', () => {
+  const m = comVersoesMalformadas(0, 'abc');
+  m.atual.valores[2][13] = 1.5; m.atual.valores[4][13] = -2;
+  const r = chamar(m, 'diagnosticarMigracaoRegistroId');
+  assert.deepStrictEqual([r.versaoAusente, r.versaoMalformada], [1, 4]);
+  assert.deepStrictEqual(r.linhas.versaoMalformada, [2, 3, 4, 5]);
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = r.codigoConfirmacao;
+  chamar(m, 'executarMigracaoRegistroId');
+  assert.deepStrictEqual([2, 3, 4, 5].map(i => m.atual.valores[i - 1][13]), [0, 1.5, 'abc', -2], 'malformadas não foram corrigidas sozinhas');
+  assert.strictEqual(linhaDe(m, 'Elisa Sem Identificador')[13], 1);
+  // só malformadas e ID fora do formato restando: nada a migrar
+  const de_novo = chamar(m, 'diagnosticarMigracaoRegistroId');
+  assert.deepStrictEqual([de_novo.precisaMigrar, de_novo.versaoMalformada, de_novo.identificadoresForaDoFormato], [false, 4, 1]);
+  assert(m.amb.logs.some(l => /recuperação um a um/.test(l)));
+});
+
+t('atribuirIdentificador: versão válida mantida, vazia vira 1, malformada recusa sem gravar', () => {
+  const ref = { linha: 6, carimbo: D.brt(2026, 5, 5).getTime(), nUsp: '9000005' };
+  const comVersao = v => { const l = D.linhasAtuais(); l[5][13] = v; return D.montar({ atual: l }); };
+  const m1 = comVersao(4);
+  const r1 = chamar(m1, 'atribuirIdentificador', ref);
+  assert.strictEqual(r1.versao, 4);
+  assert.deepStrictEqual(m1.atual.escritas.map(e => [e.linha, e.coluna]), [[6, 13]]);
+  assert.strictEqual(chamar(m1, 'obterDetalhe', r1.registroId).versao, 4);
+  const m2 = comVersao('  ');
+  assert.strictEqual(chamar(m2, 'atribuirIdentificador', ref).versao, 1);
+  [0, 'abc', 2.5].forEach(v => {
+    const m3 = comVersao(v);
+    assert.throws(() => chamar(m3, 'atribuirIdentificador', ref), codigo('VERSAO_INVALIDA'), String(v));
+    assert.strictEqual(m3.atual.escritas.length, 0);
+  });
+});
+
+/*==================== E-MAIL: CONFIRMAÇÃO SÓ SOBRE A PRÓPRIA RESERVA ====================*/
+
+const FORMATO_RESERVA = /^ENVIANDO… \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} #[0-9a-f]{8}$/;
+
+t('reserva tem marca própria da operação; duas reservas nunca são iguais', () => {
+  const vistas = [];
+  for (let i = 0; i < 3; i++) {
+    const m = D.montar();
+    m.amb.antesDoEnvio = () => vistas.push(linhaDe(m, 'Bruna Exemplo')[14]);
+    assert.strictEqual(salvar(m, D.uuid(1), 1, { avisarAluno: true }).email, 'ENVIADO');
+  }
+  vistas.forEach(v => assert(FORMATO_RESERVA.test(v), v));
+  assert.strictEqual(new Set(vistas).size, 3);
+});
+
+function envioComCelulaAlterada(novoValor, rotulo) {
+  const m = D.montar();
+  let reservaVista = null;
+  m.amb.antesDoEnvio = () => { reservaVista = linhaDe(m, 'Bruna Exemplo')[14]; linhaDe(m, 'Bruna Exemplo')[14] = novoValor; };
+  const r = salvar(m, D.uuid(1), 1, { avisarAluno: true, concluirSolicitacao: true });
+  assert(FORMATO_RESERVA.test(reservaVista), rotulo);
+  assert.deepStrictEqual([r.resultado, r.email, r.motivo, r.versao], ['SALVO', 'ENVIADO_SEM_REGISTRO', 'RESERVA_ALTERADA', 2], rotulo);
+  assert(/foi enviado/.test(r.mensagem) && /Não reenvie/.test(r.mensagem), rotulo);
+  assert.strictEqual(m.amb.emails.length, 1, rotulo + ': um único e-mail');
+  assert.deepStrictEqual(linhaDe(m, 'Bruna Exemplo')[14], novoValor, rotulo + ': a célula alterada não pode ser sobrescrita');
+  assert.strictEqual(linhaDe(m, 'Bruna Exemplo')[13], 2, rotulo + ': versão não sobe na confirmação recusada');
+  assert(m.amb.logs.some(l => /^warn: E-mail enviado, mas a reserva desta operação não estava mais/.test(l)), rotulo);
+  assert(!m.amb.logs.join('\n').includes('Bruna') && !m.amb.logs.join('\n').includes('bruna@'), rotulo);
+  return m;
+}
+
+t('reserva alterada durante o envio (edição manual): e-mail dado como enviado, nada sobrescrito', () => {
+  envioComCelulaAlterada('', 'célula apagada');
+  envioComCelulaAlterada('conferido por telefone', 'texto digitado');
+  envioComCelulaAlterada(D.brt(2026, 6, 1, 8), 'data digitada');
+  envioComCelulaAlterada('ENVIANDO…', 'reserva da 1.0');
+});
+
+t('reserva de outra operação durante o envio: não confirma sobre ela', () => {
+  const m = envioComCelulaAlterada(D.reserva(0, 'ffffffff'), 'outra reserva com marca');
+  // a outra operação continua dona da reserva: a página dela pode confirmar
+  assert.strictEqual(chamar(m, 'obterDetalhe', D.uuid(1)).envioReservado, true);
+  envioComCelulaAlterada(D.reserva(0), 'outra reserva sem marca, mesmo segundo');
+});
+
+t('versão invalidada durante o envio: confirmação não grava', () => {
+  const m = D.montar();
+  m.amb.antesDoEnvio = () => { linhaDe(m, 'Bruna Exemplo')[13] = 'x'; };
+  const r = salvar(m, D.uuid(1), 1, { avisarAluno: true });
+  assert.deepStrictEqual([r.email, r.motivo], ['ENVIADO_SEM_REGISTRO', 'RESERVA_ALTERADA']);
+  assert(FORMATO_RESERVA.test(linhaDe(m, 'Bruna Exemplo')[14]), 'a reserva fica (vira envio interrompido depois de 10 min)');
+  assert.strictEqual(linhaDe(m, 'Bruna Exemplo')[13], 'x');
+  assert.strictEqual(m.amb.emails.length, 1);
+  assert.strictEqual(m.amb.emails[0].travado, false, 'envio fora da trava');
+});
+
+t('confirmação normal: grava a data sobre a própria reserva, fora da trava no envio', () => {
+  const m = D.montar();
+  const r = salvar(m, D.uuid(1), 1, { avisarAluno: true });
+  assert.deepStrictEqual([r.email, r.motivo, r.versao], ['ENVIADO', undefined, 3]);
+  assert(ehData(linhaDe(m, 'Bruna Exemplo')[14]));
+  assert.strictEqual(m.amb.emails[0].travado, false);
+});
+
+/*==================== RECUPERAÇÃO ADMINISTRATIVA DE UM PEDIDO ====================*/
+
+const recuperar = (m, linha) => {
+  m.amb.propriedades.RECUPERACAO_REGISTRO = String(linha);
+  const d = chamar(m, 'diagnosticarRecuperacaoRegistro');
+  return d;
+};
+
+t('recuperação: diagnóstico só lê, mostra problemas, ações e código', () => {
+  const m = D.montar();
+  const antes = retrato(m.atual);
+  const d = recuperar(m, 10);
+  assert.deepStrictEqual([d.linha, d.problemas, d.acoes, d.linhasComOMesmoIdentificador], [10, ['IDENTIFICADOR_FORA_DO_FORMATO'], ['NOVO_ID'], []]);
+  assert(/^RECUPERAR-10-[0-9a-f]{16}$/.test(d.codigoConfirmacao));
+  assert.strictEqual(recuperar(m, d.codigoConfirmacao).codigoConfirmacao, d.codigoConfirmacao, 'aceita o próprio código e é determinístico');
+  const g = recuperar(m, 9);
+  assert.deepStrictEqual([g.problemas, g.acoes, g.linhasComOMesmoIdentificador], [['IDENTIFICADOR_REPETIDO'], ['NOVO_ID'], [8]]);
+  assert.deepStrictEqual(recuperar(m, 8).linhasComOMesmoIdentificador, [9]);
+  const ok = recuperar(m, 2);
+  assert.deepStrictEqual([ok.problemas, ok.acoes, ok.codigoConfirmacao], [[], [], '']);
+  assert.strictEqual(retrato(m.atual), antes);
+  assert.strictEqual(m.atual.escritas.length, 0);
+  const logs = m.amb.logs.join('\n');
+  ['Hugo', 'Gabriela', 'Fábio', '9000008', '"abc"', D.uuid(6)].forEach(x => assert(!logs.includes(x), 'registro contém ' + x));
+});
+
+t('recuperação: entradas inválidas recusam sem gravar', () => {
+  const m = D.montar();
+  delete m.amb.propriedades.RECUPERACAO_REGISTRO;
+  assert.throws(() => chamar(m, 'diagnosticarRecuperacaoRegistro'), codigo('ENTRADA'));
+  ['x', '1', '7', '13', '2-3', '-4'].forEach(v => {
+    m.amb.propriedades.RECUPERACAO_REGISTRO = v;
+    assert.throws(() => chamar(m, 'diagnosticarRecuperacaoRegistro'), codigo('ENTRADA'), v);
+  });
+  ['', '10', 'RECUPERAR-10', 'MIGRAR-1-1-1-0-0000000000000000'].forEach(v => {
+    m.amb.propriedades.RECUPERACAO_REGISTRO = v;
+    assert.throws(() => chamar(m, 'executarRecuperacaoRegistro'), codigo('CONFIRMACAO_RECUPERACAO'), v);
+  });
+  const semColunas = D.montar({ atual: D.linhasAtuais().map(l => l.slice(0, 12)) });
+  semColunas.amb.propriedades.RECUPERACAO_REGISTRO = '6';
+  assert.throws(() => chamar(semColunas, 'diagnosticarRecuperacaoRegistro'), codigo('MIGRACAO_NECESSARIA'));
+  assert.strictEqual(m.atual.escritas.length + semColunas.atual.escritas.length, 0);
+});
+
+t('recuperação: ID fora do formato recebe UUID novo, só aquela célula; é idempotente', () => {
+  const m = D.montar();
+  const antes = JSON.parse(retrato(m.atual));
+  m.amb.propriedades.RECUPERACAO_REGISTRO = recuperar(m, 10).codigoConfirmacao;
+  const r = chamar(m, 'executarRecuperacaoRegistro');
+  assert.strictEqual(r.executada, true);
+  assert(/^[0-9a-f-]{36}$/.test(r.novoRegistroId));
+  assert.deepStrictEqual(m.atual.escritas.map(e => [e.linha, e.coluna]), [[10, 13]]);
+  const depois = JSON.parse(retrato(m.atual));
+  depois[9][12] = antes[9][12];
+  assert.deepStrictEqual(depois, antes, 'só a célula do ID mudou');
+  assert.strictEqual(m.amb.propriedades.RECUPERACAO_REGISTRO, undefined);
+  assert.strictEqual(chamar(m, 'obterDetalhe', r.novoRegistroId).nome, 'Hugo Inválido');
+  assert.throws(() => chamar(m, 'executarRecuperacaoRegistro'), codigo('CONFIRMACAO_RECUPERACAO'), 'sem propriedade, nada a executar');
+  assert.deepStrictEqual(recuperar(m, 10).acoes, [], 'nada mais a fazer');
+});
+
+t('recuperação: ID repetido — só a linha escolhida recebe ID novo; a outra mantém o ID', () => {
+  [[9, 'Gabriela Repetida', 'Fábio Repetido'], [8, 'Fábio Repetido', 'Gabriela Repetida']].forEach(([linha, escolhida, outra]) => {
+    const m = D.montar();
+    const outraAntes = JSON.stringify(linhaDe(m, outra));
+    m.amb.propriedades.RECUPERACAO_REGISTRO = recuperar(m, linha).codigoConfirmacao;
+    const r = chamar(m, 'executarRecuperacaoRegistro');
+    assert.strictEqual(linhaDe(m, escolhida)[12], r.novoRegistroId);
+    assert.notStrictEqual(r.novoRegistroId, D.uuid(6));
+    assert.strictEqual(JSON.stringify(linhaDe(m, outra)), outraAntes, 'a outra linha não muda');
+    assert.strictEqual(chamar(m, 'obterDetalhe', D.uuid(6)).nome, outra);
+    assert.strictEqual(chamar(m, 'obterDetalhe', r.novoRegistroId).nome, escolhida);
+  });
+});
+
+t('recuperação: versão malformada vira 1, ID mantido; vazia também', () => {
+  [0, 'abc', -2, 1.5].forEach(v => {
+    const m = comVersoesMalformadas(v, 2);
+    const d = recuperar(m, 2);
+    assert.deepStrictEqual([d.problemas, d.acoes], [['VERSAO_MALFORMADA'], ['VERSAO_1']], String(v));
+    m.amb.propriedades.RECUPERACAO_REGISTRO = d.codigoConfirmacao;
+    chamar(m, 'executarRecuperacaoRegistro');
+    assert.deepStrictEqual(m.atual.escritas.map(e => [e.linha, e.coluna, e.valor]), [[2, 14, 1]]);
+    assert.strictEqual(linhaDe(m, 'Bruna Exemplo')[12], D.uuid(1));
+    assert.strictEqual(chamar(m, 'obterDetalhe', D.uuid(1)).versao, 1);
+  });
+  const m = D.montar();
+  m.atual.valores[9][13] = 'x';
+  const d = recuperar(m, 10);
+  assert.deepStrictEqual([d.problemas, d.acoes], [['IDENTIFICADOR_FORA_DO_FORMATO', 'VERSAO_MALFORMADA'], ['NOVO_ID', 'VERSAO_1']]);
+});
+
+t('recuperação: linha ou grupo mudou depois do diagnóstico → recusa sem gravar', () => {
+  const casos = [
+    ['nome da linha', v => { v[9][3] = 'Outro Nome'; }, 10],
+    ['observação da linha', v => { v[9][9] = 'nota nova'; }, 10],
+    ['linha trocada de lugar', v => { const x = v[9]; v[9] = v[10]; v[10] = x; v[9][12] = 'abc'; }, 10],
+    ['outra linha entra no grupo', v => { v[10][12] = D.uuid(6); }, 9],
+    ['outra linha do grupo muda', v => { v[7][2] = 9000098; }, 9]
+  ];
+  casos.forEach(([rotulo, mudar, linha]) => {
+    const m = D.montar();
+    m.amb.propriedades.RECUPERACAO_REGISTRO = recuperar(m, linha).codigoConfirmacao;
+    mudar(m.atual.valores);
+    const antes = retrato(m.atual);
+    assert.throws(() => chamar(m, 'executarRecuperacaoRegistro'), codigo('CONFIRMACAO_RECUPERACAO'), rotulo);
+    assert.strictEqual(retrato(m.atual), antes, rotulo);
+    assert.strictEqual(m.atual.escritas.length, 0, rotulo);
+  });
+});
+
+t('recuperação: trava ocupada recusa sem gravar', () => {
+  const m = D.montar();
+  m.amb.propriedades.RECUPERACAO_REGISTRO = recuperar(m, 10).codigoConfirmacao;
+  m.amb.travaOcupada = true;
+  assert.throws(() => chamar(m, 'executarRecuperacaoRegistro'), codigo('TRAVA_OCUPADA'));
+  assert.strictEqual(m.atual.escritas.length, 0);
+});
+
 /*==================== REGISTROS E DESEMPENHO ====================*/
 
 t('registros de execução sem nomes, e-mails nem Nº USP', () => {
@@ -738,9 +1090,13 @@ t('registros de execução sem nomes, e-mails nem Nº USP', () => {
   m.amb.falhaEnvio = true;
   salvar(m, D.uuid(2), 3, { avisarAluno: true });
   chamar(m, 'diagnosticarPlanilha');
-  chamar(m, 'diagnosticarMigracaoRegistroId');
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = chamar(m, 'diagnosticarMigracaoRegistroId').codigoConfirmacao;
+  chamar(m, 'executarMigracaoRegistroId');
+  m.amb.propriedades.RECUPERACAO_REGISTRO = '10';
+  m.amb.propriedades.RECUPERACAO_REGISTRO = chamar(m, 'diagnosticarRecuperacaoRegistro').codigoConfirmacao;
+  chamar(m, 'executarRecuperacaoRegistro');
   const logs = m.amb.logs.join('\n');
-  ['Bruna', 'Álvaro', 'Elisa', 'Fábio', '@exemplo.invalid', '9000001', '9000005'].forEach(x => assert(!logs.includes(x), 'registro contém ' + x));
+  ['Bruna', 'Álvaro', 'Elisa', 'Fábio', 'Hugo', '@exemplo.invalid', '9000001', '9000005', '9000008', '"abc"'].forEach(x => assert(!logs.includes(x), 'registro contém ' + x));
 });
 
 t('desempenho: 3.000 linhas, leituras em lote', () => {

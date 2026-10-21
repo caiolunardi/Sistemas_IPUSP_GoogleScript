@@ -346,6 +346,13 @@ const focoNaSecao = (p, id) => p.waitForFunction(id => { const o = document.quer
     const citadasNoScript = [...new Set(fs.readFileSync(SRC + 'GerenciadorAppUI.html', 'utf8').match(/'ajuda-[a-z-]+'/g).map(s => s.slice(1, -1)))];
     const inexistentes = await p.evaluate(ids => ids.filter(id => !document.getElementById(id)), citadasNoScript);
     chk(`${T} seções de ajuda citadas pelo script existem (${citadasNoScript.length})`, inexistentes.length === 0, inexistentes.join(', '));
+    // Toda marca de inconsistência que o servidor produz tem rótulo na tela;
+    // VERSAO_INVALIDA mostra a mensagem do servidor e leva à ajuda.
+    const ui = fs.readFileSync(SRC + 'GerenciadorAppUI.html', 'utf8');
+    const marcas = [...new Set((fs.readFileSync(SRC + 'Pedidos.gs', 'utf8').match(/inconsistencia = "[A-Z_]+"/g) || []).map(x => x.split('"')[1]))];
+    const rotulos = ui.slice(ui.indexOf('var ROTULO_INCONSISTENCIA'), ui.indexOf('};', ui.indexOf('var ROTULO_INCONSISTENCIA')));
+    chk(`${T} toda inconsistência do servidor tem rótulo (${marcas.length})`, marcas.length >= 4 && marcas.every(c => rotulos.includes(c + ':')), marcas.join(', '));
+    chk(`${T} VERSAO_INVALIDA: mensagem do servidor e ajuda`, /CODIGOS_COM_MENSAGEM = \[[^\]]*'VERSAO_INVALIDA'/.test(ui) && /VERSAO_INVALIDA: 'ajuda-sem-identificador'/.test(ui));
     chk(`${T} ajuda não chama o servidor`, await p.evaluate(() => !window.__chamadas.some(c => /ajuda/i.test(c.nome))));
 
     /*---------- nada de dados no console ----------*/
