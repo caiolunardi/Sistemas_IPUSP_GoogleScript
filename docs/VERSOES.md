@@ -46,7 +46,7 @@ Uma Release só marca código **integrado e aprovado**. O workflow **Release** (
 
 Tag enviada pelo git (`git push origin <tag>`) **não** gera Release: o gatilho por push de tag foi retirado em 20/10/2026, porque a tag já existiria antes de qualquer conferência. Não envie tags de versão pelo git.
 
-Rodar de novo com as mesmas entradas não muda o que já existe e completa o que faltou. Uma tag que já existe em outro commit é recusada. Não mova nem apague uma tag já enviada; se algo saiu errado, crie a versão seguinte. Um agente de IA não roda o Release sem ordem explícita do responsável para aquela versão ([fluxo](governanca/FLUXO_DE_MUDANCAS.md)).
+Rodar de novo com as mesmas entradas não muda o que já existe e completa o que faltou. Uma tag que já existe em outro commit é recusada. Não mova nem apague uma tag já enviada; se algo saiu errado, crie a versão seguinte. Desde 21/10/2026, o ruleset `tags de versão` impõe isso para `*-v*`: tag existente não pode ser atualizada, movida nem apagada, e criar tag nova continua permitido ([proteção](governanca/PROTECAO_DO_MAIN.md#1-situação-em-21102026)). Um agente de IA não roda o Release sem ordem explícita do responsável para aquela versão ([fluxo](governanca/FLUXO_DE_MUDANCAS.md)).
 
 ## 4. Quando a versão for implantada no Google
 
@@ -122,7 +122,13 @@ Por que não uma variável marcadora (por exemplo `RELEASE_GOVERNANCE_READY=true
 
 Fronteira: a trava fica no script, que roda antes de qualquer escrita, e não no YAML, para valer também se alguém o rodar num terminal (sem `GITHUB_RUN_ID`, ou com o número de uma rodada antiga já concluída, ele para). O workflow só chama o script.
 
-**Comportamento real conferido:** em 20/10/2026, `actions/runs/{id}/approvals` respondeu `[]` para uma rodada da CI deste repositório (sem environment), e a trava recusa `[]`. Ainda **não** foi visto o formato com um environment real e uma aprovação: a primeira rodada legítima do Release, depois de o responsável configurar o environment, é o teste. Se a API responder de outro jeito, a trava recusa (falha fechada) e o log mostra o motivo; nada é publicado.
+**Comportamento real conferido:**
+
+- Em 20/10/2026, `actions/runs/{id}/approvals` respondeu `[]` para uma rodada da CI sem environment, e a trava recusa `[]`.
+- Em 21/10/2026, com o environment configurado, o responsável fez dois testes ([proteção, seção 4](governanca/PROTECAO_DO_MAIN.md#4-quem-publica-e-quem-autoriza-dois-modelos)):
+  - **E2**, rodada 39526102748: rejeitada em **Review deployments**. A API registra `rejected`, e nada foi publicado.
+  - **E3**, rodada 39526964799: aprovada. A API registra `approved`, `user.type: User`, environment `release`, no formato que os testes simulam. A trava aceitou ("Rodada … aprovada no environment release por …"), o commit passou nas conferências e a tag fictícia `teste-v0.0` foi recusada por não ter pasta. Nenhuma tag nem Release foi criada.
+- **Ainda não comprovado:** uma publicação legítima de ponta a ponta, com o ruleset das tags ativo.
 
 **O que a trava não cobre:**
 

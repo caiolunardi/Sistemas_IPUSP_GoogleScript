@@ -2,27 +2,36 @@
 
 O [fluxo de mudanças](FLUXO_DE_MUDANCAS.md) diz o que **deve** acontecer. Este documento diz o que o GitHub **impõe** de fato, e como o responsável aplica o que falta. Só o dono do repositório muda essas configurações: um agente não as altera sem ordem explícita.
 
-## 1. Situação em 20/10/2026
+## 1. Situação em 21/10/2026
 
-Conferido pela API do GitHub nesta data.
+Conferido em 21/10/2026. **API** = consulta só de leitura à API do GitHub; **captura** = tela mostrada pelo responsável (a API não é acessível às ferramentas dos agentes); **rodada** = evidência de uma execução real. O histórico da implantação está no [relatório final](RELATORIO_FINAL_IMPLANTACAO_2026.md).
 
-| Configuração | Situação | Estado |
-|---|---|---|
-| Proteção do ramo `main` | nenhuma (`Branch not protected`) | NÃO IMPLEMENTADO |
-| Rulesets | nenhum | NÃO IMPLEMENTADO |
-| Merge permitido | merge commit, squash e rebase | o `CONTRIBUTING.md` pede só merge commit |
-| Apagar o ramo depois do merge | desligado | o `CONTRIBUTING.md` pede apagar |
-| Relato privado de vulnerabilidade | desligado | o `SECURITY.md` manda usar; o link não funciona para quem não é mantenedor |
-| Secret scanning e push protection | desligados | gratuitos em repositório público |
-| Alertas e atualizações do Dependabot | desligados | ver [CI](../CI.md) |
-| Licença | nenhuma | depende de decisão institucional ([pendências](README.md#3-decisões-pendentes)) |
-| Dono | conta pessoal, um único administrador | ver [pendências](README.md#3-decisões-pendentes) |
+| Configuração | Situação | Estado | Evidência |
+|---|---|---|---|
+| Ruleset `main protegido` (id 25513651) | ativo, alvo ramo padrão, bypass vazio (`current_user_can_bypass: never`) | IMPLEMENTADO E VERIFICADO | API |
+| Exclusão e force push do `main` | regras `deletion` e `non_fast_forward` | IMPLEMENTADO E VERIFICADO (configuração) | API. A recusa não foi provocada: nenhum teste destrutivo no repositório real, e o repositório descartável (2.B) não foi feito |
+| PR obrigatório | `pull_request`: 0 aprovações (modelo A), conversas resolvidas, aprovações antigas descartadas, só `merge` | IMPLEMENTADO E VERIFICADO | API; os PRs #8 a #11 entraram por PR, e o Rule insights registra `pass` em cada merge |
+| `CI concluída` obrigatória | `required_status_checks`: `CI concluída` com `integration_id: 15368` (GitHub Actions) e ramo atualizado (`strict`) | IMPLEMENTADO E VERIFICADO | API; o #10 e o #11 ficaram `behind` até a atualização (B4). O bloqueio de um PR com a CI vermelha (B2) não foi exercitado |
+| Aprovação extra para mudanças sem autoria reconhecida | `require_extra_approval_for_unattributed_changes: true` | ligado; efeito exato não testado | API. **Não** é aprovação humana obrigatória: o #10 e o #11 ficaram `clean` e entraram com 0 aprovações, com commits de autoria não ligada a uma conta do GitHub |
+| Métodos de merge | só merge commit (squash e rebase desligados); auto-merge desligado | IMPLEMENTADO E VERIFICADO | API |
+| Apagar o ramo depois do merge | ligado | IMPLEMENTADO E VERIFICADO | API; os ramos do #10 e do #11 foram apagados pelo GitHub |
+| Ruleset `tags de versão` (id 25519915) | ativo, `refs/tags/*-v*`, regras `update`, `deletion` e `non_fast_forward`, bypass vazio; criar tag nova continua permitido | IMPLEMENTADO E VERIFICADO (configuração) | API. Que o Release continua criando tags novas com ele: IMPLEMENTADO, PENDENTE DE VALIDAÇÃO até a primeira publicação legítima |
+| Environment `release` | revisor obrigatório `caiolunardi`, *Prevent self-review* desligado (modelo A), sem bypass de administrador, só o ramo `main` | IMPLEMENTADO E VERIFICADO | captura (configuração); rodadas E2 e E3 (seção 4) e `actions/runs/{id}/approvals` (API) |
+| Relato privado de vulnerabilidade | ligado | IMPLEMENTADO E VERIFICADO | API (`enabled: true`) |
+| Secret scanning e push protection | ligados | IMPLEMENTADO E VERIFICADO | API (`security_and_analysis`) |
+| Dependabot: atualizações de segurança | ligadas | IMPLEMENTADO E VERIFICADO | API |
+| Dependabot: alertas e grafo de dependências | ligados | CONFIRMADO POR CAPTURA | a API de alertas não é acessível aos agentes |
+| Atualizações de versão do Dependabot | `.github/dependabot.yml`, semanal | IMPLEMENTADO E VERIFICADO | o Dependabot abriu os PRs #12 e #13, que seguem o fluxo normal |
+| Actions: permissões gerais | só Actions do dono e do GitHub, SHA completo obrigatório, token padrão só leitura, Actions sem permissão de criar ou aprovar PR, aprovação para todo colaborador externo | CONFIRMADO POR CAPTURA | a API não é acessível aos agentes. A captura do primeiro bloco não foi refeita depois de recarregar a página: é uma limitação da evidência, não um erro encontrado. A CI verde depois da mudança (PR de encerramento) mostra que os workflows continuam rodando |
+| CodeQL, varredura por IA, correção automática | não ligados | NÃO IMPLEMENTADO (decisão do responsável nesta etapa) | captura |
+| Licença | nenhuma | depende de decisão institucional ([pendências](README.md#3-decisões-pendentes)) | — |
+| Dono | conta pessoal, um único administrador | ver [pendências](README.md#3-decisões-pendentes) | — |
 
-Enquanto a proteção não for aplicada, nada impede um push direto no `main`, um `push --force` ou um merge com a CI vermelha: as regras são apenas documentais.
+Em 20/10/2026, antes da implantação, nada disso existia: `Branch not protected`, nenhum ruleset, squash e rebase permitidos, recursos de segurança desligados ([diagnóstico](DIAGNOSTICO_2026-10-20.md)).
 
 ## 2. Checklist de aplicação e validação
 
-Nada nesta seção está aplicado. O `main` só conta como protegido depois que as conferências dos passos estiverem registradas na seção 1 (data e resultado).
+Os passos abaixo foram aplicados pelo responsável em 20 e 21/10/2026 (resultado na seção 1). Ficam como procedimento de referência, para conferir de novo ou refazer a configuração.
 
 **Nenhuma conferência deste documento tenta uma operação destrutiva no repositório institucional.** Não se faz push direto no `main`, force push (nem `--force-with-lease`) contra ele, nem se move ou apaga uma tag real "para ver se é recusado": se a regra estiver errada, o teste é o próprio estrago. A validação tem três partes:
 
@@ -121,6 +130,8 @@ Em 20/10/2026, A1 e A5 responderam `[]` (nenhum ruleset, nenhuma regra efetiva).
 
 ## 3. Segurança e Actions
 
+Aplicado em 21/10/2026 (seção 1), com uma diferença em relação ao texto abaixo: além do que está aqui, foram ligados o grafo de dependências, as atualizações de segurança do Dependabot e a exigência de Actions fixadas por SHA completo.
+
 **Settings → Code security**
 
 - **Private vulnerability reporting:** Enable. (Faz funcionar o link do `SECURITY.md` e do formulário de issues.)
@@ -166,7 +177,7 @@ O que a documentação do GitHub diz (consultada em 20/10/2026; não foi possív
 
 ### A trava do Release (PR #9)
 
-O script do Release só publica se a rodada em andamento tiver uma aprovação `approved`, de um usuário, no environment `release` (`GET actions/runs/{id}/approvals`). Sem environment, com ele vazio, sem revisor, rejeitado, com erro de leitura ou fora do workflow, ele para antes de conferir ou escrever qualquer coisa. Isso vale nos dois modelos: no A, o dono aprova a própria rodada; no B, a outra pessoa. Uma variável no environment (por exemplo `RELEASE_GOVERNANCE_READY`) **não** é usada como prova, porque o Actions não distingue se ela veio do environment, do repositório ou da organização ([versões](../VERSOES.md), seção 6, que chega com o #9).
+O script do Release só publica se a rodada em andamento tiver uma aprovação `approved`, de um usuário, no environment `release` (`GET actions/runs/{id}/approvals`). Sem environment, com ele vazio, sem revisor, rejeitado, com erro de leitura ou fora do workflow, ele para antes de conferir ou escrever qualquer coisa. Isso vale nos dois modelos: no A, o dono aprova a própria rodada; no B, a outra pessoa. Uma variável no environment (por exemplo `RELEASE_GOVERNANCE_READY`) **não** é usada como prova, porque o Actions não distingue se ela veio do environment, do repositório ou da organização ([versões](../VERSOES.md), seção 6).
 
 **Validar o environment sem publicar nada** (depois de configurado e com o #9 no `main`):
 
@@ -178,19 +189,31 @@ O script do Release só publica se a rodada em andamento tiver uma aprovação `
 
 E3 é o único teste que confere, com o GitHub real, o formato da resposta de aprovações; a recusa vem das conferências do commit e das tags, então nada é publicado mesmo que a trava aceite.
 
+**Resultado (21/10/2026):**
+
+- **E1:** a configuração foi conferida por captura (seção 1).
+- **E2:** rodada 39526102748, no `main`, commit `0c6f71b`. A API de aprovações registra `rejected` por `caiolunardi` no environment `release`. O job não publicou nada.
+- **E3:** rodada 39526964799. A API registra `approved` por `caiolunardi` (`type: User`, environment `release`), no formato que os testes simulam. O log, conferido pelo responsável, mostra "Rodada 39526964799 aprovada no environment release por caiolunardi", depois o commit `0c6f71b` aceito (estado do `main`, merge do PR #9, CI verde) e a recusa "Pasta sistemas/teste não existe no commit (tag teste-v0.0)". A tag e a Release `teste-v0.0` não existem (API: 404).
+- **Ainda não comprovado:** uma publicação legítima de ponta a ponta, isto é, a aprovação, todas as conferências passando e a criação da tag e da Release com o ruleset das tags ativo.
+
 **Recomendação:** modelo A agora (é seguro contra erro e contra terceiros e não trava a operação) e modelo B quando houver uma segunda pessoa. Criar um segundo usuário só para aprovar não é recomendado: seria a mesma pessoa com duas contas, sem independência real.
 
 ## 5. Sequência de integração
 
-1. Passo 0 (força e exclusão) e conferência 0, a qualquer momento.
-2. Merge do #8 (só documentação; não muda nenhum workflow).
-3. Atualizar o ramo do #9 com o `main` (botão **Update branch**, que faz um merge; sem rebase), esperar a CI verde e fazer o merge.
-4. Conferência 1, passo 2 e conferência 2 (inspeção e testes seguros; o repositório descartável quando o dono puder).
-5. #10 e #11: **Update branch**, CI verde, merge. Com "up to date" ligado, cada merge pede atualizar o seguinte.
-6. Environment `release` (seção 4, testes E1 a E3) e passo 3 (tags).
+Concluída. Feita em 20 e 21/10/2026, nesta ordem, com autorização do responsável para cada merge:
 
-Os quatro PRs saíram do mesmo commit do `main`. Em 20/10/2026 foi conferido, num clone local, que eles se integram nessa ordem sem conflito (merge de cada um sobre o anterior).
+1. Passo 0 (exclusão e force push): ruleset criado em 20/10, às 23:48.
+2. PR #8, merge `1409db9`, em 20/10, às 23:51.
+3. PR #9, depois de atualizado com o `main` por merge: merge `0c6f71b`, em 21/10, às 00:44. A `CI concluída` passou a existir no `main`.
+4. Passo 2 (PR e CI obrigatórios, só merge commit, apagar ramos): última alteração do ruleset em 21/10, às 01:04.
+5. Environment `release`, testes E2 e E3 (seção 4).
+6. PR #10, merge `6db8409`, em 21/10, às 01:49. PR #11, merge `e3ebebf`, em 21/10, às 02:19. Os dois foram atualizados com o `main` antes do merge.
+7. Passo 3 (tags): última alteração do ruleset em 21/10, às 02:32. Segurança e Actions (seção 3) na mesma manhã, pelo responsável.
 
 ## 6. Depois de aplicar
 
-Atualize a tabela da seção 1 (estado **IMPLEMENTADO E VERIFICADO**, com a data e o resultado de cada conferência) num PR.
+Qualquer mudança nessas configurações é registrada na tabela da seção 1 (data, estado e evidência) por um PR. O que ainda está pendente:
+
+- o bloqueio de um PR com a CI vermelha (B2) e de uma conversa aberta (B3), que não foram exercitados;
+- o repositório descartável (B6 a B8);
+- a primeira publicação legítima com o ruleset das tags ativo.
