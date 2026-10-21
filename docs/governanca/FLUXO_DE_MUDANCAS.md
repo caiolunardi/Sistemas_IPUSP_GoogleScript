@@ -12,9 +12,11 @@ O `main` representa só código **integrado por pull request, com a CI aprovada 
 2. Nada de `git push --force`, de apagar o `main` ou de reescrever o histórico dele.
 3. Nada de contornar verificação obrigatória (rodar de novo até passar, desligar teste, usar bypass de administrador).
 4. Toda mudança nasce num ramo próprio e entra por pull request.
-5. O merge é sempre feito por uma pessoa autorizada (hoje, o mantenedor). Merge com **merge commit**, não squash nem rebase, e o ramo é apagado depois.
+5. O merge só acontece com a autorização explícita do responsável para aquele PR. Quem clica pode ser ele ou um agente que recebeu essa ordem. Merge com **merge commit**, não squash nem rebase, e o ramo é apagado depois.
 
-Quais dessas regras o GitHub de fato impõe, e quais ainda dependem só de disciplina, está em [Proteção do `main`](PROTECAO_DO_MAIN.md). Enquanto a proteção não estiver aplicada, as regras acima são **apenas documentais**.
+Desde 20 e 21/10/2026, o GitHub impõe as regras 1, 2 e 4, e da 5 só o merge commit e a exclusão do ramo. A 3 é imposta onde há regra: `CI concluída` obrigatória e bypass vazio. Detalhes em [Proteção do `main`](PROTECAO_DO_MAIN.md#1-situação-em-21102026).
+
+**O que continua sendo só disciplina:** a autorização humana do merge. O ruleset exige 0 aprovações (um único mantenedor), e os agentes usam o acesso do responsável, então o GitHub registra os merges deles como feitos por ele. Um agente tecnicamente consegue fazer o merge de um PR verde. O que o impede é esta política ([riscos residuais](RELATORIO_FINAL_IMPLANTACAO_2026.md#8-riscos-residuais)).
 
 ### Nome dos ramos
 
@@ -96,3 +98,34 @@ O merge não muda nenhum sistema em uso. O caminho depois do merge:
 Exceção para homologar **antes** do merge (classes alta e crítica): o ramo do PR pode ir, com ordem explícita, a um projeto **de homologação** (cópia com `AMBIENTE=homologacao`, ver [ambiente de homologação](../sistemas/AMBIENTE_DE_HOMOLOGACAO.md)), nunca ao projeto de produção. O PR registra o commit homologado; se o ramo mudar depois, a homologação vale só para aquele commit.
 
 Nunca se leva ao projeto de produção um ramo que não entrou no `main`, nem um commit com CI vermelha.
+
+## 7. O fluxo, passo a passo
+
+Para pessoas e agentes. Cada passo aponta para a regra que o detalha.
+
+1. **Demanda:** o responsável pede a mudança.
+2. **Sistema afetado:** identificar o sistema e a pasta em `sistemas/` ([catálogo](../SISTEMAS.md)) e a classe de risco (seção 3).
+3. **Ramo:** criar um ramo novo a partir do `main` atual (seção 1).
+4. **Desenvolvimento e testes:** mudar código e testes, e rodar no computador as suítes do sistema, `node ferramentas/verificar_publicacao.js` e `node ferramentas/verificar_copias_shared.js` ([CI](../CI.md)).
+5. **Documentação:** atualizar o que a mudança afeta ([atualizar documentação](../ATUALIZAR_DOCUMENTACAO.md)).
+6. **Push do ramo.**
+7. **Pull request** com o [modelo](../../.github/pull_request_template.md) preenchido (seção 4).
+8. **CI:** roda sozinha a cada push.
+9. **Falhas:** corrigir a causa no próprio ramo, sem desligar nem pular teste.
+10. **Parecer técnico:** o agente diz o que mudou, o que testou e o risco. A revisão independente, quando exigida, vem de outra sessão (seção 5).
+11. **Autorização humana explícita** para o merge daquele PR.
+12. **Merge commit**, pelo responsável ou pelo agente que recebeu a ordem.
+13. **CI no `main`:** conferir a rodada do push do commit de merge, com `CI concluída` verde.
+14. **Versão,** quando aplicável: notas no mesmo PR e Release pelo workflow ([versões](../VERSOES.md)).
+15. **Publicação no Google:** autorização separada para o `clasp push` e para a implantação (seção 6).
+16. **Conferência depois da implantação:** `ferramentas/conferir_implantacao.js` e o registro na Release e no README do sistema ([implantação](../IMPLANTACAO.md)).
+
+O que cada etapa **não** significa:
+
+- **CI verde** não é autorização humana. Prova que os testes passaram, não que a mudança deve entrar.
+- **Aprovar ou autorizar o merge** não autoriza publicar: Release, `clasp push` e implantação pedem cada um a sua ordem.
+- **Merge** não muda nada no Apps Script. O código no Google só muda com `clasp push`, e o `/exec` só muda com uma nova versão da implantação.
+- **Uma Release no GitHub** marca código; não é implantação no Google.
+- **Um agente não roda `clasp`** (nem `pull`, nem `push`, nem `deploy`) sem ordem específica para aquele comando.
+- **Com um único mantenedor**, não há separação técnica entre o agente e o responsável: os dois agem com a mesma conta. A separação é desta política, não do GitHub.
+

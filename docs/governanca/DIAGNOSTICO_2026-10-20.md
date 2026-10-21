@@ -1,5 +1,7 @@
 # Diagnóstico de governança técnica — 20/10/2026
 
+> Documento histórico: descreve o repositório **antes** da implantação. O estado depois dela está no [relatório final](RELATORIO_FINAL_IMPLANTACAO_2026.md) e na [proteção do `main`](PROTECAO_DO_MAIN.md#1-situação-em-21102026).
+
 Fase 0 do mandato de governança do responsável. Base: `main` em `71f6a25` (20/10/2026, 19:30 UTC), API do GitHub, histórico de 20 rodadas da CI e leitura do código. Nenhum dado pessoal, ID ou URL interna neste documento.
 
 Estados usados: **IMPLEMENTADO E VERIFICADO**, **IMPLEMENTADO, MAS PENDENTE DE VALIDAÇÃO**, **NÃO IMPLEMENTADO / DEPENDE DE DECISÃO**. "Confirmado" ou "descartado" se refere ao achado da auditoria externa anterior.

@@ -8,8 +8,9 @@ Como as mudanças entram neste repositório, quem decide o quê e o que ainda fa
 |---|---|
 | Ramos, pull requests, merge, o que um agente pode fazer, classes de risco | [Fluxo de mudanças](FLUXO_DE_MUDANCAS.md) |
 | Como revisar um PR e escrever o parecer | [Revisão](REVISAO.md) |
-| O que o GitHub impõe hoje e como aplicar as proteções | [Proteção do `main`](PROTECAO_DO_MAIN.md) |
+| O que o GitHub impõe hoje e como conferir ou refazer as proteções | [Proteção do `main`](PROTECAO_DO_MAIN.md) |
 | Diagnóstico de 20/10/2026 (achados, evidências, plano) | [Diagnóstico](DIAGNOSTICO_2026-10-20.md) |
+| Implantação de 20 e 21/10/2026: o que foi aplicado, evidências e riscos que ficam | [Relatório final](RELATORIO_FINAL_IMPLANTACAO_2026.md) |
 | Verificação automática | [CI](../CI.md) |
 | Versões, tags e Releases | [Versões](../VERSOES.md) |
 | Levar código ao Google (clasp) | [Desenvolvimento local](../../DEVELOPMENT_LOCAL.md) |

@@ -17,7 +17,7 @@ Se encontrar:
 
 ## Como reportar
 
-1. **Pelo GitHub:** aba **Security → Report a vulnerability** deste repositório. A mensagem fica visível só para os mantenedores. *(Em 20/10/2026 esse recurso ainda estava desligado nas configurações; enquanto o botão não aparecer, use o e-mail.)*
+1. **Pelo GitHub:** aba **Security → Report a vulnerability** deste repositório. A mensagem fica visível só para os mantenedores. *(Ligado em 21/10/2026.)*
 2. **Por e-mail:** escreva para `gradip@usp.br` com o assunto "Segurança — repositório Sistemas IPUSP", descrevendo **onde** está o problema (arquivo, sistema, tela), sem copiar o dado sensível.
 
 Preserve o mínimo de evidência necessário e evite ampliar a exposição (não compartilhe o achado com outras pessoas antes da correção).
