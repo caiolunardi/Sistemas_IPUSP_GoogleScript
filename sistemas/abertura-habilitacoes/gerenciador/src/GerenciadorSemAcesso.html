@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<!-- Página de quem não pode abrir o gerenciador (Acesso.gs). Não chama o
+     servidor e não traz nenhum pedido: só o tema, as marcas e o aviso. -->
+<?!= include_('GradipTema'); ?>
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
+}
+#headerSistema{
+    background:var(--gradip-header-bg);
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 22px;
+    border-bottom:1px solid var(--gradip-border);
+    box-sizing:border-box;
+}
+.logoEsquerda{ display:flex; align-items:center; gap:15px; min-width:0; }
+.logoEsquerda .marcaIpuspSvg{ height:52px; flex:0 0 auto; }
+.tituloSistema{ font-size:17px; font-weight:bold; color:var(--gradip-text); }
+.subtituloSistema{ font-size:13px; color:var(--gradip-text-muted); margin-top:2px; }
+.barraAzul{ height:6px; background:var(--gradip-header-accent); }
+.cartaoSemAcesso{
+    max-width:560px;
+    margin:40px auto;
+    padding:24px;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-warning-border);
+    border-left-width:4px;
+    border-radius:10px;
+    box-sizing:border-box;
+}
+.cartaoSemAcesso h1{ font-size:20px; margin:0 0 12px; color:var(--gradip-text); }
+.cartaoSemAcesso p{ font-size:15px; line-height:1.5; margin:0 0 12px; color:var(--gradip-text); }
+.cartaoSemAcesso .contato{ color:var(--gradip-text-muted); font-size:14px; margin:0; }
+.cartaoSemAcesso a{ color:var(--gradip-link); }
+.cartaoSemAcesso a:hover{ color:var(--gradip-link-hover); }
+.cartaoSemAcesso a:focus-visible{ outline:2px solid var(--gradip-focus); outline-offset:2px; }
+@media (max-width: 600px){
+    #headerSistema{ padding:10px 14px; }
+    .logoEsquerda .marcaIpuspSvg{ height:40px; }
+    .cartaoSemAcesso{ margin:24px 16px; padding:20px; }
+}
+</style>
+</head>
+<body>
+<header id="headerSistema">
+    <div class="logoEsquerda">
+        <?!= include_('GradipMarcaIPUSP'); ?>
+        <div>
+            <div class="tituloSistema">Gerenciador de Abertura de Habilitações</div>
+            <div class="subtituloSistema">Serviço de Graduação — Instituto de Psicologia</div>
+        </div>
+    </div>
+</header>
+<div class="barraAzul"></div>
+<main class="cartaoSemAcesso" role="alert">
+    <h1><?= titulo ?></h1>
+    <p><?= mensagem ?></p>
+    <p class="contato">Serviço de Graduação do IPUSP: <a href="mailto:gradip@usp.br">gradip@usp.br</a></p>
+</main>
+</body>
+</html>

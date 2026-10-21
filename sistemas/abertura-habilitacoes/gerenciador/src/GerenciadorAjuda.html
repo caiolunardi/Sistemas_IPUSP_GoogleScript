@@ -1,0 +1,369 @@
+<!-- Central de Ajuda do Gerenciador de Abertura de Habilitações — conteúdo.
+     Estrutura e atributos data-gradip-help-* conforme docs/ajuda/ e
+     shared/ajuda/GradipAjudaTemplate.html; comportamento em
+     GerenciadorAjudaUI.html (cópia sem alteração de shared/ajuda/GradipAjudaUI.html).
+     Texto-fonte e onde cada afirmação foi conferida:
+     docs/sistemas/abertura-habilitacoes/AJUDA.md. Conteúdo estático: abrir,
+     buscar e expandir perguntas não chama o servidor. Sem IDs, endereços
+     de planilhas nem dados de alunos. -->
+<div class="gradip-help-overlay" data-gradip-help-overlay hidden>
+  <section class="gradip-help-dialog" data-gradip-help-dialog role="dialog" aria-modal="true" aria-labelledby="gradip-help-title" tabindex="-1">
+    <header class="gradip-help-header">
+      <div><p class="gradip-help-eyebrow">Serviço de Graduação — IPUSP</p><h2 id="gradip-help-title">Ajuda do Gerenciador de Abertura de Habilitações</h2></div>
+      <button type="button" class="gradip-help-close" data-gradip-help-close aria-label="Fechar ajuda"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="gradip-help-search-wrap">
+      <label for="gradip-help-search">Buscar na ajuda</label>
+      <input id="gradip-help-search" type="search" placeholder="Ex.: reenviar, histórico, reabrir, conflito" autocomplete="off" data-gradip-help-search>
+      <p class="gradip-help-search-status" data-gradip-help-search-status aria-live="polite"></p>
+    </div>
+    <div class="gradip-help-layout">
+      <nav class="gradip-help-nav" aria-label="Seções da ajuda">
+        <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
+        <button type="button" data-gradip-help-target="ajuda-pendentes">Pedidos pendentes</button>
+        <button type="button" data-gradip-help-target="ajuda-pesquisar">Pesquisar um aluno</button>
+        <button type="button" data-gradip-help-target="ajuda-detalhes">Detalhes do pedido</button>
+        <button type="button" data-gradip-help-target="ajuda-observacoes">Observações</button>
+        <button type="button" data-gradip-help-target="ajuda-concluir">Concluir</button>
+        <button type="button" data-gradip-help-target="ajuda-reabrir">Reabrir</button>
+        <button type="button" data-gradip-help-target="ajuda-email">Avisar por e-mail</button>
+        <button type="button" data-gradip-help-target="ajuda-reenvio">Reenviar o aviso</button>
+        <button type="button" data-gradip-help-target="ajuda-email-falhou">Salvo, mas o e-mail falhou</button>
+        <button type="button" data-gradip-help-target="ajuda-concluidos">Últimos concluídos</button>
+        <button type="button" data-gradip-help-target="ajuda-historico">Histórico 2021–2022</button>
+        <button type="button" data-gradip-help-target="ajuda-relatorios">Relatórios</button>
+        <button type="button" data-gradip-help-target="ajuda-sem-identificador">Pedido sem identificador</button>
+        <button type="button" data-gradip-help-target="ajuda-conflito">Conflito de edição</button>
+        <button type="button" data-gradip-help-target="ajuda-acesso">Acesso e configuração</button>
+        <button type="button" data-gradip-help-target="ajuda-navegacao">Menu, abas e aparência</button>
+        <button type="button" data-gradip-help-target="ajuda-faq">Perguntas frequentes</button>
+      </nav>
+      <main class="gradip-help-main" data-gradip-help-main>
+
+        <!-- ===================== COMECE AQUI ===================== -->
+        <section id="ajuda-inicio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Comece aqui</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="para que serve gerenciador abertura habilitacao bacharelado licenciatura">
+            <h4>Para que serve</h4>
+            <p>O gerenciador mostra os pedidos de abertura de habilitação enviados pelos alunos no formulário e permite registrar o atendimento: anotar observações, concluir ou reabrir o pedido e avisar o aluno por e-mail. Também traz a busca no histórico e os relatórios.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="atalhos o que voce quer fazer tarefas">
+            <h4>O que você quer fazer?</h4>
+            <ul class="ajudaAtalhos">
+              <li><button type="button" class="ajudaLink" data-gradip-help-target="ajuda-pendentes">Atender um pedido pendente</button></li>
+              <li><button type="button" class="ajudaLink" data-gradip-help-target="ajuda-pesquisar">Encontrar o pedido de um aluno</button></li>
+              <li><button type="button" class="ajudaLink" data-gradip-help-target="ajuda-email">Avisar o aluno por e-mail</button></li>
+              <li><button type="button" class="ajudaLink" data-gradip-help-target="ajuda-reabrir">Reabrir um pedido concluído</button></li>
+              <li><button type="button" class="ajudaLink" data-gradip-help-target="ajuda-relatorios">Ver os números de pedidos</button></li>
+              <li><button type="button" class="ajudaLink" data-gradip-help-target="ajuda-faq">Resolver um problema</button></li>
+            </ul>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="areas pendentes concluidos relatorios mapa telas">
+            <h4>As três áreas</h4>
+            <ul>
+              <li><strong>Pendentes</strong>: pedidos que aguardam atendimento, em ordem alfabética, com busca.</li>
+              <li><strong>Concluídos</strong>: os 10 concluídos mais recentes e a busca no histórico (inclui 2021–2022).</li>
+              <li><strong>Relatórios</strong>: totais por habilitação, por ano e por mês.</li>
+            </ul>
+            <p>Cada área carrega quando você a abre. O botão <strong>Atualizar</strong> busca de novo os dados na planilha.</p>
+          </article>
+        </section>
+
+        <!-- ===================== PENDENTES ===================== -->
+        <section id="ajuda-pendentes" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Pedidos pendentes</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="localizar pendentes lista ordem alfabetica contador">
+            <h4>Localizar os pedidos pendentes</h4>
+            <p>A área <strong>Pendentes</strong> abre primeiro. O número ao lado do título (e no menu) é o total de pedidos ainda não concluídos. A lista está em ordem alfabética de nome.</p>
+            <p>Um pedido conta como concluído quando a situação registrada na planilha contém “conclu” (por exemplo, “Concluído”); qualquer outra situação, inclusive vazia, aparece aqui.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="atender pedido passo a passo abrir salvar">
+            <h4>Atender um pedido</h4>
+            <ol>
+              <li>Clique no cartão do aluno (ou selecione-o com Tab e aperte Enter).</li>
+              <li>Confira os dados e escreva observações, se houver.</li>
+              <li>Deixe marcadas as opções que quer: <strong>Concluir solicitação</strong> e/ou <strong>Avisar aluno por e-mail</strong>.</li>
+              <li>Clique em <strong>Salvar</strong> e confirme.</li>
+            </ol>
+            <p>Só quem tem perfil de administrador pode salvar. Quem tem perfil de consulta vê tudo, mas com as ações desativadas.</p>
+          </article>
+        </section>
+
+        <!-- ===================== PESQUISAR ===================== -->
+        <section id="ajuda-pesquisar" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Pesquisar um aluno</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="buscar pesquisar nome numero usp filtro acento">
+            <h4>Entre os pendentes</h4>
+            <p>Digite parte do nome ou do Nº USP no campo de busca da área Pendentes. A lista é filtrada na hora, sem diferença entre maiúsculas e minúsculas nem entre letras com e sem acento.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="buscar historico antigo concluido email">
+            <h4>Em pedidos antigos ou concluídos</h4>
+            <p>Use a <strong>busca no histórico</strong>, na área Concluídos: ela procura por nome, Nº USP ou e-mail na planilha atual e no histórico 2021–2022. <button type="button" class="ajudaLink" data-gradip-help-target="ajuda-historico">Saiba mais sobre o histórico</button>.</p>
+          </article>
+        </section>
+
+        <!-- ===================== DETALHES ===================== -->
+        <section id="ajuda-detalhes" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Detalhes do pedido</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="abrir detalhes janela campos dados">
+            <h4>O que aparece</h4>
+            <p>Nº USP, E-mail USP, habilitação solicitada, ano de ingresso, se o aluno fez trancamento total, data da solicitação, situação, data de conclusão, quando o aviso por e-mail foi enviado e as observações da equipe.</p>
+            <p>A janela fecha com <strong>Fechar</strong>, com o × ou com a tecla Esc. Enquanto um salvamento está em andamento, ela só fecha quando ele termina.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="data conclusao anterior reaberto">
+            <h4>“Conclusão anterior; o pedido foi reaberto”</h4>
+            <p>Quando um pedido é reaberto, a data da conclusão anterior continua registrada na planilha. O gerenciador a mostra com essa observação para não confundir com um pedido concluído.</p>
+          </article>
+        </section>
+
+        <!-- ===================== OBSERVAÇÕES ===================== -->
+        <section id="ajuda-observacoes" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Observações</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="observacoes anotar recado limite caracteres salvar">
+            <h4>Salvar observações</h4>
+            <p>O texto do campo <strong>Observações</strong> é gravado toda vez que você clica em Salvar, junto com as outras opções. Para só anotar algo, desmarque “Avisar aluno por e-mail” e mantenha a situação como está (marcado para concluído, desmarcado para pendente).</p>
+            <p>O limite é de 2.000 caracteres. Texto maior não é cortado: o gerenciador pede para você resumir antes de salvar.</p>
+          </article>
+        </section>
+
+        <!-- ===================== CONCLUIR ===================== -->
+        <section id="ajuda-concluir" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Concluir</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="concluir solicitacao marcar concluido data">
+            <h4>Concluir solicitação</h4>
+            <p>Com <strong>Concluir solicitação</strong> marcado, a situação passa a “Concluído” e a data de conclusão é registrada. O pedido sai de Pendentes e aparece em Concluídos.</p>
+            <p>Se o pedido já estava concluído, salvar de novo com a opção marcada mantém a data de conclusão original.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="concluir sem avisar sem email">
+            <h4>Concluir sem avisar</h4>
+            <p>Marque <strong>Concluir solicitação</strong> e desmarque <strong>Avisar aluno por e-mail</strong>. Nenhum e-mail é enviado.</p>
+          </article>
+        </section>
+
+        <!-- ===================== REABRIR ===================== -->
+        <section id="ajuda-reabrir" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Reabrir</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="reabrir desfazer conclusao voltar pendente">
+            <h4>Reabrir um pedido concluído</h4>
+            <ol>
+              <li>Em Concluídos (ou pela busca no histórico, para pedidos da planilha atual), abra o pedido.</li>
+              <li>Desmarque <strong>Concluir solicitação</strong> e <strong>Avisar aluno por e-mail</strong>.</li>
+              <li>Clique em Salvar e confirme “Reabrir pedido”.</li>
+            </ol>
+            <p>O pedido volta para Pendentes. Pedidos do histórico 2021–2022 não podem ser reabertos: são somente consulta.</p>
+          </article>
+        </section>
+
+        <!-- ===================== E-MAIL ===================== -->
+        <section id="ajuda-email" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Avisar por e-mail</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="email aviso enviar aluno mensagem assunto remetente">
+            <h4>O aviso ao aluno</h4>
+            <p>Com <strong>Avisar aluno por e-mail</strong> marcado, o gerenciador pede confirmação e envia ao E-mail USP do aluno a mensagem “Abertura de Habilitação”, informando que a habilitação solicitada foi aberta, em nome do Serviço de Graduação, com respostas para o endereço da equipe.</p>
+            <p>A saudação (bom dia, boa tarde ou boa noite) segue o horário de Brasília.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="avisar sem concluir independente pendente">
+            <h4>Avisar sem concluir</h4>
+            <p>As duas opções são independentes: você pode avisar e deixar o pedido pendente, desmarcando “Concluir solicitação”.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sem email cadastrado invalido opcao desativada">
+            <h4>Opção de e-mail desativada</h4>
+            <p>Se o pedido não tem e-mail cadastrado, a opção fica desativada. Se o e-mail não parece válido, o gerenciador recusa o aviso sem gravar nada; corrija a planilha ou salve sem avisar.</p>
+          </article>
+        </section>
+
+        <!-- ===================== REENVIO ===================== -->
+        <section id="ajuda-reenvio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Reenviar o aviso</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="reenviar confirmar reenvio ja avisado duplicado">
+            <h4>Confirmar reenvio</h4>
+            <p>Se o aluno já foi avisado sobre esse pedido, o gerenciador não envia de novo automaticamente: ele mostra a data do aviso anterior e pede confirmação. Até você confirmar, nada é gravado.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="envio em andamento interrompido outra sessao aguarde">
+            <h4>“Envio em andamento” ou “envio interrompido”</h4>
+            <p>Durante o envio, o pedido fica reservado por alguns minutos para que duas pessoas não avisem o mesmo aluno ao mesmo tempo. Se outra pessoa está enviando, aguarde alguns minutos e tente de novo.</p>
+            <p>Se um envio foi interrompido antes de terminar, não dá para saber se o e-mail saiu. Nesse caso, o gerenciador pede confirmação antes de enviar outra vez.</p>
+          </article>
+        </section>
+
+        <!-- ===================== E-MAIL FALHOU ===================== -->
+        <section id="ajuda-email-falhou" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Salvo, mas o e-mail falhou</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="email falhou nao enviado salvo erro cota">
+            <h4>“O pedido foi salvo, mas o e-mail não foi enviado”</h4>
+            <p>As observações e a situação foram gravadas; só o aviso não saiu. O gerenciador não registra o e-mail como enviado. A janela continua aberta: você pode tentar de novo mais tarde, com “Avisar aluno por e-mail” marcado.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="email enviado data nao registrada nao reenviar alterado outra sessao">
+            <h4>“O e-mail foi enviado, mas a data do envio não foi registrada”</h4>
+            <p>O aviso saiu, mas a planilha ficou sem a data. Isso acontece quando a gravação falha ou quando o pedido foi alterado por outra pessoa (ou na própria planilha) enquanto o e-mail era enviado; nesse caso, o gerenciador não grava a data por cima da alteração.</p>
+            <p>Não reenvie: a opção de aviso é desmarcada para evitar um segundo e-mail. Recarregue o pedido, anote nas observações que o aviso foi enviado e, se precisar, avise o responsável pelo sistema para conferir o registro.</p>
+          </article>
+        </section>
+
+        <!-- ===================== CONCLUÍDOS ===================== -->
+        <section id="ajuda-concluidos" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Últimos concluídos</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="10 dez concluidos recentes ordem data conclusao">
+            <h4>Os 10 concluídos mais recentes</h4>
+            <p>A área Concluídos mostra os 10 pedidos da planilha atual concluídos mais recentemente, pela data de conclusão. Pedidos sem data de conclusão usam a data da solicitação.</p>
+            <p>Cada cartão diz se o aluno foi avisado por e-mail. “Sem confirmação de envio” quer dizer que um envio começou e não foi confirmado.</p>
+          </article>
+        </section>
+
+        <!-- ===================== HISTÓRICO ===================== -->
+        <section id="ajuda-historico" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Histórico 2021–2022</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="pesquisar antigas historico 2021 2022 busca nome usp email">
+            <h4>Pesquisar solicitações antigas</h4>
+            <p>Na área Concluídos, digite pelo menos 2 caracteres (nome, Nº USP ou e-mail) e clique em <strong>Buscar</strong>. Os resultados vêm da planilha atual e do histórico 2021–2022, do mais recente para o mais antigo, com a origem indicada em cada cartão.</p>
+            <p><strong>Voltar aos 10 mais recentes</strong> limpa a busca.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="historico somente leitura consulta nao editar">
+            <h4>O histórico é somente consulta</h4>
+            <p>Os pedidos de 2021–2022 ficam numa aba separada que o gerenciador apenas lê. Eles aparecem nas buscas e nos relatórios, mas não abrem para edição e nunca são alterados pelo sistema.</p>
+            <p>Resultados da planilha atual abrem normalmente, como em Pendentes.</p>
+          </article>
+        </section>
+
+        <!-- ===================== RELATÓRIOS ===================== -->
+        <section id="ajuda-relatorios" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Relatórios</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="relatorios total habilitacao ano mes contagem">
+            <h4>Como ler os números</h4>
+            <ul>
+              <li><strong>Total</strong>: todos os pedidos com nome, da planilha atual e do histórico 2021–2022.</li>
+              <li><strong>Por habilitação</strong>: um pedido que marcou mais de uma habilitação conta uma vez em cada; respostas que não citam uma habilitação conhecida aparecem como “Outro / não identificado”.</li>
+              <li><strong>Por ano e por mês</strong>: pela data da solicitação. Pedidos sem data reconhecível ficam de fora dessas duas contagens, e o total informa quantos são.</li>
+            </ul>
+            <p>Os critérios são os mesmos da versão anterior do gerenciador.</p>
+          </article>
+        </section>
+
+        <!-- ===================== SEM IDENTIFICADOR ===================== -->
+        <section id="ajuda-sem-identificador" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Pedido sem identificador</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sem identificador registro id nao abre preparar pedido">
+            <h4>Por que o pedido não abre</h4>
+            <p>Cada pedido precisa de um identificador interno para ser alterado com segurança. Pedidos recém-chegados pelo formulário podem ainda não ter um. Eles continuam na lista, marcados como “Sem identificador”, mas não abrem até serem preparados.</p>
+            <p>Quem tem perfil de administrador vê o botão <strong>Preparar pedido</strong>: ele cria o identificador só daquele pedido, sem mudar mais nada. Depois disso, o pedido abre normalmente.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="identificador repetido invalido versao invalida migracao recuperacao responsavel">
+            <h4>Identificador repetido, identificador inválido ou versão inválida</h4>
+            <p>Esses casos não são corrigidos pela tela, para não alterar o pedido errado. O pedido continua na lista, marcado, e não abre. Também não edite as colunas “Registro ID” e “Versão” na planilha.</p>
+            <p>Avise o responsável pelo sistema e diga qual pedido é (nome e data do pedido). Ele confere a planilha e corrige um pedido por vez, com um procedimento próprio que só altera aquele pedido (descrito no manual de operação).</p>
+          </article>
+        </section>
+
+        <!-- ===================== CONFLITO ===================== -->
+        <section id="ajuda-conflito" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Conflito de edição</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="conflito edicao outra sessao versao recarregar mudou">
+            <h4>“Este pedido mudou em outra sessão”</h4>
+            <p>Outra pessoa (ou outra janela sua) salvou o mesmo pedido depois que você o abriu. Para não apagar o trabalho dela, nada foi gravado.</p>
+            <ol>
+              <li>Clique em <strong>Recarregar pedido</strong>.</li>
+              <li>O gerenciador mostra as observações gravadas agora na planilha. O que você digitou continua no campo.</li>
+              <li>Junte as informações, confira as opções e salve de novo.</li>
+            </ol>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="outra gravacao em andamento aguarde trava ocupada">
+            <h4>“Outra gravação está em andamento”</h4>
+            <p>Outra pessoa está salvando um pedido neste instante. Aguarde alguns segundos e clique em Salvar de novo; nada foi gravado.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao foi possivel confirmar salvamento parcial recarregar conferir">
+            <h4>“Não foi possível confirmar o salvamento”</h4>
+            <p>A resposta do servidor não chegou ou chegou incompleta, então não dá para saber o que foi gravado. Recarregue o pedido e confira antes de tentar de novo, para não enviar um segundo e-mail.</p>
+          </article>
+        </section>
+
+        <!-- ===================== ACESSO ===================== -->
+        <section id="ajuda-acesso" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Acesso e configuração</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="perfil leitor administrador somente consulta pedir acesso">
+            <h4>Perfis</h4>
+            <ul>
+              <li><strong>Consulta</strong>: vê pendentes, concluídos, histórico, detalhes e relatórios.</li>
+              <li><strong>Administrador</strong>: além disso, salva observações, conclui, reabre, avisa alunos e prepara pedidos sem identificador.</li>
+            </ul>
+            <p>Para pedir acesso ou mudar de perfil, fale com o responsável pelo Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="sem acesso conta nao identificada login usp">
+            <h4>“Sem acesso” ou “conta não identificada”</h4>
+            <p>O gerenciador confere a conta com que você entrou no navegador. Use a conta institucional @usp.br; se tiver várias contas abertas, abra o gerenciador numa janela em que só ela esteja conectada.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="falha configuracao planilha nao abre erro sistema responsavel">
+            <h4>Falha de configuração</h4>
+            <p>Se aparecer que o sistema está sem configuração válida, ou que uma coluna da planilha não foi encontrada, nada foi alterado. Avise o responsável pelo sistema: a correção é feita na configuração ou na planilha, não na tela.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="homologacao faixa teste ambiente">
+            <h4>Faixa “Ambiente de homologação”</h4>
+            <p>Indica uma cópia de testes, ligada a planilhas de teste. Não use essa cópia para atender pedidos reais.</p>
+          </article>
+        </section>
+
+        <!-- ===================== NAVEGAÇÃO ===================== -->
+        <section id="ajuda-navegacao" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Menu, abas e aparência</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="menu lateral abas alternar navegacao teclado setas">
+            <h4>Menu lateral ou abas</h4>
+            <p>O gerenciador abre com o <strong>menu lateral</strong>. Use os botões <strong>Menu lateral</strong> e <strong>Abas</strong> para alternar; a escolha vale até você fechar a página. Nas abas, as setas do teclado movem entre as áreas e Enter abre a escolhida.</p>
+            <p>Em telas estreitas, o menu lateral pode ser recolhido com <strong>Recolher menu</strong>.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="tema claro escuro sistema aparencia">
+            <h4>Tema claro, escuro ou do sistema</h4>
+            <p>O seletor de tema no cabeçalho muda as cores. A escolha fica guardada neste navegador e vale também para os outros sistemas GRADIP.</p>
+          </article>
+        </section>
+
+        <!-- ===================== FAQ ===================== -->
+        <section id="ajuda-faq" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Perguntas frequentes</h3>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="atualizar lista sozinha recarregar tempo real">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="hab-faq-atualizar">
+              <span>A lista se atualiza sozinha?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="hab-faq-atualizar" class="gradip-help-faq-panel" hidden><p>Não em tempo real. Cada área é lida quando você a abre e reaproveitada por até um minuto; depois de salvar um pedido, a lista é lida de novo. Para ver na hora o que outra pessoa fez, clique em <strong>Atualizar</strong>.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="sumiu pedido nao aparece lista">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="hab-faq-sumiu">
+              <span>Um pedido sumiu da lista de pendentes. O que houve?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="hab-faq-sumiu" class="gradip-help-faq-panel" hidden><p>Provavelmente alguém o concluiu. Procure o aluno pela busca no histórico, na área Concluídos. Pedidos com problema de identificador não somem: aparecem marcados na lista.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="email chegou aluno confirmar enviado">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="hab-faq-chegou">
+              <span>Como sei se o aviso foi enviado?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="hab-faq-chegou" class="gradip-help-faq-panel" hidden><p>No detalhe do pedido, “Aviso por e-mail” mostra a data do envio. Ela só é registrada depois que o envio foi aceito; uma tentativa que falhou não conta como enviada.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="duas pessoas mesmo pedido ao mesmo tempo">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="hab-faq-duas">
+              <span>E se duas pessoas abrirem o mesmo pedido?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="hab-faq-duas" class="gradip-help-faq-panel" hidden><p>A primeira a salvar grava normalmente. A segunda recebe o aviso de conflito e pode recarregar o pedido sem perder o que digitou. <button type="button" class="ajudaLink" data-gradip-help-target="ajuda-conflito">Ver conflito de edição</button>.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="editar planilha direto manual formulario">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="hab-faq-planilha">
+              <span>Posso editar a planilha diretamente?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="hab-faq-planilha" class="gradip-help-faq-panel" hidden><p>Evite. As proteções contra gravação simultânea valem só para quem usa o gerenciador; uma edição direta na planilha pode se cruzar com um salvamento. Se precisar corrigir algo na planilha, avise a equipe antes.</p></div>
+          </article>
+
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="botao salvar desativado nao clica">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="hab-faq-salvar">
+              <span>Por que o botão Salvar está desativado?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="hab-faq-salvar" class="gradip-help-faq-panel" hidden><p>Ou o seu perfil é de consulta, ou um salvamento ainda está em andamento, ou o pedido não terminou de carregar. <button type="button" class="ajudaLink" data-gradip-help-target="ajuda-acesso">Ver perfis</button>.</p></div>
+          </article>
+        </section>
+
+        <div class="gradip-help-no-results" data-gradip-help-no-results hidden><strong>Nenhum resultado encontrado.</strong><p>Tente outra palavra ou limpe a busca.</p></div>
+      </main>
+    </div>
+  </section>
+</div>

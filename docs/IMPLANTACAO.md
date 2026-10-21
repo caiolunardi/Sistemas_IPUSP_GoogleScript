@@ -26,6 +26,7 @@ Por isso o `clasp push` também é uma ação de produção quando o projeto tem
 | `exclusao-disciplinas/formulario/src` | não | idem + `AMBIENTE` | sim | a conferir |
 | `trancamento-parcial/formulario/src` | não | idem + `AMBIENTE` | sim | a conferir |
 | `trancamento-total/formulario/src` | não | idem + `AMBIENTE` | sim | a conferir |
+| `abertura-habilitacoes/gerenciador/src` (21/10/2026) | **sim** (acesso "Somente eu" até a homologação) | `ID_INDEX_SPREADSHEET_ID`; chaves `ABERTURA_HABILITACOES` e `PERMISSOES_DE_ACESSO` + `AMBIENTE` | prevista ([plano](sistemas/abertura-habilitacoes/HOMOLOGACAO.md)) | em uso a v1.0 (ID literal no código, fora do repositório); a v2.0 do Git não foi implantada |
 
 Conta dona dos projetos: a institucional do Serviço de Graduação (segundo `DEVELOPMENT_LOCAL.md`). O repositório não guarda IDs de script nem de implantação, de propósito.
 

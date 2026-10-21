@@ -1,0 +1,91 @@
+<!--
+  GRADIP UI — Controle opcional de tema
+  Requer shared/GradipTema.html carregado antes.
+  Preferências exibidas: Sistema | Claro | Escuro
+-->
+<style>
+.gradip-theme-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gradip-text-muted);
+  font-size: 13px;
+}
+.gradip-theme-control__label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.gradip-theme-control__select {
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 34px 0 10px;
+  border: 1px solid var(--gradip-border-strong);
+  border-radius: 8px;
+  background: var(--gradip-input-bg);
+  color: var(--gradip-input-text);
+  font: inherit;
+  cursor: pointer;
+}
+.gradip-theme-control__select:hover { border-color: var(--gradip-link); }
+.gradip-theme-control__select:focus-visible {
+  outline: 3px solid var(--gradip-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  .gradip-theme-control__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+</style>
+
+<label class="gradip-theme-control">
+  <span class="gradip-theme-control__label">Aparência</span>
+  <select class="gradip-theme-control__select" data-gradip-theme-select aria-label="Aparência">
+    <option value="system">Sistema</option>
+    <option value="light">Claro</option>
+    <option value="dark">Escuro</option>
+  </select>
+</label>
+
+<script>
+(function () {
+  "use strict";
+  if (window.__gradipThemeControlInitialized) return;
+  window.__gradipThemeControlInitialized = true;
+
+  function getSelects() {
+    return document.querySelectorAll("[data-gradip-theme-select]");
+  }
+
+  function syncControls() {
+    if (!window.GradipTheme) return;
+    var preference = window.GradipTheme.getPreference();
+    var selects = getSelects();
+    for (var i = 0; i < selects.length; i += 1) {
+      selects[i].value = preference;
+    }
+  }
+
+  document.addEventListener("change", function (event) {
+    var target = event.target;
+    if (target && typeof target.matches === "function" && target.matches("[data-gradip-theme-select]") && window.GradipTheme) {
+      window.GradipTheme.setPreference(target.value);
+    }
+  });
+
+  document.addEventListener("gradipthemechange", syncControls);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncControls);
+  } else {
+    syncControls();
+  }
+})();
+</script>

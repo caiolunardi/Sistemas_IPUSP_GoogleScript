@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<!-- Tema GRADIP antes de qualquer estilo: o tema certo já no primeiro desenho. -->
+<?!= include_('GradipTema'); ?>
+<?!= include_('GerenciadorEstilos'); ?>
+<?!= include_('GerenciadorAjudaEstilos'); ?>
+<script>
+  // Lido pelo servidor (Acesso.gs) antes de servir a página. Esconder
+  // botões aqui é só conveniência: quem protege é o servidor.
+  window.GERENCIADOR_CONFIG = <?!= JSON.stringify({ perfil: perfil, versao: versao, homologacao: homologacao }) ?>;
+</script>
+</head>
+<body>
+
+<a class="pularParaConteudo" href="#conteudo">Pular para o conteúdo</a>
+
+<header id="headerSistema">
+  <div class="logoEsquerda">
+    <?!= include_('GradipMarcaIPUSP'); ?>
+    <div class="tituloBloco">
+      <div class="tituloSistema">Gerenciador de Abertura de Habilitações</div>
+      <div class="subtituloSistema">Serviço de Graduação — Instituto de Psicologia</div>
+    </div>
+  </div>
+  <div class="grupoDireitaHeader">
+    <?!= include_('GradipTemaControle'); ?>
+    <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog">
+      <span class="iconeBotao" data-icone="circle-help" aria-hidden="true"></span>
+      <span class="textoAjuda">Ajuda</span>
+    </button>
+    <span class="logoUSPWrap"><?!= include_('GradipMarcaUSP'); ?></span>
+  </div>
+</header>
+<div class="barraAzul"></div>
+
+<div id="faixaHomologacao" class="faixaAviso faixaAviso--homologacao" role="note" hidden>
+  <strong>Ambiente de homologação.</strong> Esta cópia usa planilhas de teste. Não use para atender pedidos reais.
+</div>
+<div id="avisoSomenteLeitura" class="faixaAviso" role="note" hidden>
+  <strong>Somente consulta.</strong> Você pode ver pedidos, histórico e relatórios, mas não pode alterar pedidos nem avisar alunos.
+  <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-acesso">Como pedir outro perfil</button>
+</div>
+
+<!-- Navegação: menu lateral (padrão ao abrir) ou abas. Os mesmos botões
+     servem aos dois modos; trocar de modo só muda a apresentação. -->
+<div class="navegacaoModos">
+  <p class="navegacaoModos__rotulo" id="modoRotulo">Navegação</p>
+  <div class="navegacaoModos__grupo" role="group" aria-labelledby="modoRotulo">
+    <button type="button" class="botaoModo" data-modo="sidebar" aria-pressed="true"><span class="iconeBotao" data-icone="panel-left" aria-hidden="true"></span><span>Menu lateral</span></button>
+    <button type="button" class="botaoModo" data-modo="abas" aria-pressed="false"><span class="iconeBotao" data-icone="panels-top-left" aria-hidden="true"></span><span>Abas</span></button>
+  </div>
+  <span class="somenteLeitor" id="modoStatus" role="status" aria-live="polite"></span>
+</div>
+
+<div id="layout" class="layout" data-navegacao="sidebar">
+
+  <aside id="sidebar" class="sidebar" aria-label="Áreas do gerenciador">
+    <div class="sidebar__topo">
+      <p class="sidebar__titulo">Áreas</p>
+      <button type="button" id="menuMovel" class="menuMovel" aria-controls="menuAreas" aria-expanded="true">Recolher menu</button>
+    </div>
+    <nav id="menuAreas" class="menuAreas" aria-label="Áreas do gerenciador">
+      <button type="button" class="navItem" id="navPendentes" data-area="pendentes" aria-controls="conteudo">
+        <span class="navIcone" data-icone="inbox" aria-hidden="true"></span><span class="navTexto">Pendentes</span><span class="navContagem" id="navContagemPendentes"></span>
+      </button>
+      <button type="button" class="navItem" id="navConcluidos" data-area="concluidos" aria-controls="conteudo">
+        <span class="navIcone" data-icone="circle-check" aria-hidden="true"></span><span class="navTexto">Concluídos</span>
+      </button>
+      <button type="button" class="navItem" id="navRelatorios" data-area="relatorios" aria-controls="conteudo">
+        <span class="navIcone" data-icone="chart-column" aria-hidden="true"></span><span class="navTexto">Relatórios</span>
+      </button>
+    </nav>
+    <div class="sidebar__apoio">
+      <button type="button" class="navItem navItem--apoio" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog">
+        <span class="navIcone" data-icone="circle-help" aria-hidden="true"></span><span class="navTexto">Ajuda e perguntas frequentes</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="conteudo" tabindex="-1">
+
+    <!-- PENDENTES -->
+    <section id="areaPendentes" class="area" data-area-painel="pendentes" aria-labelledby="tituloPendentes">
+      <div class="cardResumo">
+        <div>
+          <h1 id="tituloPendentes">Pedidos pendentes</h1>
+          <p>Solicitações de abertura de habilitação aguardando atendimento, em ordem alfabética.</p>
+        </div>
+        <div class="contador" id="contadorPendentes" aria-hidden="true">…</div>
+      </div>
+      <div class="barraFerramentas">
+        <div class="campoBusca">
+          <label for="buscaPendentes">Buscar por nome ou Nº USP</label>
+          <div class="campoBusca__linha">
+            <span class="campoBusca__icone" data-icone="search" aria-hidden="true"></span>
+            <input type="search" id="buscaPendentes" autocomplete="off" placeholder="Ex.: Maria ou 1234567" aria-describedby="statusPendentes">
+          </div>
+        </div>
+        <div class="barraFerramentas__acoes">
+          <button type="button" class="botaoSecundario" data-atualizar="pendentes"><span class="iconeBotao" data-icone="refresh-cw" aria-hidden="true"></span>Atualizar</button>
+          <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-pendentes">? Como atender um pedido</button>
+        </div>
+      </div>
+      <p class="statusLista" id="statusPendentes" role="status" aria-live="polite"></p>
+      <div class="estadoArea" id="estadoPendentes"></div>
+      <ul class="listaPedidos" id="listaPendentes" aria-label="Pedidos pendentes"></ul>
+    </section>
+
+    <!-- CONCLUÍDOS -->
+    <section id="areaConcluidos" class="area" data-area-painel="concluidos" aria-labelledby="tituloConcluidos" hidden>
+      <div class="cardResumo">
+        <div>
+          <h1 id="tituloConcluidos">Últimos concluídos</h1>
+          <p id="subtituloConcluidos">Os 10 pedidos concluídos mais recentes da planilha atual. Para pedidos mais antigos, use a busca no histórico.</p>
+        </div>
+        <div class="contador" id="contadorConcluidos" aria-hidden="true">…</div>
+      </div>
+      <form class="barraFerramentas" id="formBuscaHistorico" role="search" novalidate>
+        <div class="campoBusca">
+          <label for="buscaHistorico">Buscar no histórico (nome, Nº USP ou e-mail)</label>
+          <div class="campoBusca__linha">
+            <span class="campoBusca__icone" data-icone="history" aria-hidden="true"></span>
+            <input type="search" id="buscaHistorico" autocomplete="off" maxlength="100" placeholder="Inclui a planilha atual e o histórico 2021–2022" aria-describedby="statusConcluidos">
+          </div>
+        </div>
+        <div class="barraFerramentas__acoes">
+          <button type="submit" class="botaoPrimario" id="botaoBuscarHistorico"><span class="iconeBotao" data-icone="search" aria-hidden="true"></span>Buscar</button>
+          <button type="button" class="botaoSecundario" id="botaoLimparBusca" hidden>Voltar aos 10 mais recentes</button>
+          <button type="button" class="botaoSecundario" data-atualizar="concluidos"><span class="iconeBotao" data-icone="refresh-cw" aria-hidden="true"></span>Atualizar</button>
+          <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-historico">? Sobre o histórico</button>
+        </div>
+      </form>
+      <p class="statusLista" id="statusConcluidos" role="status" aria-live="polite"></p>
+      <div class="estadoArea" id="estadoConcluidos"></div>
+      <ul class="listaPedidos" id="listaConcluidos" aria-label="Pedidos concluídos"></ul>
+    </section>
+
+    <!-- RELATÓRIOS -->
+    <section id="areaRelatorios" class="area" data-area-painel="relatorios" aria-labelledby="tituloRelatorios" hidden>
+      <div class="cardResumo">
+        <div>
+          <h1 id="tituloRelatorios">Relatórios</h1>
+          <p>Considerando a planilha atual e o histórico 2021–2022.</p>
+        </div>
+        <div class="barraFerramentas__acoes">
+          <button type="button" class="botaoSecundario" data-atualizar="relatorios"><span class="iconeBotao" data-icone="refresh-cw" aria-hidden="true"></span>Atualizar</button>
+          <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-relatorios">? Como ler os números</button>
+        </div>
+      </div>
+      <p class="statusLista" id="statusRelatorios" role="status" aria-live="polite"></p>
+      <div class="estadoArea" id="estadoRelatorios"></div>
+      <div class="gradeRelatorios" id="gradeRelatorios"></div>
+    </section>
+
+    <p class="rodape">Gerenciador de Abertura de Habilitações · versão <span id="versaoSistema"></span> · IPUSP — Serviço de Graduação</p>
+  </main>
+</div>
+
+<!-- DETALHE DO PEDIDO -->
+<div class="modalFundo" id="modalDetalhe" hidden>
+  <div class="modalPainel" role="dialog" aria-modal="true" aria-labelledby="detalheNome" aria-describedby="detalheSubtitulo" tabindex="-1">
+    <header class="modalCabecalho">
+      <div>
+        <p class="modalEyebrow" id="detalheSubtitulo">Pedido de abertura de habilitação</p>
+        <h2 id="detalheNome">Carregando…</h2>
+      </div>
+      <button type="button" class="botaoFechar" data-fechar-modal aria-label="Fechar detalhe do pedido"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="modalCorpo">
+      <div class="estadoArea" id="estadoDetalhe"></div>
+      <div id="detalheConteudo" hidden>
+        <section class="secaoDetalhe" aria-labelledby="tituloDadosPedido">
+          <h3 id="tituloDadosPedido">Dados do pedido</h3>
+          <dl class="listaDados">
+            <div><dt>Nº USP</dt><dd id="infoNUsp"></dd></div>
+            <div><dt>E-mail USP</dt><dd id="infoEmail"></dd></div>
+            <div><dt>Habilitação solicitada</dt><dd id="infoHabilitacao"></dd></div>
+            <div><dt>Ano de ingresso</dt><dd id="infoAnoIngresso"></dd></div>
+            <div><dt>Trancamento total em algum semestre?</dt><dd id="infoTrancamento"></dd></div>
+            <div><dt>Data da solicitação</dt><dd id="infoCarimbo"></dd></div>
+          </dl>
+        </section>
+        <section class="secaoDetalhe" aria-labelledby="tituloSituacao">
+          <h3 id="tituloSituacao">Situação</h3>
+          <dl class="listaDados">
+            <div><dt>Situação</dt><dd><span class="selo" id="infoSituacao"></span></dd></div>
+            <div><dt>Data de conclusão</dt><dd id="infoDataConclusao"></dd></div>
+            <div><dt>Aviso por e-mail</dt><dd id="infoEmailEnviado"></dd></div>
+          </dl>
+        </section>
+        <section class="secaoDetalhe" aria-labelledby="tituloObservacoes">
+          <h3 id="tituloObservacoes"><label for="campoObservacoes">Observações</label></h3>
+          <div class="alerta alerta--info" id="observacoesAtuais" hidden></div>
+          <textarea id="campoObservacoes" maxlength="2000" rows="5" placeholder="Recados ou pendências sobre esse pedido" aria-describedby="contagemObservacoes"></textarea>
+          <p class="ajudaCampo" id="contagemObservacoes" aria-live="polite"></p>
+        </section>
+        <section class="secaoDetalhe" id="secaoAcoes" aria-labelledby="tituloAcoes">
+          <h3 id="tituloAcoes">Ações</h3>
+          <p class="ajudaCampo">As duas opções são independentes. Ao salvar, as observações são sempre gravadas.</p>
+          <div class="opcao">
+            <input type="checkbox" id="checkConcluir">
+            <label for="checkConcluir">Concluir solicitação <span class="opcao__dica">desmarque para reabrir um pedido concluído</span></label>
+            <button type="button" class="botaoDica" data-gradip-help-open="ajuda-concluir" aria-label="Ajuda: concluir ou reabrir">?</button>
+          </div>
+          <div class="opcao">
+            <input type="checkbox" id="checkAvisar">
+            <label for="checkAvisar">Avisar aluno por e-mail <span class="opcao__dica" id="dicaAvisar"></span></label>
+            <button type="button" class="botaoDica" data-gradip-help-open="ajuda-email" aria-label="Ajuda: aviso por e-mail">?</button>
+          </div>
+          <p class="avisoLeitor" id="avisoLeitorDetalhe" hidden>Seu perfil é somente de consulta: as ações estão desativadas.</p>
+        </section>
+        <div class="alerta" id="mensagemDetalhe" role="alert" hidden></div>
+      </div>
+    </div>
+    <footer class="modalRodape">
+      <span class="statusSalvamento" id="statusSalvamento" role="status" aria-live="polite"></span>
+      <button type="button" class="botaoSecundario" data-fechar-modal>Fechar</button>
+      <button type="button" class="botaoPrimario" id="botaoSalvar" disabled><span class="iconeBotao" data-icone="mail" aria-hidden="true" hidden></span>Salvar</button>
+    </footer>
+  </div>
+</div>
+
+<!-- CONFIRMAÇÃO (substitui o confirm() do navegador) -->
+<div class="modalFundo modalFundo--confirmacao" id="modalConfirmacao" hidden>
+  <div class="modalPainel modalPainel--pequeno" role="alertdialog" aria-modal="true" aria-labelledby="confirmacaoTitulo" aria-describedby="confirmacaoTexto" tabindex="-1">
+    <header class="modalCabecalho"><h2 id="confirmacaoTitulo">Confirmar</h2></header>
+    <div class="modalCorpo"><p id="confirmacaoTexto"></p></div>
+    <footer class="modalRodape">
+      <button type="button" class="botaoSecundario" id="confirmacaoCancelar">Cancelar</button>
+      <button type="button" class="botaoPrimario" id="confirmacaoOk">Confirmar</button>
+    </footer>
+  </div>
+</div>
+
+<div class="aviso" id="avisoGeral" role="status" aria-live="polite" hidden></div>
+
+<?!= include_('GerenciadorIcones'); ?>
+<?!= include_('GerenciadorAjuda'); ?>
+<?!= include_('GerenciadorAjudaUI'); ?>
+<?!= include_('GerenciadorAppUI'); ?>
+</body>
+</html>

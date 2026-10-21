@@ -19,6 +19,7 @@ Uma Release **marca o código do repositório**. Ela não publica nada no Google
 | Trancamento Parcial (formulário) | `trancamento-parcial-v1.2` |
 | Trancamento Total (formulário) | `trancamento-total-v1.3` |
 | Gerenciador de Trancamento Total | `trancamento-total-gerenciador-v1.1` |
+| Gerenciador de Abertura de Habilitações | `abertura-habilitacoes-gerenciador-v2.0` |
 | Planilha das secretarias | `planilha-secretarias-v1.1` |
 
 Gerenciadores usam o sufixo `-gerenciador` (código em `sistemas/<sistema>/gerenciador/`). Os formulários com gerenciador usam o nome do sistema sem sufixo.

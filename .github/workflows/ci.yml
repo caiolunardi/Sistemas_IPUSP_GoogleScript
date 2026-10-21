@@ -64,6 +64,8 @@ jobs:
           - sistemas/trancamento-parcial/formulario/testes/testar_backend.js
           - sistemas/trancamento-total/formulario/testes/testar_backend.js
           - sistemas/trancamento-total/gerenciador/testes/testar_backend.js
+          - sistemas/abertura-habilitacoes/gerenciador/testes/testar_backend.js
+          - sistemas/abertura-habilitacoes/gerenciador/testes/testar_equivalencia.js
           - sistemas/painel-solicitacoes/testes/testar_contagem.js
           - sistemas/painel-servidores/testes/testar_acesso.js
           - sistemas/painel-servidores/testes/testar_saudacao.js
@@ -94,6 +96,7 @@ jobs:
           - sistemas/trancamento-total/formulario/testes/testar_navegador.js
           - sistemas/painel-solicitacoes/testes/testar_navegador.js
           - sistemas/painel-servidores/testes/testar_navegador.js
+          - sistemas/abertura-habilitacoes/gerenciador/testes/testar_navegador.js
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

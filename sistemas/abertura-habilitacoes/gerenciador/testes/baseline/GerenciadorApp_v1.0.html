@@ -1,0 +1,1260 @@
+<base target="_top">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f5f5f5;
+    color:#333;
+}
+
+#headerSistema{
+    background:white;
+    height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid #ddd;
+}
+
+.logoEsquerda{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.logoEsquerda img{
+    height:52px;
+}
+
+.logoUSP{
+    height:44px;
+}
+
+.tituloSistema{
+    font-size:17px;
+    font-weight:bold;
+    color:#222;
+}
+
+.subtituloSistema{
+    font-size:13px;
+    color:#666;
+    margin-top:2px;
+}
+
+.barraAzul{
+    height:6px;
+    background:#005AA9;
+}
+
+#conteudo{
+    max-width:1100px;
+    margin:24px auto;
+    padding:0 20px;
+}
+
+.cardResumo{
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:6px;
+    padding:16px 20px;
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+
+.cardResumo h1{
+    font-size:18px;
+    margin:0;
+    color:#222;
+}
+
+.cardResumo p{
+    margin:4px 0 0 0;
+    font-size:13px;
+    color:#777;
+}
+
+.badgeContador{
+    background:#005AA9;
+    color:white;
+    font-weight:bold;
+    font-size:20px;
+    border-radius:20px;
+    padding:8px 18px;
+}
+
+.abas{
+    display:flex;
+    gap:4px;
+    margin-bottom:14px;
+}
+
+.botaoAba{
+    padding:11px 20px;
+    background:#eee;
+    border:none;
+    border-radius:6px 6px 0 0;
+    font-size:14px;
+    font-weight:bold;
+    color:#777;
+    cursor:pointer;
+}
+
+.botaoAba.ativa{
+    background:white;
+    color:#005AA9;
+    box-shadow:0 -2px 6px rgba(0,0,0,.04);
+}
+
+.caixaBusca{
+    width:100%;
+    padding:11px 14px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+    box-sizing:border-box;
+    margin-bottom:10px;
+}
+
+.listaAlunos{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.cardAluno{
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:6px;
+    padding:14px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    transition:.15s;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+}
+
+.cardAluno:hover{
+    border-color:#005AA9;
+    box-shadow:0 2px 8px rgba(0,90,169,.15);
+}
+
+.cardAluno.semClique{
+    cursor:default;
+}
+
+.infoAluno{
+    flex:1;
+    min-width:0;
+    text-align:left;
+}
+
+.infoAluno strong{
+    display:block;
+    text-align:left;
+    font-size:15px;
+    color:#222;
+}
+
+.infoAluno div{
+    display:block;
+    text-align:left;
+    font-size:12px;
+    color:#777;
+    margin-top:3px;
+}
+
+.avisoEmailListaCard{
+    color:#1a7d3a !important;
+    font-weight:bold;
+    font-size:12px;
+    margin-top:4px;
+}
+
+.badgeStatus{
+    font-size:11px;
+    font-weight:bold;
+    padding:5px 12px;
+    border-radius:14px;
+    background:#fdecea;
+    color:#b71c1c;
+    white-space:nowrap;
+    margin-left:10px;
+}
+
+.badgeStatus.ok{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.badgeOrigem{
+    font-size:10px;
+    font-weight:bold;
+    padding:3px 9px;
+    border-radius:10px;
+    background:#eaf2fa;
+    color:#005AA9;
+    white-space:nowrap;
+    margin-left:8px;
+}
+
+.vazio{
+    text-align:center;
+    color:#999;
+    padding:60px 20px;
+    font-size:14px;
+}
+
+/*=================================
+    RELATÓRIOS
+==================================*/
+
+.gradeRelatorios{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.blocoRelatorio{
+    background:white;
+    border:1px solid #d9d9d9;
+    border-radius:8px;
+    padding:18px 20px;
+    grid-column:span 1;
+}
+
+.blocoRelatorio.largo{
+    grid-column:span 2;
+}
+
+.blocoRelatorio h3{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:#005AA9;
+    margin:0 0 14px 0;
+    border-bottom:2px solid #eaf2fa;
+    padding-bottom:6px;
+}
+
+.linhaBarra{
+    margin-bottom:10px;
+}
+
+.linhaBarra .rotuloBarra{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    color:#333;
+    margin-bottom:4px;
+}
+
+.linhaBarra .trilhaBarra{
+    background:#eef1f4;
+    border-radius:4px;
+    height:8px;
+    overflow:hidden;
+}
+
+.linhaBarra .preenchidoBarra{
+    background:#005AA9;
+    height:100%;
+    border-radius:4px;
+}
+
+.totalGrande{
+    font-size:34px;
+    font-weight:bold;
+    color:#005AA9;
+}
+
+.totalGrande + p{
+    color:#777;
+    font-size:13px;
+    margin-top:2px;
+}
+
+/*=================================
+        MODAL
+==================================*/
+
+.modal{
+    display:none;
+    position:fixed;
+    z-index:9999;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.45);
+}
+
+.modalConteudo{
+    background:white;
+    width:560px;
+    min-width:400px;
+    max-width:92vw;
+    margin:40px auto;
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+    max-height:88vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+.modalHeader{
+    background:#005AA9;
+    color:white;
+    padding:18px 24px;
+    border-radius:10px 10px 0 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-shrink:0;
+}
+
+.modalHeader h2{
+    margin:0;
+    font-size:18px;
+}
+
+.modalHeader .fechar{
+    cursor:pointer;
+    font-size:24px;
+    line-height:1;
+}
+
+.modalBody{
+    padding:22px 24px;
+    overflow-y:auto;
+}
+
+.secao{
+    margin-bottom:22px;
+}
+
+.secao h3{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:#005AA9;
+    margin:0 0 12px 0;
+    border-bottom:2px solid #eaf2fa;
+    padding-bottom:6px;
+}
+
+.linhaInfo{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    font-size:13px;
+    border-bottom:1px solid #f2f2f2;
+}
+
+.linhaInfo span:first-child{
+    color:#777;
+}
+
+.linhaInfo span:last-child{
+    color:#222;
+    font-weight:bold;
+    text-align:right;
+}
+
+.campoEditavel{
+    margin-bottom:12px;
+}
+
+.campoEditavel label{
+    display:block;
+    font-size:12px;
+    color:#666;
+    margin-bottom:4px;
+    font-weight:bold;
+}
+
+.campoEditavel textarea{
+    width:100%;
+    min-height:100px;
+    padding:9px 10px;
+    border:1px solid #ccc;
+    border-radius:4px;
+    font-size:14px;
+    box-sizing:border-box;
+    font-family:inherit;
+    resize:vertical;
+}
+
+.botaoPrimario{
+    width:100%;
+    padding:13px;
+    background:#005AA9;
+    color:white;
+    border:none;
+    border-radius:6px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:6px;
+    transition:.15s;
+}
+
+.botaoPrimario:hover{
+    background:#00468a;
+}
+
+.botaoVerde{
+    background:#2e7d32;
+}
+
+.botaoVerde:hover{
+    background:#245e27;
+}
+
+.botaoLaranja{
+    background:#e5893a;
+}
+
+.botaoLaranja:hover{
+    background:#c76f26;
+}
+
+.botaoSecundario{
+    width:100%;
+    padding:11px;
+    background:white;
+    border:1.5px solid #005AA9;
+    color:#005AA9;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:6px;
+}
+
+.botaoSecundario:hover{
+    background:#eaf2fa;
+}
+
+.avisoDocGerado{
+    font-size:11px;
+    color:#2e7d32;
+    margin-top:6px;
+    text-align:center;
+}
+
+.itemCheckbox{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    font-size:14px;
+}
+
+.itemCheckbox input{
+    width:17px;
+    height:17px;
+}
+
+/*=================================
+        LOADING
+==================================*/
+
+#loadingOverlay{
+    display:none;
+    position:fixed;
+    z-index:10000;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(255,255,255,0.75);
+    align-items:center;
+    justify-content:center;
+}
+
+#loadingBox{
+    background:white;
+    border-radius:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,.15);
+    padding:30px 40px;
+    text-align:center;
+}
+
+#loadingLogo{
+    height:46px;
+    margin-bottom:12px;
+}
+
+#loadingTitulo{
+    font-weight:bold;
+    color:#222;
+    font-size:15px;
+}
+
+#loadingTexto{
+    color:#777;
+    font-size:12px;
+    margin-top:4px;
+}
+
+</style>
+
+<header id="headerSistema">
+    <div class="logoEsquerda">
+        <img src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/logo_ip.png">
+        <div>
+            <div class="tituloSistema">Gerenciador de Abertura de Habilitações</div>
+            <div class="subtituloSistema">Instituto de Psicologia</div>
+        </div>
+    </div>
+    <img class="logoUSP" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/usp.png">
+</header>
+
+<div class="barraAzul"></div>
+
+<div id="conteudo">
+
+    <div class="cardResumo" id="cardResumoTop">
+        <div>
+            <h1 id="tituloLista">Pedidos pendentes</h1>
+            <p id="subtituloLista">&nbsp;</p>
+        </div>
+        <div class="badgeContador" id="contador">0</div>
+    </div>
+
+    <div class="abas">
+        <button class="botaoAba ativa" id="abaPendentes" onclick="trocarAba('pendentes')">Pendentes</button>
+        <button class="botaoAba" id="abaConcluidos" onclick="trocarAba('concluidos')">Concluídos</button>
+        <button class="botaoAba" id="abaRelatorios" onclick="trocarAba('relatorios')">Relatórios</button>
+    </div>
+
+    <!-- PENDENTES -->
+    <div id="painelPendentes">
+        <input type="text" class="caixaBusca" id="caixaBuscaPendentes" placeholder="Buscar por nome ou Nº USP..." oninput="filtrarPendentes()">
+        <div class="listaAlunos" id="listaPendentes"></div>
+    </div>
+
+    <!-- CONCLUÍDOS -->
+    <div id="painelConcluidos" style="display:none;">
+        <input type="text" class="caixaBusca" id="caixaBuscaHistorico" placeholder="Buscar por nome, Nº USP ou e-mail (em todo o histórico, inclusive 2021-2022)..." onkeydown="if(event.key==='Enter') buscarHistoricoAgora()">
+        <button class="botaoSecundario" style="margin-bottom:14px;" onclick="buscarHistoricoAgora()">🔎 Buscar no histórico</button>
+        <div class="listaAlunos" id="listaConcluidos"></div>
+    </div>
+
+    <!-- RELATÓRIOS -->
+    <div id="painelRelatorios" style="display:none;">
+        <div class="gradeRelatorios" id="gradeRelatorios"></div>
+    </div>
+
+</div>
+
+<!-- MODAL DE DETALHE -->
+
+<div id="modalDetalhe" class="modal">
+    <div class="modalConteudo">
+
+        <div class="modalHeader">
+            <h2 id="modalNome">—</h2>
+            <span class="fechar" onclick="fecharModal()">&times;</span>
+        </div>
+
+        <div class="modalBody">
+
+            <div class="secao">
+                <h3>Dados do Pedido</h3>
+                <div class="linhaInfo"><span>Nº USP</span><span id="infoNUsp">—</span></div>
+                <div class="linhaInfo"><span>E-mail</span><span id="infoEmail">—</span></div>
+                <div class="linhaInfo"><span>Habilitação solicitada</span><span id="infoHabilitacao">—</span></div>
+                <div class="linhaInfo"><span>Ano de ingresso</span><span id="infoAnoIngresso">—</span></div>
+                <div class="linhaInfo"><span>Trancamento total?</span><span id="infoTrancamento">—</span></div>
+                <div class="linhaInfo"><span>Data da solicitação</span><span id="infoCarimbo">—</span></div>
+            </div>
+
+            <div class="secao">
+                <h3>Observações</h3>
+                <div class="campoEditavel">
+                    <textarea id="campoObservacoes" placeholder="Recados ou pendências sobre esse pedido..."></textarea>
+                </div>
+            </div>
+
+            <div class="secao">
+                <h3>Ações</h3>
+
+                <label class="itemCheckbox"><input type="checkbox" id="checkAvisarAluno"> Avisar aluno por e-mail</label>
+                <div class="avisoDocGerado" id="avisoEmailEnviado" style="text-align:left; margin-bottom:6px;"></div>
+
+                <label class="itemCheckbox"><input type="checkbox" id="checkConcluirSolicitacao"> Concluir solicitação</label>
+
+                <button class="botaoPrimario botaoVerde" onclick="salvarPedido()">
+                    💾 Salvar
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- LOADING -->
+
+<div id="loadingOverlay">
+    <div id="loadingBox">
+        <img id="loadingLogo" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/logo_ip.png">
+        <div id="loadingTitulo">Gerenciador de Abertura de Habilitações</div>
+        <div id="loadingTexto">Processando<span id="loadingPontos"></span></div>
+    </div>
+</div>
+
+<script>
+
+let abaAtual = "pendentes";
+let pendentesCarregados = [];
+let concluidosCarregados = [];
+let pedidoAtual = null;
+let loadingTimer;
+
+window.onload = function () {
+    carregarLista();
+};
+
+//-----------------------------------
+// Abas
+//-----------------------------------
+
+function trocarAba(aba) {
+
+    abaAtual = aba;
+
+    document.getElementById("abaPendentes").classList.toggle("ativa", aba === "pendentes");
+    document.getElementById("abaConcluidos").classList.toggle("ativa", aba === "concluidos");
+    document.getElementById("abaRelatorios").classList.toggle("ativa", aba === "relatorios");
+
+    document.getElementById("painelPendentes").style.display = aba === "pendentes" ? "block" : "none";
+    document.getElementById("painelConcluidos").style.display = aba === "concluidos" ? "block" : "none";
+    document.getElementById("painelRelatorios").style.display = aba === "relatorios" ? "block" : "none";
+
+    document.getElementById("cardResumoTop") && (document.getElementById("cardResumoTop").style.display = aba === "relatorios" ? "none" : "flex");
+
+    if (aba === "pendentes") {
+        document.getElementById("tituloLista").textContent = "Pedidos pendentes";
+        document.getElementById("subtituloLista").textContent = "Solicitações de abertura de habilitação aguardando processamento";
+        carregarLista();
+    } else if (aba === "concluidos") {
+        document.getElementById("tituloLista").textContent = "Últimos concluídos";
+        document.getElementById("subtituloLista").textContent = "As 10 solicitações mais recentes — use a busca acima pra ver o histórico completo";
+        carregarLista();
+    } else {
+        document.getElementById("tituloLista").textContent = "Relatórios";
+        document.getElementById("subtituloLista").textContent = "Considerando a aba atual e o histórico 2021-2022";
+        carregarRelatorios();
+    }
+
+}
+
+//-----------------------------------
+// Lista (pendentes / concluídos)
+//-----------------------------------
+
+// PADRÃO IMPORTANTE #1 — "resetar antes de buscar": o contador é
+// colocado em "…" e a lista é esvaziada ANTES de disparar a chamada
+// ao servidor. Sem isso, um número "preso" de uma aba anterior (ex:
+// o Total de Relatórios, que também escreve no mesmo elemento
+// #contador) podia ficar visível junto com uma lista vazia enquanto
+// a chamada de verdade ainda estava em andamento ou tinha falhado
+// silenciosamente — exatamente o sintoma observado (badge "582" com
+// a lista de Concluídos em branco).
+//
+// PADRÃO IMPORTANTE #2 — guard `Array.isArray()`: se o servidor não
+// devolver um array de verdade (o mesmo `null` que o BUG #1 causava),
+// aparece um erro explícito em vez de a tela simplesmente travar
+// tentando ler `.length` de `null`.
+function carregarLista() {
+
+    mostrarLoading(abaAtual === "pendentes" ? "Carregando pendentes" : "Carregando concluídos");
+
+    document.getElementById("contador").textContent = "…";
+    const idListaAtual = abaAtual === "pendentes" ? "listaPendentes" : "listaConcluidos";
+    document.getElementById(idListaAtual).innerHTML = "";
+
+    if (abaAtual === "pendentes") {
+        google.script.run
+            .withSuccessHandler(alunos => {
+                esconderLoading();
+                if (!Array.isArray(alunos)) {
+                    mostrarErro("Resposta inválida do servidor ao carregar pendentes.");
+                    return;
+                }
+                pendentesCarregados = alunos;
+                document.getElementById("contador").textContent = pendentesCarregados.length;
+                renderizarPendentes(pendentesCarregados);
+            })
+            .withFailureHandler(mostrarErro)
+            .obterPendentes();
+    } else {
+        google.script.run
+            .withSuccessHandler(alunos => {
+                esconderLoading();
+                if (!Array.isArray(alunos)) {
+                    mostrarErro("Resposta inválida do servidor ao carregar concluídos.");
+                    return;
+                }
+                // Limite de 10 aplicado de novo aqui, no cliente, além
+                // do limite já aplicado no servidor — camada extra e
+                // barata de segurança.
+                concluidosCarregados = alunos.slice(0, 10);
+                document.getElementById("contador").textContent = concluidosCarregados.length;
+                renderizarConcluidos(concluidosCarregados);
+            })
+            .withFailureHandler(mostrarErro)
+            .obterConcluidosRecentes();
+    }
+
+}
+
+function filtrarPendentes() {
+
+    const termo = document.getElementById("caixaBuscaPendentes").value.trim().toLowerCase();
+
+    if (!termo) {
+        renderizarPendentes(pendentesCarregados);
+        return;
+    }
+
+    const filtrados = pendentesCarregados.filter(a =>
+        String(a.nome).toLowerCase().includes(termo) ||
+        String(a.nUsp).toLowerCase().includes(termo)
+    );
+
+    renderizarPendentes(filtrados);
+
+}
+
+// Cards montados só com createElement/textContent — nenhum dado da
+// planilha vira HTML bruto na página.
+function renderizarPendentes(alunos) {
+
+    const lista = document.getElementById("listaPendentes");
+    lista.innerHTML = "";
+
+    if (alunos.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum pedido pendente encontrado.";
+        lista.appendChild(vazio);
+        return;
+    }
+
+    alunos.forEach(aluno => {
+
+        // Cada card é renderizado dentro do seu próprio try/catch —
+        // um único registro com valor inesperado não deve derrubar a
+        // renderização de todos os outros da lista.
+        try {
+
+            const card = document.createElement("div");
+            // Pedido sem Registro ID (linha ainda não migrada) fica
+            // visível mas não clicável — ver comentário do backend
+            // sobre o BUG #2.
+            card.className = "cardAluno" + (aluno.registroId ? "" : " semClique");
+
+            const info = document.createElement("div");
+            info.className = "infoAluno";
+
+            const nomeEl = document.createElement("strong");
+            nomeEl.textContent = aluno.nome;
+            info.appendChild(nomeEl);
+
+            const detalheEl = document.createElement("div");
+            detalheEl.textContent = `Nº USP ${aluno.nUsp || "-"} · ${aluno.habilitacao || "-"} · ${aluno.carimbo || ""}`;
+            info.appendChild(detalheEl);
+
+            const badge = document.createElement("div");
+            badge.className = "badgeStatus";
+            badge.textContent = aluno.registroId ? "Pendente" : "Sem ID — recarregue a página";
+
+            card.appendChild(info);
+            card.appendChild(badge);
+
+            if (aluno.registroId) {
+                card.onclick = () => abrirModal(aluno.registroId);
+            }
+
+            lista.appendChild(card);
+
+        } catch (err) {
+            console.error("Falha ao renderizar pendente:", aluno, err);
+        }
+
+    });
+
+}
+
+function renderizarConcluidos(alunos) {
+
+    const lista = document.getElementById("listaConcluidos");
+    lista.innerHTML = "";
+
+    if (alunos.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum pedido concluído ainda.";
+        lista.appendChild(vazio);
+        return;
+    }
+
+    alunos.forEach(aluno => {
+
+        try {
+
+            const card = document.createElement("div");
+            card.className = "cardAluno" + (aluno.registroId ? "" : " semClique");
+
+            const info = document.createElement("div");
+            info.className = "infoAluno";
+
+            const nomeEl = document.createElement("strong");
+            nomeEl.textContent = aluno.nome;
+            info.appendChild(nomeEl);
+
+            const detalheEl = document.createElement("div");
+            detalheEl.textContent = `Nº USP ${aluno.nUsp || "-"} · ${aluno.habilitacao || "-"} · concluído em ${aluno.dataConclusao || "-"}`;
+            info.appendChild(detalheEl);
+
+            if (aluno.emailEnviado) {
+                const avisoEl = document.createElement("div");
+                avisoEl.className = "avisoEmailListaCard";
+                avisoEl.textContent = `✅ Aluno avisado — ${aluno.emailEnviado}`;
+                info.appendChild(avisoEl);
+            }
+
+            const badge = document.createElement("div");
+            badge.className = "badgeStatus ok";
+            badge.textContent = aluno.registroId ? "Concluído" : "Sem ID — recarregue a página";
+
+            card.appendChild(info);
+            card.appendChild(badge);
+
+            if (aluno.registroId) {
+                card.onclick = () => abrirModal(aluno.registroId);
+            }
+
+            lista.appendChild(card);
+
+        } catch (err) {
+            console.error("Falha ao renderizar concluído:", aluno, err);
+        }
+
+    });
+
+}
+
+//-----------------------------------
+// Busca no histórico (duas abas)
+//-----------------------------------
+
+function buscarHistoricoAgora() {
+
+    const termo = document.getElementById("caixaBuscaHistorico").value.trim();
+    if (!termo) {
+        renderizarConcluidos(concluidosCarregados);
+        return;
+    }
+
+    mostrarLoading("Buscando no histórico");
+
+    google.script.run
+        .withSuccessHandler(resultados => {
+            esconderLoading();
+            document.getElementById("contador").textContent = resultados.length;
+            renderizarResultadosBusca(resultados);
+        })
+        .withFailureHandler(mostrarErro)
+        .buscarHistorico(termo);
+
+}
+
+// Resultados de busca não são clicáveis (registros da aba antiga
+// não têm Registro ID / não são acionáveis) — mostrados só como
+// consulta, com um selo indicando a origem (aba atual ou histórico).
+function renderizarResultadosBusca(resultados) {
+
+    const lista = document.getElementById("listaConcluidos");
+    lista.innerHTML = "";
+
+    if (resultados.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "vazio";
+        vazio.textContent = "Nenhum pedido encontrado com esse termo.";
+        lista.appendChild(vazio);
+        return;
+    }
+
+    resultados.forEach(r => {
+
+        try {
+
+            const card = document.createElement("div");
+            card.className = "cardAluno semClique";
+
+            const info = document.createElement("div");
+            info.className = "infoAluno";
+
+            const nomeEl = document.createElement("strong");
+            nomeEl.textContent = r.nome;
+            info.appendChild(nomeEl);
+
+            const detalheEl = document.createElement("div");
+            detalheEl.textContent = `Nº USP ${r.nUsp || "-"} · ${r.habilitacao || "-"} · ${r.carimbo || "-"} · ${r.email || "-"}`;
+            info.appendChild(detalheEl);
+
+            const ladoDireito = document.createElement("div");
+            ladoDireito.style.display = "flex";
+            ladoDireito.style.alignItems = "center";
+
+            const badge = document.createElement("div");
+            badge.className = "badgeStatus " + (r.situacao === "Concluído" ? "ok" : "");
+            badge.textContent = r.situacao;
+
+            const origemEl = document.createElement("div");
+            origemEl.className = "badgeOrigem";
+            origemEl.textContent = r.origem;
+
+            ladoDireito.appendChild(badge);
+            ladoDireito.appendChild(origemEl);
+
+            card.appendChild(info);
+            card.appendChild(ladoDireito);
+
+            lista.appendChild(card);
+
+        } catch (err) {
+            console.error("Falha ao renderizar resultado de busca:", r, err);
+        }
+
+    });
+
+}
+
+//-----------------------------------
+// Relatórios
+//-----------------------------------
+
+function carregarRelatorios() {
+
+    mostrarLoading("Calculando relatórios");
+
+    google.script.run
+        .withSuccessHandler(relatorio => {
+            esconderLoading();
+            document.getElementById("contador").textContent = relatorio.total;
+            renderizarRelatorios(relatorio);
+        })
+        .withFailureHandler(mostrarErro)
+        .obterRelatorio();
+
+}
+
+function renderizarBarras(container, itens, formatarRotulo) {
+
+    const maximo = itens.reduce((m, item) => Math.max(m, item.quantidade), 0) || 1;
+
+    itens.forEach(item => {
+
+        const linha = document.createElement("div");
+        linha.className = "linhaBarra";
+
+        const rotulo = document.createElement("div");
+        rotulo.className = "rotuloBarra";
+
+        const nomeSpan = document.createElement("span");
+        nomeSpan.textContent = formatarRotulo ? formatarRotulo(item.chave) : item.chave;
+
+        const qtdSpan = document.createElement("span");
+        qtdSpan.textContent = item.quantidade;
+
+        rotulo.appendChild(nomeSpan);
+        rotulo.appendChild(qtdSpan);
+
+        const trilha = document.createElement("div");
+        trilha.className = "trilhaBarra";
+
+        const preenchido = document.createElement("div");
+        preenchido.className = "preenchidoBarra";
+        preenchido.style.width = Math.round((item.quantidade / maximo) * 100) + "%";
+
+        trilha.appendChild(preenchido);
+
+        linha.appendChild(rotulo);
+        linha.appendChild(trilha);
+
+        container.appendChild(linha);
+
+    });
+
+}
+
+function formatarRotuloMes_(anoMes) {
+    const partes = anoMes.split("-");
+    const nomesMeses = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+    const indice = parseInt(partes[1], 10) - 1;
+    return `${nomesMeses[indice] || partes[1]}/${partes[0]}`;
+}
+
+function renderizarRelatorios(relatorio) {
+
+    const grade = document.getElementById("gradeRelatorios");
+    grade.innerHTML = "";
+
+    // Total geral
+    const blocoTotal = document.createElement("div");
+    blocoTotal.className = "blocoRelatorio";
+    const h3Total = document.createElement("h3");
+    h3Total.textContent = "Total de pedidos";
+    const totalEl = document.createElement("div");
+    totalEl.className = "totalGrande";
+    totalEl.textContent = relatorio.total;
+    const totalDesc = document.createElement("p");
+    totalDesc.textContent = "Somando a aba atual e o histórico 2021-2022";
+    blocoTotal.appendChild(h3Total);
+    blocoTotal.appendChild(totalEl);
+    blocoTotal.appendChild(totalDesc);
+    grade.appendChild(blocoTotal);
+
+    // Por habilitação
+    const blocoHab = document.createElement("div");
+    blocoHab.className = "blocoRelatorio";
+    const h3Hab = document.createElement("h3");
+    h3Hab.textContent = "Por habilitação";
+    blocoHab.appendChild(h3Hab);
+    if (relatorio.porHabilitacao.length === 0) {
+        const vazio = document.createElement("p");
+        vazio.textContent = "Sem dados.";
+        blocoHab.appendChild(vazio);
+    } else {
+        renderizarBarras(blocoHab, relatorio.porHabilitacao);
+    }
+    grade.appendChild(blocoHab);
+
+    // Por ano
+    const blocoAno = document.createElement("div");
+    blocoAno.className = "blocoRelatorio largo";
+    const h3Ano = document.createElement("h3");
+    h3Ano.textContent = "Por ano";
+    blocoAno.appendChild(h3Ano);
+    if (relatorio.porAno.length === 0) {
+        const vazio = document.createElement("p");
+        vazio.textContent = "Sem dados.";
+        blocoAno.appendChild(vazio);
+    } else {
+        renderizarBarras(blocoAno, relatorio.porAno);
+    }
+    grade.appendChild(blocoAno);
+
+    // Por mês
+    const blocoMes = document.createElement("div");
+    blocoMes.className = "blocoRelatorio largo";
+    const h3Mes = document.createElement("h3");
+    h3Mes.textContent = "Por mês (mais recentes primeiro)";
+    blocoMes.appendChild(h3Mes);
+    if (relatorio.porMes.length === 0) {
+        const vazio = document.createElement("p");
+        vazio.textContent = "Sem dados.";
+        blocoMes.appendChild(vazio);
+    } else {
+        renderizarBarras(blocoMes, relatorio.porMes.slice(0, 24), formatarRotuloMes_);
+    }
+    grade.appendChild(blocoMes);
+
+}
+
+//-----------------------------------
+// Modal de detalhe
+//-----------------------------------
+
+function abrirModal(registroId) {
+
+    mostrarLoading("Carregando pedido");
+
+    google.script.run
+        .withSuccessHandler(preencherModal)
+        .withFailureHandler(mostrarErro)
+        .obterDetalhe(registroId);
+
+}
+
+// GUARD DE ENTRADA: antes de tocar em qualquer propriedade de
+// `detalhe`, confere que ele existe, é um objeto (não array), e tem
+// pelo menos um `registroId`. Sem esse guard, um `detalhe` inválido
+// (o mesmo `null` do BUG #1) quebraria silenciosamente ao tentar ler
+// `detalhe.nome` mais abaixo — exatamente o sintoma "o modal não
+// abre, sem erro nenhum".
+function preencherModal(detalhe) {
+
+    esconderLoading();
+
+    if (!detalhe || typeof detalhe !== "object" || Array.isArray(detalhe) || !detalhe.registroId) {
+        mostrarErro("O servidor devolveu um pedido inválido — recarregue a página e tente de novo.");
+        return;
+    }
+
+    pedidoAtual = detalhe;
+
+    document.getElementById("modalNome").textContent = detalhe.nome;
+    document.getElementById("infoNUsp").textContent = detalhe.nUsp || "-";
+    document.getElementById("infoEmail").textContent = detalhe.email || "-";
+    document.getElementById("infoHabilitacao").textContent = detalhe.habilitacao || "-";
+    document.getElementById("infoAnoIngresso").textContent = detalhe.anoIngresso || "-";
+    document.getElementById("infoTrancamento").textContent = detalhe.trancamento || "-";
+    document.getElementById("infoCarimbo").textContent = detalhe.carimbo || "-";
+
+    document.getElementById("campoObservacoes").value = detalhe.observacoes || "";
+
+    // Padrão: pedido ainda pendente vem com as duas caixas marcadas
+    // (fluxo normal — concluir e avisar juntos). Pedido já concluído
+    // vem com "Avisar aluno" desmarcado (evita reenvio sem querer) e
+    // "Concluir solicitação" marcado (reflete o estado atual — se
+    // desmarcar e Salvar, o pedido volta pra Pendentes).
+    document.getElementById("checkAvisarAluno").checked = !detalhe.concluido;
+    document.getElementById("checkConcluirSolicitacao").checked = detalhe.concluido;
+
+    document.getElementById("avisoEmailEnviado").textContent =
+        detalhe.emailEnviado ? `✅ Aluno avisado em ${detalhe.emailEnviado}` : "";
+
+    document.getElementById("modalDetalhe").style.display = "block";
+
+}
+
+function fecharModal() {
+    document.getElementById("modalDetalhe").style.display = "none";
+    pedidoAtual = null;
+    carregarLista();
+}
+
+function salvarPedido() {
+
+    const dados = {
+        observacoes: document.getElementById("campoObservacoes").value,
+        avisarAluno: document.getElementById("checkAvisarAluno").checked,
+        concluirSolicitacao: document.getElementById("checkConcluirSolicitacao").checked
+    };
+
+    if (dados.avisarAluno && !confirm(`Enviar e-mail de aviso para ${pedidoAtual.email}?`)) {
+        return;
+    }
+
+    dispararSalvarPedido(dados, false);
+
+}
+
+function dispararSalvarPedido(dados, reenviar) {
+
+    mostrarLoading(dados.avisarAluno ? "Salvando e enviando e-mail" : "Salvando");
+
+    google.script.run
+        .withSuccessHandler(() => {
+            esconderLoading();
+            fecharModal();
+        })
+        .withFailureHandler(erro => tratarErroDoSalvar(erro, () => dispararSalvarPedido(dados, true)))
+        .salvarPedido(pedidoAtual.registroId, pedidoAtual.versao, Object.assign({}, dados, { reenviar: !!reenviar }));
+
+}
+
+// Trata os DOIS tipos de erro "especiais" que salvarPedido() pode
+// devolver via um prefixo de texto na mensagem:
+//
+//   REENVIO_NECESSARIO: <mensagem>
+//   O aluno já tinha sido avisado antes; pede confirmação explícita
+//   e, se confirmada, salva de novo com reenviar=true.
+//
+//   PEDIDO_SALVO_EMAIL_FALHOU:<novaVersao>:<mensagem>
+//   O pedido (situação, observações, versão) já foi salvo com
+//   sucesso no servidor — só o envio do e-mail falhou depois. Sem
+//   tratar esse caso, o navegador continuaria com a Versão ANTIGA em
+//   `pedidoAtual.versao`, e uma tentativa de salvar esse MESMO
+//   pedido de novo receberia um falso "outra sessão alterou este
+//   pedido". `pedidoAtual.versao` é atualizado aqui com o número que
+//   o servidor devolveu, e o modal NÃO é fechado — permite corrigir
+//   o e-mail e tentar de novo na mesma sessão.
+//
+// Usa `indexOf` (contém), não "começa com", porque o Apps Script às
+// vezes prefixa a mensagem de erro com "Error: " antes de entregar
+// pro withFailureHandler.
+function tratarErroDoSalvar(erro, aoConfirmarReenvio) {
+
+    esconderLoading();
+
+    const mensagem = String((erro && erro.message) || erro || "");
+
+    const marcadorReenvio = "REENVIO_NECESSARIO:";
+    const indiceReenvio = mensagem.indexOf(marcadorReenvio);
+    if (indiceReenvio !== -1) {
+        const texto = mensagem.slice(indiceReenvio + marcadorReenvio.length).trim();
+        if (confirm(texto + " Reenviar mesmo assim?")) {
+            aoConfirmarReenvio();
+        }
+        return;
+    }
+
+    const marcadorSalvoSemEmail = "PEDIDO_SALVO_EMAIL_FALHOU:";
+    const indiceSalvoSemEmail = mensagem.indexOf(marcadorSalvoSemEmail);
+    if (indiceSalvoSemEmail !== -1) {
+
+        const resto = mensagem.slice(indiceSalvoSemEmail + marcadorSalvoSemEmail.length);
+        const separador = resto.indexOf(":");
+        const novaVersaoTexto = separador !== -1 ? resto.slice(0, separador).trim() : "";
+        const textoMensagem = separador !== -1 ? resto.slice(separador + 1).trim() : resto.trim();
+
+        if (pedidoAtual && novaVersaoTexto && !isNaN(Number(novaVersaoTexto))) {
+            pedidoAtual.versao = Number(novaVersaoTexto);
+        }
+
+        alert("⚠️ " + (textoMensagem || "O pedido foi salvo, mas o e-mail não pôde ser enviado."));
+        // Deliberadamente NÃO fecha o modal: o pedido já foi salvo,
+        // mas a equipe pode querer corrigir o e-mail e tentar
+        // reenviar na mesma sessão sem cair num falso conflito.
+        return;
+    }
+
+    mostrarErro(erro);
+
+}
+
+//-----------------------------------
+// Loading
+//-----------------------------------
+
+function mostrarLoading(texto) {
+
+    if (loadingTimer) clearInterval(loadingTimer);
+
+    document.getElementById("loadingTitulo").textContent = texto || "Processando";
+    document.getElementById("loadingOverlay").style.display = "flex";
+
+    let pontos = 0;
+    loadingTimer = setInterval(() => {
+        pontos = (pontos + 1) % 4;
+        document.getElementById("loadingPontos").textContent = ".".repeat(pontos);
+    }, 350);
+
+}
+
+function esconderLoading() {
+    if (loadingTimer) clearInterval(loadingTimer);
+    document.getElementById("loadingOverlay").style.display = "none";
+}
+
+function mostrarErro(erro) {
+    esconderLoading();
+    alert("❌ Erro: " + ((erro && erro.message) || erro));
+}
+
+</script>
