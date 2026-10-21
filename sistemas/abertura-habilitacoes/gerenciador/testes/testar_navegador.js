@@ -338,6 +338,14 @@ const focoNaSecao = (p, id) => p.waitForFunction(id => { const o = document.quer
     await p.click('#areaPendentes [data-gradip-help-open="ajuda-pendentes"]');
     chk(`${T} ajuda contextual vai à seção`, await focoNaSecao(p, 'ajuda-pendentes'));
     await p.keyboard.press('Escape');
+    const semSecao = await p.evaluate(() => [...document.querySelectorAll('[data-gradip-help-open],[data-gradip-help-target]')]
+      .map(b => b.getAttribute('data-gradip-help-open') || b.getAttribute('data-gradip-help-target'))
+      .filter(id => { const s = document.getElementById(id); return !s || !s.matches('[data-gradip-help-section]') || !s.querySelector('h3'); }));
+    chk(`${T} todo gatilho da ajuda aponta para seção com título`, semSecao.length === 0, semSecao.join(', '));
+    // Seções citadas só pelo script (links "Saiba mais" das mensagens de erro).
+    const citadasNoScript = [...new Set(fs.readFileSync(SRC + 'GerenciadorAppUI.html', 'utf8').match(/'ajuda-[a-z-]+'/g).map(s => s.slice(1, -1)))];
+    const inexistentes = await p.evaluate(ids => ids.filter(id => !document.getElementById(id)), citadasNoScript);
+    chk(`${T} seções de ajuda citadas pelo script existem (${citadasNoScript.length})`, inexistentes.length === 0, inexistentes.join(', '));
     chk(`${T} ajuda não chama o servidor`, await p.evaluate(() => !window.__chamadas.some(c => /ajuda/i.test(c.nome))));
 
     /*---------- nada de dados no console ----------*/

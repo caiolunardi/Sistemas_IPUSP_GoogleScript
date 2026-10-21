@@ -1,0 +1,20 @@
+# Testes locais — Gerenciador de Abertura de Habilitações
+
+Não copie esta pasta para o Apps Script. Os testes não acessam planilhas reais, não enviam e-mail e não usam a internet: os serviços do Apps Script são simulados em [`simulacao.js`](simulacao.js) e os dados são sintéticos ([`dados_sinteticos.js`](dados_sinteticos.js): nomes inventados, e-mails do domínio reservado `.invalid`, Nº USP na faixa 9000xxx, IDs de planilha que não têm formato de ID do Google). Cada chamada roda num contexto novo, como uma execução nova do Apps Script, sobre as mesmas planilhas simuladas.
+
+| Script | O que confere |
+|---|---|
+| `testar_backend.js` | `ID_INDEX` (propriedade ausente, índice inacessível, chave ausente, repetida, sem ID ou de outro tipo, cache), `AMBIENTE` (homologação lê a coluna certa e nunca cai na produção; valor desconhecido falha), nenhum ID literal; acesso (lista exata das funções públicas, toda função negada sem e-mail ou fora da lista **antes** de abrir os pedidos, LEITOR só consulta, coringa e perfil desconhecido ignorados, duplicado vale o menor, lista indisponível, página sem acesso, diagnóstico do dono); listas (ordem, linhas sem ID/ID repetido/ID inválido que não somem, uma leitura em lote, nenhum `Date` na resposta), concluídos (10 mais recentes, datas em texto e `Date`, reserva não aparece como aviso), detalhe, estrutura (título repetido, J/K deslocadas, coluna ausente), busca (sem acento, duas abas, ordem, termo curto/longo), aba histórica nunca escrita, relatórios; salvar (concluir, avisar, reabrir, observações, versão antiga/ausente, trava ocupada, já avisado, reserva recente/antiga/da 1.0, sem e-mail, falha no envio, falha no registro do envio, gravação parcial, outra sessão durante o envio, planilha reordenada, colunas criadas depois de K); `atribuirIdentificador`; migração (diagnóstico só leitura, confirmação, planilha que mudou, só duas colunas gravadas, idempotência); registros sem dados pessoais; desempenho com 3.000 linhas (aberturas, leituras e gravações contadas). |
+| `testar_equivalencia.js` | A 1.0 sanitizada ([`baseline/`](baseline/)) e a 2.0 rodam sobre cópias das mesmas planilhas e os resultados são comparados campo a campo: pendentes, concluídos, detalhe, busca, relatórios (inclusive com linhas sem ID e sem aba histórica), e salvar (planilha e e-mails idênticos). As diferenças intencionais são afirmadas uma a uma (`DIFERENÇA: ...`). |
+| `testar_navegador.js` | Página com os `include_` resolvidos e `google.script.run` simulado, em Chromium: tema e marcas, menu lateral e abas (ARIA, setas, Enter), carregamento sob demanda, dados com HTML tratados como texto, cartões sem ação, busca, detalhe (foco preso, Esc, foco devolvido, rolagem travada), confirmação antes do e-mail, reenvio, e-mail que falhou, conflito de versão com o texto mantido, clique duplo, respostas nula, malformada e fora de ordem, erros com e sem código, preparar pedido, concluídos, histórico só consulta, relatórios, Central de Ajuda (seções, busca, FAQ, ajuda por cima do detalhe, todo gatilho apontando para uma seção existente), LEITOR, homologação, persistência do tema, larguras 360/390/480/768/1024 px (sem rolagem horizontal, alvos de 44 px), contraste ≥ 4,5:1, página sem acesso, console sem dados pessoais. |
+
+```bash
+node testar_backend.js        # só Node
+node testar_equivalencia.js   # só Node
+node testar_navegador.js      # requer Playwright com Chromium
+EVIDENCIAS=../../../../docs/sistemas/abertura-habilitacoes/evidencias/2.0 node testar_navegador.js   # grava as capturas
+```
+
+Resultados de 21/10/2026: 62 ok (servidor), 22 ok (equivalência), 293 ok (navegador). A marca USP externa é trocada por um retângulo durante o teste.
+
+`baseline/` guarda a versão 1.0 recebida em 21/10/2026, com uma única linha alterada (o ID da planilha, trocado por um marcador). Ela só é usada pelos testes de equivalência.
