@@ -27,19 +27,22 @@ Cada fluxo indica a função do servidor, o perfil exigido e o que é gravado. "
 
 ```text
 página ──(ID, Versão vista, {observacoes, concluirSolicitacao, avisarAluno, reenviar})──► servidor
-  [trava 1]  confere Versão ─ diferente → CONFLITO_VERSAO (nada gravado)
+  [trava 1]  Versão da planilha vazia ou malformada → VERSAO_INVALIDA (nada gravado)
+             confere Versão ─ diferente → CONFLITO_VERSAO (nada gravado)
              se avisar: reserva recente → ENVIO_EM_ANDAMENTO (nada gravado)
                         reserva velha/da 1.0 e sem reenviar → REENVIO_NECESSARIO/ENVIO_INTERROMPIDO
                         já avisado e sem reenviar → REENVIO_NECESSARIO/JA_AVISADO
                         e-mail vazio ou inválido → SEM_EMAIL (nada gravado)
-             grava: Versão+1, J, (reserva ENVIANDO… data), K e Data de Conclusão
+             grava: Versão+1, J, (reserva ENVIANDO… data #marca), K e Data de Conclusão
              flush, solta a trava
   sem aviso → SALVO / NAO_SOLICITADO
   [sem trava] MailApp.sendEmail
              falhou → desfaz a reserva (se ainda for a nossa) → SALVO / FALHOU
-  [trava 2]  acha a linha de novo pelo ID, E-mail Enviado = agora, Versão+1
-             ok → SALVO / ENVIADO
-             falhou → SALVO / ENVIADO_SEM_REGISTRO (reserva com data fica)
+  [trava 2]  acha a linha de novo pelo ID
+             E-mail Enviado ≠ a reserva desta operação, ou Versão inválida
+               → nada gravado → SALVO / ENVIADO_SEM_REGISTRO (motivo RESERVA_ALTERADA)
+             senão: E-mail Enviado = agora, Versão+1 → SALVO / ENVIADO
+             erro ao gravar → SALVO / ENVIADO_SEM_REGISTRO (motivo REGISTRO_FALHOU; reserva fica)
 ```
 
 Na página:
@@ -48,7 +51,7 @@ Na página:
 - `REENVIO_NECESSARIO`: novo diálogo explica o motivo; confirmando, a página chama de novo com `reenviar: true`;
 - `NAO_SOLICITADO` e `ENVIADO`: o detalhe fecha, aparece um aviso de sucesso e a lista da área é recarregada;
 - `FALHOU`: o detalhe continua aberto com a mensagem; a Versão local é atualizada (o pedido foi salvo);
-- `ENVIADO_SEM_REGISTRO`: o detalhe continua aberto, **Avisar** é desmarcado e a mensagem diz para não reenviar;
+- `ENVIADO_SEM_REGISTRO`: o detalhe continua aberto, **Avisar** é desmarcado e a mensagem do servidor diz que o e-mail saiu e para não reenviar. Com `RESERVA_ALTERADA`, a célula `E-mail Enviado` ficou como a outra pessoa ou sessão deixou: a equipe anota o aviso nas observações; o e-mail nunca é reenviado sozinho;
 - `CONFLITO_VERSAO`: o texto digitado fica; o botão **Recarregar pedido** traz a Versão e as observações atuais (mostradas à parte) sem apagar o rascunho;
 - botão de salvar desativado enquanto a chamada está em andamento (clique duplo não duplica).
 
@@ -69,18 +72,24 @@ Total, por habilitação, por ano e por mês, somando as duas abas, mais "sem da
 
 1. O cartão "Sem identificador" mostra **Preparar pedido** para ADMINISTRADOR.
 2. A página manda a referência que recebeu na lista (linha, carimbo, Nº USP); o servidor confere, dentro da trava, que a linha ainda é a mesma e ainda não tem ID.
-3. Grava um UUID novo e Versão 1 **só naquela linha**. Se as colunas Registro ID/Versão não existirem, recusa (`MIGRACAO_NECESSARIA`).
+3. Grava um UUID novo **só naquela linha**; Versão vazia recebe 1, Versão válida é mantida e Versão malformada recusa tudo (`VERSAO_INVALIDA`, recuperação pelo responsável). Se as colunas Registro ID/Versão não existirem, recusa (`MIGRACAO_NECESSARIA`).
 4. Planilha mudou: `REFERENCIA_DESATUALIZADA`, nada gravado.
 
 ## 9. Migração controlada (editor do Apps Script, ADMINISTRADOR)
 
 Passo a passo em [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md#4-migração-controlada-de-registro-id-e-versão).
 
-1. `diagnosticarMigracaoRegistroId()`: só leitura; devolve contagens, números de linha (até 50 por tipo) e um código `MIGRAR-<sem ID>-<repetidos>-<versão inválida>-<colunas faltando>-<última linha>`.
+1. `diagnosticarMigracaoRegistroId()`: só leitura; devolve contagens, números de linha (até 50 por tipo) e um código `MIGRAR-<sem ID>-<repetidos>-<versão vazia>-<colunas faltando>-<impressão digital>`. A impressão digital (SHA-256, 16 dígitos hexadecimais) cobre posições das colunas, última linha e, em cada linha com Nome, posição, Nome, Nº USP, carimbo, Registro ID, Versão e operações previstas.
 2. Cópia de segurança da planilha; o responsável cria a Script Property `MIGRACAO_REGISTRO_ID_CONFIRMACAO` com o código.
-3. `executarMigracaoRegistroId()`: dentro da trava, refaz o plano; se o código não bate (a planilha mudou), recusa sem gravar. Grava só as colunas Registro ID e Versão e apaga a propriedade. Rodar de novo: "nada a fazer".
+3. `executarMigracaoRegistroId()`: dentro da trava, refaz o plano; se o código não bate (a planilha mudou, inclusive linhas trocadas ou substituídas com as mesmas contagens), recusa sem gravar. Aplica só as operações do plano (ID novo nas linhas sem ID e nos repetidos seguintes; Versão 1 só onde está vazia), grava só as colunas Registro ID e Versão e apaga a propriedade. Rodar de novo: "nada a fazer". Versão malformada e ID fora do formato são informados e não mudam.
+
+### Recuperação de um pedido
+
+1. Script Property `RECUPERACAO_REGISTRO` = número da linha → `diagnosticarRecuperacaoRegistro()`: só leitura; problemas, ações (`NOVO_ID`, `VERSAO_1`), outras linhas com o mesmo ID e código `RECUPERAR-<linha>-<impressão digital>` (linha inteira + linhas do mesmo ID + ações).
+2. Decisão registrada pelo responsável; a propriedade passa a ter o código.
+3. `executarRecuperacaoRegistro()`: dentro da trava, refaz o diagnóstico; código diferente → recusa sem gravar. Grava no máximo Registro ID e Versão daquela linha e apaga a propriedade. Detalhes em [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md#42-recuperação-de-um-pedido-um-por-vez).
 
 ## 10. Diagnósticos (editor)
 
 - `diagnosticarConfiguracao()`: versão, ambiente, cada chave do `ID_INDEX` (nome da planilha, nunca o ID) e quantos administradores e leitores há. Aceita a conta dona do projeto mesmo fora da lista, para consertar uma lista quebrada.
-- `diagnosticarPlanilha()` (ADMINISTRADOR): colunas encontradas, títulos de J e K, contagens por situação, reservas de envio e resumo da migração, sem nomes.
+- `diagnosticarPlanilha()` (ADMINISTRADOR): colunas encontradas, títulos de J e K, contagens por situação, reservas de envio e resumo da migração (inclusive versões malformadas), sem nomes.

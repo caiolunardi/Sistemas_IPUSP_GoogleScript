@@ -14,7 +14,7 @@ Web App interno do Serviço de Graduação para tratar os pedidos de abertura de
 | `Planilha.gs` | Leitura em lote, conferência de títulos e de J/K, escrita só na aba atual, Registro ID. |
 | `Pedidos.gs` | Pendentes, concluídos, detalhe, busca no histórico e relatórios (só leitura). |
 | `Salvamento.gs` | `salvarPedido` (observações, concluir/reabrir, e-mail com reserva) e `atribuirIdentificador`. |
-| `Migracao.gs` | Diagnóstico e migração controlada de Registro ID e Versão. |
+| `Migracao.gs` | Diagnóstico e migração controlada de Registro ID e Versão; recuperação de um pedido. |
 | `Utilidades.gs` | Texto, datas, trava e preparo da resposta para a página. |
 | `GerenciadorApp.html` | Página principal. |
 | `GerenciadorAppUI.html` | Comportamento da página (navegação, listas, detalhe, salvamento). |
@@ -41,4 +41,4 @@ Nenhum ID de planilha, script ou implantação fica no código ou nesta document
 | Versão | Alterações |
 |---|---|
 | v1.0 (em uso, fora do repositório) | ID da planilha literal no código; sem autorização no servidor; abrir a página atribuía Registro ID e Versão; nomes de alunos no registro de execução. SHA-256 `Codigo.gs` `a18648e8…3a765a`, `GerenciadorApp.html` `c20efee7…ba9758`. Cópia sanitizada para testes em `testes/baseline/`. |
-| v2.0 (21/10/2026, não implantada) | `ID_INDEX` e homologação; perfis LEITOR/ADMINISTRADOR conferidos no servidor; abrir a página não grava; migração expressa; recusas antes de gravar; reserva de envio com data; resultados distintos para e-mail que falhou e e-mail sem registro; interface GRADIP com menu lateral/abas e Central de Ajuda. Diferenças: [inventário do legado](../../../docs/sistemas/abertura-habilitacoes/INVENTARIO_LEGADO.md). |
+| v2.0 (21/10/2026, não implantada) | `ID_INDEX` e homologação; perfis LEITOR/ADMINISTRADOR conferidos no servidor; abrir a página não grava; migração expressa com código que identifica o plano; recuperação de um pedido; critério único de versão; recusas antes de gravar; reserva de envio com data e marca, confirmada só sobre ela; resultados distintos para e-mail que falhou e e-mail sem registro; interface GRADIP com menu lateral/abas e Central de Ajuda. Diferenças: [inventário do legado](../../../docs/sistemas/abertura-habilitacoes/INVENTARIO_LEGADO.md). |

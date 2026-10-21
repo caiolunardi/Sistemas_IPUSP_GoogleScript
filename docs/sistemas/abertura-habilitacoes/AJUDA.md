@@ -186,9 +186,11 @@ _Termos de busca:_ email falhou nao enviado salvo erro cota
 
 ### “O e-mail foi enviado, mas a data do envio não foi registrada”
 
-O aluno recebeu o aviso, mas a planilha ficou sem a data. Não reenvie: a opção de aviso é desmarcada para evitar um segundo e-mail. Avise o responsável pelo sistema para conferir o registro.
+O aviso saiu, mas a planilha ficou sem a data. Isso acontece quando a gravação falha ou quando o pedido foi alterado por outra pessoa (ou na própria planilha) enquanto o e-mail era enviado; nesse caso, o gerenciador não grava a data por cima da alteração.
 
-_Termos de busca:_ email enviado data nao registrada nao reenviar
+Não reenvie: a opção de aviso é desmarcada para evitar um segundo e-mail. Recarregue o pedido, anote nas observações que o aviso foi enviado e, se precisar, avise o responsável pelo sistema para conferir o registro.
+
+_Termos de busca:_ email enviado data nao registrada nao reenviar alterado outra sessao
 
 ## Últimos concluídos (`ajuda-concluidos`)
 
@@ -240,11 +242,13 @@ Quem tem perfil de administrador vê o botão **Preparar pedido**: ele cria o id
 
 _Termos de busca:_ sem identificador registro id nao abre preparar pedido
 
-### Identificador repetido ou inválido
+### Identificador repetido, identificador inválido ou versão inválida
 
-Esses casos não são corrigidos pela tela, para não alterar o pedido errado. Avise o responsável pelo sistema, que faz a conferência e, se preciso, a preparação controlada de todos os pedidos (procedimento no manual de operação).
+Esses casos não são corrigidos pela tela, para não alterar o pedido errado. O pedido continua na lista, marcado, e não abre. Também não edite as colunas “Registro ID” e “Versão” na planilha.
 
-_Termos de busca:_ identificador repetido invalido migracao responsavel
+Avise o responsável pelo sistema e diga qual pedido é (nome e data do pedido). Ele confere a planilha e corrige um pedido por vez, com um procedimento próprio que só altera aquele pedido (descrito no manual de operação).
+
+_Termos de busca:_ identificador repetido invalido versao invalida migracao recuperacao responsavel
 
 ## Conflito de edição (`ajuda-conflito`)
 

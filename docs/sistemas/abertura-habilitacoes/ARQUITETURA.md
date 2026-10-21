@@ -17,7 +17,7 @@ Navegador da equipe ── google.script.run ─┤
                                       ├─ Planilha.gs      retrato da aba, escrita, Registro ID
                                       ├─ Pedidos.gs       listas, detalhe, busca, relatórios
                                       ├─ Salvamento.gs    salvar, e-mail, preparar pedido
-                                      ├─ Migracao.gs      diagnóstico e migração expressa
+                                      ├─ Migracao.gs      migração expressa e recuperação de um pedido
                                       └─ MailApp          aviso ao aluno
 Painel dos servidores ──lê (só conta)──► mesma planilha (contrato em REGRAS_E_CONTRATOS §6)
 ```
@@ -32,10 +32,10 @@ Painel dos servidores ──lê (só conta)──► mesma planilha (contrato em
 | `Utilidades.gs` | Sanitização de texto, critério "concluído", saudação e datas no fuso de Brasília, ordenação de datas em texto, `paraPagina_` (resposta só com JSON), `travar_`. | `Utilities`, `LockService` |
 | `Pedidos.gs` | Funções de consulta (`obterPendentes`, `obterConcluidosRecentes`, `obterDetalhe`, `buscarHistorico`, `obterRelatorio`) e reserva de envio (`ENVIANDO…`). Nunca grava. | `Planilha.gs`, `Acesso.gs` |
 | `Salvamento.gs` | `salvarPedido` em três fases (conferir e gravar na trava → enviar fora da trava → confirmar em nova trava), `desfazerReserva_`, `atribuirIdentificador`. | `Pedidos.gs`, `MailApp` |
-| `Migracao.gs` | `diagnosticarMigracaoRegistroId` (só leitura) e `executarMigracaoRegistroId` (com confirmação). | `Planilha.gs`, `PropertiesService` |
+| `Migracao.gs` | `diagnosticarMigracaoRegistroId` (só leitura) e `executarMigracaoRegistroId` (com confirmação); `diagnosticarRecuperacaoRegistro` e `executarRecuperacaoRegistro` (uma linha, com confirmação). Códigos de confirmação com impressão digital do plano (`Utilities.computeDigest`, SHA-256). | `Planilha.gs`, `PropertiesService`, `Utilities` |
 | `Codigo.gs` | `doGet`, `include_`, `diagnosticarConfiguracao`, `diagnosticarPlanilha`. | todos |
 
-Funções públicas (sem `_` no fim, chamáveis por `google.script.run`): `doGet`, `obterPendentes`, `obterConcluidosRecentes`, `obterDetalhe`, `buscarHistorico`, `obterRelatorio`, `salvarPedido`, `atribuirIdentificador`, `diagnosticarConfiguracao`, `diagnosticarPlanilha`, `diagnosticarMigracaoRegistroId`, `executarMigracaoRegistroId`. O teste "funções públicas são exatamente…" falha se aparecer outra.
+Funções públicas (sem `_` no fim, chamáveis por `google.script.run`): `doGet`, `obterPendentes`, `obterConcluidosRecentes`, `obterDetalhe`, `buscarHistorico`, `obterRelatorio`, `salvarPedido`, `atribuirIdentificador`, `diagnosticarConfiguracao`, `diagnosticarPlanilha`, `diagnosticarMigracaoRegistroId`, `executarMigracaoRegistroId`, `diagnosticarRecuperacaoRegistro`, `executarRecuperacaoRegistro` (as quatro últimas são para o editor; chamadas pela página, conferem o perfil ADMINISTRADOR como as outras). O teste "funções públicas são exatamente…" falha se aparecer outra.
 
 ## 3. Página
 
@@ -65,16 +65,18 @@ Nenhum dado da planilha entra na página por `innerHTML`: tudo por `textContent`
 
 - Cada função lê a aba inteira com **um** `getRange(...).getValues()` e trabalha sobre o retrato. Nenhuma leitura célula a célula.
 - Planilhas são abertas uma vez por execução; o `ID_INDEX` vem do cache (10 min) e a lista de acesso também (60 s).
-- Escritas são pontuais (`setValue` nas células do pedido); a migração grava duas colunas inteiras com `setValues`.
+- Escritas são pontuais (`setValue` nas células do pedido); a migração grava duas colunas inteiras com `setValues`; a recuperação, no máximo duas células. A impressão digital é calculada sobre o retrato já lido: não acrescenta leituras.
 - Teste com 3.000 linhas (simulado, em `testar_backend.js`): pendentes e concluídos com 1 `getValues` e 0 `getValue`; `salvarPedido` com concluir e avisar faz 2 leituras em lote (uma em cada trava) e 7 `setValue`. O tempo real no Google depende da planilha e não foi medido.
 - Respostas passam por `paraPagina_` (ciclo JSON). Um `Date` numa resposta de `google.script.run` faz a página receber `null` sem erro; por isso datas viram texto `dd/MM/yyyy HH:mm` no servidor.
 
 ## 5. Concorrência
 
-- `LockService.getScriptLock()` com `tryLock`: 15 s para salvar e preparar pedido, 10 s para confirmar o envio e desfazer a reserva, 30 s para a migração. Trava ocupada = `TRAVA_OCUPADA`, nada gravado.
+- `LockService.getScriptLock()` com `tryLock`: 15 s para salvar e preparar pedido, 10 s para confirmar o envio e desfazer a reserva, 30 s para a migração, 15 s para a recuperação. Trava ocupada = `TRAVA_OCUPADA`, nada gravado.
 - **Versão otimista**: a página manda a Versão que viu; o servidor confere dentro da trava. Diferente = `CONFLITO_VERSAO`. A Versão sobe antes das outras gravações e `SpreadsheetApp.flush()` roda antes de soltar a trava.
-- **Reserva de envio**: `E-mail Enviado` recebe `ENVIANDO… aaaa-mm-dd hh:mm:ss` antes do envio, que acontece fora da trava. Reserva com menos de 10 min bloqueia outro envio; mais velha (ou a da 1.0, sem data) é tratada como envio interrompido e só é refeita com confirmação expressa.
+- **Reserva de envio**: `E-mail Enviado` recebe `ENVIANDO… aaaa-mm-dd hh:mm:ss #marca` antes do envio, que acontece fora da trava. A marca é aleatória e própria do salvamento. Reserva com menos de 10 min bloqueia outro envio; mais velha (ou a da 1.0, sem data) é tratada como envio interrompido e só é refeita com confirmação expressa.
 - **Linha achada de novo pelo Registro ID** depois do envio: se a planilha foi reordenada no meio, a confirmação vai para a linha certa.
+- **Confirmação só sobre a própria reserva**: a data do envio só substitui a célula se ela ainda for igual à reserva daquele salvamento e a Versão for válida. Se mudou (edição manual, outra operação), nada é gravado e o resultado é `ENVIADO_SEM_REGISTRO`/`RESERVA_ALTERADA`; o e-mail não é reenviado.
+- **Versão**: um único critério (`versaoValida_`, inteiro ≥ 1) para ler, salvar, migrar e recuperar; versão ausente ou malformada deixa o pedido marcado e sem abrir, até a recuperação.
 - Limites: a trava é do script. Ela não segura edição manual na planilha nem gravações do Google Forms. Ver [MANUTENCAO_E_CONTINUIDADE.md](MANUTENCAO_E_CONTINUIDADE.md#riscos).
 
 ## 6. Configuração e falha fechada

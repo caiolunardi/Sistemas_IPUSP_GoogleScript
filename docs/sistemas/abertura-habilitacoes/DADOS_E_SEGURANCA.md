@@ -61,14 +61,19 @@ Script Properties (valores fora do Git):
 ID_INDEX_SPREADSHEET_ID            ID da planilha ID_INDEX
 AMBIENTE                           vazio/producao, ou homologacao (cópia de testes)
 MIGRACAO_REGISTRO_ID_CONFIRMACAO   só durante a migração controlada
+RECUPERACAO_REGISTRO               só durante a recuperação de um pedido (número da linha, depois o código)
 ```
+
+Os códigos de confirmação (`MIGRAR-…`, `RECUPERAR-…`) terminam com 16 dígitos hexadecimais de um SHA-256 calculado sobre o plano, que inclui Nome, Nº USP e carimbo das linhas envolvidas. Só esse trecho do resumo sai do servidor; com 64 bits e muitas linhas misturadas, ele não permite reconstruir os dados, mas também não é um segredo: serve para conferir que o plano não mudou, não para proteger nada.
 
 Falha fechada: propriedade ausente, chave ausente, repetida, sem ID, de outro tipo, ou `AMBIENTE` desconhecido param o sistema. Em homologação, uma chave sem ID de homologação **não** cai na produção. Mensagens citam nomes de chaves, nunca IDs; `semIds_` ainda remove textos com cara de ID das mensagens do Google.
 
 ## 6. Logs
 
 - Registram contagens, números de linha e o tipo de falha. `textoParaLog_` remove IDs, e-mails e números longos (Nº USP) das mensagens de erro.
-- A 1.0 registrava nomes de alunos (migração, pendentes sem ID, diagnóstico). A 2.0 não; conferido pelo teste "registros de execução sem nomes…".
+- A 1.0 registrava nomes de alunos (migração, pendentes sem ID, diagnóstico). A 2.0 não; conferido pelo teste "registros de execução sem nomes…", que inclui a migração e a recuperação.
+- Migração e recuperação registram números de linha, contagens, problemas, ações e o código; nunca o conteúdo das células (nem o ID antigo de uma linha recuperada, que pode ter sido digitado à mão). O ID antigo fica no histórico de versões da planilha e no registro manual do responsável ([manual](MANUAL_OPERACAO.md#42-recuperação-de-um-pedido-um-por-vez)), guardado fora do repositório.
+- "E-mail enviado sem registro" é registrado como aviso, sem destinatário.
 - O console do navegador não recebe dados pessoais (conferido no teste de navegador).
 
 ## 7. Compartilhamento e acesso

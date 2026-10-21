@@ -5,7 +5,7 @@
 | Versão | Data | Estado | Resumo |
 |---|---|---|---|
 | v1.0 | recebida em 21/10/2026 | em uso, fora do repositório | Pendentes, 10 concluídos, busca no histórico (com 2021–2022), detalhe, observações, concluir/reabrir, aviso por e-mail com reserva, relatórios. ID da planilha no código, sem autorização no servidor, migração de IDs a cada visita, nomes de alunos no registro. |
-| v2.0 | 21/10/2026 | **não homologada, não implantada** | Mesmas funções; `ID_INDEX` com homologação; perfis no servidor; abrir a página não grava; migração expressa; recusas antes de gravar; reserva com data; resultados distintos para falhas de e-mail; interface GRADIP e Central de Ajuda. Nota: [`notas-de-versao/abertura-habilitacoes-gerenciador-v2.0.md`](../../../notas-de-versao/abertura-habilitacoes-gerenciador-v2.0.md). Sem tag nem Release. |
+| v2.0 | 21/10/2026 | **não homologada, não implantada** | Mesmas funções; `ID_INDEX` com homologação; perfis no servidor; abrir a página não grava; migração expressa com código que identifica o plano; recuperação de um pedido; critério único de versão; recusas antes de gravar; reserva com data e marca, confirmada só sobre ela; resultados distintos para falhas de e-mail; interface GRADIP e Central de Ajuda. Nota: [`notas-de-versao/abertura-habilitacoes-gerenciador-v2.0.md`](../../../notas-de-versao/abertura-habilitacoes-gerenciador-v2.0.md). Sem tag nem Release. |
 
 Diferenças item a item: [INVENTARIO_LEGADO.md](INVENTARIO_LEGADO.md).
 
@@ -22,6 +22,11 @@ Diferenças item a item: [INVENTARIO_LEGADO.md](INVENTARIO_LEGADO.md).
 | Colunas novas sempre depois de K | Evitar ocupar J/K numa planilha com colunas vazias |
 | Mensagens de erro técnicas genéricas na página | Não expor detalhes internos |
 | Sem auditoria em planilha, sem gatilho | Exigem recursos novos ou ações proibidas nesta tarefa |
+| Código de confirmação da migração com impressão digital do plano (SHA-256 de posições, identificação, ID, Versão e operações de cada linha com Nome), em vez de só contagens | Auditoria de 21/10/2026: com as mesmas contagens, linhas trocadas ou substituídas passavam pela confirmação |
+| Data do envio gravada só sobre a reserva do próprio salvamento (marca aleatória na reserva); se a célula mudou, nada é gravado e o e-mail não é reenviado | Auditoria de 21/10/2026: a confirmação apagava alterações feitas durante o envio |
+| Contrato único de Versão (inteiro ≥ 1); ausente ou malformada bloqueia o pedido; migração e Preparar pedido só preenchem a vazia | Auditoria de 21/10/2026: critérios diferentes entre leitura, salvamento e migração; a 1.0 trocava valores ruins por 1 sem avisar |
+| Recuperação administrativa de uma linha, com diagnóstico, código, escolha humana da linha e registro manual, em vez de correção automática de ID fora do formato e de repetidos | Auditoria de 21/10/2026: não há como saber, pelo código, qual pedido é o "certo" num ID repetido nem o que um valor digitado significava |
+| Volta à 1.0 condicionada a diagnóstico limpo, sem reservas, cópia de segurança e acesso "Somente eu" durante a troca | A 1.0 roda a migração automática a cada visita |
 
 ## Decisões pendentes
 

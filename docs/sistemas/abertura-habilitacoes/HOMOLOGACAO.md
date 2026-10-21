@@ -59,17 +59,26 @@ Marcar cada item com resultado, data e quem conferiu. Capturas para o repositór
 | C7 | Pedido com e-mail vazio | Opção de aviso desativada |
 | C8 | Colar mais de 2.000 caracteres nas observações; e, pelo console, chamar `salvarPedido` com texto maior | O campo para em 2.000; o servidor recusa o texto maior com mensagem, nada gravado |
 | C9 | Pedido sem identificador → **Preparar pedido** | Só aquela linha recebe ID e Versão 1; passa a abrir |
+| C10 | Avisar um pedido e, enquanto o e-mail sai, escrever um texto na célula `E-mail Enviado` dessa linha na planilha (difícil de cronometrar; se não der, registrar "não executado") | E-mail chega uma vez; mensagem "e-mail enviado… data não registrada"; a célula fica com o texto escrito; Versão não sobe de novo |
+| C11 | Linha fictícia com Versão `0` e outra com `abc` | Marcadas "Versão inválida"; não abrem; nada gravado ao listar |
 
 ### D. Migração na cópia
 
 | # | Passo | Esperado |
 |---|---|---|
-| D1 | `diagnosticarMigracaoRegistroId` | Contagens batem com as linhas fictícias preparadas (sem ID, repetido, versão inválida) |
+| D1 | `diagnosticarMigracaoRegistroId` | Contagens batem com as linhas fictícias preparadas (sem ID, repetido, versão vazia, versão malformada); dois diagnósticos seguidos dão o mesmo código |
 | D2 | `executarMigracaoRegistroId` sem a propriedade | Recusa, nada gravado |
 | D3 | Com a propriedade e uma linha nova acrescentada depois do diagnóstico | Recusa (plano mudou), nada gravado |
 | D4 | Com o código atual | Só as colunas Registro ID e Versão mudam (comparar com a cópia de segurança); propriedade apagada |
 | D5 | Rodar de novo | "Nada a fazer" |
 | D6 | Conferir a aba `2021 - 2022` | Nenhuma célula alterada (histórico de versões) |
+| D7 | Diagnosticar, trocar de lugar duas linhas fictícias (mesmas contagens) e executar | Recusa, nada gravado; novo diagnóstico dá outro código |
+| D8 | Versões malformadas depois da migração | Continuam como estavam; `versaoMalformada` informa as linhas |
+| D9 | Recuperação: `RECUPERACAO_REGISTRO` = linha com ID fora do formato → diagnosticar → código → executar | Só o Registro ID daquela linha muda; propriedade apagada; pedido abre |
+| D10 | Recuperação de um ID repetido escolhendo a **segunda** linha do grupo | Só ela recebe ID novo; a primeira mantém o ID |
+| D11 | Recuperação com a linha editada depois do diagnóstico | Recusa, nada gravado |
+| D12 | Recuperação de Versão `0` | Versão passa a 1; ID mantido |
+| D13 | Ensaio da volta à 1.0 num projeto de homologação com a 1.0 sanitizada apontando para a cópia (opcional) | Com as condições de [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás) cumpridas, a primeira visita não altera nada no histórico de versões |
 
 ### E. Página
 

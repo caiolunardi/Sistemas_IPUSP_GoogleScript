@@ -19,7 +19,8 @@ Padrão de referência: [`docs/UX_DESIGN_SYSTEM.md`](../../UX_DESIGN_SYSTEM.md),
 |---|---|---|
 | Pedido com ID único | botão com nome, Nº USP, habilitação, data e e-mail; selo da situação | abre o detalhe |
 | Sem identificador | cartão tracejado, sem ação; selo "Sem identificador"; **? Por que não abre** | ADMINISTRADOR vê **Preparar pedido** |
-| ID repetido ou inválido | igual, selo "Identificador repetido/inválido" | nenhuma (conferência do responsável) |
+| ID repetido ou inválido | igual, selo "Identificador repetido/inválido" | nenhuma (recuperação pelo responsável) |
+| Versão vazia ou malformada (ID bom) | igual, selo "Versão inválida" | nenhuma (recuperação pelo responsável) |
 | Concluído | selo verde; "Aluno avisado em …", "Aluno não avisado por e-mail" ou "Aviso por e-mail sem confirmação de envio" | abre o detalhe |
 | Histórico 2021–2022 | origem indicada, sem ação | só consulta |
 
@@ -45,7 +46,7 @@ O servidor manda `CODIGO: texto`. A página mostra:
 
 | Código | Texto mostrado | Ajuda |
 |---|---|---|
-| `ENTRADA`, `CONFLITO_VERSAO`, `TRAVA_OCUPADA`, `ENVIO_EM_ANDAMENTO`, `SEM_EMAIL`, `GRAVACAO_PARCIAL`, `REFERENCIA_DESATUALIZADA`, `MIGRACAO_NECESSARIA`, `NAO_ENCONTRADO`, `INTEGRIDADE`, `ESTRUTURA`, `SO_LEITURA`, `SEM_ACESSO`, `SEM_IDENTIFICACAO` | o do servidor (escrito para a equipe, sem IDs), até 400 caracteres | conforme o código |
+| `ENTRADA`, `CONFLITO_VERSAO`, `TRAVA_OCUPADA`, `ENVIO_EM_ANDAMENTO`, `SEM_EMAIL`, `GRAVACAO_PARCIAL`, `REFERENCIA_DESATUALIZADA`, `MIGRACAO_NECESSARIA`, `NAO_ENCONTRADO`, `INTEGRIDADE`, `VERSAO_INVALIDA`, `ESTRUTURA`, `SO_LEITURA`, `SEM_ACESSO`, `SEM_IDENTIFICACAO` | o do servidor (escrito para a equipe, sem IDs), até 400 caracteres | conforme o código |
 | `ACESSO_INDISPONIVEL`, `CONFIGURACAO` | texto fixo da página | `ajuda-acesso` |
 | resposta nula ou fora do formato | "O servidor devolveu uma resposta vazia ou incompleta…" | — |
 | sem `google.script.run` | "A página não conseguiu falar com o servidor…" | — |

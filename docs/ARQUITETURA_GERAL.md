@@ -59,6 +59,7 @@ O Painel dos servidores também lê, desde a 1.4 pelo `ID_INDEX`, as planilhas d
 | `ID_INDEX_SPREADSHEET_ID` | todos (no Painel dos servidores, desde a 1.1, para achar `PERMISSOES_DE_ACESSO`, na 1.2, os cadastros da saudação e, na 1.3, a planilha da auditoria) | ID da planilha mestre |
 | `AMBIENTE` | Exclusão, Trancamento Parcial e Total; Gerenciador de Abertura de Habilitações 2.0 (só nas cópias de teste) | `homologacao` |
 | `MIGRACAO_REGISTRO_ID_CONFIRMACAO` | Gerenciador de Abertura de Habilitações 2.0, só durante a migração controlada | código dado pelo diagnóstico |
+| `RECUPERACAO_REGISTRO` | Gerenciador de Abertura de Habilitações 2.0, só durante a recuperação de um pedido | número da linha, depois o código dado pelo diagnóstico |
 | `URLS_SISTEMAS_EQUIPE` | Painel dos servidores | JSON com as URLs `/exec` das ferramentas da equipe |
 
 ## 4. Como os sistemas conversam

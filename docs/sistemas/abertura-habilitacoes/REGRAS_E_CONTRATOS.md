@@ -32,8 +32,9 @@
 | Corpo: `Bom dia`/`Boa tarde`/`Boa noite` pela hora de Brasília (0–11, 12–17, 18–23), primeiro nome (até o primeiro espaço), "Informo que sua habilitação de {texto da coluna de habilitação} foi aberta conforme solicitado.", "Atenciosamente, Equipe do Serviço de Graduação". | 1.0, idêntico |
 | Remetente exibido "Serviço de Graduação — IPUSP"; respostas vão para o endereço institucional da equipe; a conta que envia é a de quem implantou (`MailApp`). | 1.0 |
 | Já avisado (E-mail Enviado com data): novo aviso só com confirmação expressa. | 1.0 |
-| `E-mail Enviado` só recebe a data **depois** que o `MailApp` aceitou o envio. Antes, guarda a reserva `ENVIANDO… aaaa-mm-dd hh:mm:ss`. | 1.0 (reserva); 2.0 (data na reserva) |
-| Reserva com menos de 10 minutos bloqueia outro envio; mais velha, ou sem data (deixada pela 1.0), é envio interrompido e pede confirmação. | 2.0 |
+| `E-mail Enviado` só recebe a data **depois** que o `MailApp` aceitou o envio. Antes, guarda a reserva `ENVIANDO… aaaa-mm-dd hh:mm:ss #xxxxxxxx` (a marca é aleatória e própria de cada salvamento). | 1.0 (reserva); 2.0 (data e marca na reserva) |
+| A data do envio só substitui a reserva se a célula ainda tiver a reserva **daquele** salvamento e a Versão for válida. Se outra pessoa, outra sessão ou uma edição manual mudou a célula durante o envio, nada é gravado por cima; o resultado é "e-mail enviado, data não registrada" (`RESERVA_ALTERADA`) e o e-mail não é reenviado. | 2.0 (a 1.0 gravava a data por cima) |
+| Reserva com menos de 10 minutos bloqueia outro envio; mais velha, sem data (deixada pela 1.0) ou fora do formato, é envio interrompido e pede confirmação. | 2.0 |
 | A reserva nunca aparece na tela como data de aviso. | 2.0 |
 
 O texto do e-mail é dado como "texto da 1.0", não como modelo aprovado. Alterar o texto é decisão humana.
@@ -55,10 +56,15 @@ A 2.0 acrescenta, sem mudar as contagens: linhas **sem data** reconhecível e o 
 |---|---|
 | Cada pedido da aba atual é achado pelo `Registro ID` (UUID), nunca pela posição. | 1.0 |
 | `Versão` (inteiro) sobe a cada gravação; a página manda a versão que viu e a gravação é recusada se mudou. | 1.0 |
+| **Contrato único da Versão**: válida é inteiro ≥ 1 (número, ou texto só de algarismos como `"3"`). Vazia (ou só espaços) é **ausente**. `0`, negativa, fracionária, infinita, texto, data ou booleano é **malformada**. O mesmo critério vale para listas, detalhe, salvamento, busca, migração, preparar pedido e recuperação (`versaoValida_`/`estadoDaVersao_` em `Planilha.gs`). | 2.0 (a 1.0 lia qualquer valor ruim como 1) |
 | Versão ausente ou inválida enviada pela página: recusa (a 1.0 pulava a conferência). | 2.0 |
+| Versão da planilha ausente ou malformada num pedido com ID bom: aparece marcado ("Versão inválida"), não abre; detalhe e salvamento recusam (`VERSAO_INVALIDA`) sem gravar. Nada é corrigido sozinho. | 2.0 |
 | ID vazio, repetido ou fora do formato: o pedido aparece, marcado, e não abre. | 2.0 |
 | Abrir a página não atribui IDs. A atribuição é feita por **Preparar pedido** (uma linha) ou pela migração controlada (lote). | 2.0 |
-| Migração: só linhas com Nome; ID vazio → UUID; ID repetido → a primeira ocorrência fica, as seguintes recebem UUID novo; Versão vazia ou não numérica → 1; ID fora do formato é só informado. | 1.0 (regras), 2.0 (forma) |
+| Migração: só linhas com Nome; ID vazio → UUID; ID repetido → a primeira ocorrência fica, as seguintes recebem UUID novo; **só Versão vazia** → 1; Versão malformada e ID fora do formato são só informados. | 1.0 (regras de ID), 2.0 (forma; Versão malformada não é mais trocada por 1) |
+| A confirmação da migração identifica o plano: impressão digital de posições, identificação (Nome, Nº USP, carimbo), Registro ID, Versão e operações de cada linha com Nome. Qualquer mudança nesses dados entre o diagnóstico e a execução recusa a execução. | 2.0 |
+| Preparar pedido: ID novo; Versão vazia → 1; Versão válida mantida; Versão malformada → recusa. | 2.0 (a 1.0 não tinha) |
+| Recuperação de um pedido (ID fora do formato, ID repetido, Versão ausente ou malformada): só pelo editor, uma linha escolhida pelo responsável, com diagnóstico, código de confirmação da linha e das outras linhas do mesmo ID, e gravação de no máximo duas células. As outras linhas do mesmo ID mantêm o ID. | 2.0 |
 
 ## 6. Contratos com outros sistemas
 

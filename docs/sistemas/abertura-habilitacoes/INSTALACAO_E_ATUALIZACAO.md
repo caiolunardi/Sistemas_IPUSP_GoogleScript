@@ -53,8 +53,50 @@ Uma implantação **nova** (em vez de nova versão) muda a URL: atualizar a chav
 
 ## 5. Voltar atrás
 
-- Código: Implantar → Gerenciar implantações → editar → escolher a versão anterior (a 1.0). Os dados gravados pela 2.0 são compatíveis com a 1.0: mesmas colunas, mesmo `Concluído`/`pendente`; a única diferença é a reserva com data (`ENVIANDO… aaaa-mm-dd hh:mm:ss`). A 1.0 só reconhece a reserva sem data; uma reserva com data que tenha sobrado seria lida por ela como "já avisado" (e mostrada como texto no detalhe). Antes de voltar, confira com `diagnosticarPlanilha` (campo `reservasDeEnvio`) que não há nenhuma; se houver, trate cada pedido pelo gerenciador 2.0 ou limpe a célula depois de confirmar com o aluno se o e-mail chegou.
-- Dados: restaurar pelo histórico de versões da planilha ou pela cópia de segurança, depois de anotar o que mudou desde então.
+Voltar à 1.0 **não é inofensivo**. A 1.0 roda a migração automática de Registro ID e Versão a cada abertura da página, por qualquer pessoa que tenha o link, sem conferência nem confirmação. Se a planilha tiver algo que essa migração "corrige", a primeira visita depois da volta altera dados sozinha.
+
+### O que a 1.0 faz ao abrir a página
+
+Conferido no código da 1.0 (`testes/baseline/`) e pelo teste de equivalência "volta à 1.0…":
+
+| Situação na planilha | O que a 1.0 faz na primeira visita |
+|---|---|
+| Pedido sem Registro ID (por exemplo, chegou pelo Forms depois da última migração) | Dá um ID novo. Esperado, mas sem registro de quem fez. |
+| Registro ID repetido | Troca o ID das ocorrências seguintes; mantém a primeira. Não pergunta qual pedido fica com o ID. Grava o **nome do aluno** no registro de execução. |
+| Versão vazia, `0` ou texto (`abc`, `#NUM!`) | Troca por `1`, sem avisar. É o caso que a 2.0 deixou de corrigir sozinha. |
+| Versão negativa ou fracionária (`-2`, `1.5`) | Mantém e passa a usá-la como versão; os salvamentos seguintes continuam com valores sem sentido. |
+| Reserva de envio da 2.0 (`ENVIANDO… data #marca`) | Lê como "já avisado" e mostra o texto da reserva no lugar da data do aviso. |
+| Qualquer um dos três primeiros casos | Reescreve as colunas Registro ID e Versão **inteiras** (todas as linhas, inclusive as que não mudam), o que transforma fórmulas dessas colunas em valores. |
+
+Além disso, a 1.0 não confere quem acessa: quem tiver o link lê e grava tudo, conforme o acesso da implantação.
+
+### Condições para voltar
+
+Só volte quando **todas** forem verdadeiras, conferidas no editor da 2.0 logo antes da troca:
+
+1. `diagnosticarMigracaoRegistroId` → `precisaMigrar: false` **e** `versaoMalformada: 0`. Se não, rode a migração controlada e a recuperação de cada linha informada ([manual](MANUAL_OPERACAO.md#4-migração-controlada-de-registro-id-e-versão), seções 4.1 e 4.2). `identificadoresForaDoFormato` deve ser 0 também: a 1.0 aceita esses pedidos, mas a 2.0, se voltar depois, não.
+2. `diagnosticarPlanilha` → `reservasDeEnvio: 0`. Se houver, trate cada pedido pelo gerenciador 2.0 (o envio interrompido pede confirmação) ou, depois de confirmar com o aluno se o e-mail chegou, limpe a célula `E-mail Enviado` e anote nas observações.
+3. Cópia de segurança da planilha feita agora (Arquivo → Fazer uma cópia, pasta restrita), com data e hora anotadas.
+4. As propriedades `MIGRACAO_REGISTRO_ID_CONFIRMACAO` e `RECUPERACAO_REGISTRO` não existem (apague se sobraram).
+5. Autorização expressa do responsável para a volta, registrada.
+
+### Procedimento
+
+1. Mude o acesso da implantação para **Somente eu** (Implantar → Gerenciar implantações → editar → Quem pode acessar). Assim ninguém abre a 1.0 antes da conferência.
+2. Refaça as conferências 1 e 2 acima (pedidos novos podem ter chegado).
+3. Na mesma tela, escolha a versão anterior da implantação (a 1.0) e salve. A URL não muda.
+4. Abra a página **uma vez**, com a sua conta.
+5. Na planilha, abra Arquivo → Histórico de versões e confira que essa visita não alterou nada. Se alterou (por exemplo, um pedido chegou entre o passo 2 e o 4 e ganhou ID), confira as células alteradas contra a cópia do passo 3 antes de seguir.
+6. Volte o acesso da implantação ao que o responsável decidir. Lembre que a 1.0 não tem autorização no servidor (decisão 13 de [VERSOES_E_DECISOES.md](VERSOES_E_DECISOES.md)).
+7. Registre a volta em [`docs/VERSOES.md`](../../VERSOES.md) (data, motivo, versão em uso).
+
+Pedidos que chegarem depois da volta recebem ID na primeira visita, como sempre aconteceu na 1.0.
+
+**Se as condições não puderem ser cumpridas a tempo** (por exemplo, a 2.0 precisa sair do ar já): não volte à 1.0. Mude a implantação para **Somente eu**. Isso tira o gerenciador do ar sem alterar dados e pode ser desfeito; a equipe fica sem a ferramenta até a correção ou até a volta conferida.
+
+### Dados e acesso
+
+- Dados: restaurar pelo histórico de versões da planilha ou pela cópia de segurança, depois de anotar o que mudou desde então. Prefira restaurar células ou linhas a restaurar a planilha inteira.
 - Acesso: na dúvida, mudar a implantação para "Somente eu".
 
 ## 6. Atualizar para versões futuras

@@ -24,12 +24,14 @@ Para quem vier a manter o gerenciador sem ter participado da 2.0. Regras gerais 
 2. **Toda função pública confere o acesso primeiro.** Função nova sem `_` no fim precisa de `exigirLeitor_()` ou `exigirAdministrador_()` na primeira linha **e** de entrar na lista do teste "funções públicas são exatamente…".
 3. **A aba `2021 - 2022` nunca é escrita.** Toda escrita passa por `gravarCelula_` ou `obterOuCriarColuna_`, que recusam outra aba; a migração confere de novo. Não use `getRange(...).setValue` direto numa tabela lida.
 4. **J e K pela posição; `pendente` em minúsculas.** O Painel dos servidores depende disso.
-5. **Nada é gravado antes das conferências** em `salvarPedido`; a Versão sobe antes das outras gravações; `flush` antes de soltar a trava; e-mail fora da trava; `E-mail Enviado` só com data depois do envio aceito.
+5. **Nada é gravado antes das conferências** em `salvarPedido`; a Versão sobe antes das outras gravações; `flush` antes de soltar a trava; e-mail fora da trava; `E-mail Enviado` só com data depois do envio aceito **e só se a célula ainda tiver a reserva daquele salvamento**.
 6. **Consultar não grava.** `doGet` e as funções de `Pedidos.gs` são só leitura.
 7. **Respostas só com JSON** (`paraPagina_`): nenhum `Date` sai do servidor.
 8. **Dados na página só por `textContent`.**
 9. **Logs sem dados pessoais** (`textoParaLog_`; nada de nome, e-mail ou Nº USP em `console.log`).
-10. **Comportamento da 1.0 preservado** onde o inventário diz "CI": mudar exige decisão humana e atualizar o teste de equivalência (que vai falhar, de propósito).
+10. **Um só critério de Versão** (`versaoValida_`/`estadoDaVersao_` em `Planilha.gs`). Não leia a coluna Versão de outro jeito, e não "corrija" versão malformada fora da recuperação.
+11. **Alteração em lote ou de identificador só com código que identifica o plano.** Ao mudar `planejarMigracao_` ou `planejarRecuperacao_`, tudo o que a execução usa para decidir precisa entrar na impressão digital; os testes "linhas trocadas…", "registros alterados…" e "linha ou grupo mudou…" conferem isso.
+12. **Comportamento da 1.0 preservado** onde o inventário diz "CI": mudar exige decisão humana e atualizar o teste de equivalência (que vai falhar, de propósito).
 
 ## Como evoluir
 
@@ -52,6 +54,9 @@ Para quem vier a manter o gerenciador sem ter participado da 2.0. Regras gerais 
 | Divergência de contagem com o Painel dos servidores | Números diferentes para a equipe | Documentado | Unificar critério (decisão) |
 | Sem registro de quem alterou | Não dá para saber quem concluiu ou avisou | Histórico de versões da planilha (mostra a conta que implantou, não quem usou) | Auditoria em planilha própria (decisão) |
 | Exposição da 1.0 em uso (sem autorização no servidor) | Quem tem o link lê e grava | Nenhuma na 1.0 | Homologar e implantar a 2.0, ou restringir a implantação da 1.0 |
+| Volta à 1.0 depois da implantação | A primeira visita reescreve Registro ID e Versão se houver algo a "corrigir" | Condições e procedimento em [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás); teste "volta à 1.0…" | Preferir "Somente eu" a voltar, quando as condições não puderem ser cumpridas |
+| Pedidos com versão malformada ou ID fora do formato | Não abrem até a recuperação | Marcados na lista; recuperação um a um ([manual](MANUAL_OPERACAO.md#42-recuperação-de-um-pedido-um-por-vez)) | Proteção das colunas Registro ID e Versão (decisão 12) |
+| Alteração da célula `E-mail Enviado` durante um envio | A data do aviso não fica registrada | Resultado "e-mail enviado, data não registrada"; equipe anota nas observações | — |
 
 ## Contatos e responsabilidades
 

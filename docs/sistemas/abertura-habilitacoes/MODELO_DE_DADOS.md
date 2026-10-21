@@ -68,7 +68,8 @@ Primeira aba (ou `Página1`). Colunas achadas pelo título, sem diferença de ac
 |---|---|---|
 | `ID_INDEX_SPREADSHEET_ID` | sim | ID da planilha `ID_INDEX` |
 | `AMBIENTE` | não | vazio/`producao` ou `homologacao` |
-| `MIGRACAO_REGISTRO_ID_CONFIRMACAO` | só durante a migração | código dado pelo diagnóstico; apagada pela execução |
+| `MIGRACAO_REGISTRO_ID_CONFIRMACAO` | só durante a migração | código `MIGRAR-…` dado pelo diagnóstico; apagada pela execução |
+| `RECUPERACAO_REGISTRO` | só durante a recuperação de um pedido | número da linha (para o diagnóstico) e depois o código `RECUPERAR-…` (para a execução); apagada pela execução |
 
 ## 5. Cache do script
 

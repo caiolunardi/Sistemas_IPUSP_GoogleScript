@@ -17,8 +17,10 @@ O formulário dos alunos (Google Forms) não faz parte deste repositório. O Pai
 
 - **Configuração:** nenhum ID no código; planilhas pelo `ID_INDEX`, com ambiente de homologação.
 - **Acesso:** perfis LEITOR e ADMINISTRADOR conferidos no servidor em toda função; quem não está na lista não vê nada. Proposta técnica, a validar.
-- **Abrir a página não grava mais nada.** A atribuição de identificadores virou operação expressa (por pedido, ou em lote pela migração controlada).
-- **Salvar:** nada é gravado quando o pedido é recusado; reserva de envio com data; "salvo, mas o e-mail falhou" e "e-mail enviado, mas não registrado" são resultados distintos.
+- **Abrir a página não grava mais nada.** A atribuição de identificadores virou operação expressa (por pedido, em lote pela migração controlada, cujo código de confirmação identifica o plano, ou um a um pela recuperação administrativa).
+- **Versão:** um único critério de validade; versão vazia ou malformada não é mais corrigida em silêncio.
+- **Salvar:** nada é gravado quando o pedido é recusado; reserva de envio com data e marca própria; a data do envio nunca sobrescreve uma alteração feita durante o envio; "salvo, mas o e-mail falhou" e "e-mail enviado, mas não registrado" são resultados distintos.
+- **Voltar à 1.0** tem riscos e condições próprias ([INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás)).
 - **Interface:** padrão GRADIP (tema, menu lateral ou abas, diálogos acessíveis, Central de Ajuda).
 
 Todas as diferenças, uma a uma, com a classificação e o teste: [INVENTARIO_LEGADO.md](INVENTARIO_LEGADO.md).
@@ -36,7 +38,7 @@ Todas as diferenças, uma a uma, com a classificação e o teste: [INVENTARIO_LE
 | [UX_E_NAVEGACAO.md](UX_E_NAVEGACAO.md) | Tela, estados, teclado, tema, responsividade. |
 | [AJUDA.md](AJUDA.md) | Texto-fonte da Central de Ajuda. |
 | [INSTALACAO_E_ATUALIZACAO.md](INSTALACAO_E_ATUALIZACAO.md) | Script Properties, `ID_INDEX`, lista de acesso, implantação (sem valores). |
-| [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md) | Uso diário, diagnósticos, migração controlada, cópia de segurança, como voltar atrás, problemas comuns. |
+| [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md) | Uso diário, diagnósticos, migração controlada, recuperação de um pedido, cópia de segurança, como voltar atrás, problemas comuns. |
 | [HOMOLOGACAO.md](HOMOLOGACAO.md) | Plano de homologação e estado. |
 | [TESTES.md](TESTES.md) | O que os testes cobrem, resultados e limitações. |
 | [MANUTENCAO_E_CONTINUIDADE.md](MANUTENCAO_E_CONTINUIDADE.md) | O que não mudar sem cuidado, como evoluir, riscos. |
