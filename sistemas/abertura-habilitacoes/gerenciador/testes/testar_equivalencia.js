@@ -319,5 +319,20 @@ t('volta à 1.0: com o diagnóstico da 2.0 limpo, abrir a 1.0 não grava nada; s
   assert(sujo.atual.contadores.setValues > 0);
 });
 
+t('DIFERENÇA: migração — a 1.0 regrava as duas colunas inteiras (fórmulas viram valores); a 2.0 grava só as células do plano', () => {
+  const p = par(D.linhasAtuais);
+  [p.antigo, p.novo].forEach(m => { m.atual.formulas['2,13'] = '=TEXTO_DO_ID()'; m.atual.formulas['3,14'] = '=2+1'; });
+  p.a('doGet', {});
+  const r = p.n('diagnosticarMigracaoRegistroId');
+  p.novo.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = r.codigoConfirmacao;
+  p.n('executarMigracaoRegistroId');
+  assert.deepStrictEqual(p.antigo.atual.formulas, {}, '1.0: fórmulas substituídas');
+  assert.deepStrictEqual(p.novo.atual.formulas, { '2,13': '=TEXTO_DO_ID()', '3,14': '=2+1' });
+  assert(p.antigo.atual.escritas.length > 20 && p.novo.atual.escritas.length === 3);
+  // mesmas regras: as duas preenchem as mesmas células com o mesmo tipo de valor
+  const preenchidas = m => m.atual.valores.map(l => [Boolean(l[12]), l[13] === '' ? '' : typeof l[13]]);
+  assert.deepStrictEqual(preenchidas(p.novo), preenchidas(p.antigo));
+});
+
 console.log(`\n${ok} ok, ${falhas} falha(s)`);
 process.exit(falhas ? 1 : 0);

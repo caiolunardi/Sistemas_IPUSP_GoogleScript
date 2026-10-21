@@ -811,6 +811,118 @@ t('migração: trava ocupada recusa sem gravar e mantém a confirmação', () =>
   assert.strictEqual(m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO, c);
 });
 
+/*==================== MIGRAÇÃO: SÓ AS CÉLULAS DO PLANO ====================*/
+
+const migrar = m => {
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = chamar(m, 'diagnosticarMigracaoRegistroId').codigoConfirmacao;
+  return chamar(m, 'executarMigracaoRegistroId');
+};
+const posicoes = m => m.atual.escritas.map(e => [e.linha, e.coluna]);
+
+t('migração: grava só as células do plano; fórmulas e valores das outras linhas intactos', () => {
+  const m = D.montar();
+  // fórmulas em células que o plano NÃO toca, nas duas colunas da migração e fora delas
+  Object.assign(m.atual.formulas, { '2,13': '=TEXTO_DO_ID()', '3,14': '=2+1', '4,14': '=1+1', '8,13': '=ID_FIXO()', '2,11': '=SITUACAO()', '7,13': '=""' });
+  const formulasAntes = JSON.stringify(m.atual.formulas);
+  const antes = JSON.parse(retrato(m.atual));
+  const r = migrar(m);
+  assert.strictEqual(r.executada, true);
+  // Elisa (6): ID e Versão; Gabriela (9, repetida): só ID
+  assert.deepStrictEqual(posicoes(m).sort(), [[6, 13], [6, 14], [9, 13]]);
+  assert.strictEqual(JSON.stringify(m.atual.formulas), formulasAntes, 'fórmulas fora do plano foram trocadas por valores');
+  const depois = JSON.parse(retrato(m.atual));
+  depois.forEach((l, i) => l.forEach((v, j) => {
+    if (!((i === 5 && (j === 12 || j === 13)) || (i === 8 && j === 12))) assert.deepStrictEqual(v, antes[i][j], `célula ${i + 1},${j + 1} mudou`);
+  }));
+  assert.strictEqual(typeof depois[2][13], 'number', 'tipo da versão intacta mantido');
+  assert.deepStrictEqual([m.atual.contadores.setValues, m.atual.contadores.setValue], [3, 0]);
+  assert.deepStrictEqual(r.resumo.gravacao, { titulos: 0, blocos: 3, celulas: 3 });
+});
+
+t('migração: fórmula numa célula do plano é a única substituída', () => {
+  const m = D.montar();
+  m.atual.formulas['6,14'] = '=""';   // Versão vazia calculada por fórmula: o plano põe 1
+  m.atual.formulas['5,14'] = '=1';
+  migrar(m);
+  assert.deepStrictEqual(m.atual.formulas, { '5,14': '=1' });
+  assert.strictEqual(m.atual.valores[5][13], 1);
+});
+
+t('migração: linhas seguidas viram um bloco por coluna', () => {
+  const linhas = D.linhasAtuais();
+  [3, 4, 5].forEach(i => { linhas[i][12] = ''; linhas[i][13] = ''; });  // Carla, Daniel, Elisa
+  const m = D.montar({ atual: linhas });
+  const r = migrar(m);
+  // ID: 4–6 (um bloco) e 9; Versão: 4–6 (um bloco)
+  assert.deepStrictEqual(r.resumo.gravacao, { titulos: 0, blocos: 3, celulas: 7 });
+  assert.strictEqual(m.atual.contadores.setValues, 3);
+  assert.strictEqual(new Set([3, 4, 5, 8].map(i => m.atual.valores[i][12])).size, 4, 'IDs novos únicos');
+});
+
+t('migração: colunas ausentes — títulos criados e só as linhas com Nome preenchidas', () => {
+  const linhas = D.linhasAtuais().map(l => l.slice(0, 12));
+  const m = D.montar({ atual: linhas });
+  m.atual.formulas['7,1'] = '=""';
+  const r = migrar(m);
+  assert.deepStrictEqual([m.atual.valores[0][12], m.atual.valores[0][13]], ['Registro ID', 'Versão']);
+  assert.deepStrictEqual(r.resumo.gravacao, { titulos: 2, blocos: 4, celulas: 20 });
+  assert(!posicoes(m).some(([l]) => l === 7), 'linha sem Nome não recebe nada');
+  assert.deepStrictEqual(m.atual.formulas, { '7,1': '=""' });
+  assert.strictEqual(chamar(m, 'obterPendentes').filter(p => !p.inconsistencia).length, 7);
+  assert.strictEqual(migrar(m).motivo, 'NADA_A_FAZER');
+});
+
+t('migração: só a coluna Versão faltando — título e versões, IDs intactos', () => {
+  const linhas = D.linhasAtuais().map(l => l.slice(0, 13));
+  linhas[5][12] = D.uuid(5); linhas[8][12] = D.uuid(7);
+  const m = D.montar({ atual: linhas });
+  const r = migrar(m);
+  assert.strictEqual(m.atual.valores[0][13], 'Versão');
+  assert(posicoes(m).every(([l, c]) => (l === 1 && c === 14) || c === 14), 'só a coluna Versão');
+  assert.deepStrictEqual(r.resumo.gravacao, { titulos: 1, blocos: 2, celulas: 10 });
+});
+
+t('migração: só títulos a criar (nenhum pedido) — grava só a linha 1', () => {
+  [[D.TITULOS_ATUAL.slice(0, 12)], [D.TITULOS_ATUAL.slice(0, 12), D.linha({ nome: '', nUsp: '', email: '', carimbo: '' }).slice(0, 12)]].forEach(linhas => {
+    const m = D.montar({ atual: linhas });
+    const d = chamar(m, 'diagnosticarMigracaoRegistroId');
+    assert.deepStrictEqual([d.precisaMigrar, d.linhasQueSeraoAlteradas, d.colunasFaltando.length], [true, 0, 2]);
+    const r = migrar(m);
+    assert.deepStrictEqual(r.resumo.gravacao, { titulos: 2, blocos: 0, celulas: 0 });
+    assert(posicoes(m).every(([l]) => l === 1));
+    assert.strictEqual(migrar(m).motivo, 'NADA_A_FAZER');
+  });
+});
+
+t('migração: falha no meio da gravação → GRAVACAO_PARCIAL, nunca sucesso; nova rodada completa', () => {
+  const m = D.montar();
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = chamar(m, 'diagnosticarMigracaoRegistroId').codigoConfirmacao;
+  m.atual.falharEscrita = (linha, coluna) => coluna === 14;   // IDs gravam, a Versão falha
+  let erro = null;
+  try { chamar(m, 'executarMigracaoRegistroId'); } catch (e) { erro = e; }
+  assert(erro && /^GRAVACAO_PARCIAL:/.test(erro.message), String(erro && erro.message));
+  assert(m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO, 'confirmação não é apagada como se tivesse terminado');
+  assert(m.amb.logs.some(l => /^error: Migração interrompida depois de 0 título\(s\), 2 bloco\(s\) e 2 célula\(s\)/.test(l)));
+  // a confirmação antiga não vale mais; o diagnóstico mostra só o que falta
+  assert.throws(() => chamar(m, 'executarMigracaoRegistroId'), codigo('CONFIRMACAO_MIGRACAO'));
+  m.atual.falharEscrita = null;
+  const resto = chamar(m, 'diagnosticarMigracaoRegistroId');
+  assert.deepStrictEqual([resto.semIdentificador, resto.identificadoresRepetidos, resto.versaoAusente], [0, 0, 1]);
+  const idElisa = linhaDe(m, 'Elisa Sem Identificador')[12];
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = resto.codigoConfirmacao;
+  assert.strictEqual(chamar(m, 'executarMigracaoRegistroId').executada, true);
+  assert.strictEqual(linhaDe(m, 'Elisa Sem Identificador')[12], idElisa, 'ID já gravado não é trocado');
+  assert.strictEqual(linhaDe(m, 'Elisa Sem Identificador')[13], 1);
+});
+
+t('migração: falha ao criar o título → GRAVACAO_PARCIAL, nenhuma célula de dados gravada', () => {
+  const m = D.montar({ atual: D.linhasAtuais().map(l => l.slice(0, 12)) });
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = chamar(m, 'diagnosticarMigracaoRegistroId').codigoConfirmacao;
+  m.atual.falharEscrita = linha => linha === 1;
+  assert.throws(() => chamar(m, 'executarMigracaoRegistroId'), codigo('GRAVACAO_PARCIAL'));
+  assert.strictEqual(m.atual.escritas.length, 0);
+});
+
 /*==================== VERSÃO: CONTRATO ÚNICO ====================*/
 
 t('versaoValida_ e estadoDaVersao_: um só critério para todos os valores', () => {

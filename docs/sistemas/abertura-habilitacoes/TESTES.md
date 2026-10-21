@@ -6,13 +6,15 @@ Código dos testes: [`sistemas/abertura-habilitacoes/gerenciador/testes/`](../..
 
 | Suíte | Casos | Resultado |
 |---|---|---|
-| `testar_backend.js` | 84 | 84 ok, 0 falha |
-| `testar_equivalencia.js` | 26 (12 afirmam diferenças intencionais; 1 confere a condição para voltar à 1.0) | 26 ok, 0 falha |
+| `testar_backend.js` | 92 | 92 ok, 0 falha |
+| `testar_equivalencia.js` | 27 (13 afirmam diferenças intencionais; 1 confere a condição para voltar à 1.0) | 27 ok, 0 falha |
 | `testar_navegador.js` | 297 verificações | 297 ok, 0 falha |
 
 Na revisão de 21/10/2026 (correções da auditoria), cada teste novo foi conferido também contra uma versão propositalmente errada do código (impressão digital só com as contagens; confirmação do e-mail sem conferir a reserva; leitura de versão da 1.0; recuperação sem as outras linhas do mesmo ID): em todas, os testes correspondentes falharam.
 
 Também rodados: `ferramentas/verificar_publicacao.js` (nenhum ID, segredo ou dado pessoal nos arquivos do repositório) e `ferramentas/verificar_copias_shared.js` (cópias de `shared/` idênticas). As três suítes entram na CI pelas linhas acrescentadas às matrizes "Servidor" e "Tela" de `.github/workflows/ci.yml` (commit separado, autorizado pelo responsável). O resultado da CI fica no PR.
+
+A simulação das abas representa fórmulas: uma célula marcada como fórmula devolve o valor calculado em `getValues` e perde a fórmula em qualquer escrita, como no Sheets. Os testes de migração conferem que nenhuma fórmula fora do plano é substituída; a versão do código que regravava as colunas inteiras falha em cinco deles.
 
 ## 2. Como os serviços do Google são simulados
 
@@ -22,7 +24,7 @@ Toda resposta é conferida contra `Date` escondido (que faria a página receber 
 
 ## 3. O que cada suíte cobre
 
-**Servidor** (`testar_backend.js`): configuração e falha fechada (9 casos), acesso e página (8), listas, detalhe e estrutura (8), busca e aba histórica (5), relatórios (1), salvamento e e-mail (27, incluindo a confirmação só sobre a própria reserva), contrato da Versão (5), preparar pedido (2), migração (10, incluindo linhas trocadas, alteradas e substituídas com as mesmas contagens), recuperação de um pedido (7), registros sem dados pessoais (1), desempenho com 3.000 linhas (1). Lista completa no início do arquivo e na saída do comando.
+**Servidor** (`testar_backend.js`): configuração e falha fechada (9 casos), acesso e página (8), listas, detalhe e estrutura (8), busca e aba histórica (5), relatórios (1), salvamento e e-mail (27, incluindo a confirmação só sobre a própria reserva), contrato da Versão (5), preparar pedido (2), migração (18, incluindo linhas trocadas, alteradas e substituídas com as mesmas contagens, gravação só das células do plano com fórmulas preservadas, colunas ausentes, só títulos a criar e falhas no meio da gravação), recuperação de um pedido (7), registros sem dados pessoais (1), desempenho com 3.000 linhas (1). Lista completa no início do arquivo e na saída do comando.
 
 **Equivalência** (`testar_equivalencia.js`): a 1.0 sanitizada e a 2.0 rodam sobre **cópias idênticas** das mesmas planilhas, com o mesmo usuário, relógio e caixa de saída, e os resultados são comparados campo a campo (listas, detalhe, busca, relatórios) ou célula a célula e e-mail a e-mail (salvar). Cada diferença intencional é um caso próprio, que afirma o comportamento da 1.0 **e** o da 2.0:
 
@@ -40,6 +42,7 @@ Toda resposta é conferida contra `Date` escondido (que faria a página receber 
 | reserva alterada durante o envio | grava a data por cima | não grava; `RESERVA_ALTERADA` |
 | versão malformada na planilha | lê como 1 e salva | marca e recusa |
 | migração com versão malformada | troca `0` e texto por 1 | preserva e informa |
+| migração e as outras linhas | regrava as duas colunas inteiras (fórmulas viram valores) | grava só as células do plano |
 
 O caso "volta à 1.0…" roda a 1.0 sobre a planilha deixada pela 2.0 depois da migração e da recuperação e confere que a primeira visita não grava nada; sobre a planilha sem esse preparo, a mesma visita reescreve as colunas.
 

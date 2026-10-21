@@ -15,10 +15,12 @@
        MIGRACAO_REGISTRO_ID_CONFIRMACAO com esse código, depois da
        cópia de segurança (docs: MANUAL_OPERACAO, seção Migração).
     3. executarMigracaoRegistroId()      — refaz o plano dentro da
-       trava e só grava se o código for o MESMO e grava só as colunas
-       Registro ID e Versão (criando os títulos no fim da linha 1, se
-       faltarem). Apaga a propriedade ao terminar. Rodar de novo não
-       muda nada (idempotente).
+       trava e só grava se o código for o MESMO. Grava só as células
+       do plano (ID novo ou Versão 1), em blocos de linhas seguidas,
+       e os títulos que faltarem no fim da linha 1; as demais células
+       não são tocadas. Apaga a propriedade ao terminar. Rodar de novo
+       não muda nada (idempotente). Falha no meio = GRAVACAO_PARCIAL,
+       nunca sucesso.
 
   O código identifica o PLANO, não só as quantidades: o sufixo é uma
   impressão digital (SHA-256, 16 primeiros dígitos hexadecimais) da
@@ -191,39 +193,67 @@ function executarMigracaoRegistroId() {
         `Rode diagnosticarMigracaoRegistroId de novo, confira o resultado e ponha o novo código na propriedade ${PROP_CONFIRMACAO_MIGRACAO}. Nada foi gravado.`);
     }
 
-    const colId = obterOuCriarColuna_(tabela, "registroId");
-    const colVersao = obterOuCriarColuna_(tabela, "versao");
     if (tabela.nome !== ABA_ATUAL) throw erroGerenciador_("ESTRUTURA", "Gravação recusada: só a aba atual pode ser alterada por este sistema.");
-    const operacoes = {};
-    plano.operacoes.forEach(o => { operacoes[o.linha] = o.ops; });
-    const existentes = idsDaColuna_(tabela, colId);
-    const ids = [], versoes = [];
-    tabela.linhas.forEach((l, i) => {
-      const ops = operacoes[i + 2] || [];
-      let id = celula_(l, colId);
-      let v = celula_(l, colVersao);
-      if (ops.indexOf("NOVO_ID") !== -1) {
-        do { id = Utilities.getUuid(); } while (existentes[id]);
-        existentes[id] = true;
-      }
-      if (ops.indexOf("VERSAO_1") !== -1) v = 1;
-      ids.push([id]);
-      versoes.push([v]);
-    });
-    // Duas gravações estreitas (só as duas colunas), como na 1.0: nada
-    // entre elas é reescrito. Linhas sem operação recebem o próprio valor.
-    if (tabela.linhas.length) {
-      tabela.aba.getRange(2, colId, tabela.linhas.length, 1).setValues(ids);
-      tabela.aba.getRange(2, colVersao, tabela.linhas.length, 1).setValues(versoes);
+    const gravacao = { titulos: 0, blocos: 0, celulas: 0 };
+    try {
+      const faltavam = plano.colunasFaltando.length;
+      const colId = obterOuCriarColuna_(tabela, "registroId");
+      const colVersao = obterOuCriarColuna_(tabela, "versao");
+      gravacao.titulos = faltavam;
+      const existentes = idsDaColuna_(tabela, colId);
+      const novosIds = {}, versoes1 = [];
+      plano.operacoes.forEach(o => {
+        if (o.ops.indexOf("NOVO_ID") !== -1) {
+          let id;
+          do { id = Utilities.getUuid(); } while (existentes[id]);
+          existentes[id] = true;
+          novosIds[o.linha] = id;
+        }
+        if (o.ops.indexOf("VERSAO_1") !== -1) versoes1.push(o.linha);
+      });
+      // Só as células do plano: linhas seguidas viram um bloco (um
+      // setValues por bloco e por coluna); nenhuma célula fora do plano
+      // é regravada, então fórmulas, tipos e valores das outras linhas
+      // ficam como estão.
+      const gravarBlocos = (coluna, linhas, valorDe) => {
+        blocosDeLinhas_(linhas).forEach(bloco => {
+          tabela.aba.getRange(bloco[0], coluna, bloco.length, 1).setValues(bloco.map(n => [valorDe(n)]));
+          gravacao.blocos++;
+          gravacao.celulas += bloco.length;
+        });
+      };
+      gravarBlocos(colId, Object.keys(novosIds).map(Number), n => novosIds[n]);
+      gravarBlocos(colVersao, versoes1, () => 1);
+      SpreadsheetApp.flush();
+    } catch (erro) {
+      // Parte pode ter sido gravada: nunca relatar sucesso. A confirmação
+      // fica (já não confere com a planilha) e o diagnóstico mostra o
+      // que falta; rodar de novo completa só o que ficou para trás.
+      console.error("Migração interrompida depois de " + gravacao.titulos + " título(s), " + gravacao.blocos + " bloco(s) e " +
+        gravacao.celulas + " célula(s): " + textoParaLog_(erro && erro.message));
+      throw erroGerenciador_("GRAVACAO_PARCIAL",
+        "A migração parou no meio e parte das células pode ter sido gravada. Nada foi dado como concluído. " +
+        "Confira pelo histórico de versões, rode diagnosticarMigracaoRegistroId de novo e repita a confirmação com o novo código.");
     }
-    SpreadsheetApp.flush();
     props.deleteProperty(PROP_CONFIRMACAO_MIGRACAO);
     const resumo = resumoDoPlano_(plano);
+    resumo.gravacao = gravacao;
     console.log("Migração executada: " + JSON.stringify(resumo));
     return paraPagina_({ executada: true, resumo: resumo }, "migração");
   } finally {
     lock.releaseLock();
   }
+}
+
+// [2,3,4,7,9,10] → [[2,3,4],[7],[9,10]]
+function blocosDeLinhas_(linhas) {
+  const blocos = [];
+  linhas.slice().sort((x, y) => x - y).forEach(n => {
+    const ultimo = blocos[blocos.length - 1];
+    if (ultimo && ultimo[ultimo.length - 1] === n - 1) ultimo.push(n);
+    else blocos.push([n]);
+  });
+  return blocos;
 }
 
 /*-----------------------------------------------------

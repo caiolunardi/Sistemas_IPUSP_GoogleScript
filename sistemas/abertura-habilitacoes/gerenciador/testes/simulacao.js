@@ -30,12 +30,18 @@ function formatarData(data, fuso, formato) {
   })[t]);
 }
 
-/** Aba simulada. opcoes.somenteLeitura: qualquer escrita lança erro (aba histórica). */
+/**
+ * Aba simulada. opcoes.somenteLeitura: qualquer escrita lança erro (aba histórica).
+ * Fórmulas: aba.formulas["linha,coluna"] = "=…" marca a célula como fórmula;
+ * getValues devolve o valor calculado (o que está em valores) e qualquer
+ * escrita na célula troca a fórmula pelo valor, como no Sheets.
+ */
 function criarAba(nome, valores, opcoes = {}) {
-  const contadores = { getValues: 0, getValue: 0, setValue: 0, setValues: 0, getDisplayValues: 0 };
+  const contadores = { getValues: 0, getValue: 0, setValue: 0, setValues: 0, getDisplayValues: 0, getFormulas: 0 };
   const aba = {
     valores,
     contadores,
+    formulas: {},
     escritas: [],
     falharEscrita: null, // function(linha, coluna, valor) → true para lançar erro
     getName: () => nome,
@@ -63,11 +69,16 @@ function criarAba(nome, valores, opcoes = {}) {
         const linha = valores[r - 1 + i];
         while (linha.length < c + j) linha.push('');
         linha[c - 1 + j] = v;
+        delete aba.formulas[(r + i) + ',' + (c + j)];
         aba.escritas.push({ linha: r + i, coluna: c + j, valor: v, travado: estadoGlobal.travado });
       };
       return {
         getValues: () => { contadores.getValues++; return ler(); },
         getValue: () => { contadores.getValue++; return ler()[0][0]; },
+        getFormulas: () => {
+          contadores.getFormulas++;
+          return ler().map((l, i) => l.map((_, j) => aba.formulas[(r + i) + ',' + (c + j)] || ''));
+        },
         getDisplayValues: () => {
           contadores.getDisplayValues++;
           return ler().map(l => l.map(v => v instanceof Date ? formatarData(v, TZ, 'dd/MM/yyyy HH:mm:ss') : String(v)));

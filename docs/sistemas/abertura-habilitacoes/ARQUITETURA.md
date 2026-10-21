@@ -65,7 +65,7 @@ Nenhum dado da planilha entra na página por `innerHTML`: tudo por `textContent`
 
 - Cada função lê a aba inteira com **um** `getRange(...).getValues()` e trabalha sobre o retrato. Nenhuma leitura célula a célula.
 - Planilhas são abertas uma vez por execução; o `ID_INDEX` vem do cache (10 min) e a lista de acesso também (60 s).
-- Escritas são pontuais (`setValue` nas células do pedido); a migração grava duas colunas inteiras com `setValues`; a recuperação, no máximo duas células. A impressão digital é calculada sobre o retrato já lido: não acrescenta leituras.
+- Escritas são pontuais (`setValue` nas células do pedido); a migração grava só as células do plano, com um `setValues` por bloco de linhas seguidas em cada coluna (as outras células, inclusive fórmulas, não são tocadas); a recuperação, no máximo duas células. A impressão digital é calculada sobre o retrato já lido: não acrescenta leituras.
 - Teste com 3.000 linhas (simulado, em `testar_backend.js`): pendentes e concluídos com 1 `getValues` e 0 `getValue`; `salvarPedido` com concluir e avisar faz 2 leituras em lote (uma em cada trava) e 7 `setValue`. O tempo real no Google depende da planilha e não foi medido.
 - Respostas passam por `paraPagina_` (ciclo JSON). Um `Date` numa resposta de `google.script.run` faz a página receber `null` sem erro; por isso datas viram texto `dd/MM/yyyy HH:mm` no servidor.
 

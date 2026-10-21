@@ -81,7 +81,7 @@ Passo a passo em [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md#4-migração-controlada
 
 1. `diagnosticarMigracaoRegistroId()`: só leitura; devolve contagens, números de linha (até 50 por tipo) e um código `MIGRAR-<sem ID>-<repetidos>-<versão vazia>-<colunas faltando>-<impressão digital>`. A impressão digital (SHA-256, 16 dígitos hexadecimais) cobre posições das colunas, última linha e, em cada linha com Nome, posição, Nome, Nº USP, carimbo, Registro ID, Versão e operações previstas.
 2. Cópia de segurança da planilha; o responsável cria a Script Property `MIGRACAO_REGISTRO_ID_CONFIRMACAO` com o código.
-3. `executarMigracaoRegistroId()`: dentro da trava, refaz o plano; se o código não bate (a planilha mudou, inclusive linhas trocadas ou substituídas com as mesmas contagens), recusa sem gravar. Aplica só as operações do plano (ID novo nas linhas sem ID e nos repetidos seguintes; Versão 1 só onde está vazia), grava só as colunas Registro ID e Versão e apaga a propriedade. Rodar de novo: "nada a fazer". Versão malformada e ID fora do formato são informados e não mudam.
+3. `executarMigracaoRegistroId()`: dentro da trava, refaz o plano; se o código não bate (a planilha mudou, inclusive linhas trocadas ou substituídas com as mesmas contagens), recusa sem gravar. Aplica só as operações do plano (ID novo nas linhas sem ID e nos repetidos seguintes; Versão 1 só onde está vazia), grava só essas células (blocos de linhas seguidas; títulos que faltam na linha 1) e apaga a propriedade. Falha no meio: `GRAVACAO_PARCIAL`, propriedade mantida, nunca sucesso; o diagnóstico seguinte mostra o que falta. Rodar de novo: "nada a fazer". Versão malformada e ID fora do formato são informados e não mudam.
 
 ### Recuperação de um pedido
 

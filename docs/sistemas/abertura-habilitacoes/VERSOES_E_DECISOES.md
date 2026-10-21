@@ -26,6 +26,7 @@ Diferenças item a item: [INVENTARIO_LEGADO.md](INVENTARIO_LEGADO.md).
 | Data do envio gravada só sobre a reserva do próprio salvamento (marca aleatória na reserva); se a célula mudou, nada é gravado e o e-mail não é reenviado | Auditoria de 21/10/2026: a confirmação apagava alterações feitas durante o envio |
 | Contrato único de Versão (inteiro ≥ 1); ausente ou malformada bloqueia o pedido; migração e Preparar pedido só preenchem a vazia | Auditoria de 21/10/2026: critérios diferentes entre leitura, salvamento e migração; a 1.0 trocava valores ruins por 1 sem avisar |
 | Recuperação administrativa de uma linha, com diagnóstico, código, escolha humana da linha e registro manual, em vez de correção automática de ID fora do formato e de repetidos | Auditoria de 21/10/2026: não há como saber, pelo código, qual pedido é o "certo" num ID repetido nem o que um valor digitado significava |
+| Migração grava só as células do plano, em blocos de linhas seguidas; falha no meio é `GRAVACAO_PARCIAL` | Auditoria de 21/10/2026: regravar as colunas inteiras trocava fórmulas por valores e mexia em linhas fora do plano |
 | Volta à 1.0 condicionada a diagnóstico limpo, sem reservas, cópia de segurança e acesso "Somente eu" durante a troca | A 1.0 roda a migração automática a cada visita |
 
 ## Decisões pendentes
