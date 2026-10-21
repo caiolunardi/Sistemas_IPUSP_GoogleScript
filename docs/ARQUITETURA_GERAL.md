@@ -1,6 +1,6 @@
 # Arquitetura geral — como os sistemas se ligam
 
-Visão de conjunto para quem vai manter os sistemas ou montá-los em outra unidade. O detalhe de cada sistema (colunas, abas, regras) continua no `MODELO_DE_DADOS.md`, no `DADOS_E_SEGURANCA.md` ou no manual dele; esta página diz **onde procurar** e **em que ordem montar**. Termos desconhecidos: [glossário](GLOSSARIO.md).
+Visão de conjunto para quem vai manter os sistemas ou montá-los em outra unidade. O detalhe de cada sistema (colunas, abas, regras) continua no `MODELO_DE_DADOS.md`, no `DADOS_E_SEGURANCA.md` ou no manual dele; esta página diz **onde procurar** e **em que ordem montar**. Termos desconhecidos: [glossário](GLOSSARIO.md). Por que a plataforma é esta e quais limitações ela tem: [ADR-001](arquitetura/ADR-001_ESCOLHA_DA_PLATAFORMA_INSTITUCIONAL.md). Para quem herdar ou reconstruir os sistemas: [guia de continuidade](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md) e [guia de migração](arquitetura/GUIA_DE_MIGRACAO_TECNOLOGICA.md).
 
 ## 1. Peças
 
@@ -83,5 +83,6 @@ Passo a passo de cada projeto: [Como reaproveitar](COMO_REAPROVEITAR.md) e o man
 ## 6. Limites conhecidos
 
 - Os gerenciadores de Exclusão, Trancamento Parcial, Habilitações, 2ª via do BUSP, Intercambistas e Diplomas, e os formulários de Habilitação, BUSP, Colação e Intercambistas, **ainda não estão no repositório**.
-- O Painel dos servidores ainda usa IDs literais, e não o `ID_INDEX`.
+- O Painel dos servidores lê todas as planilhas pelo `ID_INDEX` desde a 1.4 (seção 2). A 1.3, que está no `/exec`, ainda tem IDs literais, mantidos fora do Git ([inventário](IMPLANTACAO.md#2-inventário-20102026)). O Gerenciador de Trancamento Total em uso (v1.0) também tem ID literal e não está no repositório; a v1.1 do Git usa o `ID_INDEX`.
+- A contagem de pendências do Painel dos servidores lê a situação por posição de coluna e com critério próprio, diferente do critério dos formulários ([contratos](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md#4-o-que-não-se-deve-modificar-inadvertidamente)).
 - Parte dos testes da Estrutura Curricular depende de exportações reais do Júpiter, que não vão para o Git. As outras suítes usam dados sintéticos.

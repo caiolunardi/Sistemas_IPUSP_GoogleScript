@@ -10,13 +10,13 @@ O mapa completo das planilhas e a ordem de montagem estão na [arquitetura geral
 
 - **Cada sistema é um projeto Apps Script independente**, publicado como Web App (`/exec`). Não há servidor próprio nem banco de dados: os dados ficam em planilhas do Google.
 - **O código não tem nenhum ID de planilha.** Cada projeto guarda em **Propriedades do script** só o ID de uma planilha mestre, o `ID_INDEX`. Nela, cada linha liga uma **chave** (por exemplo `PERIODOS`, `DISCIPLINAS`, `EXCLUSAO_DISCIPLINAS`) ao ID da planilha correspondente, com uma coluna para produção (`ID de Produção`) e outra para testes (`Homologação`).
-- **A interface é HTML/CSS/JS nativo**, com o tema GRADIP (`shared/GradipTema.html`) e a Central de Ajuda (`shared/ajuda/`). Nada depende de biblioteca externa.
+- **A interface é HTML/CSS/JS nativo**, com o tema GRADIP (`shared/GradipTema.html`) e a Central de Ajuda (`shared/ajuda/`), sem framework. As exceções carregam bibliotecas de CDN com versão fixa: a Estrutura Curricular (leitura e OCR do PDF do Júpiter) e a Grade Horária visual (exportação em PDF). Ver [ADR-001, seção 4.6](arquitetura/ADR-001_ESCOLHA_DA_PLATAFORMA_INSTITUCIONAL.md#46-interface-e-dependências).
 - **Quem pode usar** é decidido em dois lugares: na implantação ("Quem pode acessar", normalmente "qualquer pessoa da USP") e no próprio código, que confere o login antes de ler ou gravar. O `DADOS_E_SEGURANCA.md` de cada sistema diz o que já está garantido no código e o que ainda depende da configuração.
 
 ## 2. Monte as suas planilhas
 
 1. Crie a sua planilha `ID_INDEX`, com as colunas `Chave`, `Tipo`, `ID de Produção` e `Homologação` na primeira aba.
-2. Para cada chave que o sistema usa (lista no `DADOS_E_SEGURANCA.md` e no manual), crie a planilha com **os mesmos títulos de coluna e nomes de aba** descritos na documentação. O código localiza as colunas pelo título.
+2. Para cada chave que o sistema usa (lista no `DADOS_E_SEGURANCA.md` e no manual), crie a planilha com **os mesmos títulos de coluna e nomes de aba** descritos na documentação. A maior parte do código localiza as colunas pelo título, mas há sistemas que gravam ou leem **por posição** (o formulário de Exclusão e as contagens do Painel dos servidores): copie também a ordem das colunas ([contratos](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md#4-o-que-não-se-deve-modificar-inadvertidamente)).
 3. Cole o ID de cada planilha na linha da chave.
 4. Compartilhe as planilhas só com quem precisa. Quando o Web App "executa como" a conta que implanta, os alunos não precisam (e não devem) ter acesso às planilhas.
 
