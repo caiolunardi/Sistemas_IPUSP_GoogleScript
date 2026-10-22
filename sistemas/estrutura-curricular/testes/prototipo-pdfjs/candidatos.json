@@ -1,0 +1,32 @@
+{
+  "_comentario": "Etapa 3 (protótipo isolado). Versões candidatas do PDF.js e os hashes conferidos em 22/10/2026 a partir dos pacotes do npm. 'integridadeNpm' = dist.integrity do registro (pacote .tgz); 'sha384' = hash do arquivo, no formato do atributo integrity. Nada disto é usado pelo sistema em produção.",
+  "candidatos": [
+    {
+      "id": "6.4.299-legacy",
+      "papel": "candidato",
+      "versao": "6.4.299",
+      "pacote": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz",
+      "integridadeNpm": "sha512-AVl138zALtfaAPvADulE0PZThbYzCBS79nL4pOSL/6Sm/4AH5A21BD9VHt97OlCuzJuCpmeZtAtkinisF4Vb1g==",
+      "lib": { "caminho": "legacy/build/pdf.min.mjs", "sha384": "sha384-oPqHr8MeYfJpkh4zgHbWYiuwabTzthRiOS5tSWsWGmCVWlwqIkS9coGro5aa48OF" },
+      "worker": { "caminho": "legacy/build/pdf.worker.min.mjs", "sha384": "sha384-tINN5IYq7dFaoHBUBBc2yfxGwR38mZn9GhaX31UofKYNgAg/3y8A7IjUI3GuEg/8" }
+    },
+    {
+      "id": "6.4.299-moderno",
+      "papel": "informativo",
+      "versao": "6.4.299",
+      "pacote": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz",
+      "integridadeNpm": "sha512-AVl138zALtfaAPvADulE0PZThbYzCBS79nL4pOSL/6Sm/4AH5A21BD9VHt97OlCuzJuCpmeZtAtkinisF4Vb1g==",
+      "lib": { "caminho": "build/pdf.min.mjs", "sha384": "sha384-QCvhu/UPp22U/TNLVbQNONL82ES2yY717GAiqP9VVu37Y7+m9VPKvadGx9XlFvcp" },
+      "worker": { "caminho": "build/pdf.worker.min.mjs", "sha384": "sha384-NfW/OTMWezITv4oaALvfH7MFLwzPxEvpySmDpoALa1mtTY8MC200l0ZNFD+SOlrM" }
+    },
+    {
+      "id": "4.10.38-moderno",
+      "papel": "candidato",
+      "versao": "4.10.38",
+      "pacote": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-4.10.38.tgz",
+      "integridadeNpm": "sha512-/Y3fcFrXEAsMjJXeL9J8+ZG9U01LbuWaYypvDW2ycW1jL269L3js3DVBjDJ0Up9Np1uqDXsDrRihHANhZOlwdQ==",
+      "lib": { "caminho": "build/pdf.min.mjs", "sha384": "sha384-+0ti2moQlmLN7WZHE2RHIf5lV8hHxhxEalN0il3YZceG26fUPyOkR0hp9daxk1i7" },
+      "worker": { "caminho": "build/pdf.worker.min.mjs", "sha384": "sha384-ToeVvShCxKc6CEvhHeMt0Q8A06pSPDbAlngO9nokrDmh914gk/pYd0N7D0a4Lz2o" }
+    }
+  ]
+}
