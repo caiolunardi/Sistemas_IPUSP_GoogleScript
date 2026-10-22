@@ -179,6 +179,14 @@ O `ci.yml` ganhou, no job "Estrutura Curricular", quatro passos:
 
 Se o modelo ou a fonte não baixar, ou um hash não conferir, o passo falha. Não há pulo silencioso.
 
+Resultado no GitHub Actions do PR #26:
+
+- o download do modelo, o da fonte e o `testar_pdf_ocr_sintetico.js` passam (4/4);
+- a geração do PDF misto é idêntica à local;
+- a suíte do PDF misto **reprova**, pelo achado da seção 6.2: 27 passaram e 4 falharam no run 39855238224.
+
+Os resultados locais acima valem para o ambiente local.
+
 ## 6. Achados da calibração do documento
 
 Antes de fixar o documento, gerei algumas variantes para ter um OCR legível nas duas versões. As tentativas foram estas, sempre com o leitor atual (6.4.299):
@@ -211,7 +219,12 @@ Correções, só em arquivos de teste e na CI:
    - Vale o primeiro arquivo que existir e conferir: `testes/fontes/` ou `/usr/share/fonts/truetype/liberation/`.
    - Na CI, o pacote `fonts-liberation_2.1.5-3_all.deb` é baixado do arquivo do Ubuntu, e o pacote e a fonte são conferidos pelo SHA-256.
    - Com ela, o PDF gerado é **byte a byte o mesmo** da primeira rodada local (SHA-256 `62a33448…69d82`). O documento avaliado nas seções 2 a 6 não mudou, e o esperado também não.
-3. **Fonte do OCR sintético:** `testar_pdf_ocr_sintetico.js` passou a desenhar com a `LiberationSans-Regular.ttf` do `pdfjs-dist`, carregada como `FontFace`. O esperado (`4 0 2 1 0 2`) não mudou. A suíte passou localmente e mostra o SHA-256 do PDF gerado, para comparar máquinas.
+3. **Fonte do OCR sintético:** `testar_pdf_ocr_sintetico.js` passou a desenhar com a `LiberationSans-Regular.ttf` do `pdfjs-dist`, carregada como `FontFace`. O esperado (`4 0 2 1 0 2`) não mudou.
+4. **Rasterização do desenho.** Mesmo com a fonte fixa, a CI continuou gerando outros bytes: 34.283 bytes contra 42.623 locais.
+   - **Primeiras tentativas, sem efeito na CI.** O canvas por software (`willReadFrequently`) e um `fonts.conf` próprio para o Chromium do desenho não mudaram os bytes. O `fonts.conf` ficou (`fontconfig_desenho.js`), porque neutraliza o antialias desligado pela máquina, o que conferi localmente.
+   - **Causa achada.** Um registro das larguras do texto mostrou métricas inteiras na CI (365) e fracionárias aqui (366,88). O Chromium sem tela escolhe o hinting das fontes pela máquina.
+   - **Correção.** Com `--font-render-hinting=none` no Chromium que desenha, a CI passou a gerar o mesmo PDF local.
+   - **Prova.** Com `HINTING_DESENHO=full`, reproduzi localmente os mesmos 34.283 bytes (`53d1d4c2…`) e a mesma falha da CI.
 
 **Achado:** com o mesmo documento desenhado em **Liberation Sans** a 9 pt, o OCR erra nas duas versões do PDF.js, de forma idêntica. O teste foi feito trocando, numa rodada local temporária, só o arquivo de fonte.
 
@@ -226,13 +239,64 @@ Isso confirma, para outra fonte, os riscos residuais 1 e 2 da seção 6. A preci
 
 Não é diferença entre o 3.11.174 e o 6.4.299: o resultado foi igual nas duas versões. Também não ajustei o esperado nem o documento para essa fonte. Tentei ainda 10 pt, só para entender o problema, e foi pior: as colunas, separadas por 30 pt, emendaram números (`71200`). Essa tentativa foi revertida.
 
+### 6.2 Achado na CI do PR #26: a leitura da página 1 depende do hinting de fontes da máquina
+
+Depois da seção 6.1, a CI gera exatamente o mesmo PDF misto que o ambiente local: SHA-256 `62a33448…`, conferido no log. O que muda entre as máquinas é a **leitura**.
+
+A página 1 tem texto em Helvetica não incorporada. O leitor a desenha com o PDF.js a 300 dpi e a passa ao OCR.
+
+- **6.4.299:** pede `"Helvetica"` ao sistema, e o desenho usa a fonte da máquina com o hinting da máquina.
+- **3.11.174:** usa a fonte substituta do próprio PDF.js. Ela também passa pelo hinting que o Chromium escolhe.
+
+| Ambiente | 3.11.174 | 6.4.299 |
+|---|---|---|
+| Local: fontconfig sem hinting, "Helvetica" = Liberation Sans | igual ao esperado | igual ao esperado |
+| CI, run 39855238224: "Helvetica" = Liberation Sans, `hintstyle` slight do sistema | igual ao esperado | **errado** (detalhes abaixo) |
+| CI, run 39854073159: igual ao anterior e sem fixar o hinting do Chromium | **errado** (detalhes abaixo) | **errado** |
+| Local, reprodução com o fontconfig da CI (hinting slight e subpixel) | igual ao esperado | **errado**, igual à CI (62.497 pixels escuros) |
+| Local, só subpixel, sem hinting | igual ao esperado | igual ao esperado |
+| Local, `HINTING_LEITURA=full` | **errado** (requisitos) | igual ao esperado |
+
+**Erros do 6.4.299 no ambiente da CI:**
+
+- a 2ª leitura da página 1 traz um `7` a mais;
+- o `LeitorPdfJupiter` desloca os números das disciplinas: códigos, nomes, créditos, CH, CP e vínculos das seis primeiras saem errados, e as duas últimas somem;
+- a conferência mostra linhas, subtotais e totais que não batem, mas não há aviso próprio.
+
+**Erros do 3.11.174 com hinting `full`:**
+
+- o `7` a mais também aparece;
+- todos os requisitos ficam atribuídos à disciplina errada;
+- não há **aviso nem divergência na conferência**: é um erro silencioso para o usuário.
+
+Conclusões:
+
+1. **O resultado acadêmico do OCR de uma página com fonte não incorporada depende do ambiente de fontes da máquina, nas duas versões.** O fator que pesou foi o hinting: só o subpixel não mudou nada.
+2. **No ambiente da CI, o 6.4.299 erra onde o 3.11.174 acerta.** É uma diferença de comportamento da migração, e foi detectada.
+3. Com hinting completo, o 3.11.174, que está em produção, erra sem aviso.
+4. As máquinas da equipe (Windows ou macOS) têm outro motor de fontes, que não foi testado. Nenhum destes cenários prova como será lá.
+
+O que **não** fiz:
+
+- não afrouxei asserções;
+- não mudei o esperado;
+- não alterei o leitor nem o carregamento do PDF.js;
+- não fixei o ambiente da leitura para esconder a diferença.
+
+Com isso, **a CI do PR #26 fica vermelha** nesta suíte, pelos testes "A · 6.4.299" (2ª leitura e resultado acadêmico) e "A: 3.11.174 × 6.4.299". Também reprova "B: 3.11.174 × 6.4.299": no cenário B, o resultado acadêmico é igual nas duas versões, mas o pacote completo difere nos campos de processo da conferência (`numerosLidos`, `numerosCorrigidos`, `subtotaisRecuperados`, `itens`). A asserção de pacote completo idêntico foi definida antes da execução e não foi relaxada. O que fazer com isso é decisão do responsável.
+
+Para investigar localmente:
+
+- `HINTING_LEITURA=full node testar_pdf_misto_sintetico.js` fixa o hinting do Chromium que lê;
+- `FONTCONFIG_FILE=<arquivo>` troca as regras de fontes.
+
 ## 7. Limites
 
 A aprovação destes testes **não** significa que:
 
 - todos os PDFs reais do Júpiter foram validados (o layout é inferido do código, seção 2);
 - o OCR funcionará bem com qualquer digitalização: as imagens aqui são limpas, sem ruído, inclinação ou compressão;
-- todos os ambientes de fontes darão o mesmo resultado: foram exercitados dois cenários, e o desenho da página 1 muda com as fontes;
+- todos os ambientes de fontes darão o mesmo resultado. Na CI, o 6.4.299 errou a página 1 (seção 6.2), e as máquinas Windows e macOS da equipe não foram testadas;
 - o HtmlService do Google foi homologado;
 - o sistema está autorizado para implantação em produção.
 
@@ -246,7 +310,9 @@ Na implantação controlada, a primeira importação com documento real deve rec
 | `testes/esperado_jupiter_sintetico.js` | resultado acadêmico esperado, escrito à mão |
 | `testes/testar_pdf_misto_sintetico.js` | a suíte (CI) |
 | `testes/mutacoes_pdf_misto.js` | as 8 mutações temporárias (local) |
-| `testes/testar_pdf_ocr_sintetico.js` | desenho com fonte fixada por arquivo (seção 6.1) |
+| `testes/testar_pdf_ocr_sintetico.js` | desenho com fonte e hinting fixados (seção 6.1) |
+| `testes/fontconfig_desenho.js` | fontconfig próprio do Chromium que desenha as imagens |
+| `testes/ambiente_navegador.js` | `abrirNavegador` aceita argumentos extras do Chromium |
 | `.github/workflows/ci.yml` | modelo do OCR e fonte das imagens conferidos, e os dois testes de OCR |
 | `.gitignore`, `testes/.gitignore` | `testes/fontes/` fora do Git |
 
