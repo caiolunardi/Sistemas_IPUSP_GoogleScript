@@ -44,4 +44,25 @@ function opcoesDeRasterizacao(familia, arquivo) {
   } catch (e) { return 'fc-match indisponível'; }
 }
 
-module.exports = { prepararFontconfigDesenho, opcoesDeRasterizacao };
+/**
+ * fontconfig para os Chromium que LEEM o PDF misto: mantém as famílias e regras da
+ * configuração vigente (incluída) e só desliga o hinting, que mudava o desenho da
+ * página com fonte não incorporada e o resultado do OCR (ETAPA4_TESTES_MISTOS.md, 6.2).
+ * regrasAntes: regras que precisam vir antes da configuração do sistema (aliases).
+ */
+function prepararFontconfigLeitura(regrasAntes) {
+  const base = process.env.FONTCONFIG_FILE || '/etc/fonts/fonts.conf';
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fontconfig-leitura-'));
+  const arquivo = path.join(dir, 'fonts.conf');
+  const edicoes = ['    <edit name="hinting" mode="assign" binding="strong"><bool>false</bool></edit>\n',
+    '    <edit name="hintstyle" mode="assign" binding="strong"><const>hintnone</const></edit>\n',
+    '    <edit name="autohint" mode="assign" binding="strong"><bool>false</bool></edit>\n'].join('');
+  fs.writeFileSync(arquivo, '<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "fonts.dtd">\n<fontconfig>\n' +
+    (regrasAntes || '') +
+    '  <include ignore_missing="yes">' + base + '</include>\n' +
+    '  <match target="pattern">\n' + edicoes + '  </match>\n' +
+    '  <match target="font">\n' + edicoes + '  </match>\n</fontconfig>\n');
+  return { arquivo, dir };
+}
+
+module.exports = { prepararFontconfigDesenho, prepararFontconfigLeitura, opcoesDeRasterizacao };

@@ -183,10 +183,10 @@ Resultado no GitHub Actions do PR #26:
 
 - o download do modelo, o da fonte e o `testar_pdf_ocr_sintetico.js` passam (4/4);
 - a geração do PDF misto é idêntica à local;
-- a suíte do PDF misto **reprova**, pelo achado da seção 6.2.
-  - No commit final, sem fixar nada na leitura (run 39856460308), passaram 23 e falharam 8. No cenário A, as duas versões erram. No cenário B, o 3.11.174 erra os requisitos e o 6.4.299 acerta.
-  - Como esse passo falha, os passos seguintes do job não rodaram na CI deste PR: as 12 suítes de `testar_recomeco_google.js` a `testar_navegador_etapa9.js`. Elas passaram localmente.
-  - Os outros 24 jobs do workflow passaram.
+- a suíte do PDF misto, no ambiente natural do executor, **reprovou** pelo achado da seção 6.2.
+  - No run 39856460308, passaram 23 e falharam 8. No cenário A, as duas versões erraram. No cenário B, o 3.11.174 errou os requisitos e o 6.4.299 acertou.
+  - Nessas rodadas, as 12 suítes seguintes do job não rodaram.
+- Depois da decisão do responsável, a leitura é feita com o hinting desligado (seção 6.2). O resultado da rodada final está no PR #26.
 
 Os resultados locais acima valem para o ambiente local.
 
@@ -286,12 +286,28 @@ O que **não** fiz:
 - não alterei o leitor nem o carregamento do PDF.js;
 - não fixei o ambiente da leitura para esconder a diferença.
 
-Com isso, **a CI do PR #26 fica vermelha** nesta suíte, pelos testes "A · 6.4.299" (2ª leitura e resultado acadêmico) e "A: 3.11.174 × 6.4.299". Também reprova "B: 3.11.174 × 6.4.299": no cenário B, o resultado acadêmico é igual nas duas versões, mas o pacote completo difere nos campos de processo da conferência (`numerosLidos`, `numerosCorrigidos`, `subtotaisRecuperados`, `itens`). A asserção de pacote completo idêntico foi definida antes da execução e não foi relaxada. O que fazer com isso é decisão do responsável.
+**Decisão do responsável (22/10/2026): fixar o ambiente da leitura na CI.** Os Chromium que leem o PDF (cenários A e B) passam a ter o hinting desligado no Chromium (`--font-render-hinting=none`) e no fontconfig (`prepararFontconfigLeitura` em `fontconfig_desenho.js`). As famílias e as demais regras de fontes continuam as da máquina, e as asserções não mudaram.
 
-Para investigar localmente:
+Conferência local antes do push:
 
-- `HINTING_LEITURA=full node testar_pdf_misto_sintetico.js` fixa o hinting do Chromium que lê;
+| Execução | Resultado |
+|---|---|
+| ambiente local | 31/31 |
+| com o fontconfig da CI (hinting slight e subpixel) | 31/31 |
+| com o fontconfig da CI e `LEITURA_NATURAL=1` | reprova como a CI reprovava; pixels da página 1 iguais aos da CI (62.497 no A e 69.438 no B) |
+
+Os casos com hinting **continuam sendo achados**, e não estão resolvidos: a CI só deixou de exercitá-los. Para reproduzi-los fora da CI:
+
+- `LEITURA_NATURAL=1 node testar_pdf_misto_sintetico.js` usa as regras da máquina;
+- `LEITURA_NATURAL=1 HINTING_LEITURA=full node testar_pdf_misto_sintetico.js` força o hinting completo no Chromium;
 - `FONTCONFIG_FILE=<arquivo>` troca as regras de fontes.
+
+Antes desta decisão, a CI deste PR reprovou no ambiente natural:
+
+- **run 39856460308:** passaram 23 e falharam 8;
+- **run 39855238224:** só o hinting do Chromium estava fixado; passaram 27 e falharam 4.
+
+Também reprovava "B: 3.11.174 × 6.4.299": o resultado acadêmico era igual, mas o pacote completo diferia nos campos de processo da conferência. A asserção de pacote completo idêntico não foi relaxada.
 
 ## 7. Limites
 
@@ -314,7 +330,7 @@ Na implantação controlada, a primeira importação com documento real deve rec
 | `testes/testar_pdf_misto_sintetico.js` | a suíte (CI) |
 | `testes/mutacoes_pdf_misto.js` | as 8 mutações temporárias (local) |
 | `testes/testar_pdf_ocr_sintetico.js` | desenho com fonte e hinting fixados (seção 6.1) |
-| `testes/fontconfig_desenho.js` | fontconfig próprio do Chromium que desenha as imagens |
+| `testes/fontconfig_desenho.js` | fontconfig do Chromium que desenha as imagens e dos que leem o PDF (hinting desligado) |
 | `testes/ambiente_navegador.js` | `abrirNavegador` aceita argumentos extras do Chromium |
 | `.github/workflows/ci.yml` | modelo do OCR e fonte das imagens conferidos, e os dois testes de OCR |
 | `.gitignore`, `testes/.gitignore` | `testes/fontes/` fora do Git |

@@ -25,11 +25,15 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULO || 'playwright');
-const { prepararFontconfigDesenho, opcoesDeRasterizacao } = require('./fontconfig_desenho');
-// Os Chromium que LEEM o PDF (cenários A e B) seguem as regras de fontes da máquina: é o comportamento
-// natural de cada versão. HINTING_LEITURA (none, slight, medium, full) só serve para investigar
-// localmente; a CI não a define (ETAPA4_TESTES_MISTOS.md, seção 6.2).
-const HINTING_LEITURA = process.env.HINTING_LEITURA || '';
+const { prepararFontconfigDesenho, prepararFontconfigLeitura, opcoesDeRasterizacao } = require('./fontconfig_desenho');
+// Ambiente da leitura (decisão do responsável, 22/10/2026): os Chromium que LEEM o PDF (cenários A e B)
+// têm o hinting desligado, no Chromium e no fontconfig; famílias e demais regras continuam as da máquina.
+// Sem isso, o desenho da página 1 (Helvetica não incorporada) e o OCR mudam com a máquina
+// (ETAPA4_TESTES_MISTOS.md, seção 6.2). Para investigar fora da CI:
+//   LEITURA_NATURAL=1      não fixa nada (comportamento da máquina);
+//   HINTING_LEITURA=full   (com LEITURA_NATURAL=1) força um hinting no Chromium.
+const LEITURA_NATURAL = process.env.LEITURA_NATURAL === '1';
+const HINTING_LEITURA = process.env.HINTING_LEITURA || (LEITURA_NATURAL ? '' : 'none');
 const HINTING_ARGS = HINTING_LEITURA ? ['--font-render-hinting=' + HINTING_LEITURA] : [];
 const { abrirPainel, esperarCarregado, criarAmbiente, DIR_SRC } = require('./ambiente_navegador');
 const { desenharImagens, montarPdfMisto, TABELA } = require('./jupiter_sintetico');
@@ -149,12 +153,17 @@ function prepararFontconfig() {
   try { familias = execFileSync('fc-list', [':', 'family'], { encoding: 'utf8' }); } catch (e) { return { erro: 'fc-list indisponível: ' + e.message }; }
   const alvo = FONTES_ALTERNATIVAS.find((f) => familias.split('\n').some((l) => l.split(',').includes(f)));
   if (!alvo) return { erro: 'nenhuma destas fontes instalada: ' + FONTES_ALTERNATIVAS.join(', ') };
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fontconfig-helvetica-'));
-  const arquivo = path.join(dir, 'fonts.conf');
-  fs.writeFileSync(arquivo, '<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "fonts.dtd">\n<fontconfig>\n' +
-    '  <match target="pattern">\n    <test name="family" qual="any"><string>Helvetica</string></test>\n' +
-    '    <edit name="family" mode="assign" binding="strong"><string>' + alvo + '</string></edit>\n  </match>\n' +
-    '  <include ignore_missing="yes">/etc/fonts/fonts.conf</include>\n</fontconfig>\n');
+  const alias = '  <match target="pattern">\n    <test name="family" qual="any"><string>Helvetica</string></test>\n' +
+    '    <edit name="family" mode="assign" binding="strong"><string>' + alvo + '</string></edit>\n  </match>\n';
+  let dir, arquivo;
+  if (LEITURA_NATURAL) {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fontconfig-helvetica-'));
+    arquivo = path.join(dir, 'fonts.conf');
+    fs.writeFileSync(arquivo, '<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "fonts.dtd">\n<fontconfig>\n' + alias +
+      '  <include ignore_missing="yes">' + (process.env.FONTCONFIG_FILE || '/etc/fonts/fonts.conf') + '</include>\n</fontconfig>\n');
+  } else {
+    ({ dir, arquivo } = prepararFontconfigLeitura(alias));
+  }
   let resolvida = '';
   try { resolvida = execFileSync('fc-match', ['Helvetica'], { encoding: 'utf8', env: Object.assign({}, process.env, { FONTCONFIG_FILE: arquivo }) }).trim(); } catch (e) { /* só informativo */ }
   return { arquivo, alvo, resolvida, dir };
@@ -262,8 +271,9 @@ function numerosDaPagina(n) {
   const fc = prepararFontconfig();
 
   console.log('\n== PDF sintético misto (jupiter_sintetico.js): geração');
-  const navA = await chromium.launch({ args: ['--no-sandbox'].concat(HINTING_ARGS) });
-  console.log('     hinting da leitura:', HINTING_LEITURA || 'o da máquina');
+  const fcLeituraA = LEITURA_NATURAL ? null : prepararFontconfigLeitura();
+  const navA = await chromium.launch({ args: ['--no-sandbox'].concat(HINTING_ARGS), env: fcLeituraA ? Object.assign({}, process.env, { FONTCONFIG_FILE: fcLeituraA.arquivo }) : process.env });
+  console.log('     leitura:', LEITURA_NATURAL ? 'ambiente natural da máquina' + (HINTING_LEITURA ? ' com hinting ' + HINTING_LEITURA : '') : 'hinting desligado (Chromium e fontconfig)');
   console.log('     Chromium', navA.version(), '· modelo tessdata_fast 4.1.0 sha256', shaModelo.slice(0, 16) + '…');
   // As imagens são desenhadas num Chromium à parte, com a rasterização do texto fixada (fontconfig_desenho.js).
   const fcDesenho = prepararFontconfigDesenho();
@@ -418,6 +428,7 @@ function numerosDaPagina(n) {
   for (const cen of cenarios) await cen.nav.close();
   fs.rmSync(dirAntigo, { recursive: true, force: true });
   if (fc.dir) fs.rmSync(fc.dir, { recursive: true, force: true });
+  if (fcLeituraA) fs.rmSync(fcLeituraA.dir, { recursive: true, force: true });
   console.log('\n' + ok + ' passaram, ' + falhas + ' falharam' + (falhas ? ': ' + falhou.join(' | ') : ''));
   process.exit(falhas ? 1 : 0);
 })().catch((e) => {
