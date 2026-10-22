@@ -15,6 +15,6 @@ node testar_navegador.js      # requer Playwright com Chromium
 EVIDENCIAS=../../../../docs/sistemas/abertura-habilitacoes/evidencias/2.0 node testar_navegador.js   # grava as capturas
 ```
 
-Resultados de 21/10/2026 (correções da auditoria): 92 ok (servidor), 27 ok (equivalência), 297 ok (navegador). A marca USP externa é trocada por um retângulo durante o teste.
+Resultados de 21/10/2026 (correções da auditoria): 93 ok (servidor; o 93º confere o [CSV de dados fictícios](../../../../docs/sistemas/abertura-habilitacoes/dados-ficticios/README.md)), 27 ok (equivalência), 297 ok (navegador). A marca USP externa é trocada por um retângulo durante o teste.
 
 `baseline/` guarda a versão 1.0 recebida em 21/10/2026, com uma única linha alterada (o ID da planilha, trocado por um marcador). Ela só é usada pelos testes de equivalência.

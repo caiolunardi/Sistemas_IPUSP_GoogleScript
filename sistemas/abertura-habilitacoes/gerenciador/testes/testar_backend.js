@@ -1237,5 +1237,46 @@ t('desempenho: 3.000 linhas, leituras em lote', () => {
   assert.strictEqual(s.setValue, 7);
 });
 
+/*==================== DADOS FICTÍCIOS DA HOMOLOGAÇÃO ====================*/
+
+// O CSV versionado para montar a planilha de homologação
+// (docs/sistemas/abertura-habilitacoes/dados-ficticios/) tem de produzir
+// exatamente o resultado que o README dele promete.
+function lerCsv_(texto) {
+  const linhas = [];
+  let linha = [], campo = '', aspas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (aspas) {
+      if (c === '"' && texto[i + 1] === '"') { campo += '"'; i++; }
+      else if (c === '"') aspas = false;
+      else campo += c;
+    } else if (c === '"') aspas = true;
+    else if (c === ',') { linha.push(campo); campo = ''; }
+    else if (c === '\n') { linha.push(campo); linhas.push(linha); linha = []; campo = ''; }
+    else if (c !== '\r') campo += c;
+  }
+  if (campo || linha.length) { linha.push(campo); linhas.push(linha); }
+  return linhas;
+}
+
+t('CSV de dados fictícios: diagnósticos batem com o README', () => {
+  const pasta = path.join(__dirname, '..', '..', '..', '..', 'docs', 'sistemas', 'abertura-habilitacoes', 'dados-ficticios');
+  const linhas = lerCsv_(fs.readFileSync(path.join(pasta, 'respostas-ao-formulario-2.csv'), 'utf8'));
+  assert(linhas.every(l => l.length === 15), 'todas as linhas com as colunas A a O');
+  linhas.slice(1).forEach(l => l.forEach(v => { if (/@/.test(v)) assert(/@exemplo\.invalid$/.test(v), 'e-mail fictício: ' + v); }));
+  const m = como(D.montar({ atual: linhas }), D.ADMIN);
+  const d = chamar(m, 'diagnosticarPlanilha');
+  assert.deepStrictEqual([d.linhasComNome, d.pendentes, d.concluidos, d.reservasDeEnvio], [12, 10, 2, 0]);
+  assert.strictEqual(d.tituloJ, 'Comentários, sugestões, elogios ou críticas.');
+  assert.deepStrictEqual(d.migracao.linhas, {
+    semIdentificador: [6], identificadoresRepetidos: [8], versaoAusente: [6], versaoMalformada: [10, 11], identificadoresForaDoFormato: []
+  });
+  assert(d.migracao.precisaMigrar && /^MIGRAR-1-1-1-0-[0-9a-f]{16}$/.test(d.migracao.codigoConfirmacao));
+  assert.strictEqual(JSON.stringify(chamar(m, 'diagnosticarMigracaoRegistroId')), JSON.stringify(chamar(m, 'diagnosticarMigracaoRegistroId')));
+  assert.strictEqual(chamar(m, 'obterPendentes').length, 10);
+  assert.strictEqual(chamar(m, 'obterConcluidosRecentes').length, 2);
+});
+
 console.log(`\n${ok} ok, ${falhas} falha(s)`);
 process.exit(falhas ? 1 : 0);

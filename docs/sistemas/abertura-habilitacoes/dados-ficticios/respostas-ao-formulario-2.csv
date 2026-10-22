@@ -1,0 +1,13 @@
+Carimbo de data/hora,Endereço de e-mail,,Nº USP,Nome,E-mail USP,Ano de ingresso,Realizou trancamento total de matrícula em algum semestre?,Deseja solicitar a abertura de qual programa?,"Comentários, sugestões, elogios ou críticas.",Situação,Registro ID,Versão,E-mail Enviado,Data de Conclusão
+02/03/2026 10:00:00,aluno.teste01@exemplo.invalid,,9900001,Aluno Teste 01,aluno.teste01@exemplo.invalid,2024,Não,Bacharelado em Psicologia,,,00000000-0000-4000-8000-000000000001,1,,
+10/02/2026 09:00:00,aluno.teste02@exemplo.invalid,,9900002,Aluno Teste 02,aluno.teste02@exemplo.invalid,2023,Não,Licenciatura em Psicologia,Aguardando documento,pendente,00000000-0000-4000-8000-000000000002,3,,
+20/03/2026 09:00:00,aluno.teste03@exemplo.invalid,,9900003,Aluno Teste 03,aluno.teste03@exemplo.invalid,2022,Sim,"Bacharelado em Psicologia, Licenciatura em Psicologia",,Concluído,00000000-0000-4000-8000-000000000003,2,01/04/2026 15:05:00,01/04/2026 15:00:00
+21/03/2026 11:00:00,aluno.teste04@exemplo.invalid,,9900004,Aluno Teste 04,aluno.teste04@exemplo.invalid,2022,Não,Bacharelado em Psicologia,,Concluído,00000000-0000-4000-8000-000000000004,1,,02/04/2026 10:00:00
+05/05/2026 09:00:00,aluno.teste05@exemplo.invalid,,9900005,Aluno Teste 05,aluno.teste05@exemplo.invalid,2024,Não,Bacharelado em Psicologia,,,,,,
+03/01/2026 09:00:00,aluno.teste06@exemplo.invalid,,9900006,Aluno Teste 06,aluno.teste06@exemplo.invalid,2023,Não,Licenciatura em Psicologia,,Em análise,00000000-0000-4000-8000-000000000006,1,,
+04/01/2026 09:00:00,aluno.teste07@exemplo.invalid,,9900007,Aluno Teste 07,aluno.teste07@exemplo.invalid,2023,Não,Bacharelado em Psicologia,,,00000000-0000-4000-8000-000000000006,1,,
+06/01/2026 09:00:00,,,9900008,Aluno Teste 08,,2024,Não,Outra resposta escrita,,,00000000-0000-4000-8000-000000000008,1,,
+07/01/2026 09:00:00,aluno.teste09@exemplo.invalid,,9900009,Aluno Teste 09,aluno.teste09@exemplo.invalid,2025,Não,Bacharelado em Psicologia,,,00000000-0000-4000-8000-000000000009,0,,
+08/01/2026 09:00:00,aluno.teste10@exemplo.invalid,,9900010,Aluno Teste 10,aluno.teste10@exemplo.invalid,2025,Não,Licenciatura em Psicologia,,,00000000-0000-4000-8000-000000000010,abc,,
+15-01-2026 9h30,aluno.teste11@exemplo.invalid,,9900011,Aluno Teste 11,aluno.teste11@exemplo.invalid,2021,Não,Bacharelado em Psicologia,,,00000000-0000-4000-8000-000000000011,1,,
+09/01/2026 09:00:00,alvaro.teste@exemplo.invalid,,9900012,Álvaro Fictício Teste,alvaro.teste@exemplo.invalid,2024,Não,Licenciatura em Psicologia,,,00000000-0000-4000-8000-000000000012,1,,
