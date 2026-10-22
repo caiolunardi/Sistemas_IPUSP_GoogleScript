@@ -6,7 +6,7 @@ Preenchido a partir do código da 2.0 (21/10/2026), revisto para a 2.1 (22/10/20
 
 - Sistema: Gerenciador de Abertura de Habilitações (Web App da equipe do Serviço de Graduação, IPUSP).
 - Público: equipe do Serviço de Graduação.
-- Ambiente: a 2.0 está em produção desde 21/10/2026 (homologação parcial). A 2.1 está só no repositório.
+- Ambiente: a 2.1 está em produção desde 22/10/2026 (versão 7 da implantação), com a auditoria ligada; a 2.0 entrou em 21/10/2026.
 - Responsável funcional: Serviço de Graduação (A VALIDAR INSTITUCIONALMENTE o nome do responsável).
 - Última revisão: 21/10/2026, versão 2.0, só de código e testes com dados sintéticos. A planilha real, a configuração real do projeto e a implantação em uso não foram abertas.
 

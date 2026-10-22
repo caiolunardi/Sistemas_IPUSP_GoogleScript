@@ -1,6 +1,6 @@
 # Abertura de Habilitações — Gerenciador
 
-**Versão:** gerenciador da equipe **v2.0**, **IMPLANTADO em 21/10/2026** (versão 6 da implantação de produção, código do commit `314fbef`), com **homologação parcial** (ver [HOMOLOGACAO.md](HOMOLOGACAO.md)). A v1.0, recebida em 21/10/2026, era a versão 5 da mesma implantação; voltar a ela segue [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). O código está em [`sistemas/abertura-habilitacoes/gerenciador/`](../../../sistemas/abertura-habilitacoes/gerenciador/README.md). A **v2.1** (nome e observação de quem acessou no cabeçalho e [auditoria](AUDITORIA.md) completa) está no repositório e **não foi implantada**. O GitHub não informa qual versão está implantada no Apps Script.
+**Versão:** gerenciador da equipe **v2.1**, **IMPLANTADA em 22/10/2026** (versão 7 da implantação de produção, código do commit `8a3aa63`), homologada na cópia de testes (ver [HOMOLOGACAO.md](HOMOLOGACAO.md)). A v2.0 (commit `314fbef`, implantada em 21/10/2026 com homologação parcial) é a versão 6 da mesma implantação. A v1.0, recebida em 21/10/2026, era a versão 5 da mesma implantação; voltar a ela segue [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). O código está em [`sistemas/abertura-habilitacoes/gerenciador/`](../../../sistemas/abertura-habilitacoes/gerenciador/README.md). A v2.1 trouxe o nome e a observação de quem acessou no cabeçalho e a [auditoria](AUDITORIA.md) completa. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 
@@ -51,5 +51,5 @@ Todas as diferenças, uma a uma, com a classificação e o teste: [INVENTARIO_LE
 | Versão | Data | Estado |
 |---|---|---|
 | v1.0 | recebida em 21/10/2026 | substituída em 21/10/2026 (versão 5 da implantação), fora do repositório |
-| v2.0 | 21/10/2026 | implantada em 21/10/2026 (versão 6), homologação parcial |
-| v2.1 | 22/10/2026 | no repositório; identificação no cabeçalho e auditoria; não homologada, não implantada |
+| v2.0 | 21/10/2026 | implantada em 21/10/2026 (versão 6), homologação parcial; substituída pela 2.1 |
+| v2.1 | 22/10/2026 | **implantada em 22/10/2026 (versão 7)**; identificação no cabeçalho e auditoria; homologada (seção G) |

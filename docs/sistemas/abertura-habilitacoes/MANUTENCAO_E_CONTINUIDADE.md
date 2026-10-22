@@ -4,8 +4,8 @@ Para quem vier a manter o gerenciador sem ter participado da 2.0. Regras gerais 
 
 ## Estado
 
-- Fonte: `sistemas/abertura-habilitacoes/gerenciador/src/` (v2.0). **Não homologada, não implantada.**
-- Em uso: 1.0, fora do repositório. O GitHub não sabe o que está no Apps Script; confira antes de qualquer mudança ([`docs/IMPLANTACAO.md`](../../IMPLANTACAO.md#4-conferir-o-código-do-editor)).
+- Fonte: `sistemas/abertura-habilitacoes/gerenciador/src/` (v2.1).
+- Em uso: v2.1, versão 7 da implantação de produção (commit `8a3aa63`), desde 22/10/2026. A 1.0 (versão 5) fica fora do repositório. O GitHub não sabe o que está no Apps Script; confira antes de qualquer mudança ([`docs/IMPLANTACAO.md`](../../IMPLANTACAO.md#4-conferir-o-código-do-editor)).
 - Documentos: [índice](README.md).
 
 ## Leitura por objetivo
