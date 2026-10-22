@@ -26,6 +26,12 @@ const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULO || 'playwright');
 const { prepararFontconfigDesenho, opcoesDeRasterizacao } = require('./fontconfig_desenho');
+// Hinting das fontes nos Chromium que LEEM o PDF (cenários A e B). Sem a opção, o Chromium sem tela
+// segue as regras de fontes da máquina, e o desenho da página 1 (Helvetica não incorporada) muda o OCR.
+// A CI fixa "none", como no ambiente em que o esperado foi conferido. HINTING_LEITURA=full reproduz
+// localmente o ambiente da CI, em que a leitura erra (ETAPA4_TESTES_MISTOS.md, seção 6.2).
+const HINTING_LEITURA = process.env.HINTING_LEITURA || 'none';
+const HINTING_ARG = '--font-render-hinting=' + HINTING_LEITURA;
 const { abrirPainel, esperarCarregado, criarAmbiente, DIR_SRC } = require('./ambiente_navegador');
 const { desenharImagens, montarPdfMisto, TABELA } = require('./jupiter_sintetico');
 const { ESPERADO, CURRICULO } = require('./esperado_jupiter_sintetico');
@@ -257,7 +263,8 @@ function numerosDaPagina(n) {
   const fc = prepararFontconfig();
 
   console.log('\n== PDF sintético misto (jupiter_sintetico.js): geração');
-  const navA = await chromium.launch({ args: ['--no-sandbox'] });
+  const navA = await chromium.launch({ args: ['--no-sandbox', HINTING_ARG] });
+  console.log('     hinting da leitura:', HINTING_LEITURA);
   console.log('     Chromium', navA.version(), '· modelo tessdata_fast 4.1.0 sha256', shaModelo.slice(0, 16) + '…');
   // As imagens são desenhadas num Chromium à parte, com a rasterização do texto fixada (fontconfig_desenho.js).
   const fcDesenho = prepararFontconfigDesenho();
@@ -333,7 +340,7 @@ function numerosDaPagina(n) {
   if (fc.erro) {
     console.log('\n   Cenário B não pôde ser preparado: ' + fc.erro);
   } else {
-    const navB = await chromium.launch({ args: ['--no-sandbox'], env: Object.assign({}, process.env, { FONTCONFIG_FILE: fc.arquivo }) });
+    const navB = await chromium.launch({ args: ['--no-sandbox', HINTING_ARG], env: Object.assign({}, process.env, { FONTCONFIG_FILE: fc.arquivo }) });
     cenarios.push({ id: 'B', nome: 'fontconfig: "Helvetica" → ' + fc.alvo + (fc.resolvida ? ' (fc-match: ' + fc.resolvida + ')' : ''), nav: navB });
   }
   await teste('cenário B (outra resolução de fontes) preparado', async () => verdade(!fc.erro, fc.erro));
