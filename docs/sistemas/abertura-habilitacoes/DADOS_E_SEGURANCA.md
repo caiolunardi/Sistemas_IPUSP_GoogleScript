@@ -24,7 +24,7 @@ Preenchido a partir do código da 2.0 (21/10/2026), revisto para a 2.1 (22/10/20
 | Auditoria (2.1) | quem, quando, área, navegador, ação; Registro ID do pedido; antes e depois das células gravadas (inclui o texto das observações); termos de busca; resultado do e-mail (sem o endereço) | rastrear o atendimento | servidor e página | planilha `AUDITORIA_ABERTURA_HABILITACOES` | só acrescenta; nada é apagado automaticamente | Pessoal ([AUDITORIA.md](AUDITORIA.md)) |
 | Aparência | `system`/`light`/`dark` | tema | navegador | `localStorage["gradip-theme"]` | navegador | Não pessoal |
 
-Até a 2.0, o gerenciador não registrava quem salvou cada pedido (a 1.0 também não). A 2.1 registra ([AUDITORIA.md](AUDITORIA.md)): nome, Nº USP e e-mail do aluno não são copiados para a auditoria; os termos de busca e o texto das observações são, por escolha a confirmar.
+Até a 2.0, o gerenciador não registrava quem salvou cada pedido (a 1.0 também não). A 2.1 registra ([AUDITORIA.md](AUDITORIA.md)): nome, Nº USP e e-mail do aluno não são copiados para a auditoria; os termos de busca e o texto das observações são, por escolha confirmada pelo responsável em 22/10/2026.
 
 Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 

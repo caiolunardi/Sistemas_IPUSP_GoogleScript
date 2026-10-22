@@ -25,7 +25,7 @@ Cada linha leva e-mail (da sessão do Google), **nome** (coluna B da aba `GERENC
 | Erro | `ERRO.NAVEGADOR` (JavaScript, sem dados de alunos) | página |
 | Manutenção | `MANUTENCAO.EXECUTAR`: diagnósticos, preparar e conferir a auditoria, consolidação | servidor |
 
-O pedido é identificado pelo **Registro ID**. Nome, Nº USP e e-mail do aluno **não** são copiados para a auditoria; o Registro ID leva à linha da planilha de respostas. Exceções, que são escolha a confirmar (seção 5): o texto das **observações** antes e depois (em `ALTERACOES`) e os **termos de busca**, que podem ser um nome ou um Nº USP.
+O pedido é identificado pelo **Registro ID**. Nome, Nº USP e e-mail do aluno **não** são copiados para a auditoria; o Registro ID leva à linha da planilha de respostas. Exceções, confirmadas pelo responsável (seção 5): o texto das **observações** antes e depois (em `ALTERACOES`) e os **termos de busca**, que podem ser um nome ou um Nº USP.
 
 Não é registrado: IP (o Apps Script não informa), e-mail do aluno, texto do e-mail de aviso, URLs, IDs de planilhas.
 
@@ -51,11 +51,11 @@ Não é registrado: IP (o Apps Script não informa), e-mail do aluno, texto do e
 
 As quatro exigem ADMINISTRADOR. Passo a passo da instalação: [INSTALACAO_E_ATUALIZACAO.md](INSTALACAO_E_ATUALIZACAO.md#7-auditoria-21); problemas: [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md#8-auditoria).
 
-## 5. Escolhas a confirmar pelo responsável
+## 5. Escolhas confirmadas pelo responsável
 
-Seguem a decisão "tudo é registrado" do painel. Cada uma pode ser desligada sem mexer no resto.
+Seguem a decisão "tudo é registrado" do painel. O responsável **confirmou as quatro em 22/10/2026**. Cada uma pode ser mudada depois sem mexer no resto.
 
-| # | Escolha da 2.1 | Alternativa |
+| # | Escolha da 2.1 (confirmada) | Alternativa descartada |
 |---|---|---|
 | 1 | Termos de busca (histórico, filtro de pendentes, Central de Ajuda) são gravados | gravar só a quantidade de resultados |
 | 2 | Texto das observações antes e depois vai para `ALTERACOES` | gravar só "alterado" e o tamanho |

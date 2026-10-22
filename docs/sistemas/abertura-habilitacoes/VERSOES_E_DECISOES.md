@@ -52,7 +52,7 @@ Precisam de validação humana (responsável pelo Serviço de Graduação ou ins
 | 4 | Concluir de novo deve trocar a Data de Conclusão? | Mantém a original (a 1.0 trocava) | `Salvamento.gs` |
 | 5 | Quando rodar a migração em lote na produção, e se pedidos novos devem ganhar ID por gatilho do Forms | Sem gatilho; **Preparar pedido** por linha e migração expressa | `Migracao.gs`; gatilho novo |
 | 6 | Unificar o critério de pendência com o Painel dos servidores (K vazia conta?) | Nenhum dos dois sistemas mudado | os dois sistemas |
-| 7 | Registrar quem concluiu, reabriu ou avisou (auditoria)? | **Decidido (22/10/2026):** sim, tudo, no modelo do Painel dos servidores (2.1); detalhes a confirmar na [seção 5 de AUDITORIA.md](AUDITORIA.md#5-escolhas-a-confirmar-pelo-responsável) | `AuditoriaHabilitacoes.gs`; chave `AUDITORIA_ABERTURA_HABILITACOES` |
+| 7 | Registrar quem concluiu, reabriu ou avisou (auditoria)? | **Decidido (22/10/2026):** sim, tudo, no modelo do Painel dos servidores (2.1); as quatro escolhas da [seção 5 de AUDITORIA.md](AUDITORIA.md#5-escolhas-confirmadas-pelo-responsável) confirmadas por ele em 22/10/2026 | `AuditoriaHabilitacoes.gs`; chave `AUDITORIA_ABERTURA_HABILITACOES` |
 | 8 | O texto do e-mail está aprovado? Deve mencionar algo mais? | Texto da 1.0, sem mudança | `Salvamento.gs` |
 | 9 | Critérios dos relatórios (múltipla seleção conta em cada; total inclui concluídos e pendentes) | Os da 1.0 | `Pedidos.gs` |
 | 10 | Base legal, retenção das abas (atual e 2021–2022) e das cópias de segurança | A VALIDAR INSTITUCIONALMENTE | — |
