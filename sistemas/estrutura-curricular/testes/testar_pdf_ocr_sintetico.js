@@ -41,6 +41,11 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
     console.log('NÃO EXECUTADO: falta ' + path.relative(process.cwd(), MODELO) + ' (ver README.md, "Modelo do OCR").');
     process.exit(2);
   }
+  // Rasterização do texto fixada para o Chromium que desenha a imagem (fontconfig_desenho.js).
+  const { prepararFontconfigDesenho, opcoesDeRasterizacao } = require('./fontconfig_desenho');
+  const fcDesenho = prepararFontconfigDesenho();
+  console.log('     rasterização — sistema:', opcoesDeRasterizacao('LiberationFixture'), '· desenho:', opcoesDeRasterizacao('LiberationFixture', fcDesenho.arquivo));
+  process.env.FONTCONFIG_FILE = fcDesenho.arquivo;
   const nav = await abrirNavegador();
   console.log('Chromium', nav.version());
   const amb = criarAmbiente({ dirSrc: DIR_SRC, usuario: ADMIN, dono: ADMIN });

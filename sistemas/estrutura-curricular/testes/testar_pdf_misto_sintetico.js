@@ -25,6 +25,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULO || 'playwright');
+const { prepararFontconfigDesenho, opcoesDeRasterizacao } = require('./fontconfig_desenho');
 const { abrirPainel, esperarCarregado, criarAmbiente, DIR_SRC } = require('./ambiente_navegador');
 const { desenharImagens, montarPdfMisto, TABELA } = require('./jupiter_sintetico');
 const { ESPERADO, CURRICULO } = require('./esperado_jupiter_sintetico');
@@ -258,7 +259,11 @@ function numerosDaPagina(n) {
   console.log('\n== PDF sintético misto (jupiter_sintetico.js): geração');
   const navA = await chromium.launch({ args: ['--no-sandbox'] });
   console.log('     Chromium', navA.version(), '· modelo tessdata_fast 4.1.0 sha256', shaModelo.slice(0, 16) + '…');
-  const ger = await abrirPainel(navA, { amb: criarAmbiente({ dirSrc: DIR_SRC, usuario: ADMIN, dono: ADMIN }), latencia: 0 });
+  // As imagens são desenhadas num Chromium à parte, com a rasterização do texto fixada (fontconfig_desenho.js).
+  const fcDesenho = prepararFontconfigDesenho();
+  console.log('     rasterização — sistema:', opcoesDeRasterizacao('LiberationFixture'), '· desenho:', opcoesDeRasterizacao('LiberationFixture', fcDesenho.arquivo));
+  const navDesenho = await chromium.launch({ args: ['--no-sandbox'], env: Object.assign({}, process.env, { FONTCONFIG_FILE: fcDesenho.arquivo }) });
+  const ger = await abrirPainel(navDesenho, { amb: criarAmbiente({ dirSrc: DIR_SRC, usuario: ADMIN, dono: ADMIN }), latencia: 0 });
   await esperarCarregado(ger.pagina);
   const fonte = fs.readFileSync(FONTE_IMAGENS);
   const imagens = await desenharImagens(ger.pagina, [2, 3], fonte);
@@ -277,6 +282,8 @@ function numerosDaPagina(n) {
     return saida;
   }, Array.from(pdf));
   await ger.contexto.close();
+  await navDesenho.close();
+  fs.rmSync(fcDesenho.dir, { recursive: true, force: true });
   fs.mkdirSync(path.join(__dirname, 'saida'), { recursive: true });
   fs.writeFileSync(path.join(__dirname, 'saida', 'misto_sintetico.pdf'), pdf);
   console.log('     PDF:', pdf.length, 'bytes, sha256', sha256(pdf), '(cópia em saida/misto_sintetico.pdf)');
