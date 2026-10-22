@@ -6,7 +6,7 @@ Código dos testes: [`sistemas/abertura-habilitacoes/gerenciador/testes/`](../..
 
 | Suíte | Casos | Resultado |
 |---|---|---|
-| `testar_backend.js` | 92 | 92 ok, 0 falha |
+| `testar_backend.js` | 93 | 93 ok, 0 falha |
 | `testar_equivalencia.js` | 27 (13 afirmam diferenças intencionais; 1 confere a condição para voltar à 1.0) | 27 ok, 0 falha |
 | `testar_navegador.js` | 297 verificações | 297 ok, 0 falha |
 

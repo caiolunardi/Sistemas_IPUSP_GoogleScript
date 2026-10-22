@@ -4,14 +4,18 @@
 
 | Versão | Estado | Data |
 |---|---|---|
-| v2.0 | **NÃO HOMOLOGADO · NÃO IMPLANTADO**. Só testes locais com dados sintéticos ([TESTES.md](TESTES.md)). | 21/10/2026 |
+| v2.0 | **EM HOMOLOGAÇÃO · NÃO IMPLANTADO**. Código do merge commit `fe8411a` no projeto de homologação desde 21/10/2026 (conferido idêntico ao Git); itens em andamento no [registro](#registro). | 21/10/2026 |
 | v1.0 | Em uso, fora do repositório; nunca homologada por este processo. | — |
 
-Nada foi feito no Google: nenhum projeto, propriedade, aba, gatilho, implantação ou e-mail.
+No Google, até 21/10/2026: projeto de homologação criado e com o código enviado por `clasp push` (sem implantação); propriedades `ID_INDEX_SPREADSHEET_ID` e `AMBIENTE=homologacao` criadas pelo responsável. O projeto da 1.0 em produção não foi alterado.
 
 ## Baseline
 
 A 1.0 recebida em 21/10/2026 (SHA-256 no [inventário](INVENTARIO_LEGADO.md#1-origem-e-integridade)). A equivalência com ela foi conferida em `testar_equivalencia.js`, rodando a cópia sanitizada lado a lado com a 2.0 sobre as mesmas planilhas simuladas.
+
+## Dados de teste
+
+A cópia da planilha de respostas é montada com o [CSV de dados fictícios](dados-ficticios/README.md), que lista os casos e o resultado esperado de cada diagnóstico.
 
 ## Pré-requisitos
 
@@ -103,4 +107,6 @@ Todos os itens de A a E conferidos sem falha; A5 decidido; decisões da [lista](
 
 | Data | Quem | Itens | Resultado | Observações |
 |---|---|---|---|---|
-| — | — | — | — | Homologação não iniciada |
+| 21/10/2026 | responsável | A1 | **ok** | `homologacao`; `ABERTURA_HABILITACOES` abre a cópia de teste; `PERMISSOES_DE_ACESSO` abre a planilha de permissões **real** (decisão do responsável: o gerenciador só lê essa planilha), aba `GERENCIADOR_HABILITACOES` com 1 administrador e 1 leitor. Antes da produção, deixar nela só quem deve ter acesso. |
+| 21/10/2026 | responsável | estrutura (`diagnosticarPlanilha`) | **ok, com achados** | Nenhuma coluna obrigatória ausente; nenhuma reserva de envio. A ordem real difere da documentada até então: há uma coluna C sem uso, Nº USP em D, programa em I, e J é a pergunta "Comentários, sugestões, elogios ou críticas." do formulário, usada como Observações (como na 1.0). [Modelo de dados](MODELO_DE_DADOS.md) corrigido. |
+| 21/10/2026 | responsável | dados | **corrigido** | A primeira cópia nasceu com todos os pedidos reais (473 linhas, todas concluídas); foi limpa antes de qualquer gravação. Nada foi gravado nem enviado. Na leitura dessa cópia, as linhas 190, 191 e 192 tinham Versão malformada e nenhuma outra precisava de migração: provavelmente o mesmo vale para a produção, e esses três pedidos exigirão a [recuperação](MANUAL_OPERACAO.md) antes ou depois da implantação. |

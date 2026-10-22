@@ -1,6 +1,6 @@
 # Modelo de dados — Gerenciador de Abertura de Habilitações 2.0
 
-Os títulos abaixo são os que o código procura. Os da aba atual vêm da 1.0 e foram conferidos só no código, **não** na planilha real (A VALIDAR na homologação com `diagnosticarPlanilha`). Os exemplos são fictícios.
+Os títulos abaixo são os que o código procura. As posições da aba atual foram conferidas na planilha real pelo `diagnosticarPlanilha` na homologação de 21/10/2026; o título da coluna C não foi visto (ela não é usada). Os exemplos são fictícios.
 
 ## 1. Planilha `ABERTURA_HABILITACOES`
 
@@ -10,19 +10,21 @@ Os títulos abaixo são os que o código procura. Os da aba atual vêm da 1.0 e 
 |---|---|---|---|---|---|
 | A | `Carimbo de data/hora` | título exato (obrigatória) | Forms | `Date` (ou texto `dd/mm/aaaa hh:mm:ss`) | ordem, relatórios, referência de "Preparar pedido" |
 | B | `Endereço de e-mail` | título exato | Forms | texto | só exibido no detalhe |
-| C | `Nº USP` | título exato (obrigatória) | Forms | número ou texto, `9000001` | lista, busca, referência |
-| D | `Nome` | título exato (obrigatória) | Forms | texto | define se a linha é um pedido; ordem; primeiro nome do e-mail |
-| E | `E-mail USP` | título exato (obrigatória) | Forms | texto | destinatário do aviso, busca |
-| F | `Ano de ingresso` | título exato | Forms | texto/número | detalhe |
-| G | `Realizou trancamento total de matrícula em algum semestre?` | título exato | Forms | `Sim`/`Não` | detalhe |
-| H | `Deseja solicitar a abertura de qual programa?` | título exato (obrigatória) | Forms | texto; pode ter as duas habilitações separadas por vírgula | lista, e-mail, relatórios |
-| I | (declaração) | não usada | Forms | — | — |
-| **J** | (qualquer) | **posição 10** | gerenciador | texto até 2.000 caracteres | Observações |
+| C | (não conferido) | não usada | Forms | — | — |
+| D | `Nº USP` | título exato (obrigatória) | Forms | número ou texto, `9900001` | lista, busca, referência |
+| E | `Nome` | título exato (obrigatória) | Forms | texto | define se a linha é um pedido; ordem; primeiro nome do e-mail |
+| F | `E-mail USP` | título exato (obrigatória) | Forms | texto | destinatário do aviso, busca |
+| G | `Ano de ingresso` | título exato | Forms | texto/número | detalhe |
+| H | `Realizou trancamento total de matrícula em algum semestre?` | título exato | Forms | `Sim`/`Não` | detalhe |
+| I | `Deseja solicitar a abertura de qual programa?` | título exato (obrigatória) | Forms | texto; pode ter as duas habilitações separadas por vírgula | lista, e-mail, relatórios |
+| **J** | `Comentários, sugestões, elogios ou críticas.` (pergunta do formulário) | **posição 10** | Forms e gerenciador | texto até 2.000 caracteres | Observações: o comentário do aluno e a observação da equipe dividem a célula, como na 1.0 |
 | **K** | (qualquer) | **posição 11** | gerenciador | `Concluído` / `pendente` / vazio / outros textos antigos | Situação (ver [regras](REGRAS_E_CONTRATOS.md#1-situação-do-pedido)) |
 | L+ | `Data de Conclusão` | título exato; criada se faltar | gerenciador | `Date` | concluídos, detalhe |
 | L+ | `Registro ID` | título exato; criada pela migração | gerenciador | UUID `xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx` | identifica o pedido |
 | L+ | `Versão` | título exato; criada pela migração | gerenciador | inteiro ≥ 1 | concorrência |
 | L+ | `E-mail Enviado` | título exato; criada se faltar | gerenciador | `Date`, ou reserva `ENVIANDO… 2026-10-21 14:03:00` | aviso por e-mail |
+
+Na planilha real (21/10/2026): L `Registro ID`, M `Versão`, N `E-mail Enviado`, O `Data de Conclusão`.
 
 Colunas criadas pelo gerenciador vão para a primeira coluna livre **depois** da última usada e nunca para J ou K. A ordem entre elas depende de qual operação criou primeiro.
 

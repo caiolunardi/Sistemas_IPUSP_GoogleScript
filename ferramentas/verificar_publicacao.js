@@ -5,7 +5,10 @@
 //   - IDs de implantação (AKfyc…) fora da lista de implantações públicas;
 //   - IDs de planilha ou pasta do Drive em links fora da lista pública;
 //   - e-mails fora da lista de permitidos e dos domínios fictícios;
-//   - planilhas, PDFs e documentos versionados (podem ter dados reais);
+//   - planilhas, PDFs e documentos versionados (podem ter dados reais),
+//     exceto os CSVs de dados fictícios da homologação em
+//     docs/sistemas/<sistema>/dados-ficticios/, que são varridos como texto
+//     e só podem ter e-mails de domínio fictício;
 //   - imagens fora de evidencias/ e assets/;
 //   - arquivos locais do clasp (.clasp.json, .clasprc.json, creds.json) e
 //     scriptId de projeto Apps Script;
@@ -47,6 +50,10 @@ const ID_LITERAL = /(?:openById|getFileById|getFolderById)\(\s*['"]([A-Za-z0-9_-
 const pareceIdGoogle = v => /[a-z]/.test(v) && /[A-Z]/.test(v) && /[0-9]/.test(v) && !/^CONFIGURAR/.test(v);
 const CODIGO = /\.(gs|js|html|json)$/i;
 const DOCUMENTOS = /\.(csv|tsv|xlsx?|ods|pdf|docx?|odt|pptx?|zip)$/i;
+// CSVs de casos inventados para montar a planilha de homologação
+// (docs/sistemas/AMBIENTE_DE_HOMOLOGACAO.md). Nem os e-mails da lista de
+// permitidos valem aqui: só domínios fictícios.
+const DADOS_FICTICIOS = /^docs\/sistemas\/[^/]+\/dados-ficticios\/[^/]+\.csv$/i;
 const IMAGENS = /\.(png|jpe?g|gif|webp|bmp|tiff?)$/i;
 const BINARIOS = /\.(png|jpe?g|gif|webp|bmp|tiff?|ico|woff2?|ttf|otf|eot|traineddata)$/i;
 
@@ -66,7 +73,8 @@ const resumo = v => v.length > 12 ? v.slice(0, 8) + '…' : v;
 
 for (const arquivo of arquivos) {
   if (LOCAIS_CLASP.test(arquivo)) { achar(arquivo, 0, 'arquivo local do clasp ou credencial (deve ficar só no computador; ver DEVELOPMENT_LOCAL.md)'); continue; }
-  if (DOCUMENTOS.test(arquivo)) { achar(arquivo, 0, 'documento ou planilha versionado (pode ter dados reais)'); continue; }
+  const ficticio = DADOS_FICTICIOS.test(arquivo);
+  if (DOCUMENTOS.test(arquivo) && !ficticio) { achar(arquivo, 0, 'documento ou planilha versionado (pode ter dados reais)'); continue; }
   if (IMAGENS.test(arquivo) && !/(^|\/)(evidencias|assets)\//.test(arquivo)) {
     achar(arquivo, 0, 'imagem fora de evidencias/ ou assets/ (prints só com dados fictícios, em evidencias/)');
   }
@@ -95,7 +103,9 @@ for (const arquivo of arquivos) {
     }
     for (const m of linha.matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g)) {
       const email = m[0].toLowerCase();
-      if (!emails.has(email) && !dominioPermitido(email)) achar(arquivo, n, 'e-mail fora da lista de permitidos', resumo(email));
+      if (ficticio ? !dominioPermitido(email) : !emails.has(email) && !dominioPermitido(email)) {
+        achar(arquivo, n, ficticio ? 'e-mail que não é de domínio fictício num CSV de dados fictícios' : 'e-mail fora da lista de permitidos', resumo(email));
+      }
     }
   });
 }
