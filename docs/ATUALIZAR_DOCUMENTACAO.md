@@ -26,6 +26,7 @@ Os arquivos ficam em `docs/sistemas/<sistema>/` e `sistemas/<sistema>/` (formul�
 | `AJUDA.md` **e** o `*Ajuda.html` do sistema | a tela, um prazo, uma regra ou uma mensagem mudou | O mesmo conteúdo nos dois, no padrão de [`ajuda/HELP_CONTENT_MODEL.md`](ajuda/HELP_CONTENT_MODEL.md). Linguagem de quem usa, sem detalhe técnico. |
 | `DADOS_E_SEGURANCA.md` | mudou o que é lido, gravado, mostrado ou enviado; quem acessa; uma configuração | Seguindo o [modelo](seguranca/SYSTEM_SECURITY_TEMPLATE.md). Nada de valor real; base legal sem fonte = `A VALIDAR INSTITUCIONALMENTE`. |
 | `HOMOLOGACAO.md` | sempre que houver teste | O que foi testado, onde (local, `/dev`, `/exec` de homologação), com que resultado e o que falta. |
+| `dados-ficticios/` | funcionalidade nova, ou mudança no que é lido, gravado, mostrado ou enviado | CSV de casos inventados por aba e `README.md` com casos e resultado esperado, no padrão de [dados fictícios para a homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md#dados-fictícios-para-a-homologação). |
 | `evidencias/<versão>/` | a tela mudou | Prints gerados pelos testes, só com dados fictícios, e um `README.md` com legenda. Link a partir do `HOMOLOGACAO.md`. |
 | `sistemas/<sistema>/testes/README.md` | teste novo ou comando novo | Comando, o que confere e a contagem de resultados. Suíte nova também entra no `.github/workflows/ci.yml` ([CI](CI.md#manutenção)). |
 | Documentos próprios (`ARQUITETURA.md`, `REGRAS.md`, `MODELO_DE_DADOS.md`, `VERSOES_E_DECISOES.md` etc.) | a mudança toca o assunto deles | Só nos sistemas que já têm esses arquivos. Não crie arquivo novo se um existente cobre o assunto. |
@@ -61,6 +62,7 @@ Versão: suba a versão no código (constante ou rodapé, quando existir) e use 
 ## 6. Antes de enviar
 
 - [ ] Os documentos das seções que se aplicam foram atualizados, com a mesma versão e data.
+- [ ] Funcionalidade nova trouxe o CSV de dados fictícios em `docs/sistemas/<sistema>/dados-ficticios/`, só com casos inventados.
 - [ ] Os links novos funcionam (caminhos relativos ao arquivo).
 - [ ] Nenhum dado real, ID ou URL interna ([checklist do repositório público](seguranca/REPOSITORIO_PUBLICO.md#antes-de-cada-commit)); `node ferramentas/verificar_publicacao.js` sem achados.
 - [ ] A implantação no Google está descrita como **pendente** até alguém confirmar que publicou. O Git não informa o que está em uso.

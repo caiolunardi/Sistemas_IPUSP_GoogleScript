@@ -12,6 +12,8 @@ usuario.teste@example.invalid
 PROTOCOLO_TESTE_001
 ```
 
+Para montar a planilha de homologação, cada funcionalidade nova traz um CSV desses casos em `docs/sistemas/<sistema>/dados-ficticios/`, no padrão de [dados fictícios para a homologação](../sistemas/AMBIENTE_DE_HOMOLOGACAO.md#dados-fictícios-para-a-homologação). Copiar a planilha de produção e "limpar depois" não é alternativa: a cópia nasce com todos os dados reais.
+
 Evitar CPFs aleatórios que possam coincidir com pessoa real. Preferir placeholders explicitamente inválidos ou campos abstratos.
 
 ## 2. Screenshots
