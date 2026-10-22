@@ -11,7 +11,7 @@
     "paginas-ocr": "node gerar_paginas_ocr.js"
   },
   "dependencies": {
-    "pdfjs-dist": "3.11.174",
+    "pdfjs-dist": "6.4.299",
     "tesseract.js": "7.0.0",
     "tesseract.js-core": "7.0.0"
   },
