@@ -41,7 +41,7 @@ Cole o ID de cada cópia na coluna `Homologação` do `ID_INDEX`, na linha da ch
 
 ### 2. Projeto Apps Script de homologação (um por formulário)
 
-1. No Drive, **Fazer uma cópia** do projeto do formulário e dê um nome que deixe claro que é teste.
+1. No Drive, **Fazer uma cópia** do projeto do formulário e dê o nome `GRADIP · <Sistema> · HOMOLOGAÇÃO` ([padrão de nomes](../IMPLANTACAO.md#nome-dos-projetos-no-google)).
 2. Copie para a cópia os arquivos de `sistemas/<formulário>/formulario/src/` da versão a homologar.
 3. **Configurações do projeto → Propriedades do script:** `ID_INDEX_SPREADSHEET_ID` (o mesmo da produção) e `AMBIENTE` = `homologacao`.
 4. Rode `diagnosticarConfiguracao` (Exclusão e Trancamento Parcial): a primeira linha deve dizer `homologacao`, e todas as chaves devem sair `OK`.
@@ -56,6 +56,42 @@ O projeto de produção **não** recebe a propriedade `AMBIENTE`.
 3. Confira o recibo (assunto com `[HOMOLOGAÇÃO]`) e as linhas gravadas na planilha de respostas de homologação: posição das colunas, carimbo, Pedido ID, texto da disciplina.
 4. Mude as datas na planilha de Períodos de homologação para conferir abertura e fechamento.
 5. Registre o resultado na `HOMOLOGACAO.md` do formulário. Capturas para o repositório continuam sendo as dos testes com dados fictícios: telas do `/exec` mostram o e-mail de quem testou.
+
+## Dados fictícios para a homologação
+
+**Toda funcionalidade nova** (ou mudança no que um sistema lê, grava, mostra ou envia) chega com um CSV de casos **inventados** para montar a planilha de homologação, no mesmo pull request do código. Assim, quem homologa não precisa copiar a planilha real nem inventar casos na hora, e a mesma base serve para as versões seguintes.
+
+### Onde e como
+
+| Item | Regra |
+|---|---|
+| Local | `docs/sistemas/<sistema>/dados-ficticios/<aba>.csv`, um arquivo por aba, e um `README.md` na mesma pasta. Fora dessa pasta, a [verificação de publicação](../CI.md) continua recusando qualquer `.csv`. |
+| Formato | UTF-8, separado por vírgula. A primeira linha tem os **títulos exatos** da aba, na mesma ordem das colunas da planilha real (conferidos com o diagnóstico do sistema). Datas como `dd/mm/aaaa hh:mm:ss`. |
+| Pessoas | Nomes como `Aluno Teste 01`; Nº USP na faixa `99000NN`; e-mails só de domínio fictício (`@exemplo.invalid`). A verificação recusa qualquer outro domínio nesses arquivos, inclusive endereços institucionais. |
+| IDs | Inventados e no formato que o sistema espera (por exemplo, `00000000-0000-4000-8000-000000000001`). Nunca ID de planilha, pasta ou implantação. |
+| Origem | Tudo escrito à mão. **Nunca** exportar, copiar ou "adaptar" linhas reais, nem trocar só os nomes de uma linha real. |
+
+### Que casos incluir
+
+Um caso por caminho que a funcionalidade trata, e não volume:
+
+- o caso comum de cada estado (por exemplo, pendente e concluído);
+- campos vazios e opcionais ausentes (sem e-mail, sem data);
+- formatos antigos ou inesperados que ainda existem na planilha real (data em texto, valor malformado);
+- duplicidades e conflitos (o mesmo identificador em duas linhas, o mesmo nome em duas abas);
+- nome com acento, para testar a busca;
+- o que a funcionalidade nova muda, com pelo menos um caso que deve ser **recusado**.
+
+O `README.md` da pasta lista os casos (linha, o que testa) e o **resultado esperado** dos diagnósticos e das telas, para a homologação comparar número a número.
+
+### Como usar
+
+1. Monte a cópia da planilha só com a linha de títulos (veja [Planilhas de homologação](#1-planilhas-de-homologação)).
+2. Selecione a célula A1 da aba e use **Arquivo → Importar → Fazer upload**, com "Substituir dados a partir da célula selecionada", separador "Vírgula" e "Converter texto em números, datas e fórmulas" marcado.
+3. Para testar o envio de e-mail, troque **na cópia**, só na linha usada no teste, o e-mail fictício pelo da sua caixa de teste. O CSV versionado continua com e-mails fictícios.
+4. Rode o diagnóstico do sistema e compare com o esperado no `README.md`. Uma diferença é achado da homologação: registre na `HOMOLOGACAO.md`.
+
+Quando a planilha real ganhar coluna, aba ou formato novo, o CSV e o `README.md` mudam no mesmo pull request.
 
 ## Limites
 
