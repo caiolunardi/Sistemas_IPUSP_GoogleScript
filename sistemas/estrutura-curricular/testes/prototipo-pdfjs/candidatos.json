@@ -1,5 +1,14 @@
 {
-  "_comentario": "Etapa 3 (protótipo isolado). Versões candidatas do PDF.js e os hashes conferidos em 22/10/2026 a partir dos pacotes do npm. 'integridadeNpm' = dist.integrity do registro (pacote .tgz); 'sha384' = hash do arquivo, no formato do atributo integrity. Nada disto é usado pelo sistema em produção.",
+  "_comentario": "Etapa 3 (protótipo isolado). Versões candidatas do PDF.js e os hashes conferidos em 22/10/2026 a partir dos pacotes do npm. 'integridadeNpm' = dist.integrity do registro (pacote .tgz); 'sha384' = hash do arquivo, no formato do atributo integrity. 'referencia' é o PDF.js 3.11.174 que estava em produção até a Etapa 4, baixado do npm como os candidatos. Nada disto é usado pelo sistema em produção.",
+  "referencia": {
+    "id": "3.11.174",
+    "papel": "referencia",
+    "versao": "3.11.174",
+    "pacote": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-3.11.174.tgz",
+    "integridadeNpm": "sha512-TdTZPf1trZ8/UFu5Cx/GXB7GZM30LT+wWUNfsi6Bq8ePLnb+woNKtDymI2mxZYBpMbonNFqKmiz684DIfnd8dA==",
+    "lib": { "caminho": "build/pdf.min.js", "sha384": "sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" },
+    "worker": { "caminho": "build/pdf.worker.min.js", "sha384": "sha384-SnzOobpRMLXZ52iJvZm/C0fYw0OQemTXzTjIsdsfMcrCtCEe9qgzxTd3RSklO5x2" }
+  },
   "candidatos": [
     {
       "id": "6.4.299-legacy",

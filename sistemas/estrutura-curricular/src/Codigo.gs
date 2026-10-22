@@ -51,7 +51,7 @@
  * Curricular · versão …"): serve para conferir qual código está
  * implantado. Suba o número a cada nova implantação.
  */
-var VERSAO_SISTEMA = '1.12.0';
+var VERSAO_SISTEMA = '1.12.1';
 
 /**
  * Ponto de entrada do Web App: devolve a página do painel.

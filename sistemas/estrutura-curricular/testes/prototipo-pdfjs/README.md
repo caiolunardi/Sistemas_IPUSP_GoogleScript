@@ -1,6 +1,6 @@
 # Protótipo isolado — PDF.js moderno com integridade conferida (Etapa 3)
 
-**Não é usado pelo sistema nem pela CI.** O Painel da Estrutura Curricular e a suíte oficial (`../testar_pdf_sintetico.js`) continuam no PDF.js 3.11.174. Este diretório só existe para mostrar, no Chromium, como uma versão moderna poderia ser carregada na Etapa 4. O relatório está em [ETAPA3_PDFJS_MODERNIZACAO.md](../../../../docs/sistemas/estrutura-curricular/ETAPA3_PDFJS_MODERNIZACAO.md).
+**Não é usado pelo sistema nem pela CI.** Foi a prova da Etapa 3 ([relatório](../../../../docs/sistemas/estrutura-curricular/ETAPA3_PDFJS_MODERNIZACAO.md)). Desde a Etapa 4 ([relatório](../../../../docs/sistemas/estrutura-curricular/ETAPA4_PDFJS_MIGRACAO.md)), o sistema e a suíte oficial usam o PDF.js 6.4.299 legacy; o protótipo continua útil para comparar versões com o **3.11.174**, que agora também vem do npm (`referencia` em `candidatos.json`) e é lido pelo leitor como estava em produção (`referencia/LeitorPdfFontes-3.11.174.html`, cópia congelada do `main` 909b12a). Ele também confere que `../referencia_pdfjs_3.11.174.json`, usado pela suíte oficial, é o que o 3.11.174 produz; `node testar_prototipo.js --gravar-referencia` regrava esse arquivo.
 
 ## Como rodar
 
@@ -18,7 +18,8 @@ node testar_prototipo.js  # ~5 s; código 0 = candidatos aprovados, 1 = reprovad
 
 | Arquivo | Para quê |
 |---|---|
-| `candidatos.json` | Versões testadas, integridade do pacote no npm e SHA-384 de cada arquivo (fixados em 22/10/2026). |
+| `candidatos.json` | Referência (3.11.174) e versões testadas, integridade do pacote no npm e SHA-384 de cada arquivo (fixados em 22/10/2026). |
+| `referencia/LeitorPdfFontes-3.11.174.html` | O leitor como estava em produção antes da Etapa 4, para a referência. |
 | `preparar.js` | Baixa e confere os pacotes. |
 | `carregador_verificado.js` | O carregamento proposto: baixa biblioteca e worker, confere o SHA-384 com `crypto.subtle`, importa a biblioteca de um `blob:` e cria o worker de módulo de outro `blob:`, entregue por `GlobalWorkerOptions.workerPort`. Se um dos dois não conferir, nada é executado. |
 | `testar_prototipo.js` | A prova: página com CSP sem `'unsafe-eval'` (mas com `'unsafe-inline'`), o `LeitorPdfFontes.html` de produção **lido sem mudança**, PDFs de `../pdf_sintetico.js`. |

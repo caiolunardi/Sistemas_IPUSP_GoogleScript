@@ -4,23 +4,36 @@
 
 ```bash
 npm ci && npx playwright install chromium   # uma vez
-node testar_pdf_sintetico.js                # ~10 s; código 0 = aprovada, 1 = asserção reprovada, 3 = erro de infraestrutura
+node testar_pdf_sintetico.js                # ~30 s; código 0 = aprovada, 1 = asserção reprovada, 3 = erro de infraestrutura
 ```
 
-16 testes, só com PDFs **sintéticos** que o próprio teste monta em `pdf_sintetico.js` (texto inventado, prefixo `ZZZ`; sem data, autor nem `/ID`, por isso os bytes são sempre os mesmos). Nenhum arquivo do Júpiter, nada gravado no Git e nenhuma dependência nova. Roda o painel de verdade (`Painel.html` pelo `doGet` do simulador) e o `LeitorPdfFontes.html` de produção no Chromium, com o PDF.js 3.11.174 servido de `node_modules` no lugar do jsDelivr (`ambiente_navegador.js`). Confere:
+37 testes, só com PDFs **sintéticos** que o próprio teste monta em `pdf_sintetico.js` (texto inventado, prefixo `ZZZ`; sem data, autor nem `/ID`, por isso os bytes são sempre os mesmos). Nenhum arquivo do Júpiter. Roda o painel de verdade (`Painel.html` pelo `doGet` do simulador) e o `LeitorPdfFontes.html` de produção no Chromium, com o PDF.js 6.4.299 (build `legacy`, módulos `.mjs`) servido de `node_modules` no lugar do jsDelivr (`ambiente_navegador.js`, que entrega `.mjs` como `text/javascript`). Confere (desde a 1.12.1, Etapa 4):
 
-- a biblioteca só carrega quando um PDF é escolhido, na URL e com o `integrity` (SRI) do leitor, e `pdfjsLib.version` é 3.11.174;
-- o worker é pedido e roda numa thread própria (não o "fake worker" na página);
-- o PDF de duas páginas abre pela camada de texto e o texto extraído é o escrito, página a página e com acento;
-- nenhuma resposta 4xx/5xx, pedido falho ou erro de JavaScript;
-- PDF corrompido (começa com `%PDF-`) e texto puro são recusados com `InvalidPDFException`, o leitor continua abrindo o PDF válido depois disso, e a tela de importação mostra "Não foi possível usar este arquivo";
-- controle negativo: com o worker ou a biblioteca respondendo 404, a leitura **falha** (prova de que o teste não passa sem os recursos).
+- o PDF.js só é baixado quando um PDF é escolhido; versão, URLs e SHA-384 fixados no leitor iguais aos do `pdfjs-dist` do `package-lock.json`;
+- um só Worker de **módulo**, criado de `blob:`, reaproveitado pelas leituras seguintes e simultâneas; nenhum "fake worker";
+- os URLs `blob:` da biblioteca e do worker são liberados depois da carga (e também quando a carga falha);
+- palavras, posições (tolerância de 0,01 pt) e o desenho da página a 300 dpi (tamanho e pixels escuros) **iguais aos do PDF.js 3.11.174**, gravados em `referencia_pdfjs_3.11.174.json` (gerado e conferido pelo protótipo, abaixo);
+- progresso, cancelamento e nova leitura depois do cancelamento; os bytes de quem chamou continuam inteiros;
+- PDF corrompido e texto puro recusados com `InvalidPDFException` (leitor e tela de importação), e o leitor continua funcionando;
+- **JavaScript de documento:** um PDF sintético benigno com script (ação de abertura, `/Names /JavaScript`, ação da página e link) é lido e desenhado sem executar o script (nenhum `alert`, nenhum marcador na página, nenhum pedido de sandbox); o controle executa o script de propósito e confirma que o detector acusa;
+- uma página isolada com CSP sem `'unsafe-eval'` (mas com `'unsafe-inline'`) lê os PDFs sem violação de CSP; isso não prova resistência a XSS;
+- controles negativos: biblioteca ou worker com 404, com um byte a mais, rede fora e worker que não inicia: a leitura falha com a mensagem certa, **nada é executado** (sem `pdfjsLib` na página e sem Worker), e com o recurso de volta a nova tentativa funciona.
 
-Não cobre o OCR (Tesseract e o modelo de português), a interpretação do relatório do Júpiter (`LeitorPdfJupiter`) nem o `/exec`; esses seguem nas suítes locais com os arquivos do Júpiter (abaixo). Roda no job "Estrutura Curricular" da CI ([docs/CI.md](../../../docs/CI.md)).
+Mutações conferidas em 22/10/2026 (cópias descartáveis de `src/` por `DIR_SRC`): tirar a conferência do hash, executar os scripts do documento, não liberar os `blob:`, não copiar os bytes, deslocar 0,02 pt as posições e criar o worker sem `type: 'module'`: em todas a suíte reprovou (código 1).
+
+Não cobre a interpretação do relatório do Júpiter (`LeitorPdfJupiter`) nem o `/exec`; esses seguem nas suítes locais com os arquivos do Júpiter (abaixo). Roda no job "Estrutura Curricular" da CI ([docs/CI.md](../../../docs/CI.md)).
+
+## OCR com PDF sintético (local, fora da CI)
+
+```bash
+node testar_pdf_ocr_sintetico.js   # ~1 min; precisa de modelos/por.traineddata (ver Preparação); código 2 = modelo ausente, não executado
+```
+
+Desenha uma página com texto inventado, monta um PDF só com a imagem (sem camada de texto) e lê pelo `LeitorPdfFontes.ler`: modo `ocr`, contrato da página, palavras reconhecidas, segunda leitura só de dígitos (`tokensNumericos`) e etapas do progresso, com o PDF.js 6.4.299 e o Tesseract.js 7.0.0. Não compara com o OCR do 3.11.174; essa comparação fica para os PDFs reais do Júpiter (roteiro na [Etapa 4](../../../docs/sistemas/estrutura-curricular/ETAPA4_PDFJS_MIGRACAO.md)).
 
 ## Protótipo do PDF.js moderno (Etapa 3, fora da CI)
 
-`prototipo-pdfjs/` testa, isolado, como carregar uma versão moderna do PDF.js (módulos ES, worker de módulo, integridade conferida da biblioteca e do worker) sem mudar o sistema nem a suíte oficial. Como rodar e o que confere: [prototipo-pdfjs/README.md](prototipo-pdfjs/README.md). Relatório: [ETAPA3_PDFJS_MODERNIZACAO.md](../../../docs/sistemas/estrutura-curricular/ETAPA3_PDFJS_MODERNIZACAO.md).
+`prototipo-pdfjs/` testou, isolado, como carregar uma versão moderna do PDF.js. Depois da Etapa 4, ele continua comparando os candidatos com o 3.11.174 (baixado do npm e lido pelo leitor congelado em `prototipo-pdfjs/referencia/`) e confere que `referencia_pdfjs_3.11.174.json` é igual ao que o 3.11.174 produz. Como rodar e o que confere: [prototipo-pdfjs/README.md](prototipo-pdfjs/README.md). Relatórios: [Etapa 3](../../../docs/sistemas/estrutura-curricular/ETAPA3_PDFJS_MODERNIZACAO.md) e [Etapa 4](../../../docs/sistemas/estrutura-curricular/ETAPA4_PDFJS_MIGRACAO.md).
 
 ## Base de disciplinas 1.12.0
 
@@ -70,7 +83,7 @@ As bibliotecas que o painel baixa das CDNs são servidas a partir de `node_modul
 
 ```bash
 cd testes
-npm ci                      # pdfjs-dist 3.11.174, tesseract.js 7.0.0, playwright 1.56.0 (versões do package-lock.json)
+npm ci                      # pdfjs-dist 6.4.299, tesseract.js 7.0.0, playwright 1.56.0 (versões do package-lock.json)
 npx playwright install chromium
 mkdir -p modelos
 curl -L -o modelos/por.traineddata \
@@ -80,7 +93,7 @@ sha256sum modelos/por.traineddata   # c4932b937207a9514b7514d518b931a99938c02a28
 
 Para usar outro Playwright, defina `PLAYWRIGHT_MODULO` com o caminho do módulo.
 
-O `package.json` tem um `overrides` de `@mapbox/node-pre-gyp` (2.0.3, que usa `tar` 7.5.22): ele só existe na cadeia opcional `pdfjs-dist → canvas`, que os testes não usam. O aviso de compilação do `canvas` durante a instalação é esperado (no Node 22 não há binário pronto e o npm descarta o pacote opcional). Detalhes em [docs/CI.md](../../../docs/CI.md#manutenção).
+Desde a Etapa 4 (1.12.1), o `pdfjs-dist` 6.4.299 não depende mais de `canvas` nem de `tar`; o `overrides` de `@mapbox/node-pre-gyp` da Etapa 2 saiu. O pacote opcional `@napi-rs/canvas` (binário pronto, sem script de instalação) é instalado, mas os testes não o usam: o PDF.js roda no Chromium. Exige Node 22.13 ou mais novo. Detalhes em [docs/CI.md](../../../docs/CI.md#manutenção).
 
 ## Execução
 

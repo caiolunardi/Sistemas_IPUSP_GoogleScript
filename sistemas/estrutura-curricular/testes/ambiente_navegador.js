@@ -14,6 +14,7 @@ const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0l
 
 function tipoConteudo(arq) {
   if (arq.endsWith('.js')) return 'application/javascript';
+  if (arq.endsWith('.mjs')) return 'text/javascript'; // módulos ES (PDF.js 6.x)
   if (arq.endsWith('.wasm')) return 'application/wasm';
   if (arq.endsWith('.gz')) return 'application/gzip';
   if (arq.endsWith('.png')) return 'image/png';
