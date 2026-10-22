@@ -54,7 +54,7 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
     document.fonts.add(face);
     const c = document.createElement('canvas');
     c.width = 2480; c.height = 3508;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { willReadFrequently: true });
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
     ctx.fillStyle = '#000'; ctx.font = '60px LiberationFixture';
     linhas.forEach((l, i) => {

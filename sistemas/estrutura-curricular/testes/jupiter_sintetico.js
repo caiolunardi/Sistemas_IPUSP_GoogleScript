@@ -136,7 +136,7 @@ async function desenharImagens(pagina, numeros, fonte, mutar) {
       }
       const c = document.createElement('canvas');
       c.width = largura; c.height = altura;
-      const ctx = c.getContext('2d');
+      const ctx = c.getContext('2d', { willReadFrequently: true });
       ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, largura, altura);
       ctx.fillStyle = '#000'; ctx.textBaseline = 'alphabetic';
       for (const it of itens) {
