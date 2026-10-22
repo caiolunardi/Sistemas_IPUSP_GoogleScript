@@ -53,6 +53,7 @@ Para os testes de tela: `npm install -g playwright@1.56.0` e `playwright install
 
 - **Suíte nova:** acrescente o caminho na lista (`matrix.suite`) da etapa certa em `ci.yml`, e registre no `testes/README.md` do sistema. Job novo: inclua-o em `needs` da etapa **CI concluída**. Siga o [roteiro de atualização](ATUALIZAR_DOCUMENTACAO.md).
 - **Formulário novo dos alunos com link `/exec` no código:** o ID da implantação vai em `implantacoes_publicas` de `publicos.json`. Ferramentas da equipe nunca entram ali (elas usam `URLS_SISTEMAS_EQUIPE`).
+- **Override do `@mapbox/node-pre-gyp` (testes da Estrutura Curricular, desde a Etapa 2 de 22/10/2026):** o `package.json` força `@mapbox/node-pre-gyp` 2.0.3 (e com ele `tar` 7.5.22) na cadeia opcional `pdfjs-dist 3.11.174 → canvas 2.11.2`, no lugar do 1.0.11 com `tar` 6.2.1. Os testes não usam o `canvas` (o PDF.js roda no Chromium); no Node 22 ele continua sem binário pronto e o `npm ci` o descarta, como antes. Não tire o override sem trocar o PDF.js de produção e o espelho juntos (Etapa 4); um PR do Dependabot que mexa nessa cadeia deve manter `npm ls tar` sem versão 6.
 - **Playwright:** a versão está em `PLAYWRIGHT_VERSAO` no `ci.yml` e no `package.json` da Estrutura Curricular. Mude as duas juntas.
 - **Custo:** em repositório público, o GitHub Actions é gratuito. Em privado, cada rodada consome cerca de 50 minutos da cota mensal da conta.
 
