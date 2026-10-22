@@ -71,20 +71,28 @@ O leitor não configura `standardFontDataUrl`, `cMapUrl` nem `wasmUrl`, como ant
 - O `pdfjs-dist` 6.x exige Node 22.13 ou mais novo; a CI usa `node-version: 22` (a mais recente da linha 22).
 - `ambiente_navegador.js` serve `.mjs` como `text/javascript`.
 - `referencia_pdfjs_3.11.174.json`: palavras, posições e desenho do PDF sintético pelo 3.11.174, com o leitor como estava em produção. É gerado e conferido pelo protótipo (`node testar_prototipo.js --gravar-referencia`), que agora baixa o 3.11.174 do npm (`referencia` em `candidatos.json`) e usa `prototipo-pdfjs/referencia/LeitorPdfFontes-3.11.174.html` (cópia do `main` 909b12a). A suíte oficial compara com esse arquivo as **palavras e posições** do leitor atual.
-- **Desenho a 300 dpi:** a quantidade de pixels escuros depende das fontes instaladas na máquina (a Helvetica do PDF sintético não é incorporada): 44.480 no computador da implementação e 45.457 na CI. Na primeira execução da CI do PR #25 (781eb8f), a comparação com o número gravado falhou por isso (35 passaram, 2 falharam). Correção: a suíte desenha o PDF válido e o PDF com script também com o **3.11.174, na mesma execução e no mesmo navegador**, e exige igualdade com esse valor. O 3.11.174 vem do npm por `prototipo-pdfjs/preparar.js --referencia` (SHA-512 do pacote e SHA-384 dos dois arquivos conferidos, os mesmos de `candidatos.json`), chamado pela suíte quando o pacote não está em `prototipo-pdfjs/pacotes/`, e é lido pelo leitor congelado. Não entra no `package.json` nem no `package-lock.json` (sem alerta novo) e o `ci.yml` não mudou. O número gravado no arquivo fica só informativo.
+- **Desenho a 300 dpi — diferença encontrada na CI e como foi tratada:**
+  - 1ª CI do PR #25 (781eb8f): o desenho do 6.4.299 deu 45.457 pixels escuros na CI e 44.480 aqui; a suíte comparava com o número gravado (44.480) e falhou (35 passaram, 2 falharam).
+  - 1ª correção (42b5e19): desenhar também com o 3.11.174 na mesma execução. Na CI, o **3.11.174 deu 45.898** e o 6.4.299, 45.457 (36 passaram, 2 falharam). Ou seja, na CI as duas versões **desenham diferente** o PDF com texto; aqui, igual.
+  - Diagnóstico: o PDF sintético usa Helvetica **não incorporada**. Registrando as fontes pedidas ao canvas, o 3.11.174 pede `g_d1_sf2,sans-serif` (a substituta, que cai na fonte genérica) e o 6.4.299 pede `"Helvetica",g_d1_sf2,sans-serif` (primeiro a fonte que o PDF nomeia). Nenhuma opção do `getDocument` volta ao comportamento antigo (`useSystemFonts: false` mantém "Helvetica"). Onde "Helvetica" e `sans-serif` resolvem para a mesma fonte, o desenho é igual; onde não, muda. Reproduzido aqui com um fontconfig que leva "Helvetica" à DejaVu Sans: 3.11.174 = 44.480, 6.4.299 = 49.171, e o 3.11.174 forçado a pedir "Helvetica" antes = 49.171.
+  - Teste atual: (a) um **PDF só com imagem** (`pdfSoImagem`, como um relatório escaneado, que é o que o OCR desenha) precisa dar os mesmos pixels escuros nas duas versões, sem pedir fonte nenhuma; (b) no PDF com texto e no PDF com script, a suíte confere que a única diferença nas fontes pedidas é o `"Helvetica",` antes da substituta e exige os mesmos pixels quando o 3.11.174 é desenhado pedindo a mesma fonte; o número do 3.11.174 sem mudança fica informativo.
+  - Efeito no sistema: o desenho só é usado pelo OCR, que entra quando menos que a fração mínima de páginas tem texto. Num PDF escaneado não há fonte. Num PDF misto (algumas páginas com texto em fonte não incorporada e o resto escaneado), as páginas com texto podem ser desenhadas com outra fonte que no 3.11.174, dependendo das fontes do computador. Isso entra na conferência com o Júpiter (seção 7).
+  - O 3.11.174 vem do npm por `prototipo-pdfjs/preparar.js --referencia` (SHA-512 do pacote e SHA-384 dos dois arquivos conferidos, os mesmos de `candidatos.json`), chamado pela suíte quando o pacote não está em `prototipo-pdfjs/pacotes/`, e é lido pelo leitor congelado. Não entra no `package.json` nem no `package-lock.json` (sem alerta novo) e o `ci.yml` não mudou. O número gravado no arquivo fica só informativo.
 
 ## 6. Testes executados (22/10/2026, Chromium 141.0.7390.37, Node 22.22.0)
 
 | Teste | Resultado |
 |---|---|
 | `npm ci` limpo | 19 pacotes; `npm audit`: 0 vulnerabilidades |
-| `testar_pdf_sintetico.js` (CI) | **38 passaram, 0 falharam** (inclui o desenho do 3.11.174 na mesma execução; com o pacote de referência apagado, a suíte o baixou e conferiu sozinha) |
-| Mutação do desenho (cópia temporária do teste, 1 pixel escuro a mais no 6.4.299) | reprovou os 2 testes de desenho (44.481 ≠ 44.480), código 1 |
+| `testar_pdf_sintetico.js` (CI) | **39 passaram, 0 falharam** (inclui o desenho do 3.11.174 na mesma execução; com o pacote de referência apagado, a suíte o baixou e conferiu sozinha) |
+| A mesma suíte com `FONTCONFIG_FILE` levando "Helvetica" à DejaVu Sans | **39 passaram, 0 falharam**; 3.11.174 sem mudança 44.480 (informativo), 6.4.299 e 3.11.174 com a mesma fonte 49.171; PDF só com imagem 1.860.672 nas duas |
+| Mutação do desenho (cópia temporária do teste, 1 pixel escuro a mais no 6.4.299) | reprovou os 3 testes de desenho (imagem 1.860.673 ≠ 1.860.672; texto e script 44.481 ≠ 44.480), código 1 |
+| Protótipo com o mesmo `FONTCONFIG_FILE` | reprova o desenho do 4.10.38 e do 6.4.299 (mesma causa); o protótipo da Etapa 3 não foi mudado |
 | Mutações em cópias descartáveis de `src/` (`DIR_SRC`) | todas reprovaram (código 1): sem conferência de hash (2 falhas), executando scripts do documento (2), sem liberar `blob:` (1), sem copiar os bytes (1), posições deslocadas 0,02 pt (3), worker sem `type: 'module'` (24) |
 | `testar_pdf_ocr_sintetico.js` (local, com o modelo) | 4 passaram: modo `ocr`, contrato da página, palavras, `tokensNumericos` só com dígitos (`4 0 2 1 0 2`) |
 | `comparar_pdfjs_versoes.js` com PDFs sintéticos | PDF com texto, PDF com script e PDF só com imagem (OCR): **0 diferenças** entre 3.11.174 e 6.4.299 nas palavras, nas posições e no pacote do `LeitorPdfJupiter` |
 | Protótipo (`prototipo-pdfjs`) | 40 passaram, 0 falharam, 1 falha informativa (build moderno), incluindo "igual à referência gravada" |
-| 13 suítes sintéticas da CI | todas com código 0, 0 falhas e 0 puladas (PDF 38, recomeço 4, etapa7 19, etapa8 26, etapa9 8, base de disciplinas 11, validações 7, proteção 6, ajuda 50, navegação visual 21, navegador etapa6 13, etapa8 27, etapa9 5) |
+| 13 suítes sintéticas da CI | todas com código 0, 0 falhas e 0 puladas (PDF 39, recomeço 4, etapa7 19, etapa8 26, etapa9 8, base de disciplinas 11, validações 7, proteção 6, ajuda 50, navegação visual 21, navegador etapa6 13, etapa8 27, etapa9 5) |
 | `verificar_publicacao.js` e `verificar_copias_shared.js` | ok |
 
 **O que a suíte cobre** (detalhe em `testes/README.md`): carga sob demanda; versão, URLs e hashes iguais aos do espelho; um Worker de módulo de `blob:`, reaproveitado; nenhum fake worker; `blob:` liberados; palavras, posições e desenho iguais aos do 3.11.174; progresso, cancelamento e leitura seguinte; duas leituras simultâneas; bytes de quem chamou intactos; PDF corrompido e texto puro recusados (leitor e tela); scripting de documento; CSP sem `'unsafe-eval'`; biblioteca ou worker com 404, adulterados, rede fora e worker que não inicia, cada um seguido de nova tentativa bem-sucedida.
@@ -137,7 +145,7 @@ node comparar_csv_pdf.js "<csv>" saida/...   # CSV × PDF lido por OCR
 - `testar_pdf_texto.js` e `comparar_csv_pdf.js` com o mesmo resultado do 3.11.174;
 - nenhuma diferença que mude currículo, disciplina, crédito, período, requisito ou grupo.
 
-Se houver diferença no OCR, verificar primeiro se o PDF usa fonte padrão não incorporada (seção 3, recursos auxiliares) ou anotações (`annotationMode`, seção 4). **Sem essa conferência, não se declara equivalência com o Júpiter.**
+Se houver diferença no OCR, verificar primeiro se o PDF usa fonte padrão não incorporada (seção 3, recursos auxiliares; e seção 5: o 6.x pede ao navegador a fonte nomeada no PDF, então o desenho dessas páginas pode depender das fontes do computador) ou anotações (`annotationMode`, seção 4). Para isso, rodar a comparação no computador e no navegador em que a equipe usa o painel. **Sem essa conferência, não se declara equivalência com o Júpiter.**
 
 ## 8. Plano de homologação no HtmlService (não executado; exige autorização)
 
@@ -174,7 +182,8 @@ Nenhum rollback preventivo foi feito e nenhuma implantação foi alterada.
 ## 10. Limitações conhecidas
 
 - Sem conferência com PDFs reais do Júpiter e sem homologação no HtmlService.
-- A equivalência do desenho é com o 3.11.174 no mesmo navegador e com as mesmas fontes da máquina; não prova o desenho em outra máquina nem no Chrome/Edge da equipe. As palavras e posições continuam comparadas com o arquivo gravado (Chromium 141.0.7390.37, Playwright 1.56.0); ao trocar o Playwright, regravar pelo protótipo se mudarem.
+- **Desenho com fonte não incorporada muda com o computador:** o 6.4.299 pede a fonte nomeada no PDF antes da substituta (seção 5). A equivalência exata está provada para página só com imagem e, para texto, quando as duas versões pedem a mesma fonte; não para o 3.11.174 sem mudança em qualquer máquina. A conclusão da Etapa 3 de "mesmos pixels" valia para o ambiente daquela execução.
+- A equivalência do desenho é com o 3.11.174 no mesmo navegador; não prova o desenho no Chrome/Edge da equipe. As palavras e posições continuam comparadas com o arquivo gravado (Chromium 141.0.7390.37, Playwright 1.56.0); ao trocar o Playwright, regravar pelo protótipo se mudarem.
 - A suíte da CI passa a baixar o pacote 3.11.174 do npm (conferido) a cada execução.
 - Fontes padrão não incorporadas, CMaps e WASM não são servidos (seção 3).
 - `annotationMode` continua `ENABLE` (seção 4).

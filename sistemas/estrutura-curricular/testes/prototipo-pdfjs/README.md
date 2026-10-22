@@ -31,7 +31,7 @@ Para a referência (3.11.174, como em produção) e para cada candidato:
 
 - abertura do PDF sintético pela camada de texto, com 2 páginas de 595×842 e o texto com acentos;
 - **as mesmas palavras e posições do 3.11.174** (`LeitorPdfFontes.ler` sem mudança, tolerância de 0,01 pt);
-- o desenho da página a 300 dpi com `render({ canvasContext, viewport })`, como o OCR faz, com o mesmo tamanho de canvas e a mesma quantidade de pixels escuros do 3.11.174 calculada na mesma execução (igualdade obrigatória para os candidatos aprováveis);
+- o desenho da página a 300 dpi com `render({ canvasContext, viewport })`, como o OCR faz, com o mesmo tamanho de canvas e a mesma quantidade de pixels escuros do 3.11.174 calculada na mesma execução (igualdade obrigatória para os candidatos aprováveis). **Atenção (Etapa 4):** essa igualdade só vale onde "Helvetica" e a fonte genérica `sans-serif` são a mesma fonte, porque o 4.x e o 6.x pedem "Helvetica" antes da substituta para a fonte não incorporada do PDF sintético. Com o fontconfig levando "Helvetica" a outra fonte, os candidatos 4.10.38 e 6.4.299 reprovam aqui. A suíte oficial (`../testar_pdf_sintetico.js`) trata isso; o protótipo ficou como estava na Etapa 3;
 - worker de verdade: um `Worker` de módulo, mensagens nos dois sentidos e nenhum fake worker;
 - PDF corrompido e texto puro recusados com `InvalidPDFException`, e o leitor volta a funcionar depois;
 - nenhuma violação de CSP (a política proíbe `'unsafe-eval'`, mas permite `'unsafe-inline'`; não é prova de resistência a XSS), erro de JavaScript, 4xx ou pedido falho;

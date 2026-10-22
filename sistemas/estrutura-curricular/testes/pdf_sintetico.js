@@ -4,6 +4,7 @@
 // de autor — o mesmo conteúdo dá sempre os mesmos bytes. Nenhum dado
 // acadêmico real: curso, códigos e nomes são inventados (prefixo ZZZ).
 'use strict';
+const zlib = require('zlib');
 
 /** Texto do PDF com ( ) \ escapados; o arquivo é gravado em Latin-1 (WinAnsi). */
 function textoPdf(s) {
@@ -100,4 +101,60 @@ function naoPdf() {
   return Buffer.from('Este arquivo nao e um PDF: e texto puro sintetico.\n', 'latin1');
 }
 
-module.exports = { montarPdf, pdfValido, pdfCorrompido, naoPdf, pdfComScript, PAGINAS, MARCADOR_SCRIPT, SCRIPT_BENIGNO };
+/** PDF de uma página A4 só com uma imagem cinza (largura×altura px, 1 byte por pixel). */
+function pdfDeImagem(cinza, largura, altura) {
+  const dados = zlib.deflateSync(cinza);
+  const conteudo = 'q 595 0 0 842 0 0 cm /Im1 Do Q\n';
+  const objetos = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>',
+    null,
+    '<< /Length ' + conteudo.length + ' >>\nstream\n' + conteudo + 'endstream'
+  ];
+  const partes = [];
+  let pos = 0;
+  const posicoes = [];
+  const escrever = (b) => { partes.push(b); pos += b.length; };
+  escrever(Buffer.from('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n', 'latin1'));
+  objetos.forEach((corpo, i) => {
+    posicoes.push(pos);
+    if (i === 3) {
+      escrever(Buffer.from('4 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + largura + ' /Height ' + altura +
+        ' /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ' + dados.length + ' >>\nstream\n', 'latin1'));
+      escrever(dados);
+      escrever(Buffer.from('\nendstream\nendobj\n', 'latin1'));
+    } else {
+      escrever(Buffer.from((i + 1) + ' 0 obj\n' + corpo + '\nendobj\n', 'latin1'));
+    }
+  });
+  const xref = pos;
+  escrever(Buffer.from('xref\n0 6\n0000000000 65535 f \n' + posicoes.map((p) => String(p).padStart(10, '0') + ' 00000 n \n').join('') +
+    'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n', 'latin1'));
+  return Buffer.concat(partes);
+}
+
+/**
+ * PDF só com imagem (sem texto nem fonte), como um relatório escaneado: blocos
+ * pretos e cinzas desenhados pelo próprio código, 1240×1754 px (A4 a 150 dpi).
+ * O desenho não depende das fontes da máquina.
+ */
+function pdfSoImagem() {
+  const largura = 1240, altura = 1754;
+  const cinza = Buffer.alloc(largura * altura, 255);
+  const bloco = (x, y, l, a, v) => { for (let j = y; j < y + a; j++) cinza.fill(v, j * largura + x, j * largura + x + l); };
+  for (let linha = 0; linha < 30; linha++) {
+    const y = 150 + linha * 48;
+    let x = 120;
+    for (let palavra = 0; palavra < 8; palavra++) {
+      const l = 40 + ((linha * 7 + palavra * 13) % 9) * 12;
+      bloco(x, y, l, 22, palavra % 3 === 2 ? 110 : 0); // 110 conta como escuro (< 128)
+      x += l + 24;
+      if (x > 1100) break;
+    }
+  }
+  bloco(120, 1650, 1000, 3, 150); // linha cinza-clara: não conta como escura
+  return pdfDeImagem(cinza, largura, altura);
+}
+
+module.exports = { montarPdf, pdfValido, pdfCorrompido, naoPdf, pdfComScript, pdfDeImagem, pdfSoImagem, PAGINAS, MARCADOR_SCRIPT, SCRIPT_BENIGNO };

@@ -10,10 +10,13 @@
 // - URLs blob: liberados depois da carga;
 // - palavras e posições iguais às do PDF.js 3.11.174 (referencia_pdfjs_3.11.174.json,
 //   gravada e conferida pelo protótipo);
-// - desenho a 300 dpi com os mesmos pixels escuros do 3.11.174 desenhado NA MESMA
-//   EXECUÇÃO (o número depende das fontes instaladas na máquina, então não fica
-//   gravado): o 3.11.174 vem do npm, conferido por prototipo-pdfjs/preparar.js
-//   --referencia, e é lido pelo leitor congelado de prototipo-pdfjs/referencia/;
+// - desenho a 300 dpi comparado com o 3.11.174 desenhado NA MESMA EXECUÇÃO (o 3.11.174
+//   vem do npm, conferido por prototipo-pdfjs/preparar.js --referencia, e é lido pelo
+//   leitor congelado de prototipo-pdfjs/referencia/): PDF só com imagem (o caso do
+//   OCR) com os mesmos pixels escuros; PDF com texto em Helvetica não incorporada:
+//   o 6.x pede ao canvas "Helvetica" antes da fonte-substituta e o 3.11.174 só a
+//   substituta, então a suíte confere essa diferença e exige os mesmos pixels quando
+//   o 3.11.174 pede a mesma fonte (sem isso, o número muda com as fontes da máquina);
 // - progresso, cancelamento, leituras simultâneas e bytes de quem chamou intactos;
 // - PDF corrompido e arquivo que não é PDF recusados (leitor e tela);
 // - controles negativos: biblioteca ou worker ausentes, adulterados, rede
@@ -31,7 +34,7 @@ const os = require('os');
 const { execFileSync } = require('child_process');
 const { abrirNavegador, abrirPainel, esperarCarregado, criarAmbiente, DIR_SRC } = require('./ambiente_navegador');
 const { corpoScript } = require('./carregar_leitores');
-const { pdfValido, pdfCorrompido, naoPdf, pdfComScript, PAGINAS, MARCADOR_SCRIPT } = require('./pdf_sintetico');
+const { pdfValido, pdfCorrompido, naoPdf, pdfComScript, pdfSoImagem, PAGINAS, MARCADOR_SCRIPT } = require('./pdf_sintetico');
 
 const VERSAO = require('pdfjs-dist/package.json').version;
 const URL_LIB = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + VERSAO + '/legacy/build/pdf.min.mjs';
@@ -150,12 +153,16 @@ function desenharPagina(pagina, bytes) {
       c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
       const ctx = c.getContext('2d');
       ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
-      await pg.render({ canvasContext: ctx, viewport: vp }).promise;
+      // Registra as fontes do PDF pedidas ao canvas (só observa; o desenho é o do PDF.js).
+      const fontes = new Set();
+      const original = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'font');
+      Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', { configurable: true, get: original.get, set(v) { if (/g_d\d/.test(v)) fontes.add(String(v).replace(/^.*?px\s*/, '').replace(/g_d\d+_sf\d+/g, 'g_dN')); original.set.call(this, v); } });
+      try { await pg.render({ canvasContext: ctx, viewport: vp }).promise; } finally { Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', original); }
       const d = ctx.getImageData(0, 0, c.width, c.height).data;
       let escuros = 0;
       for (let i = 0; i < d.length; i += 4) if (d[i] < 128) escuros++;
       await tarefa.destroy();
-      return { ok: true, largura: c.width, altura: c.height, escuros };
+      return { ok: true, largura: c.width, altura: c.height, escuros, fontes: [...fontes].sort() };
     } catch (e) {
       return { ok: false, mensagem: String(e && e.message || e) };
     }
@@ -186,7 +193,8 @@ async function desenharReferencia(nav, pdfs) {
     const saida = [];
     try {
       await LeitorPdfFontes.ler(new Uint8Array(lista[0]), {}); // carrega o 3.11.174 e define o workerSrc, como em produção
-      for (const arr of lista) {
+      // prefixo: nome de fonte posto antes da fonte-substituta do 3.11.174 (null = desenho sem mudança).
+      const desenhar = async (arr, prefixo) => {
         const tarefa = pdfjsLib.getDocument({ data: new Uint8Array(arr), isEvalSupported: false });
         const doc = await tarefa.promise;
         const pg = await doc.getPage(1);
@@ -195,12 +203,25 @@ async function desenharReferencia(nav, pdfs) {
         c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
         const ctx = c.getContext('2d');
         ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
-        await pg.render({ canvasContext: ctx, viewport: vp }).promise;
+        const fontes = new Set();
+        const original = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'font');
+        Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', { configurable: true, get: original.get, set(v) {
+          v = String(v);
+          if (prefixo) v = v.replace(/(g_d\d+_sf\d+)/, prefixo + '$1');
+          if (/g_d\d/.test(v)) fontes.add(v.replace(/^.*?px\s*/, '').replace(/g_d\d+_sf\d+/g, 'g_dN'));
+          original.set.call(this, v);
+        } });
+        try { await pg.render({ canvasContext: ctx, viewport: vp }).promise; } finally { Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', original); }
         const d = ctx.getImageData(0, 0, c.width, c.height).data;
         let escuros = 0;
         for (let i = 0; i < d.length; i += 4) if (d[i] < 128) escuros++;
         await tarefa.destroy();
-        saida.push({ ok: true, largura: c.width, altura: c.height, escuros });
+        return { largura: c.width, altura: c.height, escuros, fontes: [...fontes].sort() };
+      };
+      for (const arr of lista) {
+        const normal = await desenhar(arr, null);
+        const comNomeDaFonte = await desenhar(arr, '"Helvetica",');
+        saida.push(Object.assign({ ok: true, comNomeDaFonte }, normal));
       }
       return { ok: true, versao: pdfjsLib.version, desenhos: saida };
     } catch (e) {
@@ -281,17 +302,20 @@ async function abrirIsolada(nav) {
 
   const nav = await abrirNavegador();
   console.log('     Chromium', nav.version(), '· palavras de referência gravadas no Chromium', REFERENCIA.chromium);
-  const ref = await desenharReferencia(nav, [valido, comScript]);
+  const soImagem = pdfSoImagem();
+  const ref = await desenharReferencia(nav, [valido, comScript, soImagem]);
   await teste('referência de desenho: PDF.js 3.11.174 (npm, conferido) desenha os PDFs sintéticos nesta máquina', async () => {
     verdade(ref.ok, 'referência falhou: ' + ref.mensagem);
     igual(ref.versao, '3.11.174', 'versão desenhada');
     igual(ref.errosPagina, [], 'erros na página da referência');
     igual([ref.desenhos[0].largura, ref.desenhos[0].altura], [REFERENCIA.desenho.largura, REFERENCIA.desenho.altura], 'tamanho do canvas (gravado)');
     verdade(ref.desenhos.every((d) => d.escuros > 0), 'página em branco na referência');
-    console.log('     3.11.174 nesta máquina: pixels escuros', ref.desenhos.map((d) => d.escuros).join(' / '), '(gravado pelo protótipo, informativo:', REFERENCIA.desenho.escuros + ')');
+    igual(ref.desenhos[2].fontes, [], 'o PDF só com imagem não usa fonte');
+    console.log('     3.11.174 nesta máquina, pixels escuros — texto:', ref.desenhos[0].escuros, '(com "Helvetica" antes da substituta:', ref.desenhos[0].comNomeDaFonte.escuros + ') · com script:', ref.desenhos[1].escuros, '· só imagem:', ref.desenhos[2].escuros, '· gravado pelo protótipo, informativo:', REFERENCIA.desenho.escuros);
+    console.log('     fontes pedidas ao canvas pelo 3.11.174:', JSON.stringify(ref.desenhos[0].fontes));
   });
-  const desenhoRef = ref.ok ? ref.desenhos[0] : { escuros: NaN };
-  const desenhoRefScript = ref.ok ? ref.desenhos[1] : { escuros: NaN };
+  const vazio = { escuros: NaN, fontes: [], comNomeDaFonte: { escuros: NaN, fontes: [] } };
+  const [desenhoRef, desenhoRefScript, desenhoRefImagem] = ref.ok ? ref.desenhos : [vazio, vazio, vazio];
 
   console.log('\n== Leitura do PDF válido no painel (PDF.js ' + VERSAO + ' + worker de módulo)');
   const p = await abrir(nav);
@@ -360,12 +384,25 @@ async function abrirIsolada(nav) {
     js.forEach((u) => verdade(b.liberados.includes(u), 'não liberado: ' + u));
   });
   const desenho = await desenharPagina(p.pagina, valido);
-  await teste('desenho da página para o OCR (300 dpi): mesmo tamanho e mesmos pixels escuros do 3.11.174 nesta execução', async () => {
+  const desenhoImagem = await desenharPagina(p.pagina, soImagem);
+  await teste('desenho para o OCR (300 dpi) de um PDF só com imagem, como um escaneado: mesmo tamanho e mesmos pixels escuros do 3.11.174 nesta execução', async () => {
+    verdade(desenhoImagem.ok, desenhoImagem.mensagem);
+    igual([desenhoImagem.largura, desenhoImagem.altura], [desenhoRefImagem.largura, desenhoRefImagem.altura], 'tamanho do canvas');
+    verdade(desenhoImagem.escuros > 0, 'página em branco');
+    igual(desenhoImagem.fontes, [], 'fontes pedidas ao canvas');
+    igual(desenhoImagem.escuros, desenhoRefImagem.escuros, 'pixels escuros iguais aos do 3.11.174');
+    console.log('     canvas', desenhoImagem.largura + '×' + desenhoImagem.altura, '· pixels escuros', desenhoImagem.escuros, '(3.11.174 nesta execução: ' + desenhoRefImagem.escuros + ')');
+  });
+  await teste('desenho a 300 dpi do PDF com texto (fonte Helvetica não incorporada): mesmo tamanho; a única diferença do 3.11.174 é o nome "Helvetica" antes da fonte-substituta, e com ele os pixels escuros são iguais', async () => {
     verdade(desenho.ok, desenho.mensagem);
     igual([desenho.largura, desenho.altura], [desenhoRef.largura, desenhoRef.altura], 'tamanho do canvas');
     verdade(desenho.escuros > 0, 'página em branco');
-    igual(desenho.escuros, desenhoRef.escuros, 'pixels escuros iguais aos do 3.11.174');
-    console.log('     canvas', desenho.largura + '×' + desenho.altura, '· pixels escuros', desenho.escuros, '(3.11.174 nesta execução: ' + desenhoRef.escuros + ')');
+    // O 6.x pede ao navegador a fonte que o PDF nomeia (/BaseFont /Helvetica) antes da substituta; o 3.11.174 pede só a substituta.
+    igual(desenho.fontes, desenhoRef.fontes.map((f) => f.replace('g_dN', '"Helvetica",g_dN')), 'fontes pedidas ao canvas (6.4.299 × 3.11.174 com "Helvetica" antes)');
+    igual(desenhoRef.comNomeDaFonte.fontes, desenho.fontes, 'fontes do 3.11.174 com o nome posto pelo teste');
+    igual(desenho.escuros, desenhoRef.comNomeDaFonte.escuros, 'pixels escuros iguais aos do 3.11.174 com a mesma fonte pedida');
+    console.log('     canvas', desenho.largura + '×' + desenho.altura, '· pixels escuros', desenho.escuros, '· 3.11.174 com a mesma fonte:', desenhoRef.comNomeDaFonte.escuros,
+      '· 3.11.174 sem mudança (informativo):', desenhoRef.escuros, desenho.escuros === desenhoRef.escuros ? '(igual nesta máquina)' : '(diferente nesta máquina: "Helvetica" e a fonte genérica são fontes diferentes aqui)');
   });
   await teste('progresso e cancelamento: a leitura cancelada para e a seguinte funciona', async () => {
     const res = await p.pagina.evaluate(async (arr) => {
@@ -428,7 +465,7 @@ async function abrirIsolada(nav) {
     compararComReferencia(rs);
     const desenhoScript = await desenharPagina(p.pagina, comScript);
     verdade(desenhoScript.ok, desenhoScript.mensagem);
-    igual(desenhoScript.escuros, desenhoRefScript.escuros, 'desenho a 300 dpi igual ao do 3.11.174 nesta execução');
+    igual(desenhoScript.escuros, desenhoRefScript.comNomeDaFonte.escuros, 'desenho a 300 dpi igual ao do 3.11.174 com a mesma fonte pedida');
     igual(desenhoScript.escuros, desenho.escuros, 'desenho a 300 dpi igual ao do PDF sem script (o link não tem aparência)');
     igual(p.dialogos, [], 'diálogos (app.alert)');
     igual(await marcadorNaPagina(p.pagina), null, 'window.__marcadorScriptPdf');

@@ -11,8 +11,8 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const zlib = require('zlib');
 const { abrirNavegador, abrirPainel, esperarCarregado, criarAmbiente, DIR_SRC } = require('./ambiente_navegador');
+const { pdfDeImagem } = require('./pdf_sintetico');
 
 const ADMIN = 'dono@unidade.example';
 const MODELO = path.join(__dirname, 'modelos', 'por.traineddata');
@@ -33,39 +33,6 @@ async function teste(nome, fn) {
 }
 function igual(a, b, msg) { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error((msg || 'diferente') + ': ' + JSON.stringify(a) + ' ≠ ' + JSON.stringify(b)); }
 function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro'); }
-
-/** PDF de uma página A4 só com uma imagem cinza (largura×altura px, 1 byte por pixel). */
-function pdfDeImagem(cinza, largura, altura) {
-  const dados = zlib.deflateSync(cinza);
-  const conteudo = 'q 595 0 0 842 0 0 cm /Im1 Do Q\n';
-  const objetos = [
-    '<< /Type /Catalog /Pages 2 0 R >>',
-    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>',
-    null,
-    '<< /Length ' + conteudo.length + ' >>\nstream\n' + conteudo + 'endstream'
-  ];
-  const partes = [];
-  let pos = 0;
-  const posicoes = [];
-  const escrever = (b) => { partes.push(b); pos += b.length; };
-  escrever(Buffer.from('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n', 'latin1'));
-  objetos.forEach((corpo, i) => {
-    posicoes.push(pos);
-    if (i === 3) {
-      escrever(Buffer.from('4 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + largura + ' /Height ' + altura +
-        ' /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ' + dados.length + ' >>\nstream\n', 'latin1'));
-      escrever(dados);
-      escrever(Buffer.from('\nendstream\nendobj\n', 'latin1'));
-    } else {
-      escrever(Buffer.from((i + 1) + ' 0 obj\n' + corpo + '\nendobj\n', 'latin1'));
-    }
-  });
-  const xref = pos;
-  escrever(Buffer.from('xref\n0 6\n0000000000 65535 f \n' + posicoes.map((p) => String(p).padStart(10, '0') + ' 00000 n \n').join('') +
-    'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n' + xref + '\n%%EOF\n', 'latin1'));
-  return Buffer.concat(partes);
-}
 
 (async () => {
   if (!fs.existsSync(MODELO)) {
