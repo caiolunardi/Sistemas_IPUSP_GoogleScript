@@ -263,13 +263,13 @@ A página 1 tem texto em Helvetica não incorporada. O leitor a desenha com o PD
 **Erros do 6.4.299 no ambiente da CI:**
 
 - a 2ª leitura da página 1 traz um `7` a mais;
-- o `LeitorPdfJupiter` desloca os números das disciplinas: códigos, nomes, créditos, CH, CP e vínculos das seis primeiras saem errados, e as duas últimas somem;
+- ~~o `LeitorPdfJupiter` desloca os números das disciplinas: códigos, nomes, créditos, CH, CP e vínculos das seis primeiras saem errados, e as duas últimas somem;~~ **Correção (22/10/2026, seção 6.3):** a descrição acima saiu de uma lista de caminhos sem valores (`disciplinas[0]`…), em que uma linha a menos desloca todos os índices seguintes. O relatório legível do diagnóstico mostra o que de fato acontece: o OCR escreve `TSTO0101` e `TSTO0102` (8 caracteres), as duas linhas e o subtotal do 1º período não são reconhecidos, e **TST0101 e TST0102 somem** com os vínculos; as outras seis disciplinas saem certas;
 - a conferência mostra linhas, subtotais e totais que não batem, mas não há aviso próprio.
 
 **Erros do 3.11.174 com hinting `full`:**
 
 - o `7` a mais também aparece;
-- todos os requisitos ficam atribuídos à disciplina errada;
+- ~~todos os requisitos ficam atribuídos à disciplina errada;~~ **Correção (seção 6.3):** mesmo efeito de índices deslocados. O OCR escreve `Requisito - TSTO0101(1)…`, a linha não é reconhecida e **o requisito TST0101 de TST0201 some**; os outros cinco requisitos saem certos;
 - não há **aviso nem divergência na conferência**: é um erro silencioso para o usuário.
 
 Conclusões:
@@ -309,6 +309,33 @@ Antes desta decisão, a CI deste PR reprovou no ambiente natural:
 
 Também reprovava "B: 3.11.174 × 6.4.299": o resultado acadêmico era igual, mas o pacote completo diferia nos campos de processo da conferência. A asserção de pacote completo idêntico não foi relaxada.
 
+### 6.3 Diagnóstico não bloqueante com fontes naturais
+
+A suíte determinística (ambiente da leitura fixado) continua igual, com as mesmas asserções e o mesmo esperado. Ao lado dela, um diagnóstico separado mostra o que acontece com as fontes e o hinting de cada máquina:
+
+- `testar_pdf_misto_sintetico.js` grava também `saida/misto_sintetico_diagnostico.json`: ambiente de fontes de cada cenário (fontconfig, a fonte que "Helvetica" resolve, opções de rasterização, argumentos do Chromium), o resultado acadêmico de cada leitura, as diferenças com o esperado e entre versões e as linhas não reconhecidas, com a página;
+- `diagnosticar_fontes_naturais.js` roda a suíte com `LEITURA_NATURAL=1` e classifica a execução:
+
+| Classe | Quando | Código |
+|---|---|---|
+| EQUIVALENTE | as duas versões, nos dois cenários, dão o resultado esperado e a suíte passa inteira | 0 |
+| DIVERGÊNCIA ACADÊMICA | alguma leitura difere do esperado, as versões diferem entre si, ou outra asserção da suíte reprova | 1 |
+| ERRO DE INFRAESTRUTURA | a suíte não executou ou não terminou (modelo ou fonte ausente, erro do navegador, leitura que não terminou, cenário B não preparado, registro ausente) | 3 |
+
+- o relatório (Markdown) mostra cada diferença com os valores, agrupada em disciplinas e códigos, créditos e cargas, vínculos, requisitos e grupos, avisos e conferência, e vai para o resumo da rodada no Actions e para o artefato `diagnostico-fontes-naturais` (com o JSON, o log, o registro e o PDF);
+- `testar_diagnostico_fontes.js` (15 controles, no `ci.yml`) prova que cada tipo de divergência aparece no relatório e nunca sai como EQUIVALENTE, e que falhas de execução saem como ERRO DE INFRAESTRUTURA;
+- o workflow `.github/workflows/diagnostico-fontes.yml` fica **fora** do `ci.yml`: o ruleset do main exige só "CI concluída" e o Release só confere a rodada do `ci.yml`. Por isso o diagnóstico pode ficar vermelho sem bloquear o merge, e vermelho continua sendo um achado. Não há `continue-on-error` nem `|| true`.
+
+Execuções (22/10/2026):
+
+| Onde | Classificação |
+|---|---|
+| local, fontconfig sem hinting | EQUIVALENTE (31/31) |
+| local, fontconfig da CI | DIVERGÊNCIA ACADÊMICA: 6.4.299 perde TST0101 e TST0102 no cenário A |
+| local, `HINTING_LEITURA=full` | DIVERGÊNCIA ACADÊMICA: 3.11.174 perde o requisito TST0101 de TST0201 nos dois cenários |
+| local, sem o modelo do OCR | ERRO DE INFRAESTRUTURA |
+| GitHub Actions, run 39866615194 | DIVERGÊNCIA ACADÊMICA: as duas coisas acima ao mesmo tempo (3.11.174 com 63.626 pixels, igual ao hinting completo local; 6.4.299 com 62.497) |
+
 ## 7. Limites
 
 A aprovação destes testes **não** significa que:
@@ -333,6 +360,10 @@ Na implantação controlada, a primeira importação com documento real deve rec
 | `testes/fontconfig_desenho.js` | fontconfig do Chromium que desenha as imagens e dos que leem o PDF (hinting desligado) |
 | `testes/ambiente_navegador.js` | `abrirNavegador` aceita argumentos extras do Chromium |
 | `.github/workflows/ci.yml` | modelo do OCR e fonte das imagens conferidos, e os dois testes de OCR |
+| `testes/diagnosticar_fontes_naturais.js` | diagnóstico não bloqueante com fontes naturais e sua classificação (seção 6.3) |
+| `testes/testar_diagnostico_fontes.js` | controles do classificador (CI) |
+| `.github/workflows/diagnostico-fontes.yml` | workflow do diagnóstico, fora do `ci.yml`, com artefato |
+| `testes/investigar_requisitos_ocr.js` | investigação (não é suíte): erros de OCR injetados na tabela e a reação do `LeitorPdfJupiter`; base da proposta de proteção |
 | `.gitignore`, `testes/.gitignore` | `testes/fontes/` fora do Git |
 
 Não foram tocados `src/` (nenhum arquivo do sistema), o `LeitorPdfJupiter`, o `PainelImportacao.html`, o carregamento do PDF.js, regras, planilhas, Script Properties, permissões nem o Google.
