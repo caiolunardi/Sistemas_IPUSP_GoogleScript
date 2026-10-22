@@ -76,9 +76,15 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
     const d = ctx.getImageData(0, 0, c.width, c.height).data;
     const cinza = new Array(c.width * c.height);
     for (let i = 0, j = 0; i < d.length; i += 4, j++) cinza[j] = d[i];
-    return { largura: c.width, altura: c.height, cinza };
+    // Registro para comparar máquinas: largura do texto (só depende da fonte) e tons do desenho.
+    const larguras = ['Fundamentos', 'ZZZ0001'].map((t) => Math.round(ctx.measureText(t).width * 100) / 100);
+    let escuros = 0, intermediarios = 0;
+    const tons = new Set();
+    for (const v of cinza) { if (v < 128) escuros++; if (v > 0 && v < 255) intermediarios++; tons.add(v); }
+    return { largura: c.width, altura: c.height, cinza, registro: { larguras, escuros, intermediarios, tons: tons.size, fonteCarregada: document.fonts.check('60px LiberationFixture') } };
   }, { linhas: LINHAS, fonteB64: fs.readFileSync(FONTE).toString('base64') });
   const pdf = pdfDeImagem(Buffer.from(img.cinza), img.largura, img.altura);
+  console.log('     desenho:', JSON.stringify(img.registro));
   // Cópia local (saida/ e *.pdf estão no .gitignore), para comparar versões com comparar_pdfjs_versoes.js.
   fs.mkdirSync(path.join(__dirname, 'saida'), { recursive: true });
   fs.writeFileSync(path.join(__dirname, 'saida', 'ocr_sintetico.pdf'), pdf);
