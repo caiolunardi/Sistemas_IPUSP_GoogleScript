@@ -66,7 +66,7 @@ As bibliotecas que o painel baixa das CDNs são servidas a partir de `node_modul
 
 ```bash
 cd testes
-npm install                 # pdfjs-dist 3.11.174, tesseract.js 7.0.0, playwright 1.56.0
+npm ci                      # pdfjs-dist 3.11.174, tesseract.js 7.0.0, playwright 1.56.0 (versões do package-lock.json)
 npx playwright install chromium
 mkdir -p modelos
 curl -L -o modelos/por.traineddata \
@@ -75,6 +75,8 @@ sha256sum modelos/por.traineddata   # c4932b937207a9514b7514d518b931a99938c02a28
 ```
 
 Para usar outro Playwright, defina `PLAYWRIGHT_MODULO` com o caminho do módulo.
+
+O `package.json` tem um `overrides` de `@mapbox/node-pre-gyp` (2.0.3, que usa `tar` 7.5.22): ele só existe na cadeia opcional `pdfjs-dist → canvas`, que os testes não usam. O aviso de compilação do `canvas` durante a instalação é esperado (no Node 22 não há binário pronto e o npm descarta o pacote opcional). Detalhes em [docs/CI.md](../../../docs/CI.md#manutenção).
 
 ## Execução
 
