@@ -3,7 +3,7 @@
 // planilha (textos curtos sem formato de ID do Google).
 'use strict';
 
-const { criarAba, criarAmbiente, formatarData, TZ } = require('./simulacao');
+const { criarAba, criarAmbiente, criarPlanilhaAuditoria, formatarData, TZ } = require('./simulacao');
 
 const IDS = {
   INDICE: 'INDICE_SINTETICO',
@@ -11,6 +11,8 @@ const IDS = {
   RESPOSTAS_HOMOLOGACAO: 'RESPOSTAS_HOMOLOGACAO_SINTETICAS',
   PERMISSOES: 'PERMISSOES_SINTETICAS',
   PERMISSOES_HOMOLOGACAO: 'PERMISSOES_HOMOLOGACAO_SINTETICAS',
+  AUDITORIA: 'AUDITORIA_SINTETICA',
+  AUDITORIA_HOMOLOGACAO: 'AUDITORIA_HOMOLOGACAO_SINTETICA',
   // O baseline 1.0 sanitizado usa este marcador no lugar do ID real.
   BASELINE: 'CONFIGURAR_ID_DA_PLANILHA_DE_RESPOSTAS'
 };
@@ -77,7 +79,7 @@ function linhasHistorico() {
 
 function abaPermissoes(linhas) {
   return criarAba('GERENCIADOR_HABILITACOES', [['N. USP', 'Nome', 'E-mail', 'Observação', 'Perfil']].concat(linhas || [
-    ['', 'Pessoa Administradora', ADMIN, '', 'ADMINISTRADOR'],
+    ['', 'Pessoa Administradora', ADMIN, 'Equipe Fictícia de Teste', 'ADMINISTRADOR'],
     ['', 'Pessoa Leitora', LEITOR, '', 'LEITOR'],
     ['', 'Coringa', '*@exemplo.invalid', 'deve ser ignorado', 'ADMINISTRADOR'],
     ['', 'Duplicada', 'dup@exemplo.invalid', '', 'ADMINISTRADOR'],
@@ -92,7 +94,8 @@ function abaIndice(linhas) {
   return criarAba('Página1', [['Chave', 'Tipo', 'ID de Produção', 'Homologação (cópia de testes)']].concat(linhas || [
     ['OUTRA_CHAVE', 'spreadsheet', 'OUTRO', ''],
     ['ABERTURA_HABILITACOES', 'spreadsheet', IDS.RESPOSTAS, IDS.RESPOSTAS_HOMOLOGACAO],
-    ['PERMISSOES_DE_ACESSO', 'spreadsheet', IDS.PERMISSOES, IDS.PERMISSOES_HOMOLOGACAO]
+    ['PERMISSOES_DE_ACESSO', 'spreadsheet', IDS.PERMISSOES, IDS.PERMISSOES_HOMOLOGACAO],
+    ['AUDITORIA_ABERTURA_HABILITACOES', 'spreadsheet', IDS.AUDITORIA, IDS.AUDITORIA_HOMOLOGACAO]
   ]));
 }
 
@@ -108,19 +111,22 @@ function montar(opcoes = {}) {
   const arquivos = {
     [IDS.INDICE]: { nome: 'ID_INDEX', abas: [opcoes.indice || abaIndice()] },
     [IDS.RESPOSTAS]: { nome: 'Respostas sintéticas', abas: abasRespostas },
-    [IDS.PERMISSOES]: { nome: 'Permissões sintéticas', abas: [opcoes.permissoes || abaPermissoes()] }
+    [IDS.PERMISSOES]: { nome: 'Permissões sintéticas', abas: [opcoes.permissoes || abaPermissoes()] },
+    [IDS.AUDITORIA]: { planilha: criarPlanilhaAuditoria('Auditoria sintética') }
   };
   let atualHomologacao = null;
   if (opcoes.homologacao) {
     atualHomologacao = criarAba('Respostas ao formulário 2', opcoes.homologacao);
     arquivos[IDS.RESPOSTAS_HOMOLOGACAO] = { nome: 'Respostas de homologação', abas: [atualHomologacao] };
     arquivos[IDS.PERMISSOES_HOMOLOGACAO] = { nome: 'Permissões de homologação', abas: [opcoes.permissoesHomologacao || abaPermissoes()] };
+    arquivos[IDS.AUDITORIA_HOMOLOGACAO] = { planilha: criarPlanilhaAuditoria('Auditoria de homologação') };
   }
   const amb = criarAmbiente(Object.assign({
     arquivos,
     propriedades: opcoes.propriedades || { ID_INDEX_SPREADSHEET_ID: IDS.INDICE }
   }, opcoes.ambiente || {}, opcoes.usuario !== undefined ? { usuario: opcoes.usuario } : {}));
-  return { amb, atual, historico, atualHomologacao, arquivos };
+  const auditoria = arquivos[IDS.AUDITORIA].planilha;
+  return { amb, atual, historico, atualHomologacao, arquivos, auditoria };
 }
 
 /**

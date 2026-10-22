@@ -169,12 +169,13 @@ function diagnosticarMigracaoRegistroId() {
     console.log("Há linhas que a migração não altera (versão malformada ou ID fora do formato): use a recuperação um a um " +
       "(diagnosticarRecuperacaoRegistro), conforme o manual.");
   }
+  registrarManutencaoHabilitacoes_("diagnosticarMigracaoRegistroId", resumo);
   return paraPagina_(resumo, "simulação da migração");
 }
 
 /** Passo 3 (editor): execução, só com a confirmação igual ao plano atual. */
-function executarMigracaoRegistroId() {
-  exigirAdministrador_();
+// Pública em AuditoriaHabilitacoes.gs (executarMigracaoRegistroId).
+function executarMigracaoRegistroIdSemAuditoria_() {
   const props = PropertiesService.getScriptProperties();
   const confirmacao = String(props.getProperty(PROP_CONFIRMACAO_MIGRACAO) || "").trim();
 
@@ -340,12 +341,13 @@ function diagnosticarRecuperacaoRegistro() {
     console.log("Para executar: confira a linha na planilha, registre a decisão e troque o valor de " + PROP_RECUPERACAO_REGISTRO +
       " por " + resumo.codigoConfirmacao + "; depois rode executarRecuperacaoRegistro.");
   }
+  registrarManutencaoHabilitacoes_("diagnosticarRecuperacaoRegistro", resumo);
   return paraPagina_(resumo, "diagnóstico da recuperação");
 }
 
 /** Passo 3 (editor): altera só a linha diagnosticada, se nada mudou. */
-function executarRecuperacaoRegistro() {
-  exigirAdministrador_();
+// Pública em AuditoriaHabilitacoes.gs (executarRecuperacaoRegistro).
+function executarRecuperacaoRegistroSemAuditoria_() {
   const props = PropertiesService.getScriptProperties();
   const confirmacao = String(props.getProperty(PROP_RECUPERACAO_REGISTRO) || "").trim();
   const m = confirmacao.match(/^RECUPERAR-(\d{1,7})-[0-9a-f]{16}$/);

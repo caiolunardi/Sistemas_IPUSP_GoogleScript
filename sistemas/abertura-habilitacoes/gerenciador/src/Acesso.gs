@@ -7,7 +7,8 @@
     servidores e da Estrutura Curricular)
       › aba GERENCIADOR_HABILITACOES, linha 1 = títulos; da linha 2 em
         diante: A = N. USP · B = Nome · C = e-mail · D = Observação ·
-        E = Perfil (mesmo formato da aba PAINEL_SERVIDORES)
+        E = Perfil (mesmo formato da aba PAINEL_SERVIDORES). Nome (B) e
+        Observação (D) aparecem no cabeçalho da página e na auditoria.
 
   Perfis (proposta técnica; quem decide a lista é o responsável):
     LEITOR         → listas, histórico, detalhes e relatórios;
@@ -29,13 +30,17 @@
   domínio de quem implantou; Session.getEffectiveUser() é sempre quem
   implantou e nunca é usado para autorizar. Linhas com coringa,
   grupo ou texto que não é um e-mail completo são ignoradas. E-mail
-  repetido: vale o menor perfil. A lista fica em cache por 60 s.
-  E-mails não vão para o registro de execução.
+  repetido: vale o menor perfil (nome e observação da primeira linha
+  que os tiver). A lista fica em cache por 60 s. E-mails não vão para
+  o registro de execução. Toda recusa é gravada na auditoria
+  (AuditoriaHabilitacoes.gs), sem mudar a recusa.
 =====================================================*/
 
 const ACESSO = {
   ABA: "GERENCIADOR_HABILITACOES",
+  COL_NOME: 2,
   COL_EMAIL: 3,
+  COL_OBSERVACAO: 4,
   COL_PERFIL: 5,
   LEITOR: "LEITOR",
   ADMINISTRADOR: "ADMINISTRADOR",
@@ -49,8 +54,9 @@ const MENSAGENS_ACESSO = {
   SO_LEITURA: "O seu acesso a este gerenciador é somente de consulta. Para alterar pedidos ou avisar alunos, peça o perfil de administrador ao responsável."
 };
 
+// "v2": desde a 2.1 o cache guarda também nome e observação.
 function chaveCachePermissoes_(ambiente) {
-  return "habilitacoesPermissoes:" + ambiente;
+  return "habilitacoesPermissoes:v2:" + ambiente;
 }
 
 function normalizarEmail_(valor) {
@@ -85,8 +91,13 @@ function lerPermissoes_() {
     if (!emailValido_(email)) return;
     const perfil = normalizarTitulo_(linha[ACESSO.COL_PERFIL - 1]).toUpperCase();
     if (perfil !== ACESSO.LEITOR && perfil !== ACESSO.ADMINISTRADOR) return;
-    if (mapa[email] === ACESSO.LEITOR) return;
-    mapa[email] = perfil;
+    const nome = String(linha[ACESSO.COL_NOME - 1] || "").replace(/\s+/g, " ").trim().slice(0, 120);
+    const observacao = String(linha[ACESSO.COL_OBSERVACAO - 1] || "").replace(/\s+/g, " ").trim().slice(0, 160);
+    const atual = mapa[email];
+    if (!atual) { mapa[email] = { perfil: perfil, nome: nome, observacao: observacao }; return; }
+    if (perfil === ACESSO.LEITOR) atual.perfil = ACESSO.LEITOR;
+    if (!atual.nome) atual.nome = nome;
+    if (!atual.observacao) atual.observacao = observacao;
   });
   return mapa;
 }
@@ -104,8 +115,9 @@ function permissoes_() {
 }
 
 /**
- * Quem está usando e o perfil dele.
- * @return {{email: string, perfil: string}}
+ * Quem está usando, o perfil e, da mesma linha da aba, nome e observação.
+ * Não grava recusa: quem grava é exigirLeitor_/exigirAdministrador_.
+ * @return {{email: string, perfil: string, nome: string, observacao: string}}
  */
 function usuarioAtual_() {
   const email = emailDaSessao_();
@@ -117,29 +129,42 @@ function usuarioAtual_() {
     console.error("Lista de acesso indisponível: " + textoParaLog_(erro && erro.message));
     throw erroGerenciador_("ACESSO_INDISPONIVEL", MENSAGENS_ACESSO.ACESSO_INDISPONIVEL);
   }
-  const perfil = mapa[email];
+  const pessoa = mapa[email];
+  const perfil = pessoa && pessoa.perfil;
   if (perfil !== ACESSO.LEITOR && perfil !== ACESSO.ADMINISTRADOR) {
     throw erroGerenciador_("SEM_ACESSO", MENSAGENS_ACESSO.SEM_ACESSO);
   }
-  return { email: email, perfil: perfil };
+  return { email: email, perfil: perfil, nome: pessoa.nome || "", observacao: pessoa.observacao || "" };
+}
+
+// A recusa vai para a auditoria antes de subir; se a auditoria falhar,
+// a recusa continua igual.
+function recusarComAuditoria_(erro) {
+  try { registrarRecusaHabilitacoes_(erro); } catch (falha) { /* auditoria indisponível */ }
+  return erro;
 }
 
 /** Primeira linha de toda função pública de consulta. */
 function exigirLeitor_() {
-  return usuarioAtual_();
+  try {
+    return usuarioAtual_();
+  } catch (erro) {
+    throw recusarComAuditoria_(erro);
+  }
 }
 
 /** Primeira linha de toda função pública que grava, envia e-mail ou faz manutenção. */
 function exigirAdministrador_() {
-  const usuario = usuarioAtual_();
-  if (usuario.perfil !== ACESSO.ADMINISTRADOR) throw erroGerenciador_("SO_LEITURA", MENSAGENS_ACESSO.SO_LEITURA);
+  const usuario = exigirLeitor_();
+  if (usuario.perfil !== ACESSO.ADMINISTRADOR) throw recusarComAuditoria_(erroGerenciador_("SO_LEITURA", MENSAGENS_ACESSO.SO_LEITURA));
   return usuario;
 }
 
 /** Usado pelo doGet: nunca lança erro. */
 function verificarAcessoParaPagina_() {
   try {
-    return { ok: true, perfil: usuarioAtual_().perfil };
+    const usuario = usuarioAtual_();
+    return { ok: true, perfil: usuario.perfil, email: usuario.email, nome: usuario.nome, observacao: usuario.observacao };
   } catch (erro) {
     const codigo = codigoDoErro_(erro);
     const mensagem = MENSAGENS_ACESSO[codigo] || MENSAGENS_ACESSO.ACESSO_INDISPONIVEL;

@@ -11,6 +11,9 @@
                                "2021 - 2022")
       › PERMISSOES_DE_ACESSO   lista de quem usa o gerenciador
                                (aba GERENCIADOR_HABILITACOES, ver Acesso.gs)
+      › AUDITORIA_ABERTURA_HABILITACOES  planilha da auditoria
+                               (AuditoriaHabilitacoes.gs); sem ela,
+                               nenhuma alteração é feita
 
     Script Property AMBIENTE (opcional):
       ausente ou "producao" → coluna "ID de Produção";
@@ -23,7 +26,7 @@
   citam só nomes de chave e de propriedade, nunca IDs.
 =====================================================*/
 
-const VERSAO_GERENCIADOR = "2.0";
+const VERSAO_GERENCIADOR = "2.1";
 
 const CONFIG = {
   PROP_ID_INDEX: "ID_INDEX_SPREADSHEET_ID",
@@ -31,6 +34,7 @@ const CONFIG = {
   ABA_INDICE: "Página1",
   CHAVE_RESPOSTAS: "ABERTURA_HABILITACOES",
   CHAVE_PERMISSOES: "PERMISSOES_DE_ACESSO",
+  CHAVE_AUDITORIA: "AUDITORIA_ABERTURA_HABILITACOES",
   TIPO_PLANILHA: "spreadsheet",
   CACHE_INDICE_SEGUNDOS: 600
 };

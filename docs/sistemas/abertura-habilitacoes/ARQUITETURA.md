@@ -1,6 +1,6 @@
-# Arquitetura — Gerenciador de Abertura de Habilitações 2.0
+# Arquitetura — Gerenciador de Abertura de Habilitações 2.0 e 2.1
 
-Projeto Apps Script **autônomo** (não vinculado à planilha), publicado como Web App. Código em [`sistemas/abertura-habilitacoes/gerenciador/src/`](../../../sistemas/abertura-habilitacoes/gerenciador/src/). Estado: implantado em 21/10/2026, com homologação parcial ([HOMOLOGACAO.md](HOMOLOGACAO.md)).
+Projeto Apps Script **autônomo** (não vinculado à planilha), publicado como Web App. Código em [`sistemas/abertura-habilitacoes/gerenciador/src/`](../../../sistemas/abertura-habilitacoes/gerenciador/src/). Estado: 2.0 implantada em 21/10/2026, com homologação parcial ([HOMOLOGACAO.md](HOMOLOGACAO.md)); 2.1 (identificação no cabeçalho e [auditoria](AUDITORIA.md)) só no repositório.
 
 ## 1. Visão geral
 
@@ -18,6 +18,8 @@ Navegador da equipe ── google.script.run ─┤
                                       ├─ Pedidos.gs       listas, detalhe, busca, relatórios
                                       ├─ Salvamento.gs    salvar, e-mail, preparar pedido
                                       ├─ Migracao.gs      migração expressa e recuperação de um pedido
+                                      ├─ AuditoriaHabilitacoes.gs + Auditoria.gs (2.1)
+                                      │                   ──grava──► planilha AUDITORIA_ABERTURA_HABILITACOES
                                       └─ MailApp          aviso ao aluno
 Painel dos servidores ──lê (só conta)──► mesma planilha (contrato em REGRAS_E_CONTRATOS §6)
 ```
@@ -34,12 +36,14 @@ Painel dos servidores ──lê (só conta)──► mesma planilha (contrato em
 | `Salvamento.gs` | `salvarPedido` em três fases (conferir e gravar na trava → enviar fora da trava → confirmar em nova trava), `desfazerReserva_`, `atribuirIdentificador`. | `Pedidos.gs`, `MailApp` |
 | `Migracao.gs` | `diagnosticarMigracaoRegistroId` (só leitura) e `executarMigracaoRegistroId` (com confirmação); `diagnosticarRecuperacaoRegistro` e `executarRecuperacaoRegistro` (uma linha, com confirmação). Códigos de confirmação com impressão digital do plano (`Utilities.computeDigest`, SHA-256). | `Planilha.gs`, `PropertiesService`, `Utilities` |
 | `Codigo.gs` | `doGet`, `include_`, `diagnosticarConfiguracao`, `diagnosticarPlanilha`. | todos |
+| `Auditoria.gs` (2.1) | Núcleo da auditoria, cópia sem mudança de [`shared/auditoria/`](../../../shared/auditoria/README.md): abas, selo encadeado, `auditarAlteracao_`, consolidação. | `SpreadsheetApp`, `LockService`, `ScriptApp` |
+| `AuditoriaHabilitacoes.gs` (2.1) | Configuração da auditoria (planilha, dicionário, quem), lote da página (`registrarEventosHabilitacoes`), e as **funções públicas** de consulta e gravação: cada uma chama a versão `…SemAuditoria_` de `Pedidos.gs`, `Salvamento.gs` ou `Migracao.gs` e registra o evento ([AUDITORIA.md](AUDITORIA.md)). | os demais |
 
-Funções públicas (sem `_` no fim, chamáveis por `google.script.run`): `doGet`, `obterPendentes`, `obterConcluidosRecentes`, `obterDetalhe`, `buscarHistorico`, `obterRelatorio`, `salvarPedido`, `atribuirIdentificador`, `diagnosticarConfiguracao`, `diagnosticarPlanilha`, `diagnosticarMigracaoRegistroId`, `executarMigracaoRegistroId`, `diagnosticarRecuperacaoRegistro`, `executarRecuperacaoRegistro` (as quatro últimas são para o editor; chamadas pela página, conferem o perfil ADMINISTRADOR como as outras). O teste "funções públicas são exatamente…" falha se aparecer outra.
+Funções públicas (sem `_` no fim, chamáveis por `google.script.run`): `doGet`, `obterPendentes`, `obterConcluidosRecentes`, `obterDetalhe`, `buscarHistorico`, `obterRelatorio`, `salvarPedido`, `atribuirIdentificador`, `diagnosticarConfiguracao`, `diagnosticarPlanilha`, `diagnosticarMigracaoRegistroId`, `executarMigracaoRegistroId`, `diagnosticarRecuperacaoRegistro`, `executarRecuperacaoRegistro`, e na 2.1 `registrarEventosHabilitacoes`, `prepararAuditoriaHabilitacoes`, `verificarIntegridadeAuditoria`, `consolidarAuditoriaHabilitacoes` (as de diagnóstico, migração, recuperação e auditoria são para o editor; chamadas pela página, conferem o perfil ADMINISTRADOR como as outras). O teste "funções públicas são exatamente…" falha se aparecer outra.
 
 ## 3. Página
 
-`GerenciadorApp.html` é um modelo do `HtmlService` que recebe `perfil`, `versao` e `homologacao` (nada de dados de pedidos) e inclui:
+`GerenciadorApp.html` é um modelo do `HtmlService` que recebe `perfil`, `versao` e `homologacao` (nada de dados de pedidos), e na 2.1 também o nome e a observação de quem acessou (colunas B e D da aba de acesso, mostrados no cabeçalho por `textContent`) e o identificador da sessão da auditoria e inclui:
 
 | Arquivo | Papel |
 |---|---|
@@ -50,6 +54,7 @@ Funções públicas (sem `_` no fim, chamáveis por `google.script.run`): `doGet
 | `GerenciadorIcones.html` | Ícones Lucide embutidos (sem CDN). |
 | `GradipMarcaIPUSP.html`, `GradipMarcaUSP.html` | Marcas. |
 | `GerenciadorAppUI.html` | Comportamento: `window.GerenciadorApp`. |
+| `AuditoriaHabilitacoesUI.html` (2.1) | Fila de eventos da página (áreas, janela do pedido, filtro de pendentes, ajuda, tema, modo, erros), enviada em lotes. Carregado por último; não muda nenhuma tela. |
 
 Dentro de `GerenciadorAppUI.html`:
 

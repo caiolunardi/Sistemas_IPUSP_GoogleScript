@@ -5,6 +5,7 @@
 | Versão | Estado | Data |
 |---|---|---|
 | v2.0 | **IMPLANTADO · HOMOLOGAÇÃO PARCIAL**. Código do commit `314fbef` (pasta `src/` idêntica à do `fe8411a`) no projeto de produção, publicado como versão 6 da implantação existente; o responsável decidiu implantar sem completar o roteiro (ver [registro](#registro)). | 21/10/2026 |
+| v2.1 | **NÃO HOMOLOGADA, NÃO IMPLANTADA**. No repositório (nome e observação no cabeçalho; [auditoria](AUDITORIA.md)). Itens do roteiro: seção G. | 22/10/2026 |
 | v1.0 (substituída) | Versão 5 da mesma implantação; código guardado numa cópia local, fora do repositório. Voltar a ela: [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). | até 21/10/2026 |
 
 No Google, em 21/10/2026: projeto `GRADIP · Gerenciador de Abertura de Habilitações · HOMOLOGAÇÃO` com o código do `fe8411a` (`AMBIENTE=homologacao`), mantido para homologar versões futuras; projeto `· PRODUÇÃO` (o da 1.0) com o código do `314fbef`, enviado por `clasp push` com ordem escrita do responsável, depois de uma cópia local do código da 1.0, e sem a propriedade `AMBIENTE`. A nova versão da implantação foi publicada pelo responsável.
@@ -101,6 +102,19 @@ Marcar cada item com resultado, data e quem conferiu. Capturas para o repositór
 |---|---|---|
 | F1 | Comparar a contagem de pendências do painel (se houver cópia do painel em homologação) com a do gerenciador | Diferença explicada pelo [contrato](REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas); registrar números |
 
+### G. Versão 2.1 (cabeçalho e auditoria)
+
+| # | Passo | Esperado |
+|---|---|---|
+| G1 | Preencher B e D da conta de teste na aba de acesso; abrir o gerenciador | Cabeçalho com o nome em cima e a observação embaixo; sem nome, o e-mail |
+| G2 | `diagnosticarConfiguracao` e `prepararAuditoriaHabilitacoes` | Chave da auditoria `ok`; abas criadas; gatilho criado uma vez só |
+| G3 | Navegar pelas áreas, abrir e fechar um pedido, buscar, abrir a ajuda, trocar o tema | Linhas em `EVENTOS_<ano>` em até ~10 s, com e-mail, nome, perfil e sessão |
+| G4 | Salvar um pedido fictício com observação, concluir e avisar | `PEDIDO.SALVAR` com antes e depois em `ALTERACOES_<ano>`; `ALUNO.AVISAR` ligado a ele |
+| G5 | Tirar a permissão da conta que implanta na planilha da auditoria (ou apontar a chave para uma planilha inexistente) e tentar salvar | "A auditoria está indisponível…"; nada gravado nem enviado; consultas funcionam. Desfazer depois |
+| G6 | Abrir com a conta fora da lista e com a LEITOR tentando salvar pelo console | `ACESSO.NEGAR` e `PERMISSAO.RECUSAR` |
+| G7 | `verificarIntegridadeAuditoria`; editar uma célula de `EVENTOS_<ano>` à mão e rodar de novo; desfazer | `ok: true`, depois a linha editada apontada |
+| G8 | No dia seguinte | `SESSOES` e `RESUMO_DIARIO` preenchidos pelo gatilho |
+
 ## Critério para recomendar a implantação
 
 Todos os itens de A a E conferidos sem falha; A5 decidido; decisões da [lista](VERSOES_E_DECISOES.md#decisões-pendentes) que afetam a produção (acesso, lista de perfis, quando migrar) tomadas pelo responsável. A implantação em produção é etapa separada, com autorização própria.
@@ -117,3 +131,4 @@ Todos os itens de A a E conferidos sem falha; A5 decidido; decisões da [lista](
 | 21/10/2026 | responsável | produção: configuração e diagnósticos | **ok** | Sem acionadores no projeto. `diagnosticarConfiguracao`: ambiente `producao`, as duas chaves abrem as planilhas reais, lista com 2 administradores e 1 leitor. `diagnosticarPlanilha`: estrutura completa, 473 pedidos, todos concluídos, nenhuma reserva de envio. `diagnosticarMigracaoRegistroId`: `precisaMigrar: false`; linhas 190, 191 e 192 com Versão malformada (pedidos concluídos; ficam "Versão inválida" até a [recuperação](MANUAL_OPERACAO.md), opcional, que exige autorização). |
 | 21/10/2026 | responsável | publicação | **ok** | Versão 6 da implantação de produção, a mesma URL; a versão 5 (1.0) continua disponível para a volta, nas condições do §5 de [INSTALACAO_E_ATUALIZACAO.md](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). |
 | 21/10/2026 | responsável | A5 (identidade com outra conta) | **ok** | Uma conta da equipe cadastrada na aba `GERENCIADOR_HABILITACOES` abriu o `/exec` de produção normalmente: a identificação funciona com "Executar como: eu" para outra conta do domínio. Conta fora da lista ("Sem acesso") não foi testada com outra pessoa nesta rodada. |
+| 22/10/2026 | responsável | A4 (conta fora da lista, produção) | **ok** | Uma conta que não está na aba `GERENCIADOR_HABILITACOES` foi barrada no `/exec` de produção. |

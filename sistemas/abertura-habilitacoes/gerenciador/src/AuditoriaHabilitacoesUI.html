@@ -1,0 +1,216 @@
+<script>
+/* Auditoria do Gerenciador — o que acontece na página.
+   Carregado por último. Não muda nenhuma tela: observa as áreas, a
+   janela do pedido, a busca de pendentes, a ajuda, o tema e o modo de
+   navegação. Os eventos vão em lotes para registrarEventosHabilitacoes
+   (AuditoriaHabilitacoes.gs), que confere o acesso e grava e-mail, nome
+   e perfil por conta própria. Abrir pedido, listas, busca no histórico,
+   relatórios e salvamentos são gravados pelo servidor, não aqui.
+   Se a auditoria falhar, o gerenciador segue igual: os eventos ficam na
+   fila e são tentados de novo; nada aqui bloqueia o uso. Nenhum dado de
+   aluno é enviado, exceto o termo digitado na busca de pendentes.
+   Códigos: aba DICIONARIO da planilha da auditoria. */
+(function () {
+  'use strict';
+  if (window.GerenciadorAuditoria) return;
+
+  var CONFIG = window.GERENCIADOR_CONFIG || {};
+  var SESSAO = typeof CONFIG.sessao === 'string' ? CONFIG.sessao : '';
+  var INTERVALO_MS = 10000;
+  var MAX_FILA = 200;
+  var MAX_LOTE = 50;
+  var MAX_ERROS = 10;
+  var ESPERA_BUSCA_MS = 1500;
+  var NOMES_AREA = { pendentes: 'Pendentes', concluidos: 'Concluídos', relatorios: 'Relatórios' };
+
+  var fila = [];
+  var enviando = false;
+  var parado = false;   // conta sem acesso: não insiste
+  var falhas = 0;
+  var erros = 0;
+
+  function navegador() {
+    var ua = navigator.userAgent || '';
+    var m = ua.match(/(Edg|OPR|Firefox|Chrome|Version)\/(\d+)/);
+    var nome = !m ? 'outro' : m[1] === 'Edg' ? 'Edge' : m[1] === 'OPR' ? 'Opera' : m[1] === 'Version' ? 'Safari' : m[1];
+    var so = /Windows/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Mac OS/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : 'outro';
+    return nome + (m ? ' ' + m[2] : '') + ' · ' + so;
+  }
+
+  function app() { return window.GerenciadorApp || null; }
+
+  function contexto() {
+    return {
+      navegador: navegador(),
+      largura_tela: window.innerWidth,
+      tema: document.documentElement.getAttribute('data-theme') || '',
+      modo_navegacao: app() ? app().getModo() : ''
+    };
+  }
+
+  function telaAtual() {
+    var area = app() ? app().getArea() : '';
+    var nome = NOMES_AREA[area] || area || '';
+    var modal = document.getElementById('modalDetalhe');
+    return modal && !modal.hidden ? nome + ' › Pedido' : nome;
+  }
+
+  function registrar(evento, campos, urgente) {
+    if (parado) return;
+    var ev = { evento: evento, tela: telaAtual(), data_hora_navegador: new Date().toISOString() };
+    Object.keys(campos || {}).forEach(function (k) { if (campos[k] !== undefined && campos[k] !== null) ev[k] = campos[k]; });
+    fila.push(ev);
+    if (fila.length > MAX_FILA) fila.splice(0, fila.length - MAX_FILA);
+    if (urgente) enviar();
+  }
+
+  function enviar() {
+    if (enviando || parado || !fila.length || !window.google || !google.script || !google.script.run) return;
+    var lote = fila.splice(0, MAX_LOTE);
+    enviando = true;
+    google.script.run
+      .withSuccessHandler(function () {
+        enviando = false;
+        falhas = 0;
+        if (fila.length) enviar();
+      })
+      .withFailureHandler(function (erro) {
+        enviando = false;
+        var msg = String(erro && erro.message || erro || '');
+        if (/SEM_ACESSO|SEM_IDENTIFICACAO/.test(msg)) { parado = true; fila = []; return; }
+        if (/^(?:Error:\s*)?ENTRADA:/.test(msg)) return; // lote recusado: descarta
+        falhas++;
+        fila = lote.concat(fila).slice(-MAX_FILA);
+      })
+      .registrarEventosHabilitacoes({ sessao_id: SESSAO, contexto: contexto(), eventos: lote });
+  }
+
+  // Depois de falhas seguidas, espera mais entre as tentativas (até ~2 min).
+  var tique = 0;
+  setInterval(function () {
+    tique++;
+    var passo = Math.min(Math.pow(2, falhas), 12);
+    if (tique % passo === 0) enviar();
+  }, INTERVALO_MS);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') enviar();
+  });
+
+  function observar(el, atributo, fn) {
+    if (!el || !window.MutationObserver) return;
+    new MutationObserver(function () { try { fn(); } catch (e) { /* auditoria nunca atrapalha */ } })
+      .observe(el, { attributes: true, attributeFilter: [atributo] });
+  }
+
+  /*---------------- ÁREAS ----------------*/
+
+  var ultimaTela = null;
+  function conferirTela() {
+    var area = app() ? app().getArea() : '';
+    if (!area || area === ultimaTela) return;
+    ultimaTela = area;
+    registrar('TELA.ABRIR', { alvo_tipo: 'area', alvo_id: NOMES_AREA[area] || area });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-area-painel]'), function (s) { observar(s, 'hidden', conferirTela); });
+
+  /*---------------- JANELA DO PEDIDO ----------------*/
+
+  // Abrir é gravado pelo servidor (PEDIDO.ABRIR, com o Registro ID);
+  // aqui fica só quanto tempo a janela ficou aberta.
+  var modal = document.getElementById('modalDetalhe');
+  var abertoDesde = 0;
+  observar(modal, 'hidden', function () {
+    if (!modal.hidden) { abertoDesde = Date.now(); return; }
+    if (!abertoDesde) return;
+    registrar('PEDIDO.FECHAR', { alvo_tipo: 'janela', alvo_id: 'pedido', duracao_ms: Date.now() - abertoDesde });
+    abertoDesde = 0;
+  });
+
+  /*---------------- BUSCA NOS PENDENTES (lista já carregada) ----------------*/
+
+  var esperaBusca = null;
+  var campoBusca = document.getElementById('buscaPendentes');
+  if (campoBusca) {
+    campoBusca.addEventListener('input', function () {
+      clearTimeout(esperaBusca);
+      esperaBusca = setTimeout(function () {
+        var termo = campoBusca.value.trim();
+        if (!termo) return;
+        var n = document.querySelectorAll('#listaPendentes > li').length;
+        registrar('BUSCA.PENDENTES', { alvo_tipo: 'busca', mensagem: termo.slice(0, 100), detalhes: { resultados: n } });
+      }, ESPERA_BUSCA_MS);
+    });
+  }
+
+  /*---------------- AJUDA, TEMA E NAVEGAÇÃO ----------------*/
+
+  document.addEventListener('click', function (e) {
+    var alvo = e.target && e.target.closest ? e.target : null;
+    if (!alvo) return;
+    var abrir = alvo.closest('[data-gradip-help-open]');
+    if (abrir) { registrar('AJUDA.ABRIR', { alvo_tipo: 'ajuda', alvo_id: abrir.getAttribute('data-gradip-help-open') || '(início)' }); return; }
+    var faq = alvo.closest('[data-gradip-help-faq-toggle]');
+    if (faq) {
+      registrar('AJUDA.FAQ', { alvo_tipo: 'faq', alvo_id: faq.getAttribute('aria-controls') || '', mensagem: faq.textContent.trim().slice(0, 150),
+        detalhes: { aberta: faq.getAttribute('aria-expanded') === 'true' } });
+      return;
+    }
+    var modo = alvo.closest('.botaoModo[data-modo]');
+    if (modo) registrar('NAVEGACAO.MODO', { alvo_tipo: 'modo', alvo_id: modo.getAttribute('data-modo') });
+  });
+
+  var esperaAjuda = null;
+  document.addEventListener('input', function (e) {
+    if (!e.target || !e.target.hasAttribute || !e.target.hasAttribute('data-gradip-help-search')) return;
+    clearTimeout(esperaAjuda);
+    esperaAjuda = setTimeout(function () {
+      var termo = e.target.value.trim();
+      if (!termo) return;
+      var status = document.querySelector('[data-gradip-help-search-status]');
+      registrar('AJUDA.BUSCAR', { alvo_tipo: 'ajuda', mensagem: termo.slice(0, 100), detalhes: { resultado: status ? status.textContent.trim().slice(0, 120) : '' } });
+    }, ESPERA_BUSCA_MS);
+  });
+
+  var preferencia = document.documentElement.getAttribute('data-theme-preference');
+  observar(document.documentElement, 'data-theme-preference', function () {
+    var nova = document.documentElement.getAttribute('data-theme-preference');
+    if (nova === preferencia) return;
+    registrar('TEMA.TROCAR', { alvo_tipo: 'tema', alvo_id: nova, detalhes: { antes: preferencia, tema_resolvido: document.documentElement.getAttribute('data-theme') } });
+    preferencia = nova;
+  });
+
+  /*---------------- ERROS DE JAVASCRIPT ----------------*/
+
+  function erroNavegador(mensagem, origem) {
+    if (++erros > MAX_ERROS) return;
+    registrar('ERRO.NAVEGADOR', { mensagem: String(mensagem || '').slice(0, 300), detalhes: origem });
+  }
+  window.addEventListener('error', function (e) {
+    erroNavegador(e.message, { arquivo: String(e.filename || '').split('/').pop().slice(0, 60), linha: e.lineno, coluna: e.colno });
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    erroNavegador(e.reason && e.reason.message ? e.reason.message : e.reason, { tipo: 'promessa' });
+  });
+
+  /*---------------- ABERTURA ----------------*/
+
+  function abriu() {
+    ultimaTela = app() ? app().getArea() : null;
+    registrar('ACESSO.ABRIR', {
+      alvo_tipo: 'pagina', alvo_id: 'Gerenciador',
+      duracao_ms: window.performance && performance.now ? Math.round(performance.now()) : undefined,
+      detalhes: { perfil: texto(CONFIG.perfil), preferencia_tema: preferencia }
+    }, true);
+  }
+  function texto(v) { return v === null || v === undefined ? '' : String(v); }
+  if (document.readyState === 'complete') abriu(); else window.addEventListener('load', abriu);
+
+  window.GerenciadorAuditoria = Object.freeze({
+    sessao: SESSAO,
+    registrar: registrar,
+    enviar: enviar,
+    fila: function () { return fila.slice(); },
+    enviando: function () { return enviando; }
+  });
+})();
+</script>

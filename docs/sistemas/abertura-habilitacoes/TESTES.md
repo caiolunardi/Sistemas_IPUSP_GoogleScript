@@ -2,13 +2,13 @@
 
 Código dos testes: [`sistemas/abertura-habilitacoes/gerenciador/testes/`](../../../sistemas/abertura-habilitacoes/gerenciador/testes/README.md). Nenhum teste acessa planilhas reais, envia e-mail ou usa a internet; todos os dados são sintéticos.
 
-## 1. Resultados (21/10/2026, Node 22, Playwright 1.56 com Chromium)
+## 1. Resultados (22/10/2026, versão 2.1, Node 22, Playwright 1.56 com Chromium)
 
 | Suíte | Casos | Resultado |
 |---|---|---|
-| `testar_backend.js` | 93 | 93 ok, 0 falha |
+| `testar_backend.js` | 105 | 105 ok, 0 falha |
 | `testar_equivalencia.js` | 27 (13 afirmam diferenças intencionais; 1 confere a condição para voltar à 1.0) | 27 ok, 0 falha |
-| `testar_navegador.js` | 297 verificações | 297 ok, 0 falha |
+| `testar_navegador.js` | 314 verificações | 314 ok, 0 falha |
 
 Na revisão de 21/10/2026 (correções da auditoria), cada teste novo foi conferido também contra uma versão propositalmente errada do código (impressão digital só com as contagens; confirmação do e-mail sem conferir a reserva; leitura de versão da 1.0; recuperação sem as outras linhas do mesmo ID): em todas, os testes correspondentes falharam.
 

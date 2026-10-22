@@ -14,7 +14,7 @@
 | Colunas `Registro ID` e `Versão` | aba atual da planilha de respostas | provavelmente já existem (a 1.0 cria ao abrir a página); conferir com `diagnosticarPlanilha` |
 | Permissão da conta que implanta | editar a planilha de respostas; ler `ID_INDEX` e a planilha de permissões | já é o caso da 1.0, a conferir |
 
-Nenhum gatilho é necessário. Escopos pedidos na primeira execução: planilhas, envio de e-mail, `Session` (e-mail do usuário), propriedades e cache.
+Na 2.0, nenhum gatilho é necessário. Escopos pedidos na primeira execução: planilhas, envio de e-mail, `Session` (e-mail do usuário), propriedades e cache. A 2.1 acrescenta a chave da auditoria e um gatilho diário ([seção 7](#7-auditoria-21)).
 
 ## 2. Manifesto
 
@@ -104,3 +104,25 @@ Pedidos que chegarem depois da volta recebem ID na primeira visita, como sempre 
 1. Conferir o código do editor contra o repositório antes de trocar ([`ferramentas/conferir_implantacao.js`](../../../ferramentas/conferir_implantacao.js), com `clasp pull` feito pelo responsável).
 2. Homologar na cópia.
 3. Nova versão da mesma implantação; registrar commit e data.
+
+## 7. Auditoria (2.1)
+
+Cada passo no Google continua dependendo de autorização expressa do responsável. Ordem recomendada: homologação primeiro, produção depois.
+
+| Item | Onde | Quem cria |
+|---|---|---|
+| Chave `AUDITORIA_ABERTURA_HABILITACOES` | `ID_INDEX`, coluna `ID de Produção` | **já criada** pelo responsável em 22/10/2026; conferir que o ID está preenchido e o `Tipo` é `spreadsheet` (ou vazio) |
+| Planilha de auditoria de homologação | coluna `Homologação` da mesma chave | responsável: planilha nova e vazia, só para os testes. Sem ela, o projeto de homologação **recusa toda gravação** (falha fechada; não cai na de produção) |
+| Permissão | as duas planilhas da auditoria | a conta que implanta precisa editar; **ninguém mais** além da conta institucional do Serviço de Graduação |
+| Nome e observação | colunas B e D da aba `GERENCIADOR_HABILITACOES` | responsável; opcionais (sem nome, o cabeçalho mostra o e-mail) |
+| Gatilho diário | `consolidarAuditoriaHabilitacoes`, às 2h | criado por `prepararAuditoriaHabilitacoes` |
+
+Passos em cada projeto, depois do `clasp push` autorizado:
+
+1. `diagnosticarConfiguracao`: a linha `AUDITORIA_ABERTURA_HABILITACOES` deve dizer `ok: <nome da planilha>`.
+2. `prepararAuditoriaHabilitacoes` (autorizar o escopo de gatilhos na primeira vez): cria as abas e o gatilho; mostra `gatilho: "criado (todo dia, 2h)"`.
+3. Abrir o gerenciador, navegar, abrir um pedido e salvar (na homologação, num pedido fictício); conferir as linhas em `EVENTOS_<ano>` e `ALTERACOES_<ano>`.
+4. `verificarIntegridadeAuditoria`: `ok: true`.
+5. Na produção, publicar uma nova versão da mesma implantação ([seção 6](#6-atualizar-para-versões-futuras)).
+
+Se a chave estiver preenchida, a 2.1 grava eventos mesmo antes do passo 2 (as abas de eventos e alterações são criadas quando faltam); o passo 2 completa `DICIONARIO`, `LEIA-ME` e o gatilho. Voltar à 2.0 é escolher a versão anterior da implantação: a 2.0 não lê nem altera a planilha da auditoria, e as colunas da planilha de respostas não mudam entre as duas.

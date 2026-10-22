@@ -1,6 +1,6 @@
-# Manual de operação — Gerenciador de Abertura de Habilitações 2.0
+# Manual de operação — Gerenciador de Abertura de Habilitações 2.0 e 2.1
 
-Para a equipe (uso diário) e para quem administra (diagnósticos, migração, recuperação). A versão 2.0 **não está implantada**; este manual vale a partir da implantação. Passo a passo de cada tela: [Central de Ajuda](AJUDA.md).
+Para a equipe (uso diário) e para quem administra (diagnósticos, migração, recuperação). A 2.0 está em produção desde 21/10/2026; o que é só da 2.1 (auditoria, nome no cabeçalho) vale depois que ela for implantada. Passo a passo de cada tela: [Central de Ajuda](AJUDA.md).
 
 ## 1. Uso diário (equipe)
 
@@ -23,20 +23,21 @@ Situações comuns e o que fazer:
 | Pedido "Sem identificador" | ADMINISTRADOR: **Preparar pedido**. LEITOR: avisar quem administra. |
 | "Identificador repetido", "Identificador inválido" ou "Versão inválida" | Avisar o responsável, dizendo qual pedido é (seção 4.2). Não editar as colunas Registro ID e Versão à mão. |
 | "Não foi possível conferir o seu acesso" | Tentar em alguns minutos; se continuar, avisar o responsável (seção 3). |
+| "A auditoria está indisponível no momento…" (2.1) | Nada foi gravado; o texto continua na tela. Tentar em alguns minutos; se continuar, avisar o responsável (seção 8). |
 
 Evite editar a planilha diretamente enquanto alguém usa o gerenciador: a trava do sistema não protege edições manuais.
 
 ## 2. Lista de acesso (responsável)
 
-Planilha `PERMISSOES_DE_ACESSO` (pelo `ID_INDEX`), aba `GERENCIADOR_HABILITACOES`: uma linha por pessoa, e-mail completo na coluna C, `LEITOR` ou `ADMINISTRADOR` na coluna E. Mudanças valem em até 1 minuto. Para tirar alguém, apague a linha ou o perfil. Não use coringas nem grupos (são ignorados). Revise a lista quando alguém entrar ou sair da equipe.
+Planilha `PERMISSOES_DE_ACESSO` (pelo `ID_INDEX`), aba `GERENCIADOR_HABILITACOES`: uma linha por pessoa, e-mail completo na coluna C, `LEITOR` ou `ADMINISTRADOR` na coluna E. Desde a 2.1, o nome (B) e a observação (D) aparecem no cabeçalho do gerenciador, em duas linhas (por exemplo, o nome completo e o setor). Mudanças valem em até 1 minuto. Para tirar alguém, apague a linha ou o perfil. Não use coringas nem grupos (são ignorados). Revise a lista quando alguém entrar ou sair da equipe.
 
 ## 3. Diagnósticos (editor do Apps Script)
 
-Abrir o projeto, escolher a função na barra e **Executar**; o resultado sai no registro de execução. Nenhum diagnóstico grava na planilha.
+Abrir o projeto, escolher a função na barra e **Executar**; o resultado sai no registro de execução. Nenhum diagnóstico grava na planilha de respostas; na 2.1, cada execução vira um evento `MANUTENCAO.EXECUTAR` na auditoria.
 
 | Função | Para quê | Quem pode |
 |---|---|---|
-| `diagnosticarConfiguracao` | Ambiente, chaves do `ID_INDEX` (nome da planilha, nunca o ID), contagem da lista de acesso. Limpa os caches. | ADMINISTRADOR ou a conta dona do projeto |
+| `diagnosticarConfiguracao` | Ambiente, chaves do `ID_INDEX` (nome da planilha, nunca o ID; na 2.1, também `AUDITORIA_ABERTURA_HABILITACOES`), contagem da lista de acesso. Limpa os caches. | ADMINISTRADOR ou a conta dona do projeto |
 | `diagnosticarPlanilha` | Colunas encontradas, títulos de J e K, pendentes/concluídos, valores de situação, reservas de envio, resumo da migração. | ADMINISTRADOR |
 | `diagnosticarMigracaoRegistroId` | Simulação da migração e código de confirmação. | ADMINISTRADOR |
 | `diagnosticarRecuperacaoRegistro` | Problemas de uma linha (ID, Versão), linhas com o mesmo ID e código de confirmação da recuperação. | ADMINISTRADOR |
@@ -124,3 +125,17 @@ Ver [INSTALACAO_E_ATUALIZACAO.md](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás).
 | "Conta não identificada" para uma pessoa da equipe | Conta de outro domínio, ou várias contas no navegador. | Janela só com a conta `@usp.br`. |
 | E-mails falhando o dia todo | Cota diária de e-mails da conta que implantou. | Esperar o dia seguinte; avisar alunos por outro canal se for urgente. |
 | Reserva de envio presa | Execução interrompida durante o envio. | Depois de 10 minutos, o gerenciador pede confirmação para reenviar; confirme com o aluno se recebeu. |
+
+## 8. Auditoria
+
+A partir da 2.1 ([o que é registrado](AUDITORIA.md)).
+
+| Situação | O que fazer |
+|---|---|
+| Primeira vez em cada projeto (produção e homologação) | Conferir a chave `AUDITORIA_ABERTURA_HABILITACOES` com `diagnosticarConfiguracao`, depois rodar `prepararAuditoriaHabilitacoes` uma vez (cria as abas e o gatilho diário; o Google pede autorização para gatilhos). |
+| Conferir se alguém mexeu na planilha da auditoria | `verificarIntegridadeAuditoria`: `ok: true`, ou a primeira linha editada, apagada ou inserida. |
+| "A auditoria está indisponível" para todos | `diagnosticarConfiguracao`: chave ausente, sem ID, planilha apagada ou sem permissão para a conta que implantou. Enquanto não voltar, ninguém consegue salvar; consultas funcionam. |
+| `SESSOES` e `RESUMO_DIARIO` não atualizam | Ver em **Acionadores** se o gatilho de `consolidarAuditoriaHabilitacoes` existe; se não, rodar `prepararAuditoriaHabilitacoes` de novo (não duplica). |
+| Alguém editou a planilha da auditoria à mão | Não corrigir por cima: anotar o que `verificarIntegridadeAuditoria` aponta e seguir [`INCIDENTES.md`](../../seguranca/INCIDENTES.md). |
+
+A planilha da auditoria não deve ser compartilhada além da conta institucional do Serviço de Graduação.

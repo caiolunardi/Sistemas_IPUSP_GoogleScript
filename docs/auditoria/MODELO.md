@@ -6,7 +6,7 @@ Passo a passo para auditar um Web App em Apps Script do mesmo jeito que o [Paine
 
 | Arquivo | Muda de um sistema para outro? | O que faz |
 |---|---|---|
-| `Auditoria.gs` | **não**: copie do painel sem mudar | abas, selo encadeado, antes/depois, recusa se a auditoria não abrir, conferência de integridade, consolidação diária, preparação da planilha |
+| `Auditoria.gs` | **não**: copie de [`shared/auditoria/`](../../shared/auditoria/README.md) sem mudar e acrescente o sistema à tabela de lá (a CI confere a cópia pelo nome do arquivo) | abas, selo encadeado, antes/depois, recusa se a auditoria não abrir, conferência de integridade, consolidação diária, preparação da planilha |
 | `<Sistema>Auditoria.gs` | sim | define `AUDITORIA_CONFIG`, o dicionário de eventos, as funções públicas que gravam (envolvidas) e as de manutenção |
 | `<Sistema>AuditoriaUI.html` | sim (o painel serve de exemplo) | fila de eventos da página, enviada em lotes |
 

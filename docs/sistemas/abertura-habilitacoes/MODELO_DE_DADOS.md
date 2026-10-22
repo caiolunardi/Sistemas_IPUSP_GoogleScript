@@ -53,16 +53,20 @@ Todos os pedidos dessa aba aparecem como "Concluído" na busca e não abrem o de
 | Col. | Título (linha 1) | Conteúdo |
 |---|---|---|
 | A | N. USP | opcional, não usado |
-| B | Nome | opcional, não usado |
+| B | Nome | opcional; desde a 2.1, mostrado no cabeçalho e gravado na auditoria (vazio: aparece o e-mail) |
 | C | E-mail (precisa conter "mail") | e-mail completo; espaços e caixa ignorados; coringa, grupo ou texto incompleto são ignorados |
-| D | Observação | livre, não usado |
+| D | Observação | livre; desde a 2.1, mostrada no cabeçalho abaixo do nome (ex.: o setor da pessoa) |
 | E | Perfil (precisa conter "perfil") | `LEITOR` ou `ADMINISTRADOR`; vazio ou outro valor = sem acesso |
 
-E-mail repetido: vale o menor perfil. A aba precisa ser criada pelo responsável (não existe hoje; A VALIDAR).
+E-mail repetido: vale o menor perfil; nome e observação são os da primeira linha que os tiver. A aba precisa ser criada pelo responsável (não existe hoje; A VALIDAR).
 
 ## 3. Planilha `ID_INDEX`
 
 Primeira aba (ou `Página1`). Colunas achadas pelo título, sem diferença de acento e caixa: `Chave`, `Tipo` (opcional; quando preenchido, precisa ser `spreadsheet`), `ID de Produção`, e a primeira que começa com `Homologação`.
+
+## 3a. Planilha `AUDITORIA_ABERTURA_HABILITACOES` (2.1)
+
+Criada pelo responsável, vazia; `prepararAuditoriaHabilitacoes` monta as abas. Formato das abas no [modelo da auditoria](../../auditoria/MODELO.md); o que entra nelas, em [AUDITORIA.md](AUDITORIA.md).
 
 ## 4. Script Properties
 
@@ -78,7 +82,8 @@ Primeira aba (ou `Página1`). Colunas achadas pelo título, sem diferença de ac
 | Chave | Conteúdo | Validade |
 |---|---|---|
 | `habilitacoesIndice:<ambiente>` | mapa chave → ID do `ID_INDEX` | 10 min |
-| `habilitacoesPermissoes:<ambiente>` | mapa e-mail → perfil | 60 s |
+| `habilitacoesPermissoes:v2:<ambiente>` | mapa e-mail → perfil, nome e observação (o `v2` da 2.1 evita ler o formato antigo) | 60 s |
+| `habilitacoesAuditoriaContexto:<ambiente>:<e-mail>` | sessão, área e navegador do último lote da página, para ligar os eventos do servidor à mesma sessão (2.1) | 6 h |
 
 O cache fica no servidor e nunca vai à página. `diagnosticarConfiguracao` limpa os dois.
 

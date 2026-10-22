@@ -84,9 +84,10 @@ function validarDadosDoSalvamento_(registroId, versaoEsperada, dados) {
   };
 }
 
-function salvarPedido(registroId, versaoEsperada, dados) {
+// Pública em AuditoriaHabilitacoes.gs (salvarPedido), que confere o
+// perfil e grava o antes e depois.
+function salvarPedidoSemAuditoria_(registroId, versaoEsperada, dados) {
 
-  exigirAdministrador_();
   const pedido = validarDadosDoSalvamento_(registroId, versaoEsperada, dados);
 
   let reserva = "", valorAnterior = "", enderecoEmail = "", primeiroNome = "", habilitacaoTexto = "";
@@ -285,8 +286,8 @@ function desfazerReserva_(registroId, reserva, valorAnterior) {
   migração controlada (Migracao.gs).
 ------------------------------------------------------*/
 
-function atribuirIdentificador(referencia) {
-  exigirAdministrador_();
+// Pública em AuditoriaHabilitacoes.gs (atribuirIdentificador).
+function atribuirIdentificadorSemAuditoria_(referencia) {
   const ref = referencia && typeof referencia === "object" ? referencia : {};
   const linha = Number(ref.linha);
   if (!Number.isInteger(linha) || linha < 2) throw erroGerenciador_("ENTRADA", "Referência do pedido inválida. Recarregue a lista.");

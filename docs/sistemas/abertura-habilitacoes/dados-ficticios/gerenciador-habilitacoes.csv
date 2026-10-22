@@ -1,0 +1,7 @@
+N. USP,Nome,e-mail,Observacao,Perfil
+9900091,Pessoa Administradora Teste,admin.teste@exemplo.invalid,Equipe Fictícia do Serviço de Graduação,ADMINISTRADOR
+9900092,Pessoa Leitora Teste,leitor.teste@exemplo.invalid,Comissão Fictícia de Graduação,LEITOR
+9900093,,semnome.teste@exemplo.invalid,,ADMINISTRADOR
+9900094,Pessoa Sem Perfil Teste,semperfil.teste@exemplo.invalid,Linha sem perfil: sem acesso,
+9900095,Pessoa Duplicada Teste,dup.teste@exemplo.invalid,Primeira linha da pessoa,ADMINISTRADOR
+9900095,Nome Que Não Aparece,DUP.teste@exemplo.invalid,Segunda linha da pessoa,LEITOR

@@ -1,12 +1,13 @@
 # Dados fictícios — Gerenciador de Abertura de Habilitações
 
-Casos **inventados** para montar a planilha de homologação, no padrão de [dados fictícios para a homologação](../../AMBIENTE_DE_HOMOLOGACAO.md#dados-fictícios-para-a-homologação). Nenhuma linha veio da planilha real. O teste "CSV de dados fictícios" de [`testar_backend.js`](../../../../sistemas/abertura-habilitacoes/gerenciador/testes/testar_backend.js) confere, a cada push, que este arquivo produz o resultado esperado abaixo.
+Casos **inventados** para montar a planilha de homologação, no padrão de [dados fictícios para a homologação](../../AMBIENTE_DE_HOMOLOGACAO.md#dados-fictícios-para-a-homologação). Nenhuma linha veio da planilha real. Os testes "CSV de dados fictícios" de [`testar_backend.js`](../../../../sistemas/abertura-habilitacoes/gerenciador/testes/testar_backend.js) conferem, a cada push, que estes arquivos produzem o resultado esperado abaixo.
 
 ## Arquivos
 
 | Arquivo | Aba da cópia |
 |---|---|
 | [`respostas-ao-formulario-2.csv`](respostas-ao-formulario-2.csv) | `Respostas ao formulário 2` |
+| [`gerenciador-habilitacoes.csv`](gerenciador-habilitacoes.csv) | `GERENCIADOR_HABILITACOES` da planilha de permissões de homologação (desde a 2.1), se ela for uma cópia; ver [a lista de acesso](#lista-de-acesso-gerenciador-habilitacoescsv) |
 
 A aba `2021 - 2022` não tem CSV porque os títulos reais dela não foram conferidos. Na cópia, digite à mão 2 ou 3 linhas inventadas seguindo os títulos dela, e use em uma delas o nome `Aluno Teste 07`, para o teste B4 (o mesmo nome nas duas abas).
 
@@ -49,3 +50,17 @@ A ordem é a da planilha real, conferida pelo `diagnosticarPlanilha` na homologa
 `diagnosticarMigracaoRegistroId`, rodado duas vezes: o mesmo código nas duas. Os 16 caracteres finais dependem do conteúdo da cópia depois da importação; não precisam ser iguais aos do teste automático.
 
 Telas: Pendentes com 10 pedidos em ordem alfabética (linha 6 sinalizada sem identificador; linhas 7 e 8 com ID repetido; linhas 10 e 11 com "Versão inválida", sem edição); Concluídos com 2.
+
+## Lista de acesso (`gerenciador-habilitacoes.csv`)
+
+Colunas na ordem da aba real: A N. USP, B Nome, C e-mail, D Observação, E Perfil. Nº USP na faixa 99000NN e e-mails `@exemplo.invalid`, inventados.
+
+| Linha | Conta | O que testa | Cabeçalho esperado |
+|---|---|---|---|
+| 2 | `admin.teste@` | ADMINISTRADOR com nome e observação | "Pessoa Administradora Teste" / "Equipe Fictícia do Serviço de Graduação" |
+| 3 | `leitor.teste@` | LEITOR | "Pessoa Leitora Teste" / "Comissão Fictícia de Graduação" |
+| 4 | `semnome.teste@` | sem nome nem observação | o e-mail, sem segunda linha |
+| 5 | `semperfil.teste@` | sem perfil | página "Sem acesso" e evento `ACESSO.NEGAR` na auditoria |
+| 6–7 | `dup.teste@` | mesmo e-mail duas vezes (caixa diferente) | vale o menor perfil (LEITOR); nome e observação da primeira linha preenchida |
+
+Na homologação real, as contas `@exemplo.invalid` não entram. Para testar, troque **na cópia** o e-mail das linhas 2 e 3 pelos das suas contas de teste, ou acrescente linhas com elas e o nome e observação que quiser ver. Se a homologação lê a planilha de permissões real (escolha de 21/10/2026), não importe este arquivo nela: só acrescente as contas de teste.

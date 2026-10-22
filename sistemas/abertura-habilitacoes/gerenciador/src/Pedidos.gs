@@ -92,8 +92,8 @@ function resumoDaLinha_(tabela, linhaDados, numeroLinha, contagemIds) {
   PENDENTES (aba atual)
 ------------------------------------------------------*/
 
-function obterPendentes() {
-  exigirLeitor_();
+// Pública em AuditoriaHabilitacoes.gs (obterPendentes).
+function obterPendentesSemAuditoria_() {
   const tabela = lerTabelaAtual_();
   exigirColunasDeLista_(tabela);
   const colNome = colunaOpcional_(tabela, "nome");
@@ -115,8 +115,8 @@ function obterPendentes() {
   Ordem: Data de Conclusão; sem ela, o carimbo do pedido.
 ------------------------------------------------------*/
 
-function obterConcluidosRecentes() {
-  exigirLeitor_();
+// Pública em AuditoriaHabilitacoes.gs (obterConcluidosRecentes).
+function obterConcluidosRecentesSemAuditoria_() {
   const tabela = lerTabelaAtual_();
   exigirColunasDeLista_(tabela);
   const colNome = colunaOpcional_(tabela, "nome");
@@ -175,8 +175,8 @@ function detalheDaLinha_(tabela, linha) {
   };
 }
 
-function obterDetalhe(registroId) {
-  exigirLeitor_();
+// Pública em AuditoriaHabilitacoes.gs (obterDetalhe).
+function obterDetalheSemAuditoria_(registroId) {
   validarFormatoRegistroId_(registroId);
   const tabela = lerTabelaAtual_();
   const linha = localizarLinhaPorId_(tabela, registroId);
@@ -216,8 +216,8 @@ function corresponde_(termo, valores) {
   return valores.some(v => normalizarBusca_(v).indexOf(termo) !== -1);
 }
 
-function buscarHistorico(termo) {
-  exigirLeitor_();
+// Pública em AuditoriaHabilitacoes.gs (buscarHistorico).
+function buscarHistoricoSemAuditoria_(termo) {
   const termoLimpo = normalizarBusca_(String(termo || "").trim()).slice(0, LIMITE_TERMO_BUSCA);
   if (!termoLimpo) return [];
   if (termoLimpo.length < 2) throw erroGerenciador_("ENTRADA", "Digite ao menos 2 caracteres para buscar.");
@@ -319,8 +319,8 @@ function contarLinhasParaRelatorio_(tabela, colCarimbo, colHabilitacao, colNome,
   return contadas;
 }
 
-function obterRelatorio() {
-  exigirLeitor_();
+// Pública em AuditoriaHabilitacoes.gs (obterRelatorio).
+function obterRelatorioSemAuditoria_() {
   const acc = { total: 0, porHabilitacao: {}, porAno: {}, porMes: {}, semData: 0 };
 
   const atual = lerTabelaAtual_();
