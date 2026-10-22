@@ -2,7 +2,7 @@
 
 Web App interno do Serviço de Graduação para tratar os pedidos de abertura de habilitação: pendentes, dez concluídos mais recentes, busca no histórico (inclui a aba 2021–2022, só consulta), relatórios e, em cada pedido, observações, **Concluir solicitação** (ou reabrir) e **Avisar aluno por e-mail**.
 
-**Estado:** NÃO HOMOLOGADO · NÃO IMPLANTADO. O GitHub não sincroniza com o Apps Script e não informa o que está em uso. A versão em uso continua a 1.0, fora do repositório.
+**Estado:** implantado em 21/10/2026 (versão 6 da implantação de produção, commit `314fbef`), com homologação parcial. O GitHub não sincroniza com o Apps Script: o registro de implantação fica em [`docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md`](../../../docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md).
 
 ## Arquivos de `src/` (vão para o Apps Script)
 

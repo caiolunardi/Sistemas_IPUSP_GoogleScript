@@ -140,7 +140,7 @@ Testes: **B** = `testar_backend.js`, **E** = `testar_equivalencia.js`, **N** = `
 | 45 | A trava do script não protege contra edição manual da planilha nem contra o Forms | Registrado na ajuda e no manual; versão e reserva reduzem o impacto | RP |
 | 46 | Cota diária de e-mail da conta | Falha de envio tratada (item 30); cota não verificada aqui | RP |
 | 47 | O Painel dos servidores conta só K = `pendente` (linha nova do Forms, com K vazia, não conta) | Não alterado aqui (outro sistema); registrado em [REGRAS_E_CONTRATOS.md](REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas) | RP, DH |
-| 48 | `Session.getActiveUser()` só vem preenchido para contas do mesmo domínio de quem implantou | Sem e-mail = negado; acesso "Somente eu" até a homologação | DH |
+| 48 | `Session.getActiveUser()` só vem preenchido para contas do mesmo domínio de quem implantou | Sem e-mail = negado; acesso "Somente eu" até a implantação de 21/10/2026, depois "Qualquer pessoa da USP" com a lista conferida no servidor | DH |
 
 ### Itens da revisão de 21/10/2026
 

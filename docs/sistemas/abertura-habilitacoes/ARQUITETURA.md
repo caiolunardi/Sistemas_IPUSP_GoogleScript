@@ -1,6 +1,6 @@
 # Arquitetura — Gerenciador de Abertura de Habilitações 2.0
 
-Projeto Apps Script **autônomo** (não vinculado à planilha), publicado como Web App. Código em [`sistemas/abertura-habilitacoes/gerenciador/src/`](../../../sistemas/abertura-habilitacoes/gerenciador/src/). Estado: NÃO HOMOLOGADO · NÃO IMPLANTADO.
+Projeto Apps Script **autônomo** (não vinculado à planilha), publicado como Web App. Código em [`sistemas/abertura-habilitacoes/gerenciador/src/`](../../../sistemas/abertura-habilitacoes/gerenciador/src/). Estado: implantado em 21/10/2026, com homologação parcial ([HOMOLOGACAO.md](HOMOLOGACAO.md)).
 
 ## 1. Visão geral
 

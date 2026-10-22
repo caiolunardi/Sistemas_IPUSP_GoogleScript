@@ -41,7 +41,7 @@ Nenhum ID fica no código, na documentação, nos testes ou nos commits. A 1.0 t
 
 ## 4. Web App
 
-- Quem pode acessar: `MYSELF` (**Somente eu**) no `appsscript.json` até a homologação. A ampliação para a equipe é decisão do responsável e depende do teste da seção 12.
+- Quem pode acessar: `DOMAIN` (**Qualquer pessoa da USP**) no `appsscript.json`, decisão do responsável ao implantar em 21/10/2026. A implantação só deixa a pessoa chegar à página; o acesso aos dados depende da aba `GERENCIADOR_HABILITACOES`, conferida no servidor a cada chamada. O teste com outra conta da seção 12 ficou para logo depois da publicação.
 - Executa como: `USER_DEPLOYING`. Toda leitura, gravação e e-mail sai da conta de quem implantou.
 - Identidade: só `Session.getActiveUser()`. Com "Executar como: eu", o e-mail só vem preenchido para contas do mesmo domínio de quem implantou; vazio = acesso negado. `Session.getEffectiveUser()` nunca autoriza (só identifica a conta dona do projeto em `diagnosticarConfiguracao`).
 - Autorização no servidor (`Acesso.gs`): toda função pública começa com `exigirLeitor_()` ou `exigirAdministrador_()`, **antes** de abrir a planilha de respostas. Vale para chamadas diretas a `google.script.run`, não só para os botões. O teste "funções públicas são exatamente…" impede função nova sem guarda.
