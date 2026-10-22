@@ -17,6 +17,8 @@
 // entre as versões. Pixels, fontes pedidas e confiança do OCR são
 // registrados para diagnóstico.
 // Uso: node testar_pdf_misto_sintetico.js
+// Além do registro, grava saida/misto_sintetico_diagnostico.json (ambiente de fontes, resultado
+// acadêmico de cada leitura e diferenças), lido por diagnosticar_fontes_naturais.js.
 // Código de saída: 0 = aprovada; 1 = alguma asserção reprovada; 2 = modelo do OCR ou fonte das imagens ausente (não executado); 3 = erro de infraestrutura.
 'use strict';
 const fs = require('fs');
@@ -272,6 +274,8 @@ function numerosDaPagina(n) {
 
   console.log('\n== PDF sintético misto (jupiter_sintetico.js): geração');
   const fcLeituraA = LEITURA_NATURAL ? null : prepararFontconfigLeitura();
+  // Arquivo de fontconfig que o Chromium do cenário A usa (null = padrão do sistema).
+  const fcArquivoA = fcLeituraA ? fcLeituraA.arquivo : (process.env.FONTCONFIG_FILE || null);
   const navA = await chromium.launch({ args: ['--no-sandbox'].concat(HINTING_ARGS), env: fcLeituraA ? Object.assign({}, process.env, { FONTCONFIG_FILE: fcLeituraA.arquivo }) : process.env });
   console.log('     leitura:', LEITURA_NATURAL ? 'ambiente natural da máquina' + (HINTING_LEITURA ? ' com hinting ' + HINTING_LEITURA : '') : 'hinting desligado (Chromium e fontconfig)');
   console.log('     Chromium', navA.version(), '· modelo tessdata_fast 4.1.0 sha256', shaModelo.slice(0, 16) + '…');
@@ -358,11 +362,46 @@ function numerosDaPagina(n) {
 
   const resultados = {};
   const registro = [];
+  const diagnostico = {
+    ambiente: {
+      leitura: LEITURA_NATURAL ? 'natural' : 'fixada',
+      argumentosChromium: ['--no-sandbox'].concat(HINTING_ARGS),
+      chromium: navA.version(), node: process.version, sistema: os.platform() + ' ' + os.release(),
+      pdfSha256: sha256(pdf), modeloSha256: shaModelo, fonteImagensSha256: sha256(fonte),
+      cenarios: cenarios.map((cen) => {
+        const arquivo = cen.id === 'A' ? fcArquivoA : fc.arquivo;
+        let helvetica = '';
+        try { helvetica = execFileSync('fc-match', ['Helvetica'], { encoding: 'utf8', env: Object.assign({}, process.env, arquivo ? { FONTCONFIG_FILE: arquivo } : {}) }).trim(); } catch (e) { helvetica = 'fc-match indisponível'; }
+        return {
+          id: cen.id, nome: cen.nome,
+          fontconfig: cen.id === 'A' ? (fcLeituraA ? 'próprio, hinting desligado, sobre ' + (process.env.FONTCONFIG_FILE || '/etc/fonts/fonts.conf') : (arquivo || '/etc/fonts/fonts.conf (padrão)'))
+            : (LEITURA_NATURAL ? 'alias "Helvetica" → ' + fc.alvo + ' sobre ' : 'alias "Helvetica" → ' + fc.alvo + ', hinting desligado, sobre ') + (process.env.FONTCONFIG_FILE || '/etc/fonts/fonts.conf'),
+          helvetica, rasterizacaoHelvetica: opcoesDeRasterizacao('Helvetica', arquivo || undefined)
+        };
+      })
+    },
+    esperado: Object.assign({ modo: ESPERADO.modo, paginas: ESPERADO.paginas }, esperadoAcademico()),
+    cenarios: []
+  };
+  if (fc.erro) diagnostico.ambiente.cenarioBNaoPreparado = fc.erro;
+  /** Resumo de uma leitura para o diagnóstico: o resultado acadêmico completo e as diferenças. */
+  const resumir = (r) => r.ok ? {
+    ok: true, versaoCarregada: r.versaoCarregada, modo: r.modo, paginas: r.paginas.length,
+    paginasOcr: r.etapas.filter((e) => /^ocr:/.test(e)), errosPagina: r.errosPagina,
+    academico: academico(r.pacote), diferencasComEsperado: compararComEsperado(r),
+    segundaLeitura: r.paginas.map((pg, i) => ({ pagina: i + 1, esperado: numerosDaPagina(i + 1), lido: (pg.tokensNumericos || []).map((t) => t.texto) })),
+    confiancaPorPagina: r.paginas.map(confMedia), pixelsPagina1: r.desenho1.escuros, fontesPagina1: r.desenho1.fontes,
+    linhasNaoReconhecidas: r.pacote.conferencia.linhasNaoReconhecidas || [], totalLinhasNaoReconhecidas: r.pacote.conferencia.totalLinhasNaoReconhecidas
+  } : { ok: false, mensagem: r.mensagem, etapas: r.etapas, errosPagina: r.errosPagina };
   for (const cen of cenarios) {
     console.log('\n== Cenário ' + cen.id + ' — ' + cen.nome);
     const r3 = await lerComVersao(cen.nav, '3.11.174', dirAntigo, pdf);
     const r6 = await lerComVersao(cen.nav, '6.4.299', DIR_SRC, pdf);
     resultados[cen.id] = { '3.11.174': r3, '6.4.299': r6 };
+    diagnostico.cenarios.push({
+      id: cen.id, nome: cen.nome, versoes: { '3.11.174': resumir(r3), '6.4.299': resumir(r6) },
+      entreVersoes: r3.ok && r6.ok ? { academicas: compararVersoes(r3, r6), pacoteCompleto: diferencas(r3.pacote, r6.pacote, 'pacote') } : null
+    });
     for (const [versao, r] of [['3.11.174', r3], ['6.4.299', r6]]) {
       const rot = cen.id + ' · ' + versao;
       await teste(rot + ': lido por OCR, 3 páginas 595×842, as três passaram pelo OCR, sem erro de JavaScript', async () => {
@@ -425,6 +464,8 @@ function numerosDaPagina(n) {
   }
 
   fs.writeFileSync(path.join(__dirname, 'saida', 'misto_sintetico_registro.json'), JSON.stringify(registro, null, 1));
+  diagnostico.testes = { passaram: ok, falharam: falhas, reprovados: falhou };
+  fs.writeFileSync(path.join(__dirname, 'saida', 'misto_sintetico_diagnostico.json'), JSON.stringify(diagnostico, null, 1));
   for (const cen of cenarios) await cen.nav.close();
   fs.rmSync(dirAntigo, { recursive: true, force: true });
   if (fc.dir) fs.rmSync(fc.dir, { recursive: true, force: true });

@@ -1,0 +1,88 @@
+# DIAGNÓSTICO NÃO BLOQUEANTE (não é a CI): o PDF misto sintético da Estrutura
+# Curricular lido com as fontes e o hinting NATURAIS do executor (LEITURA_NATURAL=1),
+# com a mesma suíte, as mesmas asserções e o mesmo esperado da CI.
+# Classificação: EQUIVALENTE (verde) · DIVERGÊNCIA ACADÊMICA (vermelho) ·
+# ERRO DE INFRAESTRUTURA (vermelho). Documentação: docs/CI.md e
+# docs/sistemas/estrutura-curricular/ETAPA4_TESTES_MISTOS.md (seção 6.3).
+#
+# Não bloqueia porque fica FORA do ci.yml: o ruleset do main exige só "CI concluída"
+# e o Release só confere a rodada do ci.yml. Um X vermelho aqui é um achado a
+# analisar, nunca um teste aprovado. Sem continue-on-error e sem "|| true".
+name: Diagnóstico de fontes (não bloqueante)
+
+on:
+  pull_request:
+    paths:
+      - sistemas/estrutura-curricular/**
+      - .github/workflows/diagnostico-fontes.yml
+  push:
+    branches: [main]
+    paths:
+      - sistemas/estrutura-curricular/**
+      - .github/workflows/diagnostico-fontes.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diagnostico-fontes-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  fontes-naturais:
+    name: Diagnóstico NÃO BLOQUEANTE — PDF misto com fontes naturais
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: sistemas/estrutura-curricular/testes
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: sistemas/estrutura-curricular/testes/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Modelo do OCR (tessdata_fast 4.1.0, SHA-256 conferido)
+        run: |
+          mkdir -p modelos
+          curl -fsSL --retry 3 -o modelos/por.traineddata https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0/por.traineddata
+          echo "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb  modelos/por.traineddata" | sha256sum -c -
+      - name: Fonte das imagens do PDF misto (Liberation Serif 2.1.5, SHA-256 conferido)
+        run: |
+          mkdir -p fontes "$RUNNER_TEMP/fonts-liberation"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/fonts-liberation.deb" https://archive.ubuntu.com/ubuntu/pool/main/f/fonts-liberation/fonts-liberation_2.1.5-3_all.deb
+          echo "065c2ab1abc9108b17d401016dc594b79750904390f095845c93bb06e1153acc  $RUNNER_TEMP/fonts-liberation.deb" | sha256sum -c -
+          dpkg-deb -x "$RUNNER_TEMP/fonts-liberation.deb" "$RUNNER_TEMP/fonts-liberation"
+          cp "$RUNNER_TEMP/fonts-liberation/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf" fontes/
+          echo "705903ae1382f0150f115d6f10a30f5b2f3d6ade649c474afe6366c39174fb65  fontes/LiberationSerif-Regular.ttf" | sha256sum -c -
+      # Código de saída: 0 = EQUIVALENTE; 1 = DIVERGÊNCIA ACADÊMICA; 3 = ERRO DE INFRAESTRUTURA.
+      # O relatório vai para o resumo desta rodada (GITHUB_STEP_SUMMARY).
+      - name: Diagnóstico (LEITURA_NATURAL=1, 3.11.174 × 6.4.299 × esperado)
+        id: diagnostico
+        run: node diagnosticar_fontes_naturais.js
+      # Se a preparação falhou antes do diagnóstico, o resumo diz isso; a rodada continua vermelha.
+      - name: Classificação quando o diagnóstico não rodou
+        if: always() && steps.diagnostico.outcome != 'success' && steps.diagnostico.outcome != 'failure'
+        run: |
+          mkdir -p saida
+          printf '# Diagnóstico NÃO BLOQUEANTE — PDF misto com fontes naturais\n\n**Classificação: ⚠️ ERRO DE INFRAESTRUTURA**\n\n- a preparação falhou antes do diagnóstico (passo do diagnóstico: %s); ver o passo em vermelho acima.\n' \
+            "${{ steps.diagnostico.outcome }}" | tee saida/diagnostico_fontes_naturais.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Relatório e registros como artefato
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: diagnostico-fontes-naturais
+          path: |
+            sistemas/estrutura-curricular/testes/saida/diagnostico_fontes_naturais.md
+            sistemas/estrutura-curricular/testes/saida/diagnostico_fontes_naturais.log
+            sistemas/estrutura-curricular/testes/saida/misto_sintetico_diagnostico.json
+            sistemas/estrutura-curricular/testes/saida/misto_sintetico_registro.json
+            sistemas/estrutura-curricular/testes/saida/misto_sintetico.pdf
+          if-no-files-found: error
+          retention-days: 30

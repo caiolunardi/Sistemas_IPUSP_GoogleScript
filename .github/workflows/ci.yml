@@ -157,6 +157,9 @@ jobs:
       # PDF.js 3.11.174 × 6.4.299, OCR e LeitorPdfJupiter, em dois cenários de fontes.
       - name: PDF misto sintético (OCR, 3.11.174 × 6.4.299)
         run: node testar_pdf_misto_sintetico.js
+      # Controles do classificador do diagnóstico não bloqueante (diagnostico-fontes.yml), sem navegador.
+      - name: Classificador do diagnóstico de fontes (controles)
+        run: node testar_diagnostico_fontes.js
       - run: node testar_recomeco_google.js
       - run: node testar_etapa7_trava_auditoria.js
       - run: node testar_etapa8_previa_envio.js
