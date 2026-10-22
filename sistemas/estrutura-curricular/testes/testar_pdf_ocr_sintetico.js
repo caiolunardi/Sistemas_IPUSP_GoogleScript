@@ -46,7 +46,9 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
   const fcDesenho = prepararFontconfigDesenho();
   console.log('     rasterização — sistema:', opcoesDeRasterizacao('LiberationFixture'), '· desenho:', opcoesDeRasterizacao('LiberationFixture', fcDesenho.arquivo));
   process.env.FONTCONFIG_FILE = fcDesenho.arquivo;
-  const nav = await abrirNavegador();
+  // Sem a opção, o Chromium sem tela escolhe o hinting pelas regras de fontes da máquina
+  // (na CI: métricas inteiras e outro desenho; aqui: métricas fracionárias).
+  const nav = await abrirNavegador(['--font-render-hinting=' + (process.env.HINTING_DESENHO || 'none')]);
   console.log('Chromium', nav.version());
   const amb = criarAmbiente({ dirSrc: DIR_SRC, usuario: ADMIN, dono: ADMIN });
   const p = await abrirPainel(nav, { amb, latencia: 0 });

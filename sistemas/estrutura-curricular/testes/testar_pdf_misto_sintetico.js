@@ -262,7 +262,7 @@ function numerosDaPagina(n) {
   // As imagens são desenhadas num Chromium à parte, com a rasterização do texto fixada (fontconfig_desenho.js).
   const fcDesenho = prepararFontconfigDesenho();
   console.log('     rasterização — sistema:', opcoesDeRasterizacao('LiberationFixture'), '· desenho:', opcoesDeRasterizacao('LiberationFixture', fcDesenho.arquivo));
-  const navDesenho = await chromium.launch({ args: ['--no-sandbox'], env: Object.assign({}, process.env, { FONTCONFIG_FILE: fcDesenho.arquivo }) });
+  const navDesenho = await chromium.launch({ args: ['--no-sandbox', '--font-render-hinting=none'], env: Object.assign({}, process.env, { FONTCONFIG_FILE: fcDesenho.arquivo }) });
   const ger = await abrirPainel(navDesenho, { amb: criarAmbiente({ dirSrc: DIR_SRC, usuario: ADMIN, dono: ADMIN }), latencia: 0 });
   await esperarCarregado(ger.pagina);
   const fonte = fs.readFileSync(FONTE_IMAGENS);
