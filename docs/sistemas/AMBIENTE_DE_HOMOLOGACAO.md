@@ -41,7 +41,7 @@ Cole o ID de cada cópia na coluna `Homologação` do `ID_INDEX`, na linha da ch
 
 ### 2. Projeto Apps Script de homologação (um por formulário)
 
-1. No Drive, **Fazer uma cópia** do projeto do formulário e dê um nome que deixe claro que é teste.
+1. No Drive, **Fazer uma cópia** do projeto do formulário e dê o nome `GRADIP · <Sistema> · HOMOLOGAÇÃO` ([padrão de nomes](../IMPLANTACAO.md#nome-dos-projetos-no-google)).
 2. Copie para a cópia os arquivos de `sistemas/<formulário>/formulario/src/` da versão a homologar.
 3. **Configurações do projeto → Propriedades do script:** `ID_INDEX_SPREADSHEET_ID` (o mesmo da produção) e `AMBIENTE` = `homologacao`.
 4. Rode `diagnosticarConfiguracao` (Exclusão e Trancamento Parcial): a primeira linha deve dizer `homologacao`, e todas as chaves devem sair `OK`.

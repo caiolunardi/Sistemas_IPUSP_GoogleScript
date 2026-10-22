@@ -121,6 +121,7 @@ Não "corrija" silenciosamente uma particularidade funcional ou editorial para f
 Leia `DEVELOPMENT_LOCAL.md` antes de configurar o clasp, criar um sistema novo ou levar código ao Apps Script.
 
 - Git guarda o histórico público; o clasp leva o código ao Google com a conta institucional. Um push no Git não muda nenhum sistema em uso.
+- Projetos Apps Script se chamam `GRADIP · <Sistema> · <AMBIENTE>` (`docs/IMPLANTACAO.md`, "Nome dos projetos no Google"). O nome serve para achar o projeto; antes de um push, confira o conteúdo. Na dúvida sobre qual projeto é qual, pergunte ao responsável.
 - `.clasp.json`, `.clasprc.json` e `creds.json` ficam só no computador (o `.gitignore` bloqueia; a verificação acusa). Nunca commite o ID do script.
 - Cada pasta `sistemas/**/src/` tem o `.claspignore` padrão (só `.gs`, `.js`, `.html` e `appsscript.json` vão ao Google). Sistema novo copia o mesmo arquivo.
 - IDs de produção ficam no `ID_INDEX` ou em Script Properties, nunca no código. A verificação acusa `openById("…")` e constantes `*ID*` com ID real.
