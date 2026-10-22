@@ -20,9 +20,13 @@ function incluir(h) {
   for (let k = 0; k < 4; k++) h = h.replace(/<\?!= include_\('(\w+)'\); \?>/g, (_, n) => fs.readFileSync(SRC + n + '.html', 'utf8'));
   return h;
 }
-function montarPagina(perfil, homologacao) {
+const SESSAO = '00000000-0000-4000-8000-00000000abcd';
+const USUARIO = { nome: 'Pessoa Administradora Fictícia', descricao: 'Equipe Fictícia de Teste' };
+function montarPagina(perfil, homologacao, usuario) {
   let h = incluir(fs.readFileSync(SRC + 'GerenciadorApp.html', 'utf8'));
-  h = h.replace('<?!= JSON.stringify({ perfil: perfil, versao: versao, homologacao: homologacao }) ?>', JSON.stringify({ perfil, versao: '2.0', homologacao }));
+  const cfg = { perfil, versao: '2.1', homologacao, usuario: usuario || USUARIO, sessao: SESSAO };
+  // Como o servidor: JSON com "<" escapado.
+  h = h.replace("<?!= JSON.stringify({ perfil: perfil, versao: versao, homologacao: homologacao, usuario: { nome: usuarioNome, descricao: usuarioDescricao }, sessao: sessao }).replace(/</g, '\\\\u003c') ?>", JSON.stringify(cfg).replace(/</g, '\\u003c'));
   if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
   return h;
 }
@@ -60,7 +64,7 @@ const NOMES_SINTETICOS = ['Álvaro', 'Bruna', 'Elisa', 'Carla', '9000001', 'exem
 // do padrão: {valor}, {erro:'CODIGO: msg'}, {atraso:ms}.
 const stub = () => `(function(){
 var P=${JSON.stringify(PENDENTES)},C=${JSON.stringify(CONCLUIDOS)},B=${JSON.stringify(BUSCA)},R=${JSON.stringify(RELATORIO)};
-window.__chamadas=[];window.__roteiro={};
+window.__chamadas=[];window.__roteiro={};window.__auditoria=[];
 function detalhe(id){var p=P.concat(C).filter(function(x){return x.registroId===id})[0];if(!p)throw new Error('NAO_ENCONTRADO: Esse pedido não foi encontrado.');
  var c=C.indexOf(p)!==-1;return {registroId:id,versao:p.versao,nome:p.nome,nUsp:p.nUsp,email:p.email,emailFormulario:'',anoIngresso:'2024',trancamento:'Não',habilitacao:p.habilitacao,carimbo:p.carimbo,situacao:c?'Concluído':'',concluido:c,observacoes:p.observacoes,dataConclusao:c?p.dataConclusao:'',emailEnviado:c?p.emailEnviado:'',envioReservado:!!p.envioReservado,envioInterrompido:false}}
 var API={
@@ -70,7 +74,8 @@ var API={
  buscarHistorico:function(t){return JSON.parse(JSON.stringify(B.filter(function(x){return x.nome.toLowerCase().indexOf(String(t).toLowerCase())!==-1})))},
  obterRelatorio:function(){return JSON.parse(JSON.stringify(R))},
  salvarPedido:function(id,v,d){var x=detalhe(id);return {resultado:'SALVO',registroId:id,versao:v+(d.avisarAluno?2:1),situacao:d.concluirSolicitacao?'Concluído':'pendente',concluido:!!d.concluirSolicitacao,dataConclusao:d.concluirSolicitacao?'21/10/2026 10:00':'',emailEnviado:d.avisarAluno?'21/10/2026 10:00':x.emailEnviado,email:d.avisarAluno?'ENVIADO':'NAO_SOLICITADO'}},
- atribuirIdentificador:function(r){return {registroId:ID9(),versao:1}}
+ atribuirIdentificador:function(r){return {registroId:ID9(),versao:1}},
+ registrarEventosHabilitacoes:function(l){l.eventos.forEach(function(e){window.__auditoria.push({sessao:l.sessao_id,contexto:l.contexto,ev:e})});return {gravados:l.eventos.length}}
 };
 function ID9(){return '00000000-0000-4000-8000-000000000777'}
 function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:function(x){s=x;return o},withFailureHandler:function(x){f=x;return o}};
@@ -90,18 +95,19 @@ async function contraste(p, rotulo, seletores) {
   for (const [s, c, b] of pares) { if (!c) { chk(`${rotulo} existe ${s}`, false); continue; } const r = cr(c, b); chk(`${rotulo} contraste ${s}`, r >= 4.5, r.toFixed(2)); }
 }
 
-async function abrir(ctx, { perfil = 'ADMINISTRADOR', homologacao = false, antes = '' } = {}) {
+async function abrir(ctx, { perfil = 'ADMINISTRADOR', homologacao = false, antes = '', usuario = null } = {}) {
   const p = await ctx.newPage();
   const erros = [], consoleTexto = [];
   p.on('pageerror', e => erros.push(e.message));
   p.on('console', m => { consoleTexto.push(m.text()); if (m.type() === 'error') erros.push(m.text()); });
-  const pagina = montarPagina(perfil, homologacao).replace('<head>', '<head><script>' + stub() + antes + '</script>');
+  const pagina = montarPagina(perfil, homologacao, usuario).replace('<head>', '<head><script>' + stub() + antes + '</script>');
   await p.route('http://gerenciador.teste/**', r => r.fulfill({ contentType: 'text/html; charset=utf-8', body: pagina }));
   await p.route('https://datagrad.sistemas.ip.usp.br/**', r => r.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="97"><rect width="240" height="97" fill="#00509d"/></svg>' }));
   await p.goto('http://gerenciador.teste/');
   p.erros = erros; p.consoleTexto = consoleTexto;
   return p;
 }
+const eventosAuditoria = p => p.evaluate(() => { window.GerenciadorAuditoria.enviar(); return new Promise(r => setTimeout(() => r(window.__auditoria.map(a => a.ev.evento)), 120)); });
 const chamadas = (p, nome) => p.evaluate(n => window.__chamadas.filter(c => c.nome === n), nome);
 const esperarLista = (p, sel, n) => p.waitForFunction(([s, k]) => document.querySelectorAll(s + ' > li').length === k, [sel, n], { timeout: 5000 }).then(() => true, () => false);
 const focoNaSecao = (p, id) => p.waitForFunction(id => { const o = document.querySelector('[data-gradip-help-overlay]'); const s = document.activeElement && document.activeElement.closest('section'); return o && !o.hidden && s && s.id === id; }, id, { timeout: 5000 }).then(() => true, () => false);
@@ -120,11 +126,12 @@ const focoNaSecao = (p, id) => p.waitForFunction(id => { const o = document.quer
     chk(`${T} abre no menu lateral, Pendentes atual`, await p.evaluate(() => document.getElementById('layout').dataset.navegacao === 'sidebar' && document.getElementById('navPendentes').getAttribute('aria-current') === 'page'));
     chk(`${T} ícones injetados`, await p.$$eval('[data-icone] svg', e => e.length) >= 12);
     chk(`${T} administrador sem aviso de consulta e sem faixa de homologação`, await p.evaluate(() => document.getElementById('avisoSomenteLeitura').hidden && document.getElementById('faixaHomologacao').hidden));
-    chk(`${T} versão no rodapé`, (await p.textContent('#versaoSistema')) === '2.0');
+    chk(`${T} versão no rodapé`, (await p.textContent('#versaoSistema')) === '2.1');
+    chk(`${T} cabeçalho mostra nome e observação de quem acessou`, await p.evaluate(() => !document.getElementById('identificacaoUsuario').hidden && document.getElementById('identificacaoNome').textContent === 'Pessoa Administradora Fictícia' && document.getElementById('identificacaoDescricao').textContent === 'Equipe Fictícia de Teste'));
     chk(`${T} pendentes carregados`, await esperarLista(p, '#listaPendentes', 5));
     chk(`${T} contador e menu com o total`, (await p.textContent('#contadorPendentes')) === '5' && (await p.textContent('#navContagemPendentes')) === '5');
     chk(`${T} status anuncia pedidos que precisam de conferência`, /5 pedidos pendentes\. 2 pedidos precisam de conferência/.test(await p.textContent('#statusPendentes')));
-    chk(`${T} só uma chamada na abertura (Concluídos e Relatórios sob demanda)`, await p.evaluate(() => window.__chamadas.map(c => c.nome).join() === 'obterPendentes'));
+    chk(`${T} só uma chamada na abertura (Concluídos e Relatórios sob demanda)`, await p.evaluate(() => window.__chamadas.map(c => c.nome).filter(n => n !== 'registrarEventosHabilitacoes').join() === 'obterPendentes'));
 
     /*---------- texto da planilha nunca vira HTML ----------*/
     chk(`${T} nome com HTML aparece como texto`, await p.evaluate(() => !window.__xss && !document.querySelector('#listaPendentes img') && !document.querySelector('#listaPendentes b') && [...document.querySelectorAll('.cartaoPedido__nome')].some(e => e.textContent.startsWith('<img'))));
@@ -145,7 +152,7 @@ const focoNaSecao = (p, id) => p.waitForFunction(id => { const o = document.quer
     await p.fill('#buscaPendentes', '');
     chk(`${T} limpar a busca devolve a lista`, await esperarLista(p, '#listaPendentes', 5));
 
-    await contraste(p, T, ['.tituloSistema', '.subtituloSistema', '.cardResumo h1', '.cardResumo p', '.contador', '#buscaPendentes', '.campoBusca label', '.statusLista', '.cartaoPedido__nome', '.cartaoPedido__meta', '.cartaoPedido__email', '.selo--pendente', '.selo--problema', '.linkAjudaContextual', '.botaoSecundario', '.navItem[aria-current="page"]', '.navItem:not([aria-current])', '.navContagem', '.botaoModo[aria-pressed="true"]', '.botaoModo[aria-pressed="false"]', '.botaoAjuda', '.rodape', '.gradip-theme-control__select', '.sidebar__titulo']);
+    await contraste(p, T, ['.tituloSistema', '.subtituloSistema', '.cardResumo h1', '.cardResumo p', '.contador', '#buscaPendentes', '.campoBusca label', '.statusLista', '.cartaoPedido__nome', '.cartaoPedido__meta', '.cartaoPedido__email', '.selo--pendente', '.selo--problema', '.linkAjudaContextual', '.botaoSecundario', '.navItem[aria-current="page"]', '.navItem:not([aria-current])', '.navContagem', '.botaoModo[aria-pressed="true"]', '.botaoModo[aria-pressed="false"]', '.botaoAjuda', '.rodape', '.gradip-theme-control__select', '.sidebar__titulo', '.identificacaoUsuario__nome', '.identificacaoUsuario__descricao']);
     await p.screenshot({ path: SAIDA + `pendentes-${scheme}.png`, fullPage: true });
 
     /*---------- detalhe ----------*/
@@ -358,6 +365,77 @@ const focoNaSecao = (p, id) => p.waitForFunction(id => { const o = document.quer
     /*---------- nada de dados no console ----------*/
     chk(`${T} sem erros na página`, p.erros.length === 0, p.erros.join(' | '));
     chk(`${T} console sem dados pessoais`, !p.consoleTexto.some(t => NOMES_SINTETICOS.some(n => t.includes(n))));
+    await ctx.close();
+  }
+
+  /*---------- auditoria da página e identificação ----------*/
+  {
+    const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+    const p = await abrir(ctx);
+    await esperarLista(p, '#listaPendentes', 5);
+    await p.waitForFunction(() => window.__auditoria.length >= 1, null, { timeout: 3000 }).catch(() => {});
+    const abertura = await p.evaluate(() => window.__auditoria[0]);
+    chk('[auditoria] ACESSO.ABRIR enviado na hora, com a sessão do servidor', abertura && abertura.ev.evento === 'ACESSO.ABRIR' && abertura.sessao === '00000000-0000-4000-8000-00000000abcd' && abertura.ev.duracao_ms >= 0);
+    chk('[auditoria] página não envia e-mail, nome nem perfil de quem usa', await p.evaluate(() => !JSON.stringify(window.__auditoria).match(/"(email|nome)"/)));
+    await p.click('#navConcluidos');
+    await p.click('#navRelatorios');
+    await p.click('[data-modo="abas"]');
+    await p.click('[data-modo="sidebar"]');
+    await p.click('#navPendentes');
+    await p.fill('#buscaPendentes', 'bruna');
+    await p.waitForTimeout(1700);
+    await p.click('#listaPendentes button.cartaoPedido >> text=Bruna');
+    await p.waitForSelector('#detalheConteudo:not([hidden])');
+    await p.keyboard.press('Escape');
+    await p.waitForSelector('#modalDetalhe', { state: 'hidden' });
+    await p.click('.botaoAjuda');
+    await focoNaSecao(p, 'ajuda-inicio');
+    await p.keyboard.press('Escape');
+    const evs = await eventosAuditoria(p);
+    const conta = c => evs.filter(e => e === c).length;
+    chk('[auditoria] áreas, modo, busca, janela do pedido e ajuda', conta('TELA.ABRIR') === 3 && conta('NAVEGACAO.MODO') === 2 && conta('BUSCA.PENDENTES') === 1 && conta('PEDIDO.FECHAR') === 1 && conta('AJUDA.ABRIR') === 1, evs.join(','));
+    const fechar = await p.evaluate(() => window.__auditoria.filter(a => a.ev.evento === 'PEDIDO.FECHAR')[0].ev);
+    chk('[auditoria] PEDIDO.FECHAR com o tempo aberto e sem dados do aluno', fechar.duracao_ms > 0 && !/Bruna|9000001/.test(JSON.stringify(fechar)));
+    // auditoria fora do ar: a página segue igual e os eventos esperam
+    await p.evaluate(() => { window.__roteiro.registrarEventosHabilitacoes = [{ erro: 'AUDITORIA_INDISPONIVEL: fora do ar' }]; });
+    await p.click('#navConcluidos');
+    await p.evaluate(() => window.GerenciadorAuditoria.enviar());
+    await p.waitForTimeout(150);
+    chk('[auditoria] falha no envio: a área abre e o evento fica na fila', await p.evaluate(() => !document.getElementById('areaConcluidos').hidden && window.GerenciadorAuditoria.fila().some(e => e.evento === 'TELA.ABRIR')));
+    await p.evaluate(() => { window.__roteiro.registrarEventosHabilitacoes = [{ erro: 'SEM_ACESSO: A sua conta não tem acesso.' }]; });
+    await p.click('#navRelatorios');
+    await p.evaluate(() => window.GerenciadorAuditoria.enviar());
+    await p.waitForTimeout(150);
+    await p.click('#navPendentes');
+    chk('[auditoria] conta sem acesso: a página para de enviar', await p.evaluate(() => window.GerenciadorAuditoria.fila().length === 0));
+    // salvar com a auditoria fora do ar: mensagem do servidor, texto mantido
+    await p.evaluate(() => { window.__roteiro.salvarPedido = [{ erro: 'AUDITORIA_INDISPONIVEL: A auditoria está indisponível no momento, então nada foi alterado. Tente de novo em alguns minutos ou avise o Serviço de Graduação.' }]; });
+    await p.fill('#buscaPendentes', '');
+    await esperarLista(p, '#listaPendentes', 5);
+    await p.click('#listaPendentes button.cartaoPedido >> text=Álvaro');
+    await p.waitForSelector('#detalheConteudo:not([hidden])');
+    await p.fill('#campoObservacoes', 'Texto que não pode sumir');
+    await p.evaluate(() => { document.getElementById('checkAvisar').checked = false; document.getElementById('checkAvisar').dispatchEvent(new Event('change')); });
+    await p.click('#botaoSalvar');
+    await p.waitForFunction(() => /auditoria está indisponível/.test(document.getElementById('modalDetalhe').textContent), null, { timeout: 4000 }).catch(() => {});
+    chk('[auditoria] salvar recusado pela auditoria: mensagem e texto mantidos', await p.evaluate(() => !document.getElementById('modalDetalhe').hidden && /auditoria está indisponível/.test(document.getElementById('modalDetalhe').textContent) && document.getElementById('campoObservacoes').value === 'Texto que não pode sumir'));
+    await p.keyboard.press('Escape');
+    chk('[auditoria] sem erros na página', p.erros.length === 0, p.erros.join(' | '));
+    await ctx.close();
+  }
+  {
+    const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+    const p = await abrir(ctx, { usuario: { nome: '<img src=x onerror="window.__xssNome=1"></script><b>Nome</b>', descricao: '<i>obs</i>' } });
+    await esperarLista(p, '#listaPendentes', 5);
+    chk('[identificação] nome e observação com HTML aparecem como texto', await p.evaluate(() => !window.__xssNome && !document.querySelector('#identificacaoUsuario img, #identificacaoUsuario b, #identificacaoUsuario i') && document.getElementById('identificacaoNome').textContent.startsWith('<img')));
+    chk('[identificação] sem erros na página', p.erros.length === 0, p.erros.join(' | '));
+    await ctx.close();
+  }
+  {
+    const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+    const p = await abrir(ctx, { usuario: { nome: '', descricao: '' } });
+    await esperarLista(p, '#listaPendentes', 5);
+    chk('[identificação] sem nome: bloco escondido', await p.evaluate(() => document.getElementById('identificacaoUsuario').hidden));
     await ctx.close();
   }
 

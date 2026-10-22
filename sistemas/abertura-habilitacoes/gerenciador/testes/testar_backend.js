@@ -133,12 +133,15 @@ t('nenhum ID literal nem openById com texto fixo no código', () => {
 
 const PUBLICAS = ['atribuirIdentificador', 'buscarHistorico', 'diagnosticarConfiguracao', 'diagnosticarMigracaoRegistroId',
   'diagnosticarPlanilha', 'diagnosticarRecuperacaoRegistro', 'doGet', 'executarMigracaoRegistroId', 'executarRecuperacaoRegistro',
-  'obterConcluidosRecentes', 'obterDetalhe', 'obterPendentes', 'obterRelatorio', 'salvarPedido'];
+  'obterConcluidosRecentes', 'obterDetalhe', 'obterPendentes', 'obterRelatorio', 'salvarPedido',
+  'consolidarAuditoriaHabilitacoes', 'prepararAuditoriaHabilitacoes', 'registrarEventosHabilitacoes', 'verificarIntegridadeAuditoria'];
 const DE_ESCRITA = ['atribuirIdentificador', 'diagnosticarMigracaoRegistroId', 'diagnosticarPlanilha', 'diagnosticarRecuperacaoRegistro',
-  'executarMigracaoRegistroId', 'executarRecuperacaoRegistro', 'salvarPedido'];
+  'executarMigracaoRegistroId', 'executarRecuperacaoRegistro', 'salvarPedido',
+  'consolidarAuditoriaHabilitacoes', 'prepararAuditoriaHabilitacoes', 'verificarIntegridadeAuditoria'];
 const ARGS = {
   obterDetalhe: [D.uuid(1)], buscarHistorico: ['bruna'], salvarPedido: [D.uuid(1), 1, { concluirSolicitacao: true }],
-  atribuirIdentificador: [{ linha: 6, carimbo: D.brt(2026, 5, 5).getTime(), nUsp: '9000005' }]
+  atribuirIdentificador: [{ linha: 6, carimbo: D.brt(2026, 5, 5).getTime(), nUsp: '9000005' }],
+  registrarEventosHabilitacoes: [{ sessao_id: '', contexto: {}, eventos: [] }]
 };
 
 t('funções públicas são exatamente as previstas (as demais terminam com _)', () => {
@@ -160,11 +163,16 @@ t('conta fora da lista: toda função pública negada antes de abrir os pedidos'
   });
 });
 
-t('sessão sem e-mail: negado sem abrir planilha nenhuma', () => {
+// Desde a 2.1, a recusa é gravada na auditoria: só o ID_INDEX e a
+// planilha da auditoria são abertos, nunca pedidos nem a lista de acesso.
+t('sessão sem e-mail: negado sem abrir pedidos nem a lista; recusa na auditoria', () => {
   PUBLICAS.filter(f => f !== 'doGet').forEach(f => {
     const m = como(D.montar(), '');
     assert.throws(() => chamar(m, f, ...(ARGS[f] || [])), codigo('SEM_IDENTIFICACAO'), f);
-    assert.deepStrictEqual(m.amb.aberturas, {}, f);
+    assert.deepStrictEqual(Object.keys(m.amb.aberturas).sort(), [D.IDS.AUDITORIA, D.IDS.INDICE].sort(), f);
+    const ev = m.auditoria.linhas('EVENTOS_' + new Date().getFullYear());
+    assert.strictEqual(ev.length, 1, f);
+    assert.strictEqual(ev[0][12], 'ACESSO.NEGAR', f);
   });
 });
 
@@ -1233,8 +1241,208 @@ t('desempenho: 3.000 linhas, leituras em lote', () => {
   medir('buscarHistorico', () => chamar(m, 'buscarHistorico', 'pessoa 29'));
   medir('obterRelatorio', () => assert.strictEqual(chamar(m, 'obterRelatorio').total, 3004));
   const s = medir('salvarPedido (concluir + avisar)', () => salvar(m, D.uuid(10000), 1, { avisarAluno: true, concluirSolicitacao: true }));
-  assert.strictEqual(s.getValues, 2, 'uma leitura em cada trava');
+  // Uma leitura em cada trava do salvamento, mais o antes e o depois da auditoria.
+  assert.strictEqual(s.getValues, 4, 'uma leitura em cada trava e duas da auditoria');
   assert.strictEqual(s.setValue, 7);
+});
+
+/*==================== AUDITORIA (2.1) ====================*/
+
+// Núcleo (Auditoria.gs) idêntico ao do Painel dos servidores, que tem a
+// suíte do selo encadeado, da virada do ano e da consolidação
+// (sistemas/painel-servidores/testes/testar_auditoria.js). Aqui: o que
+// este sistema grava, de quem, e que nada é alterado sem auditoria.
+const COLS_EV = ['evento_id', 'seq', 'data_hora', 'data_hora_navegador', 'duracao_ms', 'sessao_id', 'evento_pai_id', 'email', 'nome',
+  'tipo_conta', 'perfil', 'categoria', 'evento', 'criticidade', 'tela', 'alvo_tipo', 'alvo_id', 'resultado', 'mensagem', 'motivo',
+  'origem', 'detalhes', 'n_alteracoes', 'versao', 'navegador', 'largura_tela', 'tema', 'modo_navegacao', 'hash_alteracoes', 'hash_anterior', 'hash'];
+const ANO = String(new Date().getFullYear());
+const eventos = m => m.auditoria.linhas('EVENTOS_' + ANO).map(l => Object.fromEntries(COLS_EV.map((c, i) => [c, l[i]])));
+const alteracoes = m => m.auditoria.linhas('ALTERACOES_' + ANO).map(l => ({ evento_id: l[0], evento: l[3], alvo_tipo: l[4], alvo_id: l[5], planilha: l[6], campo: l[7], antes: l[8], depois: l[9] }));
+const doEvento = (m, codigo) => eventos(m).filter(e => e.evento === codigo);
+
+t('auditoria: salvar com aviso grava quem, antes/depois de cada célula e o e-mail como evento filho', () => {
+  const m = D.montar();
+  const r = chamar(m, 'salvarPedido', D.uuid(1), 1, { observacoes: 'Conferido', concluirSolicitacao: true, avisarAluno: true });
+  assert.strictEqual(r.email, 'ENVIADO');
+  const [salvar] = doEvento(m, 'PEDIDO.SALVAR');
+  assert(salvar, 'PEDIDO.SALVAR');
+  assert.strictEqual(salvar.email, D.ADMIN);
+  assert.strictEqual(salvar.nome, 'Pessoa Administradora');
+  assert.strictEqual(salvar.perfil, 'ADMINISTRADOR');
+  assert.strictEqual(salvar.categoria, 'Alteração');
+  assert.strictEqual(salvar.alvo_id, D.uuid(1));
+  assert.strictEqual(salvar.resultado, 'OK');
+  assert.strictEqual(salvar.origem, 'servidor');
+  const det = JSON.parse(salvar.detalhes);
+  assert.deepStrictEqual([det.concluir, det.avisar, det.resultado, det.email], [true, true, 'SALVO', 'ENVIADO']);
+  const alt = alteracoes(m).filter(a => a.evento_id === salvar.evento_id);
+  const campo = c => alt.find(a => a.campo === c);
+  assert.deepStrictEqual([campo('J Observações').antes, campo('J Observações').depois], ['', 'Conferido']);
+  assert.deepStrictEqual([campo('K Situação').antes, campo('K Situação').depois], ['', 'Concluído']);
+  assert.deepStrictEqual([campo('Versão').antes, campo('Versão').depois], ['1', '3']);
+  assert(campo('Data de Conclusão').depois && campo('E-mail Enviado').depois);
+  assert(alt.every(a => a.planilha === 'ABERTURA_HABILITACOES' && a.alvo_id === D.uuid(1)));
+  assert.strictEqual(Number(salvar.n_alteracoes), alt.length);
+  const [aviso] = doEvento(m, 'ALUNO.AVISAR');
+  assert.strictEqual(aviso.evento_pai_id, salvar.evento_id);
+  assert.deepStrictEqual([aviso.resultado, aviso.mensagem], ['OK', 'ENVIADO']);
+  // e-mail do aluno não vai para a auditoria
+  assert(!JSON.stringify(m.auditoria.lista.map(a => a.dados)).includes('bruna@exemplo.invalid'));
+});
+
+t('auditoria: e-mail que falhou vira ALUNO.AVISAR com ERRO; salvar sem aviso não cria o filho', () => {
+  const m = D.montar({ ambiente: { falhaEnvio: true } });
+  assert.strictEqual(chamar(m, 'salvarPedido', D.uuid(1), 1, { avisarAluno: true }).email, 'FALHOU');
+  assert.deepStrictEqual(doEvento(m, 'ALUNO.AVISAR').map(e => [e.resultado, e.mensagem]), [['ERRO', 'FALHOU']]);
+  const n = D.montar();
+  chamar(n, 'salvarPedido', D.uuid(1), 1, { observacoes: 'x' });
+  assert.strictEqual(doEvento(n, 'ALUNO.AVISAR').length, 0);
+  assert.strictEqual(doEvento(n, 'PEDIDO.SALVAR').length, 1);
+});
+
+t('auditoria fora do ar: nada é salvo nem enviado; consultas continuam', () => {
+  const m = D.montar();
+  m.auditoria.falhar = true;
+  const antes = retrato(m.atual);
+  assert.throws(() => chamar(m, 'salvarPedido', D.uuid(1), 1, { concluirSolicitacao: true, avisarAluno: true }),
+    e => codigo('AUDITORIA_INDISPONIVEL')(e) && /nada foi alterado/.test(e.message));
+  assert.throws(() => chamar(m, 'atribuirIdentificador', ...ARGS.atribuirIdentificador), codigo('AUDITORIA_INDISPONIVEL'));
+  assert.strictEqual(retrato(m.atual), antes);
+  assert.strictEqual(m.amb.emails.length, 0);
+  assert.strictEqual(chamar(m, 'obterPendentes').length, 7);
+  assert.strictEqual(chamar(m, 'obterDetalhe', D.uuid(1)).registroId, D.uuid(1));
+  // sem a chave no ID_INDEX: mesma recusa
+  const semChave = D.montar({ indice: D.abaIndice([['ABERTURA_HABILITACOES', 'spreadsheet', D.IDS.RESPOSTAS, ''], ['PERMISSOES_DE_ACESSO', 'spreadsheet', D.IDS.PERMISSOES, '']]) });
+  assert.throws(() => chamar(semChave, 'salvarPedido', D.uuid(1), 1, {}), codigo('AUDITORIA_INDISPONIVEL'));
+  assert.strictEqual(semChave.amb.emails.length, 0);
+});
+
+t('auditoria: salvamento recusado fica registrado com o motivo, sem alterações', () => {
+  const m = D.montar();
+  assert.throws(() => chamar(m, 'salvarPedido', D.uuid(1), 7, {}), codigo('CONFLITO_VERSAO'));
+  assert.throws(() => chamar(m, 'salvarPedido', D.uuid(10), 1, { avisarAluno: true }), codigo('SEM_EMAIL'));
+  const ev = doEvento(m, 'PEDIDO.SALVAR');
+  assert.deepStrictEqual(ev.map(e => e.resultado), ['CONFLITO', 'RECUSADO']);
+  assert(/^CONFLITO_VERSAO:/.test(ev[0].mensagem) && /^SEM_EMAIL:/.test(ev[1].mensagem));
+  assert.strictEqual(alteracoes(m).length, 0);
+});
+
+t('auditoria: recusas de acesso (LEITOR gravando, conta fora da lista, página negada)', () => {
+  const l = como(D.montar(), D.LEITOR);
+  assert.throws(() => chamar(l, 'salvarPedido', D.uuid(1), 1, {}), codigo('SO_LEITURA'));
+  const [rec] = doEvento(l, 'PERMISSAO.RECUSAR');
+  assert.deepStrictEqual([rec.alvo_id, rec.resultado, rec.perfil, rec.nome], ['salvarPedido', 'NEGADO', 'LEITOR', 'Pessoa Leitora']);
+  const e = como(D.montar(), D.ESTRANHO);
+  assert.throws(() => chamar(e, 'obterDetalhe', D.uuid(1)), codigo('SEM_ACESSO'));
+  const [neg] = doEvento(e, 'ACESSO.NEGAR');
+  assert.deepStrictEqual([neg.alvo_id, neg.mensagem, neg.perfil, neg.email], ['obterDetalhe', 'SEM_ACESSO', 'SEM_ACESSO', D.ESTRANHO]);
+  const g = como(D.montar(), D.ESTRANHO);
+  chamar(g, 'doGet', {});
+  assert.deepStrictEqual(doEvento(g, 'ACESSO.NEGAR').map(x => [x.alvo_tipo, x.alvo_id, x.mensagem]), [['pagina', 'Gerenciador', 'SEM_ACESSO']]);
+});
+
+t('auditoria: consultas que mostram pedidos ficam registradas', () => {
+  const m = como(D.montar(), D.LEITOR);
+  chamar(m, 'obterPendentes'); chamar(m, 'obterConcluidosRecentes'); chamar(m, 'obterDetalhe', D.uuid(2));
+  chamar(m, 'buscarHistorico', 'bruna'); chamar(m, 'buscarHistorico', ''); chamar(m, 'obterRelatorio');
+  assert.deepStrictEqual(eventos(m).map(e => e.evento), ['PENDENTES.LISTAR', 'CONCLUIDOS.LISTAR', 'PEDIDO.ABRIR', 'HISTORICO.BUSCAR', 'RELATORIO.GERAR']);
+  const [abrir] = doEvento(m, 'PEDIDO.ABRIR');
+  assert.deepStrictEqual([abrir.alvo_id, abrir.categoria, abrir.perfil], [D.uuid(2), 'Leitura', 'LEITOR']);
+  const [busca] = doEvento(m, 'HISTORICO.BUSCAR');
+  assert.deepStrictEqual([busca.mensagem, JSON.parse(busca.detalhes).resultados], ['bruna', 2]);
+  assert.strictEqual(JSON.parse(doEvento(m, 'PENDENTES.LISTAR')[0].detalhes).pedidos, 7);
+});
+
+t('auditoria: lote da página (código do servidor recusado, lote grande, e-mail falso ignorado, sessão ligada)', () => {
+  const m = D.montar();
+  const sessao = '11111111-2222-4333-8444-555555555555';
+  assert.throws(() => chamar(m, 'registrarEventosHabilitacoes', { sessao_id: sessao, eventos: [{ evento: 'PEDIDO.SALVAR' }] }), codigo('ENTRADA'));
+  assert.throws(() => chamar(m, 'registrarEventosHabilitacoes', { sessao_id: sessao, eventos: Array(51).fill({ evento: 'TELA.ABRIR' }) }), codigo('ENTRADA'));
+  assert.strictEqual(eventos(m).length, 0);
+  const r = chamar(m, 'registrarEventosHabilitacoes', {
+    sessao_id: sessao, contexto: { navegador: 'Chrome 140 · Windows', largura_tela: 1280, tema: 'dark', modo_navegacao: 'abas' },
+    eventos: [{ evento: 'ACESSO.ABRIR', duracao_ms: 812.4, email: 'outra@exemplo.invalid', perfil: 'ADMINISTRADOR', tela: 'Pendentes' },
+      { evento: 'TELA.ABRIR', alvo_id: 'Concluídos', tela: 'Concluídos', mensagem: '=HYPERLINK("x")' }]
+  });
+  assert.strictEqual(r.gravados, 2);
+  const [abriu, tela] = eventos(m);
+  assert.deepStrictEqual([abriu.email, abriu.sessao_id, abriu.origem, abriu.duracao_ms, abriu.tema, abriu.modo_navegacao], [D.ADMIN, sessao, 'navegador', '812', 'dark', 'abas']);
+  assert.strictEqual(tela.mensagem, ' =HYPERLINK("x")', 'texto que começa com = não vira fórmula');
+  chamar(m, 'salvarPedido', D.uuid(1), 1, {});
+  const [salvar] = doEvento(m, 'PEDIDO.SALVAR');
+  assert.deepStrictEqual([salvar.sessao_id, salvar.tela], [sessao, 'Concluídos']);
+});
+
+t('auditoria: preparar pedido, migração e recuperação gravam as células por linha', () => {
+  const m = D.montar();
+  const novo = chamar(m, 'atribuirIdentificador', ...ARGS.atribuirIdentificador);
+  const [prep] = doEvento(m, 'PEDIDO.PREPARAR');
+  assert.strictEqual(prep.alvo_id, 'linha 6');
+  const altPrep = alteracoes(m).filter(a => a.evento_id === prep.evento_id);
+  assert.deepStrictEqual(altPrep.map(a => [a.alvo_id, a.campo, a.antes, a.depois]).sort(), [['linha 6', 'Registro ID', '', novo.registroId], ['linha 6', 'Versão', '', '1']]);
+  const plano = chamar(m, 'diagnosticarMigracaoRegistroId');
+  m.amb.propriedades.MIGRACAO_REGISTRO_ID_CONFIRMACAO = plano.codigoConfirmacao;
+  chamar(m, 'executarMigracaoRegistroId');
+  const [mig] = doEvento(m, 'REGISTRO.MIGRAR');
+  const altMig = alteracoes(m).filter(a => a.evento_id === mig.evento_id);
+  assert(altMig.length >= 1 && altMig.every(a => a.alvo_tipo === 'pedido' && /^linha \d+$/.test(a.alvo_id)), JSON.stringify(altMig));
+  assert.strictEqual(JSON.parse(mig.detalhes).executada, true);
+  m.amb.propriedades.RECUPERACAO_REGISTRO = '10';
+  m.amb.propriedades.RECUPERACAO_REGISTRO = chamar(m, 'diagnosticarRecuperacaoRegistro').codigoConfirmacao;
+  const rec = chamar(m, 'executarRecuperacaoRegistro');
+  const [evRec] = doEvento(m, 'REGISTRO.RECUPERAR');
+  assert.strictEqual(evRec.alvo_id, 'linha 10');
+  assert.deepStrictEqual(alteracoes(m).filter(a => a.evento_id === evRec.evento_id).map(a => [a.campo, a.antes, a.depois]), [['Registro ID', 'abc', rec.novoRegistroId]]);
+  assert(doEvento(m, 'MANUTENCAO.EXECUTAR').some(e => e.alvo_id === 'diagnosticarMigracaoRegistroId'));
+});
+
+t('auditoria: preparar a planilha, gatilho único, integridade e adulteração apontada', () => {
+  const m = D.montar();
+  const r = chamar(m, 'prepararAuditoriaHabilitacoes');
+  assert(['EVENTOS_' + ANO, 'ALTERACOES_' + ANO, 'SESSOES', 'RESUMO_DIARIO', 'DICIONARIO', 'LEIA-ME'].every(a => r.abas.includes(a)), r.abas.join());
+  assert(!r.abas.includes('Página1'));
+  assert.strictEqual(r.gatilho, 'criado (todo dia, 2h)');
+  assert.strictEqual(chamar(m, 'prepararAuditoriaHabilitacoes').gatilho, 'já existia');
+  assert.strictEqual(m.amb.gatilhos.length, 1);
+  assert.strictEqual(m.auditoria.linhas('DICIONARIO').length, r.eventosNoDicionario);
+  assert(m.auditoria.lista.filter(a => /^(EVENTOS|ALTERACOES)_/.test(a.nome)).every(a => a.protegida));
+  chamar(m, 'salvarPedido', D.uuid(1), 1, { observacoes: 'um' });
+  chamar(m, 'obterDetalhe', D.uuid(1));
+  assert.strictEqual(chamar(m, 'verificarIntegridadeAuditoria').ok, true);
+  const aba = m.auditoria.getSheetByName('ALTERACOES_' + ANO);
+  aba.dados[1][9] = 'outro texto';
+  const v = chamar(m, 'verificarIntegridadeAuditoria');
+  assert.strictEqual(v.ok, false);
+  assert(v.problemas.some(p => p.problema === 'alterações do evento mudaram'));
+  // o gatilho de verdade passa; um objeto de evento inventado, não
+  assert.throws(() => chamar(como(m, D.LEITOR), 'consolidarAuditoriaHabilitacoes', { triggerUid: 'inventado' }), codigo('SO_LEITURA'));
+  assert.deepStrictEqual(chamar(m, 'consolidarAuditoriaHabilitacoes', { triggerUid: 'gatilho-1' }), { dias: 0 });
+});
+
+t('auditoria na homologação vai para a planilha de homologação', () => {
+  const m = D.montar({ homologacao: D.linhasAtuais(), propriedades: { ID_INDEX_SPREADSHEET_ID: D.IDS.INDICE, AMBIENTE: 'homologacao' } });
+  chamar(m, 'salvarPedido', D.uuid(1), 1, {});
+  assert.strictEqual(eventos(m).length, 0);
+  assert.strictEqual(m.arquivos[D.IDS.AUDITORIA_HOMOLOGACAO].planilha.linhas('EVENTOS_' + ANO).length, 1);
+  m.amb.usuario = m.amb.dono;
+  assert(/^ok: Auditoria de homologação$/.test(chamar(m, 'diagnosticarConfiguracao').chaves.AUDITORIA_ABERTURA_HABILITACOES));
+});
+
+/*==================== IDENTIFICAÇÃO NO CABEÇALHO (2.1) ====================*/
+
+t('cabeçalho: nome e observação da aba de acesso; sem nome, o e-mail', () => {
+  const m = D.montar();
+  chamar(m, 'doGet', {});
+  assert.deepStrictEqual([m.amb.paginas[0].usuarioNome, m.amb.paginas[0].usuarioDescricao], ['Pessoa Administradora', 'Equipe Fictícia de Teste']);
+  assert(/^[0-9a-f-]{36}$/.test(m.amb.paginas[0].sessao));
+  const sem = D.montar({ permissoes: D.abaPermissoes([['', '', D.ADMIN, '', 'ADMINISTRADOR']]) });
+  chamar(sem, 'doGet', {});
+  assert.deepStrictEqual([sem.amb.paginas[0].usuarioNome, sem.amb.paginas[0].usuarioDescricao], [D.ADMIN, '']);
+  // e-mail repetido: menor perfil, nome e observação da primeira linha que os tiver
+  const dup = D.montar({ permissoes: D.abaPermissoes([['', '', 'dup@exemplo.invalid', '', 'ADMINISTRADOR'], ['', 'Nome Duplicado', 'DUP@exemplo.invalid', 'Obs. duplicada', 'LEITOR']]) });
+  como(dup, 'dup@exemplo.invalid');
+  chamar(dup, 'doGet', {});
+  assert.deepStrictEqual([dup.amb.paginas[0].perfil, dup.amb.paginas[0].usuarioNome, dup.amb.paginas[0].usuarioDescricao], ['LEITOR', 'Nome Duplicado', 'Obs. duplicada']);
 });
 
 /*==================== DADOS FICTÍCIOS DA HOMOLOGAÇÃO ====================*/
@@ -1276,6 +1484,23 @@ t('CSV de dados fictícios: diagnósticos batem com o README', () => {
   assert.strictEqual(JSON.stringify(chamar(m, 'diagnosticarMigracaoRegistroId')), JSON.stringify(chamar(m, 'diagnosticarMigracaoRegistroId')));
   assert.strictEqual(chamar(m, 'obterPendentes').length, 10);
   assert.strictEqual(chamar(m, 'obterConcluidosRecentes').length, 2);
+});
+
+t('CSV de dados fictícios da lista de acesso: perfis e cabeçalho batem com o README', () => {
+  const pasta = path.join(__dirname, '..', '..', '..', '..', 'docs', 'sistemas', 'abertura-habilitacoes', 'dados-ficticios');
+  const linhas = lerCsv_(fs.readFileSync(path.join(pasta, 'gerenciador-habilitacoes.csv'), 'utf8'));
+  assert(linhas.every(l => l.length === 5), 'colunas A a E');
+  const perm = D.abaPermissoes(linhas.slice(1));
+  const pagina = email => { const m = como(D.montar({ permissoes: perm }), email); chamar(m, 'doGet', {}); return m.amb.paginas[0]; };
+  const a = pagina('admin.teste@exemplo.invalid');
+  assert.deepStrictEqual([a.perfil, a.usuarioNome, a.usuarioDescricao], ['ADMINISTRADOR', 'Pessoa Administradora Teste', 'Equipe Fictícia do Serviço de Graduação']);
+  const l = pagina('leitor.teste@exemplo.invalid');
+  assert.deepStrictEqual([l.perfil, l.usuarioNome, l.usuarioDescricao], ['LEITOR', 'Pessoa Leitora Teste', 'Comissão Fictícia de Graduação']);
+  const s = pagina('semnome.teste@exemplo.invalid');
+  assert.deepStrictEqual([s.perfil, s.usuarioNome, s.usuarioDescricao], ['ADMINISTRADOR', 'semnome.teste@exemplo.invalid', '']);
+  assert.strictEqual(pagina('semperfil.teste@exemplo.invalid').nome, 'GerenciadorSemAcesso');
+  const d = pagina('dup.teste@exemplo.invalid');
+  assert.deepStrictEqual([d.perfil, d.usuarioNome, d.usuarioDescricao], ['LEITOR', 'Pessoa Duplicada Teste', 'Primeira linha da pessoa']);
 });
 
 console.log(`\n${ok} ok, ${falhas} falha(s)`);

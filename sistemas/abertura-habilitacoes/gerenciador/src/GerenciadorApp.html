@@ -9,8 +9,10 @@
 <?!= include_('GerenciadorAjudaEstilos'); ?>
 <script>
   // Lido pelo servidor (Acesso.gs) antes de servir a página. Esconder
-  // botões aqui é só conveniência: quem protege é o servidor.
-  window.GERENCIADOR_CONFIG = <?!= JSON.stringify({ perfil: perfil, versao: versao, homologacao: homologacao }) ?>;
+  // botões aqui é só conveniência: quem protege é o servidor. Nome e
+  // observação vêm da aba de acesso e são postos na tela como texto;
+  // "<" vira \u003c para nenhum texto fechar a tag script.
+  window.GERENCIADOR_CONFIG = <?!= JSON.stringify({ perfil: perfil, versao: versao, homologacao: homologacao, usuario: { nome: usuarioNome, descricao: usuarioDescricao }, sessao: sessao }).replace(/</g, '\\u003c') ?>;
 </script>
 </head>
 <body>
@@ -24,6 +26,11 @@
       <div class="tituloSistema">Gerenciador de Abertura de Habilitações</div>
       <div class="subtituloSistema">Serviço de Graduação — Instituto de Psicologia</div>
     </div>
+  </div>
+  <div class="identificacaoUsuario" id="identificacaoUsuario" hidden>
+    <span class="somenteLeitor">Conectado como </span>
+    <span class="identificacaoUsuario__nome" id="identificacaoNome"></span>
+    <span class="identificacaoUsuario__descricao" id="identificacaoDescricao"></span>
   </div>
   <div class="grupoDireitaHeader">
     <?!= include_('GradipTemaControle'); ?>
@@ -241,5 +248,6 @@
 <?!= include_('GerenciadorAjuda'); ?>
 <?!= include_('GerenciadorAjudaUI'); ?>
 <?!= include_('GerenciadorAppUI'); ?>
+<?!= include_('AuditoriaHabilitacoesUI'); ?>
 </body>
 </html>

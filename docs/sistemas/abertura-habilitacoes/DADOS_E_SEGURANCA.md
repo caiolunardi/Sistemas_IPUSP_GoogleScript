@@ -1,12 +1,12 @@
 # Dados e segurança — Gerenciador de Abertura de Habilitações
 
-Preenchido a partir do código da 2.0 (21/10/2026), segundo [`SYSTEM_SECURITY_TEMPLATE.md`](../../seguranca/SYSTEM_SECURITY_TEMPLATE.md). Não contém IDs reais nem dados pessoais. Este documento descreve controles técnicos; não afirma conformidade legal.
+Preenchido a partir do código da 2.0 (21/10/2026), revisto para a 2.1 (22/10/2026, auditoria), segundo [`SYSTEM_SECURITY_TEMPLATE.md`](../../seguranca/SYSTEM_SECURITY_TEMPLATE.md). Não contém IDs reais nem dados pessoais. Este documento descreve controles técnicos; não afirma conformidade legal.
 
 ## 1. Escopo
 
 - Sistema: Gerenciador de Abertura de Habilitações (Web App da equipe do Serviço de Graduação, IPUSP).
 - Público: equipe do Serviço de Graduação.
-- Ambiente: a 1.0 está em produção, fora do repositório. A 2.0 **não foi homologada nem implantada**.
+- Ambiente: a 2.0 está em produção desde 21/10/2026 (homologação parcial). A 2.1 está só no repositório.
 - Responsável funcional: Serviço de Graduação (A VALIDAR INSTITUCIONALMENTE o nome do responsável).
 - Última revisão: 21/10/2026, versão 2.0, só de código e testes com dados sintéticos. A planilha real, a configuração real do projeto e a implantação em uso não foram abertas.
 
@@ -19,11 +19,12 @@ Preenchido a partir do código da 2.0 (21/10/2026), segundo [`SYSTEM_SECURITY_TE
 | Identificação técnica | Registro ID (UUID), Versão | achar o pedido, concorrência | gerenciador | planilha; página | grava | Interna |
 | Histórico 2021–2022 | mesmos campos do pedido | consulta e relatórios | aba antiga | página (busca) e contagens | só leitura | Pessoal |
 | Aviso ao aluno | primeiro nome, habilitação, e-mail | avisar a abertura | planilha | e-mail do aluno (`MailApp`) | caixa de saída da conta que implantou | Pessoal |
-| Lista de acesso | e-mail institucional e perfil | autorizar | aba `GERENCIADOR_HABILITACOES` | só servidor (cache 60 s); a página recebe só o perfil de quem abriu | não grava | Pessoal (institucional) |
-| Conta de quem usa | e-mail `@usp.br` | conferir a lista | `Session.getActiveUser()` | só servidor | não grava | Pessoal |
+| Lista de acesso | e-mail institucional, perfil, nome (B) e observação (D) | autorizar; identificar quem acessou (2.1) | aba `GERENCIADOR_HABILITACOES` | só servidor (cache 60 s); a página recebe só o perfil, o nome e a observação **de quem abriu** | não grava na aba; nome e perfil vão para a auditoria | Pessoal (institucional) |
+| Conta de quem usa | e-mail `@usp.br` | conferir a lista; auditoria | `Session.getActiveUser()` | só servidor | auditoria (2.1) | Pessoal |
+| Auditoria (2.1) | quem, quando, área, navegador, ação; Registro ID do pedido; antes e depois das células gravadas (inclui o texto das observações); termos de busca; resultado do e-mail (sem o endereço) | rastrear o atendimento | servidor e página | planilha `AUDITORIA_ABERTURA_HABILITACOES` | só acrescenta; nada é apagado automaticamente | Pessoal ([AUDITORIA.md](AUDITORIA.md)) |
 | Aparência | `system`/`light`/`dark` | tema | navegador | `localStorage["gradip-theme"]` | navegador | Não pessoal |
 
-O gerenciador **não** registra quem salvou cada pedido (a 1.0 também não). Ver seção 9.
+Até a 2.0, o gerenciador não registrava quem salvou cada pedido (a 1.0 também não). A 2.1 registra ([AUDITORIA.md](AUDITORIA.md)): nome, Nº USP e e-mail do aluno não são copiados para a auditoria; os termos de busca e o texto das observações são, por escolha confirmada pelo responsável em 22/10/2026.
 
 Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 
@@ -34,6 +35,8 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 | Planilha de respostas | Sheets | chave `ABERTURA_HABILITACOES` no `ID_INDEX` | Não | leitura e escrita pela conta que executa |
 | Planilha de permissões | Sheets | chave `PERMISSOES_DE_ACESSO`; aba `GERENCIADOR_HABILITACOES` | Não | leitura pela conta que executa |
 | Índice mestre | Sheets | Script Property `ID_INDEX_SPREADSHEET_ID` | Não | leitura |
+| Planilha da auditoria (2.1) | Sheets | chave `AUDITORIA_ABERTURA_HABILITACOES` (produção e homologação em planilhas diferentes) | Não | escrita pela conta que executa; aberta só pela conta institucional do Serviço de Graduação |
+| Gatilho diário (2.1) | `ScriptApp` | criado por `prepararAuditoriaHabilitacoes` | — | consolida a auditoria às 2h |
 | E-mail | `MailApp` | — | — | envio pela conta que executa (cota diária da conta) |
 | Marca USP do tema claro | imagem externa | `GradipMarcaUSP.html` (servidor do IP) | Sim | — |
 
@@ -51,7 +54,7 @@ Nenhum ID fica no código, na documentação, nos testes ou nos commits. A 1.0 t
   - Perfis são proposta técnica; quem decide a lista e o que cada perfil faz é o responsável.
 - Dados enviados ao cliente: só os campos do pedido que a tela mostra, como texto. Nenhum ID de planilha, nenhuma lista de acesso, nenhum e-mail de outra pessoa da equipe. Na página sem acesso, nenhum dado.
 - Entrada da página: Registro ID conferido pelo formato UUID; Versão inteira ≥ 1; observações texto com limite; termo de busca até 100 caracteres; referência de "Preparar pedido" conferida contra a linha. Booleanos só valem se forem `true` de fato.
-- Saída na página: dados da planilha só por `textContent`; mensagens de erro técnicas viram texto genérico.
+- Saída na página: dados da planilha só por `textContent` (inclusive o nome e a observação do cabeçalho, que chegam num JSON com `<` escapado); mensagens de erro técnicas viram texto genérico.
 
 ## 5. Configuração
 
@@ -79,7 +82,8 @@ Falha fechada: propriedade ausente, chave ausente, repetida, sem ID, de outro ti
 ## 7. Compartilhamento e acesso
 
 - Planilha de respostas: a conta que implanta precisa editar. Quem tem acesso direto à planilha vê tudo e pode editar fora do gerenciador; a lista do gerenciador não restringe isso. Revisão do compartilhamento: A VALIDAR.
-- Planilha de permissões: quem edita a aba `GERENCIADOR_HABILITACOES` decide quem entra; manter essa edição restrita ao Serviço de Graduação.
+- Planilha de permissões: quem edita a aba `GERENCIADOR_HABILITACOES` decide quem entra; manter essa edição restrita ao Serviço de Graduação. Desde a 2.1, o nome e a observação dessa aba aparecem no cabeçalho para a própria pessoa: não escrever ali nada que ela não deva ver.
+- Planilha da auditoria (2.1): **não compartilhar**. Só a conta institucional do Serviço de Graduação; tem nomes da equipe, termos de busca e o texto das observações. Editores do projeto Apps Script podem rodar as funções de manutenção, mas não alteram linhas gravadas sem que `verificarIntegridadeAuditoria` aponte.
 - Projeto Apps Script: editores veem as Script Properties e podem rodar a migração.
 - Cópia de homologação: planilha de respostas de testes **com dados fictícios** e, se possível, uma cópia da planilha de permissões só com as contas de teste.
 
@@ -91,7 +95,7 @@ Falha fechada: propriedade ausente, chave ausente, repetida, sem ID, de outro ti
 
 - Finalidade: atender os pedidos de abertura de habilitação.
 - Base legal, retenção da aba atual e da aba 2021–2022, e quem pode ver o histórico: A VALIDAR INSTITUCIONALMENTE.
-- Rastreabilidade: não há registro de quem concluiu, reabriu ou avisou. Uma auditoria como a do Painel dos servidores exige uma nova planilha e uma chave nova no `ID_INDEX` (decisão do responsável).
+- Rastreabilidade: a 2.1 registra quem concluiu, reabriu, avisou, preparou, migrou ou recuperou, com antes e depois ([AUDITORIA.md](AUDITORIA.md)), na planilha da chave `AUDITORIA_ABERTURA_HABILITACOES`, criada pelo responsável em 22/10/2026. Prazo de guarda da auditoria: A VALIDAR INSTITUCIONALMENTE.
 - Texto do e-mail: herdado da 1.0, não aprovado formalmente.
 - Compartilhamentos externos: nenhum identificado além do e-mail ao próprio aluno.
 
@@ -105,7 +109,7 @@ Seguir [`docs/seguranca/INCIDENTES.md`](../../seguranca/INCIDENTES.md). Medidas 
 
 ## 11. Exceções
 
-- (1.0, em uso) ID da planilha no código, sem autorização no servidor, nomes no registro. Corrigidos na 2.0, que não está implantada: **a exposição da 1.0 continua até a 2.0 ser homologada e implantada**, ou até a implantação da 1.0 ficar restrita.
+- (1.0, substituída em 21/10/2026) ID da planilha no código, sem autorização no servidor, nomes no registro. Corrigidos na 2.0. A versão 5 da implantação (1.0) continua disponível para a volta, nas condições de [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás).
 
 ## 12. Homologação
 

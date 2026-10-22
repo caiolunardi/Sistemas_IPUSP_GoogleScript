@@ -1,6 +1,6 @@
 # Auditoria dos sistemas
 
-Registro de **quem fez o quê, onde, quando e como** nos sistemas da equipe do Serviço de Graduação. O primeiro sistema auditado é o [Painel de Sistemas dos servidores](../sistemas/painel-servidores/README.md) (versão 1.3). Ele serve de modelo para os outros: o núcleo `Auditoria.gs` é copiado sem mudança, e cada sistema escreve só a sua configuração ([MODELO.md](MODELO.md)).
+Registro de **quem fez o quê, onde, quando e como** nos sistemas da equipe do Serviço de Graduação. O primeiro sistema auditado é o [Painel de Sistemas dos servidores](../sistemas/painel-servidores/README.md) (versão 1.3). Ele serve de modelo para os outros: o núcleo `Auditoria.gs` fica em [`shared/auditoria/`](../../shared/auditoria/README.md) e é copiado sem mudança (a CI confere), e cada sistema escreve só a sua configuração ([MODELO.md](MODELO.md)).
 
 ## O que é registrado
 
@@ -65,7 +65,7 @@ página (AuditoriaPainelUI.html)          servidor (Apps Script)
 
 | O quê | Onde |
 |---|---|
-| Núcleo genérico | [`sistemas/painel-servidores/src/Auditoria.gs`](../../sistemas/painel-servidores/src/Auditoria.gs) |
+| Núcleo genérico | [`shared/auditoria/Auditoria.gs`](../../shared/auditoria/Auditoria.gs), copiado em cada sistema |
 | Configuração do painel | [`AuditoriaPainel.gs`](../../sistemas/painel-servidores/src/AuditoriaPainel.gs) e [`AuditoriaPainelUI.html`](../../sistemas/painel-servidores/src/AuditoriaPainelUI.html) |
 | Planilha | chave `AUDITORIA_PAINEL_SERVIDORES` do `ID_INDEX` ([mapa das chaves](../ARQUITETURA_GERAL.md)) |
 | Instalação e conferência | [MANUAL_OPERACAO do painel](../sistemas/painel-servidores/MANUAL_OPERACAO.md) |
@@ -78,3 +78,4 @@ página (AuditoriaPainelUI.html)          servidor (Apps Script)
 | Sistema | Versão | Planilha (chave) | Estado |
 |---|---|---|---|
 | Painel de Sistemas dos servidores | 1.3 | `AUDITORIA_PAINEL_SERVIDORES` | publicado em 20/10/2026 |
+| Gerenciador de Abertura de Habilitações | 2.1 | `AUDITORIA_ABERTURA_HABILITACOES` | no repositório, não implantado; [o que registra](../sistemas/abertura-habilitacoes/AUDITORIA.md) |

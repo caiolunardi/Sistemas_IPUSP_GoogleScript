@@ -285,6 +285,12 @@ Para pedir acesso ou mudar de perfil, fale com o responsável pelo Serviço de G
 
 _Termos de busca:_ perfil leitor administrador somente consulta pedir acesso
 
+### O seu nome no cabeçalho
+
+No alto da página aparecem o seu nome e a descrição cadastrados na lista de acesso do gerenciador. Se estiverem errados ou aparecer só o e-mail, peça a correção ao responsável pelo Serviço de Graduação.
+
+_Termos de busca:_ nome cabecalho identificacao quem esta conectado observacao errado
+
 ### “Sem acesso” ou “conta não identificada”
 
 O gerenciador confere a conta com que você entrou no navegador. Use a conta institucional @usp.br; se tiver várias contas abertas, abra o gerenciador numa janela em que só ela esteja conectada.
@@ -296,6 +302,12 @@ _Termos de busca:_ sem acesso conta nao identificada login usp
 Se aparecer que o sistema está sem configuração válida, ou que uma coluna da planilha não foi encontrada, nada foi alterado. Avise o responsável pelo sistema: a correção é feita na configuração ou na planilha, não na tela.
 
 _Termos de busca:_ falha configuracao planilha nao abre erro sistema responsavel
+
+### “A auditoria está indisponível”
+
+Toda alteração de pedido fica registrada. Se o registro não puder ser feito naquele momento, o gerenciador não salva nada e não envia e-mail. O que você digitou continua na tela: espere alguns minutos e salve de novo. Se continuar, avise o responsável pelo sistema. Consultar pedidos continua funcionando.
+
+_Termos de busca:_ auditoria indisponivel registro nada foi alterado salvar recusado
 
 ### Faixa “Ambiente de homologação”
 
@@ -358,3 +370,8 @@ Ou o seu perfil é de consulta, ou um salvamento ainda está em andamento, ou o 
 
 _Termos de busca:_ botao salvar desativado nao clica
 
+### O sistema registra o que eu faço?
+
+Sim. Para a auditoria do Serviço de Graduação, o gerenciador registra quem abriu a página, quais pedidos foram abertos, as buscas feitas, cada alteração (com o valor antes e depois), os avisos por e-mail e as tentativas sem permissão. O registro fica numa planilha que só a conta institucional do Serviço de Graduação abre. Ninguém da equipe precisa fazer nada para isso.
+
+_Termos de busca:_ registra auditoria rastreio historico quem fez o que gravado acoes

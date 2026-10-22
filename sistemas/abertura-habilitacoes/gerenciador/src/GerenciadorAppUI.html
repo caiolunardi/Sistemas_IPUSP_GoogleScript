@@ -79,7 +79,7 @@
   // código) recebem uma mensagem genérica.
   var CODIGOS_COM_MENSAGEM = ['ENTRADA', 'CONFLITO_VERSAO', 'TRAVA_OCUPADA', 'ENVIO_EM_ANDAMENTO', 'SEM_EMAIL',
     'GRAVACAO_PARCIAL', 'REFERENCIA_DESATUALIZADA', 'MIGRACAO_NECESSARIA', 'NAO_ENCONTRADO', 'INTEGRIDADE', 'VERSAO_INVALIDA',
-    'ESTRUTURA', 'SO_LEITURA', 'SEM_ACESSO', 'SEM_IDENTIFICACAO'];
+    'ESTRUTURA', 'SO_LEITURA', 'SEM_ACESSO', 'SEM_IDENTIFICACAO', 'AUDITORIA_INDISPONIVEL'];
 
   var AJUDA_POR_CODIGO = {
     CONFLITO_VERSAO: 'ajuda-conflito',
@@ -95,7 +95,8 @@
     SEM_IDENTIFICACAO: 'ajuda-acesso',
     ACESSO_INDISPONIVEL: 'ajuda-acesso',
     CONFIGURACAO: 'ajuda-acesso',
-    ESTRUTURA: 'ajuda-acesso'
+    ESTRUTURA: 'ajuda-acesso',
+    AUDITORIA_INDISPONIVEL: 'ajuda-acesso'
   };
 
   var MENSAGENS_LOCAIS = {
@@ -1155,6 +1156,13 @@
   /*---------------- INÍCIO ----------------*/
 
   aplicarIcones(document);
+  // Quem está usando (nome e observação da aba de acesso), sempre como texto.
+  var usuario = ehObjeto(CONFIG.usuario) ? CONFIG.usuario : {};
+  if (texto(usuario.nome).trim()) {
+    $('identificacaoNome').textContent = texto(usuario.nome).trim();
+    $('identificacaoDescricao').textContent = texto(usuario.descricao).trim();
+    $('identificacaoUsuario').hidden = false;
+  }
   $('faixaHomologacao').hidden = !CONFIG.homologacao;
   $('avisoSomenteLeitura').hidden = ADMIN;
   $('versaoSistema').textContent = texto(CONFIG.versao) || '—';

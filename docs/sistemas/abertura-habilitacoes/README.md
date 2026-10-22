@@ -1,6 +1,6 @@
 # Abertura de Habilitações — Gerenciador
 
-**Versão:** gerenciador da equipe **v2.0**, **IMPLANTADO em 21/10/2026** (versão 6 da implantação de produção, código do commit `314fbef`), com **homologação parcial** (ver [HOMOLOGACAO.md](HOMOLOGACAO.md)). A v1.0, recebida em 21/10/2026, era a versão 5 da mesma implantação; voltar a ela segue [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). O código está em [`sistemas/abertura-habilitacoes/gerenciador/`](../../../sistemas/abertura-habilitacoes/gerenciador/README.md). O GitHub não informa qual versão está implantada no Apps Script.
+**Versão:** gerenciador da equipe **v2.0**, **IMPLANTADO em 21/10/2026** (versão 6 da implantação de produção, código do commit `314fbef`), com **homologação parcial** (ver [HOMOLOGACAO.md](HOMOLOGACAO.md)). A v1.0, recebida em 21/10/2026, era a versão 5 da mesma implantação; voltar a ela segue [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). O código está em [`sistemas/abertura-habilitacoes/gerenciador/`](../../../sistemas/abertura-habilitacoes/gerenciador/README.md). A **v2.1** (nome e observação de quem acessou no cabeçalho e [auditoria](AUDITORIA.md) completa) está no repositório e **não foi implantada**. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 
@@ -29,6 +29,7 @@ Todas as diferenças, uma a uma, com a classificação e o teste: [INVENTARIO_LE
 
 | Documento | Conteúdo |
 |---|---|
+| [AUDITORIA.md](AUDITORIA.md) | O que a auditoria (2.1) registra, regras, operação e escolhas a confirmar. |
 | [INVENTARIO_LEGADO.md](INVENTARIO_LEGADO.md) | Inventário da 1.0 e matriz "atual → esperado → teste de equivalência", com a classificação de cada item. |
 | [ARQUITETURA.md](ARQUITETURA.md) | Módulos, chamadas da página, leitura em lote, trava e desempenho. |
 | [FLUXOS.md](FLUXOS.md) | Abrir a página, listar, detalhar, salvar, avisar, reabrir, preparar pedido, migração. |
@@ -49,5 +50,6 @@ Todas as diferenças, uma a uma, com a classificação e o teste: [INVENTARIO_LE
 
 | Versão | Data | Estado |
 |---|---|---|
-| v1.0 | recebida em 21/10/2026 | em uso, fora do repositório |
-| v2.0 | 21/10/2026 | no repositório; não homologada, não implantada |
+| v1.0 | recebida em 21/10/2026 | substituída em 21/10/2026 (versão 5 da implantação), fora do repositório |
+| v2.0 | 21/10/2026 | implantada em 21/10/2026 (versão 6), homologação parcial |
+| v2.1 | 22/10/2026 | no repositório; identificação no cabeçalho e auditoria; não homologada, não implantada |

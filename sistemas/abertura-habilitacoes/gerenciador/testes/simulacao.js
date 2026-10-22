@@ -91,6 +91,56 @@ function criarAba(nome, valores, opcoes = {}) {
   return aba;
 }
 
+/**
+ * Planilha da auditoria (Auditoria.gs), em memória: tudo é texto, como no
+ * formato "@" que o núcleo usa. aba.dados guarda as linhas; insertSheet,
+ * proteção e linhas extras como no Sheets. planilha.falhar = true faz
+ * qualquer abertura falhar (auditoria fora do ar).
+ */
+function criarAbaAuditoria(nome, valores) {
+  const dados = (valores || []).map(l => l.map(String));
+  let maxRows = Math.max(1000, dados.length);
+  const aba = {
+    nome, dados, protegida: false,
+    getName: () => nome,
+    getLastRow: () => { for (let i = dados.length - 1; i >= 0; i--) if (dados[i].some(v => v !== '')) return i + 1; return 0; },
+    getMaxRows: () => maxRows,
+    insertRowsAfter: (_, n) => { maxRows += n; },
+    setFrozenRows: () => aba,
+    protect: () => { aba.protegida = true; const p = { setDescription: () => p, addEditor: () => p, getEditors: () => [], removeEditors: () => p, canDomainEdit: () => false, setDomainEdit: () => p }; return p; },
+    getRange: (r, c, nr = 1, nc = 1) => {
+      if (r + nr - 1 > maxRows) throw new Error('fora da aba');
+      const rg = {
+        setNumberFormat: () => rg, setFontWeight: () => rg,
+        setValues: vals => {
+          vals.forEach((l, i) => { while (dados.length < r + i) dados.push([]); const linha = dados[r + i - 1]; l.forEach((v, j) => { while (linha.length < c + j) linha.push(''); linha[c + j - 1] = String(v); }); });
+          return rg;
+        },
+        getDisplayValues: () => { const out = []; for (let i = 0; i < nr; i++) { const linha = dados[r + i - 1] || []; const o = []; for (let j = 0; j < nc; j++) o.push(linha[c + j - 1] === undefined ? '' : linha[c + j - 1]); out.push(o); } return out; },
+        clearContent: () => { for (let i = 0; i < nr; i++) { const linha = dados[r + i - 1]; if (!linha) continue; for (let j = 0; j < nc; j++) if (c + j - 1 < linha.length) linha[c + j - 1] = ''; } return rg; }
+      };
+      return rg;
+    }
+  };
+  return aba;
+}
+
+function criarPlanilhaAuditoria(nome) {
+  const lista = [criarAbaAuditoria('Página1')];
+  const planilha = {
+    lista,
+    falhar: false,
+    getName: () => nome || 'Auditoria sintética',
+    getSheets: () => lista.slice(),
+    getSheetByName: n => lista.find(a => a.nome === n) || null,
+    insertSheet: n => { if (lista.some(a => a.nome === n)) throw new Error('já existe'); const a = criarAbaAuditoria(n); lista.push(a); return a; },
+    deleteSheet: a => { lista.splice(lista.indexOf(a), 1); },
+    // Linhas gravadas numa aba, sem o título.
+    linhas: n => { const a = lista.find(x => x.nome === n); return a ? a.dados.slice(1).filter(l => l.some(v => v !== '')) : []; }
+  };
+  return planilha;
+}
+
 // Estado global da simulação de trava (compartilhado pelas execuções).
 const estadoGlobal = { travado: false };
 
@@ -116,7 +166,8 @@ function criarAmbiente(opcoes = {}) {
     travaOcupada: !!opcoes.travaOcupada,
     falhaEnvio: !!opcoes.falhaEnvio,
     antesDoEnvio: opcoes.antesDoEnvio || null,
-    paginas: []
+    paginas: [],
+    gatilhos: []
   };
   const registrar = tipo => (...args) => amb.logs.push(tipo + ': ' + args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' '));
   amb.servicos = function () {
@@ -142,7 +193,8 @@ function criarAmbiente(opcoes = {}) {
         openById: id => {
           amb.aberturas[id] = (amb.aberturas[id] || 0) + 1;
           const arq = amb.arquivos[id];
-          if (!arq) throw new Error('Exception: You do not have access to the document with id ' + id + '.');
+          if (!arq || (arq.planilha && arq.planilha.falhar)) throw new Error('Exception: You do not have access to the document with id ' + id + '.');
+          if (arq.planilha) return arq.planilha;
           return {
             getName: () => arq.nome,
             getSheetByName: n => arq.abas.find(a => a.getName() === n) || null,
@@ -183,6 +235,14 @@ function criarAmbiente(opcoes = {}) {
         },
         DigestAlgorithm: { SHA_256: 'SHA_256' },
         Charset: { UTF_8: 'UTF_8' }
+      },
+      ScriptApp: {
+        getProjectTriggers: () => amb.gatilhos.slice(),
+        newTrigger: nome => {
+          const b = { timeBased: () => b, everyDays: () => b, atHour: () => b, inTimezone: () => b,
+            create: () => { const uid = 'gatilho-' + (amb.gatilhos.length + 1); amb.gatilhos.push({ getHandlerFunction: () => nome, getUniqueId: () => uid }); } };
+          return b;
+        }
       },
       HtmlService: {
         createTemplateFromFile: nome => {
@@ -243,4 +303,4 @@ function contemData(v) {
   return false;
 }
 
-module.exports = { contemData, criarAba, criarAmbiente, carregar, executar, arquivosDoGerenciador, formatarData, BASELINE, estadoGlobal, TZ };
+module.exports = { contemData, criarAba, criarAbaAuditoria, criarPlanilhaAuditoria, criarAmbiente, carregar, executar, arquivosDoGerenciador, formatarData, BASELINE, estadoGlobal, TZ };

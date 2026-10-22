@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Confere que as cópias de shared/ dentro de sistemas/ continuam idênticas à
-// origem (tema GRADIP e Central de Ajuda). Um arquivo com nome de cópia que
+// origem (tema GRADIP, Central de Ajuda e núcleo da auditoria). Um arquivo com nome de cópia que
 // não é idêntico precisa estar em "proprios" de ferramentas/copias_shared.json,
 // com o motivo. Uso: node ferramentas/verificar_copias_shared.js  (código 1 se achar algo)
 'use strict';

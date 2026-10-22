@@ -4,7 +4,8 @@
     { "origem": "shared/GradipTema.html", "nome": "^GradipTema\\.html$" },
     { "origem": "shared/GradipTemaControle.html", "nome": "^GradipTemaControle\\.html$" },
     { "origem": "shared/ajuda/GradipAjudaEstilos.html", "nome": "AjudaEstilos\\.html$" },
-    { "origem": "shared/ajuda/GradipAjudaUI.html", "nome": "AjudaUI\\.html$" }
+    { "origem": "shared/ajuda/GradipAjudaUI.html", "nome": "AjudaUI\\.html$" },
+    { "origem": "shared/auditoria/Auditoria.gs", "nome": "^Auditoria\\.gs$" }
   ],
   "proprios": {
     "sistemas/estrutura-curricular/src/EstruturaAjudaEstilos.html": "Central própria da Estrutura Curricular (módulo EstruturaAjuda, janela de manual com vistas); ver docs/sistemas/estrutura-curricular/ARQUITETURA.md.",
