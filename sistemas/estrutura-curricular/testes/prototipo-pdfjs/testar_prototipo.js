@@ -241,10 +241,11 @@ async function verificarLeitura(p, r, rotulo) {
       linha.mensagensWorker = m.msgs;
     });
     const desenho = await desenharPagina(p.pagina, valido);
-    await teste(rot + ': desenho da página para o OCR (render com canvasContext, como ocrDaPagina)', async () => {
+    await teste(rot + ': desenho da página para o OCR (render com canvasContext, como ocrDaPagina; mesmos pixels escuros do ' + BASE + ')', async () => {
       verdade(desenho.ok, desenho.mensagem);
       igual([desenho.largura, desenho.altura], [desenhoRef.largura, desenhoRef.altura], 'tamanho do canvas');
       verdade(desenho.escuros > 0, 'página em branco');
+      igual(desenho.escuros, desenhoRef.escuros, 'pixels escuros iguais aos do ' + BASE);
       linha.pixelsEscuros = desenho.escuros + ' (referência ' + desenhoRef.escuros + ')';
     });
     const rc = await lerNaPagina(p.pagina, corrompido);

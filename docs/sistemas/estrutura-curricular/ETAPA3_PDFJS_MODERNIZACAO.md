@@ -56,7 +56,7 @@ O PDF.js é usado no OCR só para desenhar a página no canvas.
 | Global `window.pdfjsLib` | criado pelo script | o código do leitor depende dele; o `import()` devolve o módulo | atribuir o módulo a `window.pdfjsLib` (ou a uma variável do leitor). **[comprovado no protótipo]** |
 | SRI | `<script integrity>` | não existe `integrity` para `import()` nem para `new Worker()` | precisa de outro controle (seção C). |
 | Worker | `workerSrc` + embrulho `blob:` com `importScripts` | worker de módulo; aceita `workerPort` | usar `workerPort` com o worker conferido. **[comprovado]** |
-| `isEvalSupported` | existe; `false` evita o `eval` do CVE-2024-4367 | existe no 4.x; **removido no 5.x e no 6.x**, que não têm `new Function`/`eval` na biblioteca nem no worker | manter `isEvalSupported: false` não faz mal (é ignorado); a garantia passa a ser a ausência de `eval`, provada por CSP sem `'unsafe-eval'`. **[comprovado]** |
+| `isEvalSupported` | existe; `false` evita o `eval` do CVE-2024-4367 | existe no 4.x; **removido no 5.x e no 6.x**, que não têm `new Function`/`eval` na biblioteca nem no worker | manter `isEvalSupported: false` não faz mal: no 6.4.299 o `getDocument` não lê essa opção (conferido no código do `pdf.mjs`). A busca no código não achou `eval` nem `new Function` na biblioteca e no worker, e nos cenários exercitados não houve violação da CSP sem `'unsafe-eval'`. **[comprovado só nesses cenários]** Isso não prova que scripts embutidos em PDF não possam ser executados por outro caminho: ver C.9. |
 | `Util.transform`, `getTextContent`, `getViewport` | — | mesmos resultados | palavras e posições idênticas às do 3.11.174 (tolerância 0,01 pt). **[comprovado]** |
 | `render({ canvasContext, viewport })` | — | aceito no 4.10.38 e no 6.4.299 | mesmo canvas e mesma contagem de pixels escuros. **[comprovado]** |
 | `PDFDocumentProxy.destroy()` | existe | não existe no 6.x (usar `loadingTask.destroy()`) | o leitor atual não usa; só o protótipo precisou ajustar. **[comprovado]** |
@@ -80,7 +80,7 @@ O `doGet` usa `HtmlService.createTemplateFromFile('Painel').evaluate()`, sem `se
 
 **Candidata proposta:** a linha **6.x no build `legacy/`**, fixada na versão exata e com os hashes conferidos no momento da Etapa 4 (hoje 6.4.299). Os motivos:
 - é a linha mantida e não tem aviso conhecido;
-- removeu o `eval`;
+- não tem `eval` nem `new Function` na biblioteca nem no worker (o que não basta, sozinho, para excluir a execução de scripts embutidos em PDF; ver C.9);
 - o build legacy evita depender de recursos recentes do navegador da equipe.
 
 Pontos de atenção:
@@ -97,8 +97,19 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
 4. **Requisitos:** CORS do jsDelivr (envia `access-control-allow-origin: *`; **[a validar no jsDelivr real]**), `connect-src` para o jsDelivr e `worker-src`/`script-src` com `blob:` se houver CSP.
 5. **Desempenho:** cerca de 1,8 MB (biblioteca legacy de 524 KB e worker de 1,3 MB). A carga e a conferência levaram de 100 a 150 ms sem latência de rede. Na Etapa 4, tirar o `cache: 'no-store'` do protótipo para aproveitar o cache HTTP, já que o hash é conferido a cada uso.
 6. **Menos dependência externa:** guardar os dois arquivos no próprio projeto Apps Script (como HTML incluído) e executar pelo mesmo mecanismo `blob:` eliminaria o jsDelivr. Isso depende dos limites de tamanho de arquivo do Apps Script e do custo de servir 1,8 MB em cada abertura do painel. **[a validar]** Por enquanto, a proposta é manter o jsDelivr com o hash fixado.
-7. **CSP:** o protótipo usa uma CSP rígida, sem `'unsafe-eval'`. Com ela, o 3.11.174 com `isEvalSupported: false` e os candidatos rodaram sem nenhuma violação. A CSP real do HtmlService não está documentada no repositório. **[a validar]**
+7. **CSP do protótipo:** a política é `default-src 'none'; script-src 'unsafe-inline' blob: https://cdn.jsdelivr.net; worker-src blob:; connect-src https://cdn.jsdelivr.net; img-src blob: data:; style-src 'unsafe-inline'`.
+   - **Proíbe `'unsafe-eval'`**: `eval`, `new Function` e equivalentes seriam bloqueados e registrados como violação.
+   - **Ainda permite `'unsafe-inline'`** (a página de teste injeta o leitor e o carregador como scripts embutidos) e scripts de `blob:`. Portanto, não é uma CSP contra script injetado.
+   - **Resultado comprovado:** nos testes executados, o 3.11.174 com `isEvalSupported: false` e os candidatos aprováveis rodaram sem nenhuma violação dessa CSP.
+   - **O que isso não demonstra:** resistência geral a XSS nem a todos os mecanismos de execução de JavaScript. O resultado vale para os PDFs sintéticos e as operações exercitadas (abrir, ler o texto, desenhar no canvas, recusar arquivo inválido).
+   - **A CSP real do HtmlService** não está documentada no repositório e precisa ser verificada na homologação. **[a validar]**
 8. **Fora desta etapa:** o Tesseract também carrega worker e core do CDN sem conferência equivalente no worker (inventário da Etapa 5).
+9. **Scripts embutidos em PDF (`enableScripting`) e o GHSA-hq66-cqwq-w95j:**
+   - **A ausência de `eval` e `new Function` não prova, sozinha, que um script embutido no PDF não possa ser executado.** O PDF.js tem um mecanismo próprio para o JavaScript de documentos (ações de abertura, de links e de campos de formulário): o `pdf.sandbox`, que interpreta esses scripts num ambiente isolado e é acionado pela camada de visualização.
+   - **Onde fica a chave, conferido no código do 6.4.299 (`legacy/build/pdf.mjs`):** `enableScripting` **não é** parâmetro do `getDocument()`. Ele é lido pela `AnnotationLayer` (`enableScripting: params.enableScripting === true`, ou seja, desligado por padrão) e pelos componentes do visualizador (`pdf_viewer`), que criam o sandbox. O núcleo só oferece `hasJSActions()`, `getJSActions()` e `getFieldObjects()`, que devolvem os scripts como dados. Passar `enableScripting` ao `getDocument()` não teria efeito, e por isso o protótipo não o faz.
+   - **O que o leitor atual usa:** só `getDocument({ data, isEvalSupported })`, `getPage`, `getTextContent` e `render({ canvasContext, viewport })`. O `LeitorPdfFontes.html` não referencia `AnnotationLayer`, `pdf_viewer`, `pdf.sandbox`, `getJSActions` nem `enableScripting` (busca no arquivo). O `render` usa o `annotationMode` padrão (`ENABLE`), que desenha a aparência das anotações no canvas, sem camada HTML de formulários. **[inferência a partir da API e do código; não testada com PDF que contenha scripts]**
+   - **GHSA-hq66-cqwq-w95j:** o título ("Arbitrary JavaScript execution upon opening a malicious PDF") e a faixa afetada vêm do `npm audit`. O texto completo do aviso não pôde ser lido deste ambiente (a API de avisos e o OSV foram bloqueados), então **não sei qual mecanismo ele explora** e não afirmo que o leitor estaria imune a ele. A 6.4.299 está fora da faixa afetada. Ler o aviso e o commit da correção é o primeiro passo da Etapa 4.
+   - **Para a Etapa 4:** ver o item 1 da seção F.
 
 ## D. Prova de conceito
 
@@ -109,7 +120,7 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
 - **Integridade e carga:** pacotes conferidos por SHA-512 do npm, arquivos por SHA-384. Mensagens com o worker: 9 enviadas e 14 recebidas por leitura completa.
 - **O que passou em cada candidato:**
   - leitura com 2 páginas de 595×842, texto com acentos e palavras e posições idênticas às do 3.11.174;
-  - desenho a 300 dpi com 44.480 pixels escuros, igual à referência;
+  - desenho a 300 dpi com o mesmo tamanho de canvas e a mesma quantidade de pixels escuros da referência (44.480 na execução de 22/10/2026). Desde a correção da auditoria, a suíte **exige** essa igualdade, comparando com o valor calculado pelo 3.11.174 na mesma execução, e não com uma constante. Uma mutação temporária de 1 pixel no candidato `6.4.299-legacy` fez a suíte falhar com código 1;
   - recusa de PDF corrompido e de texto puro com `InvalidPDFException`, e releitura normal depois;
   - nenhuma violação de CSP, erro, 4xx ou pedido falho;
   - 4 controles negativos (lib e worker com 404 ou adulterados).
@@ -127,7 +138,7 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
 | `import()` de `blob:`; Worker de módulo de `blob:`; `workerPort` | Se o iframe do HtmlService permite Worker de **módulo** criado de `blob:` (o worker `blob:` clássico do 3.x já funciona em produção **[inferência]**) |
 | Conferência SHA-384 com `crypto.subtle` | `crypto.subtle` no iframe (exige contexto seguro; o HtmlService é https) **[a validar]** |
 | `fetch` com CORS para o jsDelivr | CSP e permissões de rede do iframe **[a validar]** |
-| Sem `eval` (CSP rígida) | CSP real do HtmlService **[a validar]** |
+| Nenhuma violação de uma CSP sem `'unsafe-eval'` (mas com `'unsafe-inline'`) nos cenários exercitados | CSP real do HtmlService **[a validar]** |
 | Build legacy no Chromium 141; moderno falha | Versões de Chrome/Edge usadas pela equipe **[a validar]** |
 | Palavras, posições e desenho iguais aos do 3.11.174 em PDF sintético | Mesmo resultado com o PDF do Júpiter "com texto" e o impresso (OCR) **[a validar com o responsável]** |
 
@@ -137,7 +148,8 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
    - `LIBS.pdfjs` passa a ter `lib { url, sha384 }` e `worker { url, sha384 }` da versão 6.x legacy fixada;
    - `abrirPdf` usa o carregamento conferido (integrado ao próprio arquivo), cria **um** Worker por sessão da página e o reaproveita por `workerPort`, e mantém `isEvalSupported: false` (ignorado no 6.x; fica como defesa explícita, caso alguém volte uma versão antiga);
    - a mensagem de falha de download continua a mesma, e a de integridade fica em linguagem de quem usa;
-   - nenhuma mudança no OCR, no `LeitorPdfJupiter`, no `PainelImportacao` nem no backend.
+   - nenhuma mudança no OCR, no `LeitorPdfJupiter`, no `PainelImportacao` nem no backend;
+   - **scripts de documento:** confirmar, no código e na versão fixada, que o leitor não usa nenhuma função de scripting de documentos (`AnnotationLayer`, `pdf_viewer`, `pdf.sandbox`, `getJSActions`, `getFieldObjects`) e manter essa capacidade desligada, porque a leitura de relatórios curriculares não precisa dela. Ler o GHSA-hq66-cqwq-w95j e o commit da correção para saber se o caminho explorado passa pelo `getDocument`, pelo `render` ou só pelo visualizador. Não inserir no `getDocument()` parâmetros que a versão não lê: a forma de desligar é não carregar o sandbox nem a camada de anotações, o que se confere pela API da versão fixada, e não por uma opção suposta. Avaliar se `annotationMode: AnnotationMode.DISABLE` no `render` do OCR mantém o desenho igual e reduz superfície.
 2. **Espelho de testes** (no mesmo PR):
    - `pdfjs-dist` na mesma versão exata;
    - reavaliar o override da Etapa 2: o 6.x troca o `canvas` por `@napi-rs/canvas` opcional, que tem binário pronto e seria instalado na CI; decidir entre aceitar ou usar `npm ci --omit=optional`;
@@ -145,6 +157,7 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
 3. **Testes:**
    - atualizar `testar_pdf_sintetico.js` (versão, `.mjs`, worker de módulo) e acrescentar os controles do protótipo (byte adulterado, CSP sem `eval`, comparação de palavras e posições com o 3.11.174 gravada como referência);
    - manter todos os controles negativos atuais;
+   - teste negativo de scripting com PDF **sintético e benigno**, gerado pelo próprio teste (por exemplo, uma ação de abertura em JavaScript que tentaria gravar um marcador na página): conferir que o marcador não aparece, que nenhum `pdf.sandbox` é baixado e que não há violação de CSP; e uma mutação que ligue o caminho de scripting no teste para provar que o controle detecta a diferença;
    - rodar as suítes sintéticas e a CI completa.
 4. **Validação controlada (com o responsável, sem versionar arquivos):**
    - rodar localmente `testar_pdf_texto.js`, `testar_navegador.js` e `gerar_paginas_ocr.js` com os PDFs do Júpiter, comparando o pacote lido pelo 3.11.174 e pelo candidato (vínculos, números, requisitos, conferência);
@@ -158,7 +171,7 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
    - versão fixada e hashes conferidos em produção e no espelho;
    - CI completa verde, com a suíte de PDF executada;
    - mesmo resultado da importação do 3.11.174 nos PDFs do Júpiter;
-   - nenhum `eval` e nenhum fake worker;
+   - nenhuma violação de CSP sem `'unsafe-eval'`, nenhum fake worker e nenhum script de documento executado no teste negativo de scripting;
    - recusa de arquivo adulterado;
    - homologação aprovada pelo responsável;
    - `npm audit` sem o GHSA-wgrm.
@@ -173,3 +186,6 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
 - As incógnitas do HtmlService (seção E) só se resolvem na homologação.
 - O build legacy aumenta o tamanho (cerca de 65 KB a mais na biblioteca) e altera protótipos globais da página.
 - Versões novas do PDF.js podem trazer avisos novos (caso do 5.x): reconferir na hora de fixar.
+- O mecanismo do GHSA-hq66-cqwq-w95j não foi lido; a análise de `enableScripting` (C.9) se baseia no código do 6.4.299 e ainda não foi testada com PDF que contenha scripts.
+- A CSP do protótipo permite `'unsafe-inline'`; os resultados não valem como prova de resistência a XSS.
+- Continuam para a Etapa 4, sem refatoração antecipada: liberação dos URLs `blob:` (`revokeObjectURL`), encerramento do Worker, recursos auxiliares (`standardFontDataUrl`, `cMapUrl`, `wasmUrl`), CORS do jsDelivr real, comportamento do HtmlService e navegadores da equipe.

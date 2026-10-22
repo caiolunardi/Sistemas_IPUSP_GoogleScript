@@ -21,7 +21,7 @@ node testar_prototipo.js  # ~5 s; código 0 = candidatos aprovados, 1 = reprovad
 | `candidatos.json` | Versões testadas, integridade do pacote no npm e SHA-384 de cada arquivo (fixados em 22/10/2026). |
 | `preparar.js` | Baixa e confere os pacotes. |
 | `carregador_verificado.js` | O carregamento proposto: baixa biblioteca e worker, confere o SHA-384 com `crypto.subtle`, importa a biblioteca de um `blob:` e cria o worker de módulo de outro `blob:`, entregue por `GlobalWorkerOptions.workerPort`. Se um dos dois não conferir, nada é executado. |
-| `testar_prototipo.js` | A prova: página com CSP sem `'unsafe-eval'`, o `LeitorPdfFontes.html` de produção **lido sem mudança**, PDFs de `../pdf_sintetico.js`. |
+| `testar_prototipo.js` | A prova: página com CSP sem `'unsafe-eval'` (mas com `'unsafe-inline'`), o `LeitorPdfFontes.html` de produção **lido sem mudança**, PDFs de `../pdf_sintetico.js`. |
 
 ## O que o teste confere
 
@@ -29,14 +29,14 @@ Para a referência (3.11.174, como em produção) e para cada candidato:
 
 - abertura do PDF sintético pela camada de texto, com 2 páginas de 595×842 e o texto com acentos;
 - **as mesmas palavras e posições do 3.11.174** (`LeitorPdfFontes.ler` sem mudança, tolerância de 0,01 pt);
-- o desenho da página a 300 dpi com `render({ canvasContext, viewport })`, como o OCR faz, com o mesmo tamanho de canvas e a mesma quantidade de pixels escuros;
+- o desenho da página a 300 dpi com `render({ canvasContext, viewport })`, como o OCR faz, com o mesmo tamanho de canvas e a mesma quantidade de pixels escuros do 3.11.174 calculada na mesma execução (igualdade obrigatória para os candidatos aprováveis);
 - worker de verdade: um `Worker` de módulo, mensagens nos dois sentidos e nenhum fake worker;
 - PDF corrompido e texto puro recusados com `InvalidPDFException`, e o leitor volta a funcionar depois;
-- nenhuma violação de CSP (logo, nenhum `eval`), erro de JavaScript, 4xx ou pedido falho;
+- nenhuma violação de CSP (a política proíbe `'unsafe-eval'`, mas permite `'unsafe-inline'`; não é prova de resistência a XSS), erro de JavaScript, 4xx ou pedido falho;
 - controles negativos: biblioteca ou worker ausentes (404) ou com um byte a mais são recusados sem executar nada.
 
 `6.4.299-moderno` é **informativo**: falha no desenho da página no Chromium 141 (`getOrInsertComputed is not a function`), o que mostra por que a versão moderna sem polyfills não serve para navegadores que ainda não têm essa função. Essa falha aparece no log, mas não reprova a suíte.
 
 ## Limites
 
-O protótipo roda no Chromium do Playwright, não no HtmlService do Google. A CDN é simulada a partir dos pacotes conferidos (o jsDelivr real não é acessado). Não cobre o OCR (Tesseract) nem PDFs reais do Júpiter.
+O protótipo roda no Chromium do Playwright, não no HtmlService do Google. A CDN é simulada a partir dos pacotes conferidos (o jsDelivr real não é acessado). Não cobre o OCR (Tesseract) nem PDFs reais do Júpiter. Não testa PDFs com scripts embutidos (`enableScripting`, ver a seção C.9 do relatório).
