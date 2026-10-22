@@ -17,7 +17,8 @@
  *       b) só a região das colunas numéricas, aceitando apenas dígitos.
  *     Tudo acontece NESTE navegador: o PDF não é enviado a nenhum
  *     serviço. As bibliotecas são baixadas do CDN jsDelivr em versões
- *     fixas (com verificação de integridade) e o modelo de português do
+ *     fixas (com verificação de integridade; no PDF.js, da biblioteca e
+ *     do worker, antes de executar) e o modelo de português do
  *     repositório oficial do Tesseract (tessdata_fast 4.1.0, via jsDelivr
  *     ou GitHub, conferido por SHA-256), só quando um PDF sem texto é
  *     importado.
@@ -30,10 +31,20 @@ var LeitorPdfFontes = (function () {
   'use strict';
 
   var LIBS = {
+    // PDF.js 6.4.299, build "legacy" (traz os polyfills para navegadores
+    // que ainda não têm as funções mais novas). São módulos ES: o
+    // <script integrity> não serve para eles, então os bytes são
+    // conferidos aqui pelo SHA-384 antes de executar (carregarPdfJs).
     pdfjs: {
-      url: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
-      integridade: 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e',
-      worker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+      versao: '6.4.299',
+      lib: {
+        url: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.4.299/legacy/build/pdf.min.mjs',
+        sha384: 'sha384-oPqHr8MeYfJpkh4zgHbWYiuwabTzthRiOS5tSWsWGmCVWlwqIkS9coGro5aa48OF'
+      },
+      worker: {
+        url: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.4.299/legacy/build/pdf.worker.min.mjs',
+        sha384: 'sha384-tINN5IYq7dFaoHBUBBc2yfxGwR38mZn9GhaX31UofKYNgAg/3y8A7IjUI3GuEg/8'
+      }
     },
     tesseract: {
       url: 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js',
@@ -61,6 +72,12 @@ var LeitorPdfFontes = (function () {
   var ESCALA_OCR = 300 / 72;
   // PDF "com texto": pelo menos esta fração das páginas com texto útil.
   var MIN_FRACAO_PAGINAS_COM_TEXTO = 0.5;
+  // Tempo máximo para o worker do PDF.js avisar que começou.
+  var LIMITE_INICIO_WORKER_MS = 30000;
+
+  var MSG_DOWNLOAD = 'Não foi possível baixar um componente de leitura de PDF. Verifique a conexão e tente de novo.';
+  var MSG_INTEGRIDADE = 'Um componente de leitura de PDF veio diferente do esperado e não foi usado. Tente de novo mais tarde; se continuar, avise a equipe de sistemas.';
+  var MSG_INICIO = 'O componente de leitura de PDF não pôde ser iniciado neste navegador. Atualize o navegador e tente de novo, ou use o CSV do Júpiter.';
 
   var carregando = {};
   /**
@@ -94,12 +111,136 @@ var LeitorPdfFontes = (function () {
     }
   }
 
-  /** Abre o PDF (bytes) com PDF.js. */
+  function base64(buf) {
+    var bytes = new Uint8Array(buf), s = '';
+    for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+
+  function erroComTipo(mensagem, tipo) {
+    var e = new Error(mensagem);
+    e.tipo = tipo;
+    return e;
+  }
+
+  /**
+   * Baixa um arquivo do PDF.js, confere o SHA-384 dos bytes recebidos e
+   * devolve um URL blob: com esses mesmos bytes (entregue também a
+   * anotar, para ser liberado depois). Bytes diferentes nunca são executados.
+   */
+  function baixarConferido(parte, anotar) {
+    return fetch(parte.url, { credentials: 'omit' }).then(function (resp) {
+      if (!resp.ok) throw erroComTipo(MSG_DOWNLOAD, 'download');
+      return resp.arrayBuffer();
+    }, function () {
+      throw erroComTipo(MSG_DOWNLOAD, 'download'); // rede ou CORS
+    }).then(function (dados) {
+      return crypto.subtle.digest('SHA-384', dados).then(function (h) {
+        if ('sha384-' + base64(h) !== parte.sha384) throw erroComTipo(MSG_INTEGRIDADE, 'integridade');
+        var url = URL.createObjectURL(new Blob([dados], { type: 'text/javascript' }));
+        anotar(url);
+        return url;
+      });
+    });
+  }
+
+  /**
+   * Cria o worker de módulo (do blob: conferido) e espera ele avisar que
+   * começou (mensagem "ready" do PDF.js). Erro ao iniciar ou demora demais
+   * = falha, sem cair no "fake worker" (que rodaria o PDF.js na própria página).
+   */
+  function iniciarWorker(url) {
+    return new Promise(function (resolve, reject) {
+      var w;
+      try {
+        w = new Worker(url, { type: 'module' });
+      } catch (e) {
+        reject(erroComTipo(MSG_INICIO, 'inicio'));
+        return;
+      }
+      var prazo = setTimeout(function () { falhar(); }, LIMITE_INICIO_WORKER_MS);
+      function fim() {
+        clearTimeout(prazo);
+        w.removeEventListener('message', pronto);
+        w.removeEventListener('error', falhar);
+      }
+      function pronto() { fim(); resolve(w); }
+      function falhar(ev) {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        fim();
+        w.terminate();
+        reject(erroComTipo(MSG_INICIO, 'inicio'));
+      }
+      w.addEventListener('message', pronto);
+      w.addEventListener('error', falhar);
+    });
+  }
+
+  // Promise de { lib, pdfWorker, worker }. Um só worker atende todos os
+  // PDFs da página (cada leitura passa o mesmo PDFWorker ao getDocument e,
+  // no fim, libera só o próprio documento).
+  var pdfjsCarga = null;
+  var pdfjs = null; // o módulo do PDF.js, depois de carregado
+  /**
+   * Carrega o PDF.js uma vez, sob demanda: biblioteca e worker baixados e
+   * conferidos juntos; nada é executado se um dos dois falhar. Em caso de
+   * falha, libera o que foi criado e permite tentar de novo.
+   */
+  function carregarPdfJs() {
+    if (pdfjsCarga) return pdfjsCarga;
+    // URLs blob: desta carga, liberados no fim, com sucesso ou não. Se a
+    // carga já falhou (Promise.all rejeita no primeiro erro), o download
+    // que terminar depois tem o seu blob: liberado na hora.
+    var criados = [];
+    var encerrada = false;
+    function anotar(u) { if (encerrada) URL.revokeObjectURL(u); else criados.push(u); }
+    function liberarBlobs() {
+      encerrada = true;
+      criados.forEach(function (u) { URL.revokeObjectURL(u); });
+    }
+    var urls = [];
+    var worker = null;
+    var carga = pdfjsCarga = Promise.all([baixarConferido(LIBS.pdfjs.lib, anotar), baixarConferido(LIBS.pdfjs.worker, anotar)]).then(function (u) {
+      urls = u;
+      return import(urls[0]).catch(function () { throw erroComTipo(MSG_INICIO, 'inicio'); });
+    }).then(function (lib) {
+      if (lib.version !== LIBS.pdfjs.versao) throw erroComTipo(MSG_INTEGRIDADE, 'integridade');
+      return iniciarWorker(urls[1]).then(function (w) {
+        worker = w;
+        var pdfWorker = new lib.PDFWorker({ port: w });
+        // Erro no worker depois de iniciado: a próxima leitura carrega um
+        // worker novo. Este não é encerrado aqui, para não interromper
+        // documentos que ainda estejam sendo lidos.
+        w.addEventListener('error', function () {
+          if (pdfjsCarga === carga) pdfjsCarga = null;
+        });
+        return { lib: lib, pdfWorker: pdfWorker, worker: w };
+      });
+    }).then(function (c) {
+      // O módulo já foi avaliado e o worker já começou: os blob: não são mais necessários.
+      liberarBlobs();
+      return c;
+    }, function (erro) {
+      liberarBlobs();
+      if (worker) worker.terminate();
+      if (pdfjsCarga === carga) pdfjsCarga = null;
+      throw erro && erro.tipo ? erro : erroComTipo(MSG_INICIO, 'inicio');
+    });
+    return carga;
+  }
+
+  /**
+   * Abre o PDF (bytes) com PDF.js. Devolve a tarefa de carga, para que
+   * quem abriu libere o documento no fim (tarefa.destroy()).
+   */
   function abrirPdf(bytes) {
-    return carregarScript(LIBS.pdfjs).then(function () {
-      var lib = window.pdfjsLib;
-      lib.GlobalWorkerOptions.workerSrc = LIBS.pdfjs.worker;
-      return lib.getDocument({ data: bytes, isEvalSupported: false }).promise;
+    return carregarPdfJs().then(function (carga) {
+      pdfjs = carga.lib;
+      // data: uma cópia, porque o PDF.js transfere os bytes ao worker e o
+      // array de quem chamou ficaria vazio.
+      // isEvalSupported: o 6.x não lê mais esta opção (não usa eval); fica
+      // como intenção explícita caso uma versão antiga volte por engano.
+      return carga.lib.getDocument({ data: new Uint8Array(bytes), worker: carga.pdfWorker, isEvalSupported: false });
     });
   }
 
@@ -110,7 +251,7 @@ var LeitorPdfFontes = (function () {
       var tokens = [];
       tc.items.forEach(function (item) {
         if (!item.str || !item.str.trim()) return;
-        var tx = window.pdfjsLib.Util.transform(vp.transform, item.transform);
+        var tx = pdfjs.Util.transform(vp.transform, item.transform);
         var altura = Math.hypot(tx[2], tx[3]) || 8;
         tokens.push({ texto: item.str, x0: tx[4], x1: tx[4] + item.width, y0: tx[5] - altura, y1: tx[5], conf: 100 });
       });
@@ -143,9 +284,13 @@ var LeitorPdfFontes = (function () {
     var avisar = typeof opcoes.aoProgredir === 'function' ? opcoes.aoProgredir : function () {};
     var sinal = opcoes.sinal || {};
     var pdf;
+    var tarefa = null;
 
     avisar({ etapa: 'carregando', mensagem: 'Abrindo o PDF…' });
-    return abrirPdf(bytes).then(function (doc) {
+    var leitura = abrirPdf(bytes).then(function (t) {
+      tarefa = t;
+      return t.promise;
+    }).then(function (doc) {
       pdf = doc;
       var paginas = [];
       var sequencia = Promise.resolve();
@@ -167,6 +312,17 @@ var LeitorPdfFontes = (function () {
         return { paginas: paginasTexto, modo: 'texto' };
       }
       return lerPorOcr(pdf, avisar, sinal, opcoes._maxPaginas).then(function (paginasOcr) { return { paginas: paginasOcr, modo: 'ocr' }; });
+    });
+    // No fim (sucesso, erro ou cancelamento), libera só ESTE documento no
+    // worker; o worker continua para as próximas leituras.
+    function liberar() {
+      if (!tarefa) return Promise.resolve();
+      return tarefa.destroy().catch(function () {});
+    }
+    return leitura.then(function (r) {
+      return liberar().then(function () { return r; });
+    }, function (erro) {
+      return liberar().then(function () { throw erro; });
     });
   }
 
@@ -298,6 +454,7 @@ var LeitorPdfFontes = (function () {
     ler: ler,
     LIBS: LIBS,
     // exposto para testes
+    _carregarPdfJs: carregarPdfJs,
     _palavrasDoTsv: palavrasDoTsv,
     _regiaoNumerica: regiaoNumerica
   };

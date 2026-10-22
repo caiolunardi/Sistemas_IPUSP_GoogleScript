@@ -1,5 +1,7 @@
 # Etapa 3 — Preparação para modernizar o PDF.js da Estrutura Curricular
 
+> **Depois desta etapa:** a migração foi implementada na [Etapa 4](ETAPA4_PDFJS_MIGRACAO.md) (versão 1.12.1, ainda não implantada). Este relatório fica como registro da investigação.
+
 Investigação e prova de conceito isolada, feitas em 22/10/2026 sobre o `main` em `a49d378`. **Nada do sistema mudou:** `src/`, `LeitorPdfFontes.html`, URLs, SRI e o PDF.js de produção (3.11.174) continuam iguais, assim como o `package.json`/`package-lock.json` dos testes. O protótipo está em [`sistemas/estrutura-curricular/testes/prototipo-pdfjs/`](../../../sistemas/estrutura-curricular/testes/prototipo-pdfjs/README.md).
 
 Legenda: **[comprovado]** = executado e conferido nesta etapa; **[inferência]** = conclusão a partir do código ou de evidência indireta; **[a validar]** = depende do Google (HtmlService) ou de material que não está no repositório.

@@ -1,0 +1,305 @@
+<script>
+/*
+ * =====================================================================
+ *  ESTRUTURA CURRICULAR — fontes de palavras do PDF (navegador)
+ * =====================================================================
+ *
+ *  Entrega ao LeitorPdf as palavras de cada página, com posição, em
+ *  pontos do PDF (origem no canto superior esquerdo). Duas fontes:
+ *
+ *  1. CAMADA DE TEXTO (PDF.js) — quando o PDF tem texto de verdade
+ *     (ex.: salvo com "Salvar como PDF" no Chrome/Edge). Rápido e exato.
+ *
+ *  2. OCR (Tesseract.js) — quando o PDF não tem texto (ex.: impresso em
+ *     "Microsoft Print to PDF", em que as letras viram desenhos). Cada
+ *     página é desenhada numa imagem de ~300 dpi e lida duas vezes:
+ *       a) a página inteira (texto e números);
+ *       b) só a região das colunas numéricas, aceitando apenas dígitos.
+ *     Tudo acontece NESTE navegador: o PDF não é enviado a nenhum
+ *     serviço. As bibliotecas são baixadas do CDN jsDelivr em versões
+ *     fixas (com verificação de integridade) e o modelo de português do
+ *     repositório oficial do Tesseract (tessdata_fast 4.1.0, via jsDelivr
+ *     ou GitHub, conferido por SHA-256), só quando um PDF sem texto é
+ *     importado.
+ *
+ *  As bibliotecas só são carregadas quando alguém escolhe um PDF — o
+ *  painel abre sem elas.
+ * =====================================================================
+ */
+var LeitorPdfFontes = (function () {
+  'use strict';
+
+  var LIBS = {
+    pdfjs: {
+      url: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+      integridade: 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e',
+      worker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+    },
+    tesseract: {
+      url: 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js',
+      integridade: 'sha384-2BQ3U3OdKOb0Uczxqr41I9UvZkzr4V9Hv8uSzMMZAlmhsFClvdZX5wi5fDCzG+tM',
+      worker: 'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/worker.min.js',
+      core: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0'
+    },
+    // Modelo de português "tessdata_fast" (versão 4.1.0). Foi escolhido em
+    // vez do modelo padrão do Tesseract.js ("best_int") porque, no relatório
+    // do Júpiter, o "best_int" lê o zero das tabelas como a letra "o" e
+    // perde linhas inteiras; o "fast" leu as 398 linhas de disciplina e
+    // teve 100% dos números confirmados pelas contas (teste de 27/09/2026).
+    // O arquivo é conferido pelo SHA-256 antes de ser usado.
+    modelo: {
+      enderecos: [
+        'https://cdn.jsdelivr.net/gh/tesseract-ocr/tessdata_fast@4.1.0',
+        'https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0'
+      ],
+      arquivo: 'por.traineddata',
+      sha256: 'c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb'
+    }
+  };
+
+  // Resolução do OCR: 300 dpi (1 ponto = 1/72 pol.).
+  var ESCALA_OCR = 300 / 72;
+  // PDF "com texto": pelo menos esta fração das páginas com texto útil.
+  var MIN_FRACAO_PAGINAS_COM_TEXTO = 0.5;
+
+  var carregando = {};
+  /**
+   * Insere o <script> da biblioteca (com integrity/SRI: o navegador recusa
+   * o arquivo se o conteúdo não for exatamente o esperado). Carrega uma
+   * vez só; em caso de falha, permite tentar de novo.
+   */
+  function carregarScript(lib) {
+    if (carregando[lib.url]) return carregando[lib.url];
+    carregando[lib.url] = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = lib.url;
+      s.integrity = lib.integridade;
+      s.crossOrigin = 'anonymous';
+      s.onload = function () { resolve(); };
+      s.onerror = function () {
+        delete carregando[lib.url];
+        reject(new Error('Não foi possível baixar um componente de leitura de PDF. Verifique a conexão e tente de novo.'));
+      };
+      document.head.appendChild(s);
+    });
+    return carregando[lib.url];
+  }
+
+  /** Interrompe a leitura (erro com "cancelado") se a pessoa clicou em Cancelar. */
+  function interrompido(sinal) {
+    if (sinal && sinal.cancelado) {
+      var e = new Error('Leitura cancelada.');
+      e.cancelado = true;
+      throw e;
+    }
+  }
+
+  /** Abre o PDF (bytes) com PDF.js. */
+  function abrirPdf(bytes) {
+    return carregarScript(LIBS.pdfjs).then(function () {
+      var lib = window.pdfjsLib;
+      lib.GlobalWorkerOptions.workerSrc = LIBS.pdfjs.worker;
+      return lib.getDocument({ data: bytes, isEvalSupported: false }).promise;
+    });
+  }
+
+  /** Palavras da camada de texto de uma página (escala 1 = pontos). */
+  function textoDaPagina(pagina) {
+    var vp = pagina.getViewport({ scale: 1 });
+    return pagina.getTextContent().then(function (tc) {
+      var tokens = [];
+      tc.items.forEach(function (item) {
+        if (!item.str || !item.str.trim()) return;
+        var tx = window.pdfjsLib.Util.transform(vp.transform, item.transform);
+        var altura = Math.hypot(tx[2], tx[3]) || 8;
+        tokens.push({ texto: item.str, x0: tx[4], x1: tx[4] + item.width, y0: tx[5] - altura, y1: tx[5], conf: 100 });
+      });
+      return { largura: vp.width, altura: vp.height, tokens: tokens };
+    });
+  }
+
+  /** Converte a saída TSV do Tesseract em palavras (em pontos). */
+  function palavrasDoTsv(tsv, escala) {
+    var linhas = String(tsv || '').split('\n');
+    var tokens = [];
+    linhas.forEach(function (l, i) {
+      var c = l.split('\t');
+      if (c.length < 12 || c[0] !== '5') return; // nível 5 = palavra
+      var texto = c[11];
+      if (!texto || !texto.trim()) return;
+      var x = +c[6], y = +c[7], w = +c[8], h = +c[9];
+      tokens.push({ texto: texto, x0: x / escala, x1: (x + w) / escala, y0: y / escala, y1: (y + h) / escala, conf: +c[10] });
+    });
+    return tokens;
+  }
+
+  /**
+   * Lê o arquivo PDF e devolve { paginas, modo }.
+   * opcoes: { aoProgredir(info), sinal: { cancelado } }
+   *   info = { etapa, pagina, total, mensagem }
+   */
+  function ler(bytes, opcoes) {
+    opcoes = opcoes || {};
+    var avisar = typeof opcoes.aoProgredir === 'function' ? opcoes.aoProgredir : function () {};
+    var sinal = opcoes.sinal || {};
+    var pdf;
+
+    avisar({ etapa: 'carregando', mensagem: 'Abrindo o PDF…' });
+    return abrirPdf(bytes).then(function (doc) {
+      pdf = doc;
+      var paginas = [];
+      var sequencia = Promise.resolve();
+      for (var n = 1; n <= pdf.numPages; n++) {
+        (function (num) {
+          sequencia = sequencia.then(function () {
+            interrompido(sinal);
+            avisar({ etapa: 'texto', pagina: num, total: pdf.numPages, mensagem: 'Procurando texto na página ' + num + ' de ' + pdf.numPages + '…' });
+            return pdf.getPage(num).then(textoDaPagina).then(function (p) { p.numero = num; paginas.push(p); });
+          });
+        })(n);
+      }
+      return sequencia.then(function () { return paginas; });
+    }).then(function (paginasTexto) {
+      var comTexto = paginasTexto.filter(function (p) {
+        return p.tokens.reduce(function (s, t) { return s + t.texto.replace(/\s/g, '').length; }, 0) >= 40;
+      }).length;
+      if (paginasTexto.length && comTexto / paginasTexto.length >= MIN_FRACAO_PAGINAS_COM_TEXTO) {
+        return { paginas: paginasTexto, modo: 'texto' };
+      }
+      return lerPorOcr(pdf, avisar, sinal, opcoes._maxPaginas).then(function (paginasOcr) { return { paginas: paginasOcr, modo: 'ocr' }; });
+    });
+  }
+
+  /**
+   * Baixa o modelo de português do primeiro endereço que responder,
+   * confere o SHA-256 e devolve o endereço (o Tesseract baixa de novo,
+   * normalmente do cache do navegador).
+   */
+  function escolherModelo() {
+    var m = LIBS.modelo;
+    var i = 0;
+    // Tenta o próximo endereço; qualquer falha (rede, HTTP, hash) passa ao seguinte.
+    function tentar() {
+      if (i >= m.enderecos.length) {
+        return Promise.reject(new Error('não foi possível baixar o modelo de português do OCR'));
+      }
+      var base = m.enderecos[i++];
+      return fetch(base + '/' + m.arquivo).then(function (resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.arrayBuffer();
+      }).then(function (dados) {
+        return crypto.subtle.digest('SHA-256', dados);
+      }).then(function (hash) {
+        var hex = Array.prototype.map.call(new Uint8Array(hash), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+        if (hex !== m.sha256) throw new Error('modelo com conteúdo diferente do esperado');
+        return base;
+      }).catch(function () { return tentar(); });
+    }
+    return tentar();
+  }
+
+  /** OCR página a página (texto + 2ª leitura só de dígitos). */
+  function lerPorOcr(pdf, avisar, sinal, maxPaginas) {
+    var worker = null;
+    var total = maxPaginas ? Math.min(maxPaginas, pdf.numPages) : pdf.numPages;
+    avisar({ etapa: 'ocr-preparando', total: total, mensagem: 'Este PDF não tem texto (as letras são desenhos). Preparando a leitura por OCR…' });
+    return Promise.all([carregarScript(LIBS.tesseract), escolherModelo()]).then(function (r) {
+      return window.Tesseract.createWorker('por', 1, {
+        workerPath: LIBS.tesseract.worker,
+        corePath: LIBS.tesseract.core,
+        langPath: r[1],
+        gzip: false,
+        cacheMethod: 'none'
+      });
+    }).then(function (w) {
+      worker = w;
+      var paginas = [];
+      var sequencia = Promise.resolve();
+      for (var n = 1; n <= total; n++) {
+        (function (num) {
+          sequencia = sequencia.then(function () {
+            interrompido(sinal);
+            avisar({ etapa: 'ocr', pagina: num, total: total, mensagem: 'Lendo por OCR a página ' + num + ' de ' + total + '…' });
+            return ocrDaPagina(pdf, num, worker, sinal).then(function (p) { paginas.push(p); });
+          });
+        })(n);
+      }
+      return sequencia.then(function () { return paginas; });
+    }).then(function (paginas) {
+      if (worker) worker.terminate();
+      return paginas;
+    }, function (erro) {
+      if (worker) worker.terminate();
+      if (erro && erro.cancelado) throw erro;
+      var e = new Error('A leitura por OCR não funcionou neste navegador (' + (erro && erro.message ? erro.message : erro) + '). Use o CSV do Júpiter ou um PDF salvo com "Salvar como PDF".');
+      throw e;
+    });
+  }
+
+  /**
+   * Uma página: desenha em canvas (fundo branco, 300 dpi), lê a página
+   * inteira (modo de segmentação 6 = bloco uniforme de texto, saída TSV)
+   * e, se achar o cabeçalho da tabela, relê só a faixa dos números com
+   * a lista de caracteres restrita a dígitos. Libera o canvas no fim.
+   * @return {Promise<{numero, largura, altura, tokens, tokensNumericos}>}
+   */
+  function ocrDaPagina(pdf, num, worker, sinal) {
+    var canvas;
+    return pdf.getPage(num).then(function (pagina) {
+      var vp = pagina.getViewport({ scale: ESCALA_OCR });
+      canvas = document.createElement('canvas');
+      canvas.width = Math.ceil(vp.width);
+      canvas.height = Math.ceil(vp.height);
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      return pagina.render({ canvasContext: ctx, viewport: vp }).promise.then(function () { return vp; });
+    }).then(function (vp) {
+      interrompido(sinal);
+      return worker.recognize(canvas, { tessedit_pageseg_mode: '6' }, { tsv: true }).then(function (r) {
+        var tokens = palavrasDoTsv(r.data.tsv, ESCALA_OCR);
+        var pag = { numero: num, largura: vp.width / ESCALA_OCR, altura: vp.height / ESCALA_OCR, tokens: tokens, tokensNumericos: null };
+        var regiao = regiaoNumerica(tokens, ESCALA_OCR, canvas);
+        if (!regiao) return pag;
+        interrompido(sinal);
+        return worker.recognize(canvas, { tessedit_pageseg_mode: '6', tessedit_char_whitelist: '0123456789', rectangle: regiao }, { tsv: true }).then(function (r2) {
+          pag.tokensNumericos = palavrasDoTsv(r2.data.tsv, ESCALA_OCR);
+          return pag;
+        });
+      });
+    }).then(function (pag) {
+      if (canvas) { canvas.width = 0; canvas.height = 0; }
+      return pag;
+    });
+  }
+
+  /**
+   * Região das colunas numéricas (em pixels da imagem): da metade do
+   * espaço antes da coluna "Aula" até a margem direita. Sem o
+   * cabeçalho "Aula … Trab." na página (ex.: páginas de informações),
+   * não há 2ª leitura.
+   */
+  function regiaoNumerica(tokens, escala, canvas) {
+    var aula = null, trab = null;
+    tokens.forEach(function (t) {
+      var r = String(t.texto).toLowerCase();
+      if (!aula && r === 'aula') aula = t;
+      if (!trab && /^trab\.?$/.test(r)) trab = t;
+    });
+    if (!aula || !trab || Math.abs(aula.y0 - trab.y0) > 4) return null;
+    var cAula = (aula.x0 + aula.x1) / 2, cTrab = (trab.x0 + trab.x1) / 2;
+    var passo = cTrab - cAula;
+    if (!(passo > 5)) return null;
+    var esquerda = Math.max(0, Math.round((cAula - passo * 0.5) * escala));
+    return { left: esquerda, top: 0, width: canvas.width - esquerda, height: canvas.height };
+  }
+
+  return {
+    ler: ler,
+    LIBS: LIBS,
+    // exposto para testes
+    _palavrasDoTsv: palavrasDoTsv,
+    _regiaoNumerica: regiaoNumerica
+  };
+})();
+</script>

@@ -1,0 +1,83 @@
+{
+ "_comentario": "Gerado por prototipo-pdfjs/testar_prototipo.js --gravar-referencia: leitura e desenho do PDF sintético (pdf_sintetico.js) pelo PDF.js 3.11.174 com o leitor como estava em produção. Só dados sintéticos. A suíte oficial compara o PDF.js atual com este arquivo.",
+ "versaoPdfJs": "3.11.174",
+ "chromium": "141.0.7390.37",
+ "pdfSha256": "65a5e8d79c9ed847007e6b05d7ba7cdd3a5c245933b60f4d227ee659b4e23165",
+ "paginas": [
+  {
+   "numero": 1,
+   "largura": 595,
+   "altura": 842,
+   "tokens": [
+    {
+     "texto": "GRADE CURRICULAR SINTETICA - DOCUMENTO DE TESTE",
+     "x0": 72,
+     "x1": 414.02400000000006,
+     "y0": 60,
+     "y1": 72,
+     "conf": 100
+    },
+    {
+     "texto": "Curso ficticio ZZZ-0000 - Ciência de Teste",
+     "x0": 72,
+     "x1": 297.39599999999996,
+     "y0": 78,
+     "y1": 90,
+     "conf": 100
+    },
+    {
+     "texto": "Disciplina ZZZ0001 Fundamentos Sintéticos 4 0 60",
+     "x0": 72,
+     "x1": 344.1120000000001,
+     "y0": 96,
+     "y1": 108,
+     "conf": 100
+    },
+    {
+     "texto": "Disciplina ZZZ0002 Métodos Fictícios 2 1 45",
+     "x0": 72,
+     "x1": 308.74800000000005,
+     "y0": 114,
+     "y1": 126,
+     "conf": 100
+    }
+   ]
+  },
+  {
+   "numero": 2,
+   "largura": 595,
+   "altura": 842,
+   "tokens": [
+    {
+     "texto": "Pagina 2 de 2 - conteudo inventado para a CI",
+     "x0": 72,
+     "x1": 314.148,
+     "y0": 60,
+     "y1": 72,
+     "conf": 100
+    },
+    {
+     "texto": "Disciplina ZZZ0003 Laboratório Imaginário 0 2 60",
+     "x0": 72,
+     "x1": 335.4360000000001,
+     "y0": 78,
+     "y1": 90,
+     "conf": 100
+    },
+    {
+     "texto": "Marcador final: PDFJS-SINTETICO-OK",
+     "x0": 72,
+     "x1": 282.036,
+     "y0": 96,
+     "y1": 108,
+     "conf": 100
+    }
+   ]
+  }
+ ],
+ "desenho": {
+  "largura": 2480,
+  "altura": 3509,
+  "escuros": 44480
+ }
+}

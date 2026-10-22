@@ -130,7 +130,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       # Só as suítes que não pedem exportações do Júpiter (ver testes/README.md).
-      # Leitura de PDF no Chromium com o PDF.js 3.11.174 e o worker reais,
+      # Leitura de PDF no Chromium com o PDF.js 6.4.299 (legacy) e o worker reais,
       # só com PDFs sintéticos gerados pelo próprio teste (pdf_sintetico.js).
       - name: PDF sintético no Chromium (PDF.js e worker)
         run: node testar_pdf_sintetico.js

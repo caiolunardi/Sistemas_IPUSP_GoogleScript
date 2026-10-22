@@ -491,7 +491,7 @@ Declaradas em `LeitorPdfFontes.html`, em `LIBS`. São baixadas **apenas quando a
 
 | Recurso | Origem | Verificação |
 |---|---|---|
-| PDF.js 3.11.174 (`pdf.min.js` + worker) | `cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174` | SRI `sha384` no `<script>` |
+| PDF.js 6.4.299 legacy (`pdf.min.mjs` + `pdf.worker.min.mjs`, desde a 1.12.1) | `cdn.jsdelivr.net/npm/pdfjs-dist@6.4.299/legacy/build/` | `fetch` + SHA-384 (`crypto.subtle`) da biblioteca e do worker antes de executar; `import()` e Worker de módulo a partir de `blob:` ([Etapa 4](ETAPA4_PDFJS_MIGRACAO.md)) |
 | Tesseract.js 7.0.0 (+ worker e `tesseract.js-core@7.0.0`) | `cdn.jsdelivr.net/npm/…` | SRI `sha384` no `<script>` principal |
 | Modelo `por.traineddata` (tessdata_fast 4.1.0) | `cdn.jsdelivr.net/gh/tesseract-ocr/tessdata_fast@4.1.0` ou `raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0` | SHA-256 `c4932b93…ed58b7deb`, conferido antes do uso |
 | Marca USP (tema claro) | PNG em `datagrad.sistemas.ip.usp.br` | mesmo comportamento do Painel de Solicitações |

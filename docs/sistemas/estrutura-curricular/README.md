@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.12.0
+# Estrutura Curricular e Grade Horária — 1.12.1
+
+**1.12.1 (preparada em 22/10/2026, sobre a 1.12.0; Etapa 4 da modernização do PDF.js):** o leitor de PDF passa do PDF.js 3.11.174 ao 6.4.299 (build `legacy`). A biblioteca e o worker são baixados do jsDelivr e só executados se o SHA-384 conferir; um só worker de verdade atende a página; JavaScript embutido em PDF não é executado. Palavras, posições e desenho do PDF sintético são iguais aos do 3.11.174. A importação, o OCR e as regras não mudam; duas mensagens de erro novas (componente diferente do esperado; componente que não inicia). Falta a conferência com PDFs reais do Júpiter e a homologação no Google ([Etapa 4](ETAPA4_PDFJS_MIGRACAO.md)).
 
 **1.12.0 (20/10/2026, sobre a 1.11.3):** migração das disciplinas para a planilha `DISCIPLINAS` (base única de disciplinas), rodada pelo editor (`simularMigracaoDisciplinas` e `migrarDisciplinasParaBaseUnica`). O painel e o envio da grade não mudam ([base de disciplinas](BASE_DISCIPLINAS.md)). Preparada em 15/10/2026 junto com um rascunho de auditoria em cartões; essa parte não entrou, porque a 1.11.2 e a 1.11.3 já reorganizaram a auditoria.
 

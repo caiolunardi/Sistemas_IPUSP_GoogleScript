@@ -5,23 +5,31 @@
 // produção é só LIDO e executado numa página de teste, e a função ler() dele
 // roda sem mudança sobre cada candidato (só a carga da biblioteca é trocada
 // pelo carregador_verificado.js, que é o que a Etapa 4 teria de mudar).
-// A página de teste tem uma CSP rígida, sem 'unsafe-eval'.
+// A página de teste tem uma CSP sem 'unsafe-eval' (mas com 'unsafe-inline').
 // PDFs só sintéticos (../pdf_sintetico.js).
-// Uso: node preparar.js && node testar_prototipo.js
+// Depois da Etapa 4 (o sistema passou ao 6.4.299), a referência continua
+// sendo o 3.11.174: baixado do npm por preparar.js e lido pelo leitor como
+// estava em produção (cópia congelada em referencia/LeitorPdfFontes-3.11.174.html).
+// O protótipo também confere que ../referencia_pdfjs_3.11.174.json, usado
+// pela suíte oficial, é igual ao que o 3.11.174 produz nesta execução
+// (--gravar-referencia regrava esse arquivo).
+// Uso: node preparar.js && node testar_prototipo.js [--gravar-referencia]
 // Código de saída: 0 = candidatos aprovados; 1 = alguma asserção de candidato reprovada; 3 = erro de infraestrutura.
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULO || 'playwright');
-const { corpoScript } = require('../carregar_leitores');
 const { pdfValido, pdfCorrompido, naoPdf, PAGINAS } = require('../pdf_sintetico');
 
 const AQUI = __dirname;
-const MODULOS = path.join(AQUI, '..', 'node_modules');
 const PACOTES = path.join(AQUI, 'pacotes');
-const { candidatos } = JSON.parse(fs.readFileSync(path.join(AQUI, 'candidatos.json'), 'utf8'));
-const BASE = '3.11.174';
+const config = JSON.parse(fs.readFileSync(path.join(AQUI, 'candidatos.json'), 'utf8'));
+const { candidatos } = config;
+const BASE = config.referencia.versao;
+const LEITOR_REFERENCIA = path.join(AQUI, 'referencia', 'LeitorPdfFontes-' + BASE + '.html');
+const ARQ_REFERENCIA = path.join(AQUI, '..', 'referencia_pdfjs_' + BASE + '.json');
+const GRAVAR_REFERENCIA = process.argv.includes('--gravar-referencia');
 const CDN = (versao, caminho) => 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + versao + '/' + caminho;
 const LIMITE_MS = 60000;
 // CSP da página de teste: sem 'unsafe-eval'; scripts só inline, blob: e jsDelivr.
@@ -46,12 +54,12 @@ const normal = (s) => String(s).replace(/\s+/g, ' ').trim();
 function arquivoDoCdn(url) {
   const m = /^https:\/\/cdn\.jsdelivr\.net\/npm\/pdfjs-dist@([^/]+)\/(.+)$/.exec(url.split('?')[0]);
   if (!m) return null;
-  return m[1] === BASE ? path.join(MODULOS, 'pdfjs-dist', m[2]) : path.join(PACOTES, m[1], 'package', m[2]);
+  return path.join(PACOTES, m[1], 'package', m[2]);
 }
 
 const paginaHtml = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Protótipo PDF.js</title>' +
   '<script>window.__csp = []; document.addEventListener("securitypolicyviolation", function (e) { window.__csp.push(e.violatedDirective + " " + e.blockedURI + " " + (e.sample || "")); });</script>' +
-  '<script>' + corpoScript('LeitorPdfFontes.html') + '</script>' +
+  '<script>' + fs.readFileSync(LEITOR_REFERENCIA, 'utf8').replace(/^\s*<script>|<\/script>\s*$/g, '') + '</script>' +
   '<script>' + fs.readFileSync(path.join(AQUI, 'carregador_verificado.js'), 'utf8') + '</script>' +
   '</head><body><p>Protótipo isolado — PDFs sintéticos</p></body></html>';
 
@@ -171,7 +179,7 @@ async function verificarLeitura(p, r, rotulo) {
   const valido = pdfValido();
   const corrompido = pdfCorrompido();
   const textoPuro = naoPdf();
-  for (const c of candidatos) {
+  for (const c of [config.referencia, ...candidatos]) {
     for (const parte of [c.lib, c.worker]) {
       const arq = path.join(PACOTES, c.versao, 'package', parte.caminho);
       if (!fs.existsSync(arq)) throw new Error('falta ' + arq + ' — rode antes: node preparar.js');
@@ -188,6 +196,26 @@ async function verificarLeitura(p, r, rotulo) {
   const desenhoRef = await desenharPagina(ref.pagina, valido);
   await teste(BASE + ': desenho da página para o OCR (canvas a 300 dpi)', async () => {
     verdade(desenhoRef.ok && desenhoRef.escuros > 0, JSON.stringify(desenhoRef));
+  });
+  const referencia = {
+    _comentario: 'Gerado por prototipo-pdfjs/testar_prototipo.js --gravar-referencia: leitura e desenho do PDF sintético (pdf_sintetico.js) pelo PDF.js ' + BASE + ' com o leitor como estava em produção. Só dados sintéticos. A suíte oficial compara o PDF.js atual com este arquivo.',
+    versaoPdfJs: BASE,
+    chromium: nav.version(),
+    pdfSha256: crypto.createHash('sha256').update(valido).digest('hex'),
+    paginas: rRef.ok ? rRef.paginas : null,
+    desenho: desenhoRef.ok ? { largura: desenhoRef.largura, altura: desenhoRef.altura, escuros: desenhoRef.escuros } : null
+  };
+  if (GRAVAR_REFERENCIA) {
+    fs.writeFileSync(ARQ_REFERENCIA, JSON.stringify(referencia, null, 1) + '\n');
+    console.log('     referência gravada em', path.relative(process.cwd(), ARQ_REFERENCIA));
+  }
+  await teste(BASE + ': igual à referência gravada que a suíte oficial usa (' + path.basename(ARQ_REFERENCIA) + ')', async () => {
+    verdade(fs.existsSync(ARQ_REFERENCIA), 'arquivo ausente; rode com --gravar-referencia');
+    const gravada = JSON.parse(fs.readFileSync(ARQ_REFERENCIA, 'utf8'));
+    igual(gravada.pdfSha256, referencia.pdfSha256, 'PDF sintético');
+    igual(gravada.paginas, referencia.paginas, 'palavras e posições');
+    igual(gravada.desenho, referencia.desenho, 'desenho a 300 dpi');
+    if (gravada.chromium !== referencia.chromium) console.log('     aviso: referência gravada no Chromium ' + gravada.chromium + ', esta execução usa ' + referencia.chromium);
   });
   await teste(BASE + ': sem violação de CSP, erro de JavaScript ou 4xx', async () => {
     igual(await ref.pagina.evaluate(() => window.__csp), [], 'violações de CSP');
