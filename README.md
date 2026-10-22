@@ -36,7 +36,7 @@ Os formulários só aceitam quem está logado com uma conta `@usp.br`, e o e-mai
 | Planilha das secretarias | Validações da planilha que as secretarias preenchem (conflito de horário, com caixa de aviso, e modalidade prática) e proteção para que só e-mails autorizados editem. | [docs](docs/sistemas/planilha-grade-secretarias/README.md) · [código](sistemas/estrutura-curricular/planilha-grade/README.md) |
 | Comunidade IPUSP | Busca de alunos, docentes, servidores e setores por nome, nº USP ou e-mail, com ficha e exportação de listas. | [docs](docs/sistemas/busca-alunos/README.md) · [código](sistemas/busca-alunos/README.md) |
 | Gerenciador de Trancamento Total | Tratamento dos pedidos de trancamento total pela equipe. | [código](sistemas/trancamento-total/gerenciador/README.md) |
-| Gerenciador de Abertura de Habilitações | Tratamento dos pedidos de abertura de habilitação pela equipe: pendentes, concluídos, histórico, aviso ao aluno por e-mail e relatórios. Versão 2.0 no repositório, ainda não homologada nem implantada. | [docs](docs/sistemas/abertura-habilitacoes/README.md) · [código](sistemas/abertura-habilitacoes/gerenciador/README.md) |
+| Gerenciador de Abertura de Habilitações | Tratamento dos pedidos de abertura de habilitação pela equipe: pendentes, concluídos, histórico, aviso ao aluno por e-mail e relatórios. Versão 2.0, implantada em 21/10/2026. | [docs](docs/sistemas/abertura-habilitacoes/README.md) · [código](sistemas/abertura-habilitacoes/gerenciador/README.md) |
 
 Ideia em desenvolvimento, ainda sem código: [Gerenciador de Ofícios e Modelos](docs/sistemas/gerenciador-oficios/README.md).
 

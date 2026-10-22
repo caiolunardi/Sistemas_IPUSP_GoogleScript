@@ -1,6 +1,6 @@
 # Abertura de Habilitações — Gerenciador
 
-**Versão:** gerenciador da equipe **v2.0** no repositório (21/10/2026), **NÃO HOMOLOGADO · NÃO IMPLANTADO**. Em uso continua a v1.0, fora do repositório, recebida em 21/10/2026. O código está em [`sistemas/abertura-habilitacoes/gerenciador/`](../../../sistemas/abertura-habilitacoes/gerenciador/README.md). O GitHub não informa qual versão está implantada no Apps Script.
+**Versão:** gerenciador da equipe **v2.0**, **IMPLANTADO em 21/10/2026** (versão 6 da implantação de produção, código do commit `314fbef`), com **homologação parcial** (ver [HOMOLOGACAO.md](HOMOLOGACAO.md)). A v1.0, recebida em 21/10/2026, era a versão 5 da mesma implantação; voltar a ela segue [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). O código está em [`sistemas/abertura-habilitacoes/gerenciador/`](../../../sistemas/abertura-habilitacoes/gerenciador/README.md). O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo
 

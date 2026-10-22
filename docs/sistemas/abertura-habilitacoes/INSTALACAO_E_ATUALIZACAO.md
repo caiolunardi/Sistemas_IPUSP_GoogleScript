@@ -18,9 +18,9 @@ Nenhum gatilho é necessário. Escopos pedidos na primeira execução: planilhas
 
 ## 2. Manifesto
 
-`src/appsscript.json`: fuso `America/Sao_Paulo`, V8, registro de exceções no Stackdriver, Web App **Executar como: eu** (`USER_DEPLOYING`) e **Quem pode acessar: Somente eu** (`MYSELF`).
+`src/appsscript.json`: fuso `America/Sao_Paulo`, V8, registro de exceções no Stackdriver, Web App **Executar como: eu** (`USER_DEPLOYING`) e **Quem pode acessar: Qualquer pessoa da USP** (`DOMAIN`). No projeto de homologação, o acesso da implantação é escolhido à parte pelo responsável.
 
-O acesso "Somente eu" é proposital até a homologação: assim nem um `/exec` novo nem o `/dev` ficam abertos antes de a lista de acesso ser conferida. A configuração da 1.0 em uso não é conhecida pelo repositório. Para a equipe usar, o responsável decide o acesso (provavelmente "Qualquer pessoa da USP", `DOMAIN`, como o Painel dos servidores) e muda o manifesto num PR próprio, depois do teste de identidade do [plano de homologação](HOMOLOGACAO.md).
+Até 21/10/2026 o manifesto dizia "Somente eu" (`MYSELF`), para nada ficar aberto antes de a lista de acesso ser conferida. Na implantação, o responsável escolheu "Qualquer pessoa da USP" (`DOMAIN`), o mesmo acesso da 1.0 e do Painel dos servidores, e o manifesto foi alinhado. Quem entra é decidido pela aba `GERENCIADOR_HABILITACOES`, não pela implantação.
 
 ## 3. Montar a homologação (recomendado antes de tudo)
 

@@ -36,7 +36,7 @@ Precisam de validação humana (responsável pelo Serviço de Graduação ou ins
 | # | Pergunta | Opção provisória da 2.0 | Onde muda |
 |---|---|---|---|
 | 1 | Quem tem acesso e com qual perfil? Os perfis LEITOR/ADMINISTRADOR servem? | Lista vazia até o responsável preencher; dois perfis como proposta | aba `GERENCIADOR_HABILITACOES`; `Acesso.gs` |
-| 2 | Com que acesso o Web App será implantado ("Somente eu", "Qualquer pessoa da USP")? | `MYSELF` até a homologação (teste A5) | `appsscript.json` |
+| 2 | Com que acesso o Web App será implantado ("Somente eu", "Qualquer pessoa da USP")? | **Decidido (21/10/2026):** `DOMAIN` (Qualquer pessoa da USP), com a lista da aba conferida no servidor | `appsscript.json` |
 | 3 | Reabrir deve limpar a Data de Conclusão? | Mantém (como na 1.0) | `Salvamento.gs` |
 | 4 | Concluir de novo deve trocar a Data de Conclusão? | Mantém a original (a 1.0 trocava) | `Salvamento.gs` |
 | 5 | Quando rodar a migração em lote na produção, e se pedidos novos devem ganhar ID por gatilho do Forms | Sem gatilho; **Preparar pedido** por linha e migração expressa | `Migracao.gs`; gatilho novo |
