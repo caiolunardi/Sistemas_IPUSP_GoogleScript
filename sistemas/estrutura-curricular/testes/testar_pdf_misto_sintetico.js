@@ -17,7 +17,7 @@
 // entre as versões. Pixels, fontes pedidas e confiança do OCR são
 // registrados para diagnóstico.
 // Uso: node testar_pdf_misto_sintetico.js
-// Código de saída: 0 = aprovada; 1 = alguma asserção reprovada; 2 = modelo do OCR ausente (não executado); 3 = erro de infraestrutura.
+// Código de saída: 0 = aprovada; 1 = alguma asserção reprovada; 2 = modelo do OCR ou fonte das imagens ausente (não executado); 3 = erro de infraestrutura.
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -32,7 +32,13 @@ const { ESPERADO, CURRICULO } = require('./esperado_jupiter_sintetico');
 const ADMIN = 'dono@unidade.example';
 const MODELO = path.join(__dirname, 'modelos', 'por.traineddata');
 const SHA256_MODELO = 'c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb';
-const FONTE_IMAGENS = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'standard_fonts', 'LiberationSans-Regular.ttf');
+// Fonte das imagens: Liberation Serif 2.1.5 (pacote fonts-liberation 1:2.1.5-3), conferida pelo SHA-256.
+// Vale o primeiro arquivo que existir e conferir; a CI baixa o pacote para fontes/ (ver ci.yml).
+const SHA256_FONTE = '705903ae1382f0150f115d6f10a30f5b2f3d6ade649c474afe6366c39174fb65';
+const FONTES_CANDIDATAS = [
+  path.join(__dirname, 'fontes', 'LiberationSerif-Regular.ttf'),
+  '/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf'
+];
 const PROTOTIPO = path.join(__dirname, 'prototipo-pdfjs');
 const PACOTE_REF = path.join(PROTOTIPO, 'pacotes', '3.11.174', 'package');
 const LEITOR_REF = path.join(PROTOTIPO, 'referencia', 'LeitorPdfFontes-3.11.174.html');
@@ -241,6 +247,11 @@ function numerosDaPagina(n) {
   }
   const shaModelo = sha256(fs.readFileSync(MODELO));
   if (shaModelo !== SHA256_MODELO) { console.log('ERRO: modelo do OCR diferente do esperado (' + shaModelo + ').'); process.exit(3); }
+  const FONTE_IMAGENS = FONTES_CANDIDATAS.find((f) => fs.existsSync(f) && sha256(fs.readFileSync(f)) === SHA256_FONTE);
+  if (!FONTE_IMAGENS) {
+    console.log('NÃO EXECUTADO: falta LiberationSerif-Regular.ttf com sha256 ' + SHA256_FONTE + ' em ' + FONTES_CANDIDATAS.join(' ou ') + ' (ver README.md, "PDF misto sintético").');
+    process.exit(2);
+  }
   const dirAntigo = prepararReferencia();
   const fc = prepararFontconfig();
 
@@ -269,7 +280,7 @@ function numerosDaPagina(n) {
   fs.mkdirSync(path.join(__dirname, 'saida'), { recursive: true });
   fs.writeFileSync(path.join(__dirname, 'saida', 'misto_sintetico.pdf'), pdf);
   console.log('     PDF:', pdf.length, 'bytes, sha256', sha256(pdf), '(cópia em saida/misto_sintetico.pdf)');
-  console.log('     caracteres na camada de texto por página:', camadas.join(' / '), '· fonte das imagens: LiberationSans-Regular.ttf sha256', sha256(fonte).slice(0, 16) + '…');
+  console.log('     caracteres na camada de texto por página:', camadas.join(' / '), '· fonte das imagens:', FONTE_IMAGENS, 'sha256', sha256(fonte).slice(0, 16) + '…');
   await teste('geração determinística: mesmos bytes nas duas gerações', async () => igual(sha256(pdf2), sha256(pdf), 'sha256'));
   await teste('página 1 com texto selecionável (≥ 40 caracteres); páginas 2 e 3 sem nenhum texto', async () => {
     igual(camadas.length, 3, 'páginas');

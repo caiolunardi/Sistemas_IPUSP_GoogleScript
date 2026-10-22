@@ -29,7 +29,7 @@ Todos os dados são inventados:
 | 2 | Continuação do grupo do período 2 (`TST0205`, com dois requisitos ligados por "ou"), Subtotal, `TST0301` (dois requisitos "e") e `TST0308` (período 3, EXT 5), Subtotal e Total Obrigatórias | **Imagem** em tons de cinza, 2480×3508 px (300 dpi), sem camada de texto |
 | 3 | Seção Optativas Eletivas: `TST0510`, `TST0511` (ATPA 10, "Requisito fraco"), Subtotal e Total | **Imagem**, como a página 2 |
 
-As imagens são desenhadas no Chromium com a `LiberationSans-Regular.ttf` do `pdfjs-dist` fixado no `package-lock.json`, e não com as fontes do computador.
+As imagens são desenhadas no Chromium com a **Liberation Serif 2.1.5** (`LiberationSerif-Regular.ttf` do pacote `fonts-liberation` 1:2.1.5-3, SHA-256 `705903ae…74fb65`), carregada como `FontFace` a partir do arquivo, e não com as fontes do computador. Sem o arquivo conferido, a suíte não roda (código 2) e a CI fica vermelha. Ver a seção 6.1 sobre como essa fonte foi fixada.
 
 Na camada de texto há 436 / 0 / 0 caracteres por página. Pela regra atual (`MIN_FRACAO_PAGINAS_COM_TEXTO = 0.5`, sem mudança), o leitor escolhe o **OCR para as três páginas**.
 
@@ -170,13 +170,14 @@ Além disso, a cada execução, 10 controles conferem que o comparador acusa est
 
 ### CI
 
-O `ci.yml` ganhou, no job "Estrutura Curricular", três passos:
+O `ci.yml` ganhou, no job "Estrutura Curricular", quatro passos:
 
 1. o download do modelo `por.traineddata` de `raw.githubusercontent.com/tesseract-ocr/tessdata_fast/4.1.0`, conferido com `sha256sum -c` pelo mesmo hash fixado em `LeitorPdfFontes.html`;
 2. `testar_pdf_ocr_sintetico.js`, que antes era só local;
-3. `testar_pdf_misto_sintetico.js`.
+3. o download do `fonts-liberation_2.1.5-3_all.deb` (arquivo do Ubuntu), com o pacote e a `LiberationSerif-Regular.ttf` conferidos pelo SHA-256 (seção 6.1);
+4. `testar_pdf_misto_sintetico.js`.
 
-Se o modelo não baixar ou o hash não conferir, o passo falha. Não há pulo silencioso.
+Se o modelo ou a fonte não baixar, ou um hash não conferir, o passo falha. Não há pulo silencioso.
 
 ## 6. Achados da calibração do documento
 
@@ -196,6 +197,34 @@ Essas variações vêm do OCR (Tesseract com tessdata_fast) e do formato do cód
 2. Código só de dígitos lido de um código com letras é aceito como válido.
 
 Os dois reforçam que **a primeira importação com documento real deve ter conferência humana** antes de aceitar o resultado.
+
+### 6.1 Fonte das imagens: correção feita na CI do PR #26
+
+A primeira rodada do PR #26 no GitHub Actions reprovou o `testar_pdf_ocr_sintetico.js`. A segunda leitura dos números deu `0 4 0 2 1 0 2`, e o esperado era `4 0 2 1 0 2`. Esse teste desenhava a imagem com `60px Arial, Helvetica, sans-serif`, e cada máquina resolve essa fonte de um jeito. Localmente era a Liberation Sans; no executor da CI era outra.
+
+Ao procurar a causa, achei um defeito no gerador do PDF misto. Ele declarava desenhar com a Liberation Sans do `pdfjs-dist`, mas só carregava a fonte quando `document.fonts.check('10px "LiberationFixture"')` era falso. Para uma família desconhecida, o `check` devolve **verdadeiro** (conferido no Chromium 141), e por isso a fonte nunca era carregada. As imagens saíam na fonte padrão do Chromium: neste computador, a Liberation Serif; em outra máquina, outra fonte. A calibração da seção 6 e os resultados da seção 5 foram obtidos, sem eu saber, com a **Liberation Serif**.
+
+Correções, só em arquivos de teste e na CI:
+
+1. **Gerador:** o `jupiter_sintetico.js` agora procura a face pelo nome e a carrega de fato.
+2. **Fonte do PDF misto:** a suíte usa a Liberation Serif 2.1.5 por arquivo conferido.
+   - Vale o primeiro arquivo que existir e conferir: `testes/fontes/` ou `/usr/share/fonts/truetype/liberation/`.
+   - Na CI, o pacote `fonts-liberation_2.1.5-3_all.deb` é baixado do arquivo do Ubuntu, e o pacote e a fonte são conferidos pelo SHA-256.
+   - Com ela, o PDF gerado é **byte a byte o mesmo** da primeira rodada local (SHA-256 `62a33448…69d82`). O documento avaliado nas seções 2 a 6 não mudou, e o esperado também não.
+3. **Fonte do OCR sintético:** `testar_pdf_ocr_sintetico.js` passou a desenhar com a `LiberationSans-Regular.ttf` do `pdfjs-dist`, carregada como `FontFace`. O esperado (`4 0 2 1 0 2`) não mudou. A suíte passou localmente e mostra o SHA-256 do PDF gerado, para comparar máquinas.
+
+**Achado:** com o mesmo documento desenhado em **Liberation Sans** a 9 pt, o OCR erra nas duas versões do PDF.js, de forma idêntica. O teste foi feito trocando, numa rodada local temporária, só o arquivo de fonte.
+
+- **Leitura:** na 2ª leitura da página 2 aparece um `7` a mais no início, e o CH `75` de `TST0301` sai como `15`.
+- **Interpretação:**
+  - o `LeitorPdfJupiter` atribui errado os dois últimos requisitos: `requisitos[4]` e `requisitos[5]` diferem do esperado;
+  - a conferência registra subtotais e totais de seção que não conferem;
+  - **não há aviso** (`avisos` continua vazio).
+- **Resultado:** a suíte reprovou 8 testes, porque o resultado diferiu do esperado. Nenhuma diferença acadêmica passou em silêncio pelo teste.
+
+Isso confirma, para outra fonte, os riscos residuais 1 e 2 da seção 6. A precisão do OCR depende da tipografia da digitalização, e o leitor não transforma toda divergência numérica em aviso próprio.
+
+Não é diferença entre o 3.11.174 e o 6.4.299: o resultado foi igual nas duas versões. Também não ajustei o esperado nem o documento para essa fonte. Tentei ainda 10 pt, só para entender o problema, e foi pior: as colunas, separadas por 30 pt, emendaram números (`71200`). Essa tentativa foi revertida.
 
 ## 7. Limites
 
@@ -217,6 +246,8 @@ Na implantação controlada, a primeira importação com documento real deve rec
 | `testes/esperado_jupiter_sintetico.js` | resultado acadêmico esperado, escrito à mão |
 | `testes/testar_pdf_misto_sintetico.js` | a suíte (CI) |
 | `testes/mutacoes_pdf_misto.js` | as 8 mutações temporárias (local) |
-| `.github/workflows/ci.yml` | modelo do OCR conferido e os dois testes de OCR |
+| `testes/testar_pdf_ocr_sintetico.js` | desenho com fonte fixada por arquivo (seção 6.1) |
+| `.github/workflows/ci.yml` | modelo do OCR e fonte das imagens conferidos, e os dois testes de OCR |
+| `.gitignore`, `testes/.gitignore` | `testes/fontes/` fora do Git |
 
 Não foram tocados `src/` (nenhum arquivo do sistema), o `LeitorPdfJupiter`, o `PainelImportacao.html`, o carregamento do PDF.js, regras, planilhas, Script Properties, permissões nem o Google.

@@ -143,6 +143,16 @@ jobs:
           echo "c4932b937207a9514b7514d518b931a99938c02a28a5a5a553f8599ed58b7deb  modelos/por.traineddata" | sha256sum -c -
       - name: OCR de PDF sintético só com imagem
         run: node testar_pdf_ocr_sintetico.js
+      # Fonte das páginas escaneadas do PDF misto: Liberation Serif 2.1.5 do pacote
+      # fonts-liberation 1:2.1.5-3 (versão fixa), pacote e fonte conferidos pelo SHA-256.
+      - name: Fonte das imagens do PDF misto (Liberation Serif 2.1.5, SHA-256 conferido)
+        run: |
+          mkdir -p fontes "$RUNNER_TEMP/fonts-liberation"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/fonts-liberation.deb" https://archive.ubuntu.com/ubuntu/pool/main/f/fonts-liberation/fonts-liberation_2.1.5-3_all.deb
+          echo "065c2ab1abc9108b17d401016dc594b79750904390f095845c93bb06e1153acc  $RUNNER_TEMP/fonts-liberation.deb" | sha256sum -c -
+          dpkg-deb -x "$RUNNER_TEMP/fonts-liberation.deb" "$RUNNER_TEMP/fonts-liberation"
+          cp "$RUNNER_TEMP/fonts-liberation/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf" fontes/
+          echo "705903ae1382f0150f115d6f10a30f5b2f3d6ade649c474afe6366c39174fb65  fontes/LiberationSerif-Regular.ttf" | sha256sum -c -
       # PDF misto sintético (texto em Helvetica não incorporada + 2 páginas de imagem):
       # PDF.js 3.11.174 × 6.4.299, OCR e LeitorPdfJupiter, em dois cenários de fontes.
       - name: PDF misto sintético (OCR, 3.11.174 × 6.4.299)

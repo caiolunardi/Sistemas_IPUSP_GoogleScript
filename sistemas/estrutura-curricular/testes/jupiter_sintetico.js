@@ -15,8 +15,8 @@
 //     PDF.js 6.x desenha diferente do 3.11.174, achada no PR #25);
 //  2. e 3. imagens em tons de cinza (300 dpi), sem camada de texto, com a
 //     continuação da tabela. As imagens são desenhadas no navegador com a
-//     LiberationSans-Regular.ttf do pdfjs-dist fixado no package-lock (não
-//     dependem das fontes da máquina).
+//     Liberation Serif 2.1.5 (arquivo conferido pelo SHA-256 no teste), carregada
+//     como FontFace: não dependem das fontes da máquina.
 // Como só 1 de 3 páginas tem texto, o leitor escolhe o OCR para as três.
 // Os valores esperados ficam em esperado_jupiter_sintetico.js, escritos à mão.
 'use strict';
@@ -119,7 +119,7 @@ function textoPdf(s) {
 
 /**
  * Desenha as páginas de imagem no navegador (canvas 2480×3508, fundo
- * branco, texto preto em LiberationSans) e devolve [{ cinza: Buffer, largura, altura }].
+ * branco, texto preto na fonte recebida) e devolve [{ cinza: Buffer, largura, altura }].
  * pagina: página do Playwright; fonte: bytes do .ttf.
  */
 async function desenharImagens(pagina, numeros, fonte, mutar) {
@@ -127,7 +127,8 @@ async function desenharImagens(pagina, numeros, fonte, mutar) {
   for (const n of numeros) {
     const itens = itensDaPagina(n, mutar);
     const b64 = await pagina.evaluate(async ({ itens, fonteB64, escala, largura, altura }) => {
-      if (!document.fonts.check('10px "LiberationFixture"')) {
+      // document.fonts.check devolve true para família desconhecida: procurar a face pelo nome.
+      if (![...document.fonts].some((f) => f.family === 'LiberationFixture' && f.status === 'loaded')) {
         const bytes = Uint8Array.from(atob(fonteB64), (c) => c.charCodeAt(0));
         const face = new FontFace('LiberationFixture', bytes.buffer);
         await face.load();

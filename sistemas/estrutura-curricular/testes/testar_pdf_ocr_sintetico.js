@@ -16,6 +16,8 @@ const { pdfDeImagem } = require('./pdf_sintetico');
 
 const ADMIN = 'dono@unidade.example';
 const MODELO = path.join(__dirname, 'modelos', 'por.traineddata');
+// Fonte do desenho fixada no arquivo do pdfjs-dist: "Arial" do sistema muda de máquina para máquina.
+const FONTE = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'standard_fonts', 'LiberationSans-Regular.ttf');
 const LIMITE_MS = 240000;
 const LINHAS = [
   'GRADE CURRICULAR SINTETICA OCR',
@@ -46,12 +48,15 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
   await esperarCarregado(p.pagina);
 
   // Página de 2480×3508 px (A4 a 300 dpi), texto preto em fundo branco.
-  const img = await p.pagina.evaluate((linhas) => {
+  const img = await p.pagina.evaluate(async ({ linhas, fonteB64 }) => {
+    const face = new FontFace('LiberationFixture', Uint8Array.from(atob(fonteB64), (ch) => ch.charCodeAt(0)).buffer);
+    await face.load();
+    document.fonts.add(face);
     const c = document.createElement('canvas');
     c.width = 2480; c.height = 3508;
     const ctx = c.getContext('2d');
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
-    ctx.fillStyle = '#000'; ctx.font = '60px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = '#000'; ctx.font = '60px LiberationFixture';
     linhas.forEach((l, i) => {
       if (i < 2) { ctx.fillText(l, 300, 300 + i * 100); return; }
       const [cod, nome, aula, trab] = l.split(' ');
@@ -67,12 +72,12 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
     const cinza = new Array(c.width * c.height);
     for (let i = 0, j = 0; i < d.length; i += 4, j++) cinza[j] = d[i];
     return { largura: c.width, altura: c.height, cinza };
-  }, LINHAS);
+  }, { linhas: LINHAS, fonteB64: fs.readFileSync(FONTE).toString('base64') });
   const pdf = pdfDeImagem(Buffer.from(img.cinza), img.largura, img.altura);
   // Cópia local (saida/ e *.pdf estão no .gitignore), para comparar versões com comparar_pdfjs_versoes.js.
   fs.mkdirSync(path.join(__dirname, 'saida'), { recursive: true });
   fs.writeFileSync(path.join(__dirname, 'saida', 'ocr_sintetico.pdf'), pdf);
-  console.log('     PDF só com imagem:', pdf.length, 'bytes (cópia em saida/ocr_sintetico.pdf)');
+  console.log('     PDF só com imagem:', pdf.length, 'bytes, sha256', require('crypto').createHash('sha256').update(pdf).digest('hex'), '(cópia em saida/ocr_sintetico.pdf)');
 
   const r = await p.pagina.evaluate(async ({ arr, limite }) => {
     const etapas = [];
