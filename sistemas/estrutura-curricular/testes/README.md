@@ -1,5 +1,23 @@
 # Testes locais — Estrutura Curricular
 
+## Leitura de PDF na CI (PDF sintético)
+
+```bash
+npm ci && npx playwright install chromium   # uma vez
+node testar_pdf_sintetico.js                # ~10 s; código 0 = aprovada, 1 = asserção reprovada, 3 = erro de infraestrutura
+```
+
+16 testes, só com PDFs **sintéticos** que o próprio teste monta em `pdf_sintetico.js` (texto inventado, prefixo `ZZZ`; sem data, autor nem `/ID`, por isso os bytes são sempre os mesmos). Nenhum arquivo do Júpiter, nada gravado no Git e nenhuma dependência nova. Roda o painel de verdade (`Painel.html` pelo `doGet` do simulador) e o `LeitorPdfFontes.html` de produção no Chromium, com o PDF.js 3.11.174 servido de `node_modules` no lugar do jsDelivr (`ambiente_navegador.js`). Confere:
+
+- a biblioteca só carrega quando um PDF é escolhido, na URL e com o `integrity` (SRI) do leitor, e `pdfjsLib.version` é 3.11.174;
+- o worker é pedido e roda numa thread própria (não o "fake worker" na página);
+- o PDF de duas páginas abre pela camada de texto e o texto extraído é o escrito, página a página e com acento;
+- nenhuma resposta 4xx/5xx, pedido falho ou erro de JavaScript;
+- PDF corrompido (começa com `%PDF-`) e texto puro são recusados com `InvalidPDFException`, o leitor continua abrindo o PDF válido depois disso, e a tela de importação mostra "Não foi possível usar este arquivo";
+- controle negativo: com o worker ou a biblioteca respondendo 404, a leitura **falha** (prova de que o teste não passa sem os recursos).
+
+Não cobre o OCR (Tesseract e o modelo de português), a interpretação do relatório do Júpiter (`LeitorPdfJupiter`) nem o `/exec`; esses seguem nas suítes locais com os arquivos do Júpiter (abaixo). Roda no job "Estrutura Curricular" da CI ([docs/CI.md](../../../docs/CI.md)).
+
 ## Base de disciplinas 1.12.0
 
 `node testar_base_disciplinas.js` (só dados sintéticos, 11 testes): chave ausente ou apontando para a estrutura, só administradores, simulação sem escrita, migração com ajustes aplicados (IP, outra unidade, para outros cursos, excluída), oferta por habilitação, histórico, nova rodada sem duplicar, campos da base e colunas extras preservados, externa cadastrada à mão, código repetido e linha antiga sem `chave_estrutura`. `criarPlanilhaDisciplinas` em `mockGoogle.js` cria a planilha fictícia e a chave no ID_INDEX.
