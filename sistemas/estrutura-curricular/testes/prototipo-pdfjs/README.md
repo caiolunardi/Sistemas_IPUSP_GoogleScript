@@ -1,6 +1,6 @@
 # Protótipo isolado — PDF.js moderno com integridade conferida (Etapa 3)
 
-**Não é usado pelo sistema nem pela CI.** Foi a prova da Etapa 3 ([relatório](../../../../docs/sistemas/estrutura-curricular/ETAPA3_PDFJS_MODERNIZACAO.md)). Desde a Etapa 4 ([relatório](../../../../docs/sistemas/estrutura-curricular/ETAPA4_PDFJS_MIGRACAO.md)), o sistema e a suíte oficial usam o PDF.js 6.4.299 legacy; o protótipo continua útil para comparar versões com o **3.11.174**, que agora também vem do npm (`referencia` em `candidatos.json`) e é lido pelo leitor como estava em produção (`referencia/LeitorPdfFontes-3.11.174.html`, cópia congelada do `main` 909b12a). Ele também confere que `../referencia_pdfjs_3.11.174.json`, usado pela suíte oficial, é o que o 3.11.174 produz; `node testar_prototipo.js --gravar-referencia` regrava esse arquivo.
+**Não é usado pelo sistema.** Na CI, só `preparar.js --referencia` roda, chamado por `../testar_pdf_sintetico.js` para baixar e conferir o 3.11.174 que desenha a página de referência na mesma execução. Foi a prova da Etapa 3 ([relatório](../../../../docs/sistemas/estrutura-curricular/ETAPA3_PDFJS_MODERNIZACAO.md)). Desde a Etapa 4 ([relatório](../../../../docs/sistemas/estrutura-curricular/ETAPA4_PDFJS_MIGRACAO.md)), o sistema e a suíte oficial usam o PDF.js 6.4.299 legacy; o protótipo continua útil para comparar versões com o **3.11.174**, que agora também vem do npm (`referencia` em `candidatos.json`) e é lido pelo leitor como estava em produção (`referencia/LeitorPdfFontes-3.11.174.html`, cópia congelada do `main` 909b12a). Ele também confere que `../referencia_pdfjs_3.11.174.json`, usado pela suíte oficial, é o que o 3.11.174 produz; `node testar_prototipo.js --gravar-referencia` regrava esse arquivo.
 
 ## Como rodar
 
@@ -8,7 +8,8 @@
 cd sistemas/estrutura-curricular/testes
 npm ci && npx playwright install chromium   # o mesmo ambiente da suíte oficial
 cd prototipo-pdfjs
-node preparar.js          # baixa os candidatos com `npm pack`, confere SHA-512 do pacote e SHA-384 dos arquivos
+node preparar.js          # baixa a referência e os candidatos com `npm pack`, confere SHA-512 do pacote e SHA-384 dos arquivos
+                          # (--referencia: só o 3.11.174)
 node testar_prototipo.js  # ~5 s; código 0 = candidatos aprovados, 1 = reprovado, 3 = erro de infraestrutura
 ```
 

@@ -4,7 +4,8 @@
 // só a biblioteca e o worker de cada candidato para pacotes/<versão>/.
 // Depois confere o SHA-384 de cada arquivo extraído. Nada é instalado no
 // node_modules dos testes nem entra no package.json/package-lock.json.
-// Uso: node preparar.js
+// Uso: node preparar.js               (referência e candidatos)
+//      node preparar.js --referencia  (só o 3.11.174; a suíte testar_pdf_sintetico.js usa assim na CI)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -15,7 +16,7 @@ const AQUI = __dirname;
 const PACOTES = path.join(AQUI, 'pacotes');
 const config = JSON.parse(fs.readFileSync(path.join(AQUI, 'candidatos.json'), 'utf8'));
 // A referência (3.11.174) vem do npm como os candidatos: o node_modules dos testes já está na versão nova.
-const candidatos = [config.referencia, ...config.candidatos];
+const candidatos = process.argv.includes('--referencia') ? [config.referencia] : [config.referencia, ...config.candidatos];
 const hash = (alg, buf) => alg + '-' + crypto.createHash(alg).update(buf).digest('base64');
 
 fs.mkdirSync(PACOTES, { recursive: true });

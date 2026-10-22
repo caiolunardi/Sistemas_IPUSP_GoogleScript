@@ -8,8 +8,12 @@
 // - carga sob demanda, versão e hashes iguais aos do pacote do espelho;
 // - worker de módulo de verdade (sem "fake worker"), um só para a página;
 // - URLs blob: liberados depois da carga;
-// - palavras, posições e desenho a 300 dpi iguais aos do PDF.js 3.11.174
-//   (referencia_pdfjs_3.11.174.json, gravada e conferida pelo protótipo);
+// - palavras e posições iguais às do PDF.js 3.11.174 (referencia_pdfjs_3.11.174.json,
+//   gravada e conferida pelo protótipo);
+// - desenho a 300 dpi com os mesmos pixels escuros do 3.11.174 desenhado NA MESMA
+//   EXECUÇÃO (o número depende das fontes instaladas na máquina, então não fica
+//   gravado): o 3.11.174 vem do npm, conferido por prototipo-pdfjs/preparar.js
+//   --referencia, e é lido pelo leitor congelado de prototipo-pdfjs/referencia/;
 // - progresso, cancelamento, leituras simultâneas e bytes de quem chamou intactos;
 // - PDF corrompido e arquivo que não é PDF recusados (leitor e tela);
 // - controles negativos: biblioteca ou worker ausentes, adulterados, rede
@@ -23,6 +27,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const os = require('os');
+const { execFileSync } = require('child_process');
 const { abrirNavegador, abrirPainel, esperarCarregado, criarAmbiente, DIR_SRC } = require('./ambiente_navegador');
 const { corpoScript } = require('./carregar_leitores');
 const { pdfValido, pdfCorrompido, naoPdf, pdfComScript, PAGINAS, MARCADOR_SCRIPT } = require('./pdf_sintetico');
@@ -33,6 +39,9 @@ const URL_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + VERSAO + '/legac
 const ARQ_LIB = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.min.mjs');
 const ARQ_WORKER = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.min.mjs');
 const REFERENCIA = JSON.parse(fs.readFileSync(path.join(__dirname, 'referencia_pdfjs_3.11.174.json'), 'utf8'));
+const PROTOTIPO = path.join(__dirname, 'prototipo-pdfjs');
+const PACOTE_REF = path.join(PROTOTIPO, 'pacotes', '3.11.174', 'package');
+const LEITOR_REF = path.join(PROTOTIPO, 'referencia', 'LeitorPdfFontes-3.11.174.html');
 const ADMIN = 'dono@unidade.example';
 const LIMITE_MS = 60000;
 const MSG_DOWNLOAD = /Não foi possível baixar um componente de leitura de PDF/;
@@ -153,6 +162,57 @@ function desenharPagina(pagina, bytes) {
   }, Array.from(bytes));
 }
 
+/**
+ * Desenho da página 1 a 300 dpi pelo PDF.js 3.11.174, no mesmo navegador:
+ * painel com o leitor congelado (prototipo-pdfjs/referencia/) e o pacote do npm
+ * conferido por preparar.js --referencia (SHA-512 do pacote e SHA-384 dos arquivos).
+ */
+async function desenharReferencia(nav, pdfs) {
+  if (!fs.existsSync(path.join(PACOTE_REF, 'build', 'pdf.min.js')) || !fs.existsSync(path.join(PACOTE_REF, 'build', 'pdf.worker.min.js'))) {
+    execFileSync(process.execPath, [path.join(PROTOTIPO, 'preparar.js'), '--referencia'], { stdio: ['ignore', 'inherit', 'inherit'] });
+  }
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'src-pdfjs-3.11.174-'));
+  for (const f of fs.readdirSync(DIR_SRC)) fs.copyFileSync(path.join(DIR_SRC, f), path.join(dir, f));
+  fs.copyFileSync(LEITOR_REF, path.join(dir, 'LeitorPdfFontes.html'));
+  const amb = criarAmbiente({ dirSrc: dir, usuario: ADMIN, dono: ADMIN });
+  const p = await abrirPainel(nav, { amb, latencia: 0 });
+  await p.contexto.route((u) => u.href.startsWith('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/'), (rota) => {
+    const arq = path.join(PACOTE_REF, rota.request().url().split('pdfjs-dist@3.11.174/')[1].split('?')[0]);
+    if (!fs.existsSync(arq)) return rota.fulfill({ status: 404, body: '' });
+    return rota.fulfill({ status: 200, body: fs.readFileSync(arq), headers: { 'content-type': 'application/javascript', 'access-control-allow-origin': '*' } });
+  });
+  await esperarCarregado(p.pagina);
+  const r = await p.pagina.evaluate(async (lista) => {
+    const saida = [];
+    try {
+      await LeitorPdfFontes.ler(new Uint8Array(lista[0]), {}); // carrega o 3.11.174 e define o workerSrc, como em produção
+      for (const arr of lista) {
+        const tarefa = pdfjsLib.getDocument({ data: new Uint8Array(arr), isEvalSupported: false });
+        const doc = await tarefa.promise;
+        const pg = await doc.getPage(1);
+        const vp = pg.getViewport({ scale: 300 / 72 });
+        const c = document.createElement('canvas');
+        c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+        await pg.render({ canvasContext: ctx, viewport: vp }).promise;
+        const d = ctx.getImageData(0, 0, c.width, c.height).data;
+        let escuros = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i] < 128) escuros++;
+        await tarefa.destroy();
+        saida.push({ ok: true, largura: c.width, altura: c.height, escuros });
+      }
+      return { ok: true, versao: pdfjsLib.version, desenhos: saida };
+    } catch (e) {
+      return { ok: false, mensagem: String(e && e.message || e) };
+    }
+  }, pdfs.map((b) => Array.from(b)));
+  r.errosPagina = p.errosPagina.slice();
+  await p.contexto.close();
+  fs.rmSync(dir, { recursive: true, force: true });
+  return r;
+}
+
 const normal = (s) => String(s).replace(/\s+/g, ' ').trim();
 const ruins = (p) => p.respostas.filter((r) => r.status >= 400);
 const marcadorNaPagina = (pagina) => pagina.evaluate(() => (typeof window.__marcadorScriptPdf === 'undefined' ? null : window.__marcadorScriptPdf));
@@ -220,7 +280,18 @@ async function abrirIsolada(nav) {
   });
 
   const nav = await abrirNavegador();
-  console.log('     Chromium', nav.version(), '· referência gravada no Chromium', REFERENCIA.chromium);
+  console.log('     Chromium', nav.version(), '· palavras de referência gravadas no Chromium', REFERENCIA.chromium);
+  const ref = await desenharReferencia(nav, [valido, comScript]);
+  await teste('referência de desenho: PDF.js 3.11.174 (npm, conferido) desenha os PDFs sintéticos nesta máquina', async () => {
+    verdade(ref.ok, 'referência falhou: ' + ref.mensagem);
+    igual(ref.versao, '3.11.174', 'versão desenhada');
+    igual(ref.errosPagina, [], 'erros na página da referência');
+    igual([ref.desenhos[0].largura, ref.desenhos[0].altura], [REFERENCIA.desenho.largura, REFERENCIA.desenho.altura], 'tamanho do canvas (gravado)');
+    verdade(ref.desenhos.every((d) => d.escuros > 0), 'página em branco na referência');
+    console.log('     3.11.174 nesta máquina: pixels escuros', ref.desenhos.map((d) => d.escuros).join(' / '), '(gravado pelo protótipo, informativo:', REFERENCIA.desenho.escuros + ')');
+  });
+  const desenhoRef = ref.ok ? ref.desenhos[0] : { escuros: NaN };
+  const desenhoRefScript = ref.ok ? ref.desenhos[1] : { escuros: NaN };
 
   console.log('\n== Leitura do PDF válido no painel (PDF.js ' + VERSAO + ' + worker de módulo)');
   const p = await abrir(nav);
@@ -289,12 +360,12 @@ async function abrirIsolada(nav) {
     js.forEach((u) => verdade(b.liberados.includes(u), 'não liberado: ' + u));
   });
   const desenho = await desenharPagina(p.pagina, valido);
-  await teste('desenho da página para o OCR (300 dpi): mesmo tamanho e mesmos pixels escuros do 3.11.174', async () => {
+  await teste('desenho da página para o OCR (300 dpi): mesmo tamanho e mesmos pixels escuros do 3.11.174 nesta execução', async () => {
     verdade(desenho.ok, desenho.mensagem);
-    igual([desenho.largura, desenho.altura], [REFERENCIA.desenho.largura, REFERENCIA.desenho.altura], 'tamanho do canvas');
+    igual([desenho.largura, desenho.altura], [desenhoRef.largura, desenhoRef.altura], 'tamanho do canvas');
     verdade(desenho.escuros > 0, 'página em branco');
-    igual(desenho.escuros, REFERENCIA.desenho.escuros, 'pixels escuros iguais aos do 3.11.174');
-    console.log('     canvas', desenho.largura + '×' + desenho.altura, '· pixels escuros', desenho.escuros, '(referência ' + REFERENCIA.desenho.escuros + ')');
+    igual(desenho.escuros, desenhoRef.escuros, 'pixels escuros iguais aos do 3.11.174');
+    console.log('     canvas', desenho.largura + '×' + desenho.altura, '· pixels escuros', desenho.escuros, '(3.11.174 nesta execução: ' + desenhoRef.escuros + ')');
   });
   await teste('progresso e cancelamento: a leitura cancelada para e a seguinte funciona', async () => {
     const res = await p.pagina.evaluate(async (arr) => {
@@ -357,7 +428,8 @@ async function abrirIsolada(nav) {
     compararComReferencia(rs);
     const desenhoScript = await desenharPagina(p.pagina, comScript);
     verdade(desenhoScript.ok, desenhoScript.mensagem);
-    igual(desenhoScript.escuros, REFERENCIA.desenho.escuros, 'desenho a 300 dpi (o link não tem aparência)');
+    igual(desenhoScript.escuros, desenhoRefScript.escuros, 'desenho a 300 dpi igual ao do 3.11.174 nesta execução');
+    igual(desenhoScript.escuros, desenho.escuros, 'desenho a 300 dpi igual ao do PDF sem script (o link não tem aparência)');
     igual(p.dialogos, [], 'diálogos (app.alert)');
     igual(await marcadorNaPagina(p.pagina), null, 'window.__marcadorScriptPdf');
     igual(p.pedidosCdn.filter((u) => /sandbox|pdf_viewer/.test(u)), [], 'pedidos de sandbox ou visualizador');

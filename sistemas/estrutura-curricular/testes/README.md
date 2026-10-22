@@ -7,19 +7,20 @@ npm ci && npx playwright install chromium   # uma vez
 node testar_pdf_sintetico.js                # ~30 s; código 0 = aprovada, 1 = asserção reprovada, 3 = erro de infraestrutura
 ```
 
-37 testes, só com PDFs **sintéticos** que o próprio teste monta em `pdf_sintetico.js` (texto inventado, prefixo `ZZZ`; sem data, autor nem `/ID`, por isso os bytes são sempre os mesmos). Nenhum arquivo do Júpiter. Roda o painel de verdade (`Painel.html` pelo `doGet` do simulador) e o `LeitorPdfFontes.html` de produção no Chromium, com o PDF.js 6.4.299 (build `legacy`, módulos `.mjs`) servido de `node_modules` no lugar do jsDelivr (`ambiente_navegador.js`, que entrega `.mjs` como `text/javascript`). Confere (desde a 1.12.1, Etapa 4):
+38 testes, só com PDFs **sintéticos** que o próprio teste monta em `pdf_sintetico.js` (texto inventado, prefixo `ZZZ`; sem data, autor nem `/ID`, por isso os bytes são sempre os mesmos). Nenhum arquivo do Júpiter. Roda o painel de verdade (`Painel.html` pelo `doGet` do simulador) e o `LeitorPdfFontes.html` de produção no Chromium, com o PDF.js 6.4.299 (build `legacy`, módulos `.mjs`) servido de `node_modules` no lugar do jsDelivr (`ambiente_navegador.js`, que entrega `.mjs` como `text/javascript`). Confere (desde a 1.12.1, Etapa 4):
 
 - o PDF.js só é baixado quando um PDF é escolhido; versão, URLs e SHA-384 fixados no leitor iguais aos do `pdfjs-dist` do `package-lock.json`;
 - um só Worker de **módulo**, criado de `blob:`, reaproveitado pelas leituras seguintes e simultâneas; nenhum "fake worker";
 - os URLs `blob:` da biblioteca e do worker são liberados depois da carga (e também quando a carga falha);
-- palavras, posições (tolerância de 0,01 pt) e o desenho da página a 300 dpi (tamanho e pixels escuros) **iguais aos do PDF.js 3.11.174**, gravados em `referencia_pdfjs_3.11.174.json` (gerado e conferido pelo protótipo, abaixo);
+- palavras e posições (tolerância de 0,01 pt) **iguais às do PDF.js 3.11.174**, gravadas em `referencia_pdfjs_3.11.174.json` (gerado e conferido pelo protótipo, abaixo);
+- desenho da página a 300 dpi (tamanho e pixels escuros) **igual ao do PDF.js 3.11.174 desenhado na mesma execução**, para o PDF válido e para o PDF com script. A quantidade de pixels escuros depende das fontes instaladas na máquina (a Helvetica do PDF sintético não é incorporada: 44.480 num computador, 45.457 na CI), por isso não é comparada com um número gravado. O 3.11.174 vem do npm por `prototipo-pdfjs/preparar.js --referencia` (SHA-512 do pacote e SHA-384 dos arquivos conferidos; a suíte chama sozinha quando `prototipo-pdfjs/pacotes/` não tem o pacote) e é lido pelo leitor congelado de `prototipo-pdfjs/referencia/`, sem entrar no `package.json`;
 - progresso, cancelamento e nova leitura depois do cancelamento; os bytes de quem chamou continuam inteiros;
 - PDF corrompido e texto puro recusados com `InvalidPDFException` (leitor e tela de importação), e o leitor continua funcionando;
 - **JavaScript de documento:** um PDF sintético benigno com script (ação de abertura, `/Names /JavaScript`, ação da página e link) é lido e desenhado sem executar o script (nenhum `alert`, nenhum marcador na página, nenhum pedido de sandbox); o controle executa o script de propósito e confirma que o detector acusa;
 - uma página isolada com CSP sem `'unsafe-eval'` (mas com `'unsafe-inline'`) lê os PDFs sem violação de CSP; isso não prova resistência a XSS;
 - controles negativos: biblioteca ou worker com 404, com um byte a mais, rede fora e worker que não inicia: a leitura falha com a mensagem certa, **nada é executado** (sem `pdfjsLib` na página e sem Worker), e com o recurso de volta a nova tentativa funciona.
 
-Mutações conferidas em 22/10/2026 (cópias descartáveis de `src/` por `DIR_SRC`): tirar a conferência do hash, executar os scripts do documento, não liberar os `blob:`, não copiar os bytes, deslocar 0,02 pt as posições e criar o worker sem `type: 'module'`: em todas a suíte reprovou (código 1).
+Mutações conferidas em 22/10/2026 (cópias descartáveis de `src/` por `DIR_SRC`): tirar a conferência do hash, executar os scripts do documento, não liberar os `blob:`, não copiar os bytes, deslocar 0,02 pt as posições e criar o worker sem `type: 'module'`: em todas a suíte reprovou (código 1). Para o desenho, uma cópia temporária do teste que pinta 1 pixel escuro a mais no canvas do 6.4.299 reprovou os dois testes de desenho (44.481 ≠ 44.480, código 1).
 
 Não cobre a interpretação do relatório do Júpiter (`LeitorPdfJupiter`) nem o `/exec`; esses seguem nas suítes locais com os arquivos do Júpiter (abaixo). Roda no job "Estrutura Curricular" da CI ([docs/CI.md](../../../docs/CI.md)).
 
