@@ -18,6 +18,10 @@ node testar_pdf_sintetico.js                # ~10 s; código 0 = aprovada, 1 = a
 
 Não cobre o OCR (Tesseract e o modelo de português), a interpretação do relatório do Júpiter (`LeitorPdfJupiter`) nem o `/exec`; esses seguem nas suítes locais com os arquivos do Júpiter (abaixo). Roda no job "Estrutura Curricular" da CI ([docs/CI.md](../../../docs/CI.md)).
 
+## Protótipo do PDF.js moderno (Etapa 3, fora da CI)
+
+`prototipo-pdfjs/` testa, isolado, como carregar uma versão moderna do PDF.js (módulos ES, worker de módulo, integridade conferida da biblioteca e do worker) sem mudar o sistema nem a suíte oficial. Como rodar e o que confere: [prototipo-pdfjs/README.md](prototipo-pdfjs/README.md). Relatório: [ETAPA3_PDFJS_MODERNIZACAO.md](../../../docs/sistemas/estrutura-curricular/ETAPA3_PDFJS_MODERNIZACAO.md).
+
 ## Base de disciplinas 1.12.0
 
 `node testar_base_disciplinas.js` (só dados sintéticos, 11 testes): chave ausente ou apontando para a estrutura, só administradores, simulação sem escrita, migração com ajustes aplicados (IP, outra unidade, para outros cursos, excluída), oferta por habilitação, histórico, nova rodada sem duplicar, campos da base e colunas extras preservados, externa cadastrada à mão, código repetido e linha antiga sem `chave_estrutura`. `criarPlanilhaDisciplinas` em `mockGoogle.js` cria a planilha fictícia e a chave no ID_INDEX.
