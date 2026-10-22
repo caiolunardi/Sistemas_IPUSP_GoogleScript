@@ -183,7 +183,10 @@ Resultado no GitHub Actions do PR #26:
 
 - o download do modelo, o da fonte e o `testar_pdf_ocr_sintetico.js` passam (4/4);
 - a geração do PDF misto é idêntica à local;
-- a suíte do PDF misto **reprova**, pelo achado da seção 6.2: 27 passaram e 4 falharam no run 39855238224.
+- a suíte do PDF misto **reprova**, pelo achado da seção 6.2.
+  - No commit final, sem fixar nada na leitura (run 39856460308), passaram 23 e falharam 8. No cenário A, as duas versões erram. No cenário B, o 3.11.174 erra os requisitos e o 6.4.299 acerta.
+  - Como esse passo falha, os passos seguintes do job não rodaram na CI deste PR: as 12 suítes de `testar_recomeco_google.js` a `testar_navegador_etapa9.js`. Elas passaram localmente.
+  - Os outros 24 jobs do workflow passaram.
 
 Os resultados locais acima valem para o ambiente local.
 
