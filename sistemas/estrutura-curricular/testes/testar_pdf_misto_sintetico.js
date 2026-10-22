@@ -336,7 +336,9 @@ function numerosDaPagina(n) {
     });
   }
 
-  const cenarios = [{ id: 'A', nome: 'fontes do sistema', nav: navA }];
+  let helveticaSistema = '';
+  try { helveticaSistema = execFileSync('fc-match', ['Helvetica'], { encoding: 'utf8' }).trim(); } catch (e) { helveticaSistema = 'fc-match indisponível'; }
+  const cenarios = [{ id: 'A', nome: 'fontes do sistema (fc-match: ' + helveticaSistema + ')', nav: navA }];
   if (fc.erro) {
     console.log('\n   Cenário B não pôde ser preparado: ' + fc.erro);
   } else {
