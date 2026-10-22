@@ -34,7 +34,7 @@ O caminho de uma mudança é sempre o mesmo: **editar num ramo → testar localm
 
 O código de cada sistema fica em `sistemas/<sistema>/src/` (formulários com gerenciador: `sistemas/<sistema>/formulario/src/` e `.../gerenciador/src/`). É ali que o clasp trabalha.
 
-1. Pegue o **ID do script** no editor do Apps Script: **Configurações do projeto → IDs → ID do script**. Ele não vai para o Git, nem em documentação.
+1. Ache o projeto pelo nome, no padrão `GRADIP · <Sistema> · <AMBIENTE>` ([nomes dos projetos](docs/IMPLANTACAO.md#nome-dos-projetos-no-google)), e pegue o **ID do script** no editor do Apps Script: **Configurações do projeto → IDs → ID do script**. Ele não vai para o Git, nem em documentação.
 2. Crie, dentro da pasta `src/` do sistema, o arquivo `.clasp.json`:
    ```json
    {

@@ -49,7 +49,7 @@ Antes de adicionar código, configuração, exemplos, screenshots, logs ou docum
 
 ## Ao terminar qualquer mudança
 
-Rode os testes do sistema, `node ferramentas/verificar_publicacao.js` e `node ferramentas/verificar_copias_shared.js` (a CI em `.github/workflows/ci.yml` roda os mesmos a cada push; ver `docs/CI.md`). Atualize a documentação seguindo `docs/ATUALIZAR_DOCUMENTACAO.md`: arquivos do sistema, catálogo, mapa das chaves do `ID_INDEX` (`docs/ARQUITETURA_GERAL.md`), glossário e Central de Ajuda, conforme o tipo de mudança. Se a versão de um sistema subiu, escreva `notas-de-versao/<sistema>-v<versão>.md` e siga `docs/VERSOES.md` (tag e Release); não mova tags já enviadas.
+Rode os testes do sistema, `node ferramentas/verificar_publicacao.js` e `node ferramentas/verificar_copias_shared.js` (a CI em `.github/workflows/ci.yml` roda os mesmos a cada push; ver `docs/CI.md`). Toda funcionalidade nova traz, no mesmo PR, o CSV de dados fictícios para a homologação em `docs/sistemas/<sistema>/dados-ficticios/` (padrão em `docs/sistemas/AMBIENTE_DE_HOMOLOGACAO.md`), escrito à mão, nunca derivado de linha real. Atualize a documentação seguindo `docs/ATUALIZAR_DOCUMENTACAO.md`: arquivos do sistema, catálogo, mapa das chaves do `ID_INDEX` (`docs/ARQUITETURA_GERAL.md`), glossário e Central de Ajuda, conforme o tipo de mudança. Se a versão de um sistema subiu, escreva `notas-de-versao/<sistema>-v<versão>.md` e siga `docs/VERSOES.md` (tag e Release); não mova tags já enviadas.
 
 ## Fonte de verdade e precedência
 
@@ -121,6 +121,7 @@ Não "corrija" silenciosamente uma particularidade funcional ou editorial para f
 Leia `DEVELOPMENT_LOCAL.md` antes de configurar o clasp, criar um sistema novo ou levar código ao Apps Script.
 
 - Git guarda o histórico público; o clasp leva o código ao Google com a conta institucional. Um push no Git não muda nenhum sistema em uso.
+- Projetos Apps Script se chamam `GRADIP · <Sistema> · <AMBIENTE>` (`docs/IMPLANTACAO.md`, "Nome dos projetos no Google"). O nome serve para achar o projeto; antes de um push, confira o conteúdo. Na dúvida sobre qual projeto é qual, pergunte ao responsável.
 - `.clasp.json`, `.clasprc.json` e `creds.json` ficam só no computador (o `.gitignore` bloqueia; a verificação acusa). Nunca commite o ID do script.
 - Cada pasta `sistemas/**/src/` tem o `.claspignore` padrão (só `.gs`, `.js`, `.html` e `appsscript.json` vão ao Google). Sistema novo copia o mesmo arquivo.
 - IDs de produção ficam no `ID_INDEX` ou em Script Properties, nunca no código. A verificação acusa `openById("…")` e constantes `*ID*` com ID real.

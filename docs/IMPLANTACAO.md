@@ -46,6 +46,33 @@ commit do main com CI ✓ ──(ordem explícita)──▶ projeto de PRODUÇÃ
 - **Manifesto por ambiente:** o mesmo `appsscript.json` vale para os dois projetos. Se a homologação precisar de opção diferente (por exemplo, acesso mais restrito), registre a diferença no README do sistema em vez de manter dois manifestos.
 - **Migração gradual:** os três formulários já seguem o modelo. Os outros entram um por vez, quando cada um tiver mudança a implantar: primeiro o manifesto (seção 5), depois, se fizer sentido, a coluna `Homologação` e a propriedade `AMBIENTE`.
 
+### Nome dos projetos no Google
+
+Decisão do responsável (21/10/2026), para **padronizar os nomes e facilitar a localização dos scripts na hora de criar e alterar** sistemas: todo projeto Apps Script do setor se chama
+
+```
+GRADIP · <Sistema> · <AMBIENTE>
+```
+
+| Parte | Regra |
+|---|---|
+| `GRADIP` | Prefixo fixo. Agrupa os projetos do setor na lista do Google e os separa de projetos pessoais ou antigos. |
+| `<Sistema>` | O mesmo nome do [catálogo](SISTEMAS.md), sem número de versão (a versão fica no Git e nas Releases). Formulário e gerenciador do mesmo assunto são sistemas diferentes. |
+| `<AMBIENTE>` | Em maiúsculas: `PRODUÇÃO` (o `/exec` que a equipe ou os alunos usam), `HOMOLOGAÇÃO` (testes, com `AMBIENTE=homologacao` e planilhas fictícias), `LEGADO` (versão antiga guardada para consulta ou para voltar atrás) ou `ARQUIVADO` (fora de uso; fica guardado em vez de ser apagado). |
+
+Separador: espaço, ponto médio (`·`) e espaço. Exemplos:
+
+- `GRADIP · Gerenciador de Abertura de Habilitações · PRODUÇÃO`
+- `GRADIP · Gerenciador de Abertura de Habilitações · HOMOLOGAÇÃO`
+- `GRADIP · Exclusão de Disciplinas · PRODUÇÃO`
+
+Como aplicar:
+
+- **Projeto novo:** já nasce com o nome no padrão (`clasp create-script --title "GRADIP · … · HOMOLOGAÇÃO"` ou o nome dado no editor).
+- **Projeto existente:** no editor, clique no nome do projeto, no alto da página, e troque. Vale também para scripts ligados a uma planilha ou formulário. O clasp não renomeia projetos. Renomear **não** muda o ID do script, a URL `/exec`, as implantações, os gatilhos nem as permissões.
+- **O nome serve para achar, não para provar.** Quem liga a pasta ao projeto é o `.clasp.json`, que fica só no computador (o ID nunca vai para o Git nem para a documentação). Antes de qualquer `clasp push`, confira o conteúdo do projeto (seção 4), mesmo que o nome esteja certo.
+- **Dúvida sobre qual projeto é qual** (nomes antigos parecidos): quem decide é o responsável, pela URL `/exec` em uso. Ninguém renomeia nem envia código por suposição.
+
 ## 4. Conferir o código do editor
 
 A ferramenta [`ferramentas/conferir_implantacao.js`](../ferramentas/conferir_implantacao.js) compara uma pasta trazida pelo `clasp pull` com o repositório **sem mostrar conteúdo** (só nomes, impressões digitais e quantas linhas diferem). Testes: [`ferramentas/testes/testar_conferir_implantacao.js`](../ferramentas/testes/testar_conferir_implantacao.js), na CI.
