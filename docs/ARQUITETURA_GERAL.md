@@ -71,6 +71,11 @@ Os sistemas não chamam uns aos outros: **conversam pelas planilhas** e por link
 - **Grade horária, a cada semestre.** A Estrutura Curricular importa o Júpiter para `ESTRUTURA_CURRICULAR`, prepara a lista e envia a grade para `GRADE_HORARIA_PREENCHIMENTO`, guardando uma cópia do semestre anterior. As secretarias preenchem dia, horário e sala, com validação e proteção da própria planilha. A auditoria acompanha o preenchimento e a Grade Horária visual mostra o resultado aos alunos.
 - **Contagem de créditos.** A equipe mantém as Regras Curriculares pelo Painel dos servidores, e o Painel de Solicitações as lê para o aluno simular quanto falta para se formar.
 
+### Diplomas — integração documentada, código ainda não publicado
+
+A fonte recebida do módulo [Emissão de Diplomas](sistemas/diplomas/ARQUITETURA.md) usa abas `Diplomas` e `INFOS`, cadastro central Alunos, regras curriculares e `ANALISE_HISTORICO`. As chaves futuras `PLANILHA_ALUNOS`, `REGRAS_CURRICULARES`, `DRIVE_ROOT_FOLDER_ID` e `TEMPLATE_*_ID` **são propostas, não configurações implantadas**. Não copiar IDs fixos da baseline recebida para o Git ou alterar `ID_INDEX` nesta rodada.
+
+
 ## 5. Ordem para montar em outra unidade
 
 1. Crie a planilha `ID_INDEX` (seção 1).
@@ -85,7 +90,7 @@ Passo a passo de cada projeto: [Como reaproveitar](COMO_REAPROVEITAR.md) e o man
 
 ## 6. Limites conhecidos
 
-- Os gerenciadores de Exclusão, Trancamento Parcial, 2ª via do BUSP, Intercambistas e Diplomas, e os formulários de Habilitação, BUSP, Colação e Intercambistas, **ainda não estão no repositório**.
+- Os gerenciadores de Exclusão, Trancamento Parcial, 2ª via do BUSP e Intercambistas e os formulários de Habilitação, BUSP, Colação e Intercambistas **ainda não estão no repositório**. Emissão de Diplomas possui [documentação de fonte recebida](sistemas/diplomas/README.md), mas o código ainda não foi publicado por pendências de sanitização.
 - O Painel dos servidores lê todas as planilhas pelo `ID_INDEX` desde a 1.4 (seção 2). A 1.3, que está no `/exec`, ainda tem IDs literais, mantidos fora do Git ([inventário](IMPLANTACAO.md#2-inventário-20102026)). O Gerenciador de Trancamento Total em uso (v1.0) também tem ID literal e não está no repositório; a v1.1 do Git usa o `ID_INDEX`. O Gerenciador de Abertura de Habilitações usa o `ID_INDEX` desde a v2.0, implantada em 21/10/2026 no lugar da v1.0 (que tinha ID literal).
 - A contagem de pendências do Painel dos servidores lê a situação por posição de coluna e com critério próprio, diferente do critério dos formulários ([contratos](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md#4-o-que-não-se-deve-modificar-inadvertidamente)). Em Habilitações, o painel conta só a situação `pendente`, enquanto o gerenciador trata como pendente tudo o que não contém "conclu" ([contrato](sistemas/abertura-habilitacoes/REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
 - Parte dos testes da Estrutura Curricular depende de exportações reais do Júpiter, que não vão para o Git. As outras suítes usam dados sintéticos.
