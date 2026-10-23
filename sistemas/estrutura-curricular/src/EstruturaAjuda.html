@@ -532,7 +532,7 @@
           <article class="centralAjuda__item" id="ajuda-importar-recusas" data-gradip-help-search-item data-search="importacao recusada bloqueada outro curso estrutura mais antiga nao permitida a importacao nao pode ser gravada erro do arquivo">
             <h4 tabindex="-1">Quando a importação não pode ser gravada</h4>
             <ul>
-              <li>O arquivo tem um <strong>erro</strong> de leitura (aparece na conferência).</li>
+              <li>O arquivo tem um <strong>erro</strong> de leitura (aparece na conferência). Num PDF escaneado, pode ser uma disciplina ou um requisito ilegível: veja <button type="button" class="centralAjuda__link" data-gradip-help-target="ajuda-conferencia-pdf-ilegivel">PDF lido por OCR recusado</button>.</li>
               <li>A base guarda <strong>outro curso</strong>: cada base guarda um curso.</li>
               <li>A estrutura do arquivo é <strong>mais antiga</strong> do que a da base para a mesma habilitação: confira se baixou o currículo vigente.</li>
               <li>PDF lido por OCR, como estrutura completa, com números que as contas do relatório não confirmaram: importe o CSV primeiro.</li>
@@ -578,6 +578,31 @@
               <li>se o currículo já está na base (complemento), o valor anterior continua;</li>
               <li>se seria a estrutura completa de uma habilitação, a gravação é bloqueada, com a orientação de importar o CSV primeiro.</li>
             </ul>
+          </article>
+
+          <article class="centralAjuda__item" id="ajuda-conferencia-pdf-ilegivel" data-gradip-help-search-item data-search="pdf escaneado recusado ocr disciplina ilegivel requisito ilegivel requisito sem disciplina linha ilegivel codigo nao pode ser lido pagina digitalizar de novo pdf com texto csv erro">
+            <h4 tabindex="-1">PDF lido por OCR recusado: disciplina ou requisito ilegível</h4>
+            <p>Num PDF escaneado, o OCR pode ler mal o código de uma disciplina ou de um requisito. Quando isso acontece, a disciplina ficaria de fora da base ou um requisito poderia ir para a disciplina errada. Por isso a conferência mostra "O arquivo não pode ser importado" e "Ver o que vai mudar" fica desativado. Nada é gravado.</p>
+            <ul>
+              <li><strong>Disciplina ilegível</strong>: a linha tem jeito de disciplina (código, versão e números), mas o código não pôde ser lido. Os requisitos logo abaixo dela não são ligados a outra disciplina.</li>
+              <li><strong>Requisito ilegível</strong>: a linha tem jeito de requisito ("Requisito - …"), mas o código ou o rótulo não puderam ser lidos.</li>
+              <li><strong>Requisito sem disciplina</strong>: o requisito apareceu sem uma disciplina reconhecida antes dele.</li>
+            </ul>
+            <p><strong>Como achar a linha:</strong> a mensagem diz a página do PDF; abaixo dela aparece o texto que o OCR leu. Em "Ver linhas do PDF não reconhecidas", as linhas marcadas com "Erro" mostram a página e o texto.</p>
+            <p><strong>O que fazer:</strong> importe o CSV da estrutura (que é exato), use um PDF com texto gerado pelo Júpiter ou digitalize de novo com melhor qualidade (página reta, sem sombra, boa resolução).</p>
+          </article>
+
+          <article class="centralAjuda__item" id="ajuda-conferencia-pdf-linhas" data-gradip-help-search-item data-search="linhas nao reconhecidas lista titulos rodape observacoes subtotais totais nao fecharam contas nao conferem aviso pagina">
+            <h4 tabindex="-1">Linhas não reconhecidas e contas que não fecharam</h4>
+            <ul>
+              <li><strong>"Ver linhas do PDF não reconhecidas"</strong> mostra, com a página e o texto, as linhas que a leitura não usou. Títulos, rodapés e observações costumam aparecer ali e não impedem a importação. Só as marcadas com "Erro" impedem.</li>
+              <li>Quando o PDF foi lido por OCR e um <strong>subtotal ou total de seção não fecha</strong>, a caixa da conferência vira aviso e a lista de avisos diz a página e a conta. Pode faltar uma disciplina ou algum número pode ter sido mal lido: confira essas páginas no PDF.</li>
+            </ul>
+          </article>
+
+          <article class="centralAjuda__item" id="ajuda-conferencia-pdf-sem-avisos" data-gradip-help-search-item data-search="sem avisos conferir mesmo assim ocr pode errar codigo trocado por outro valido requisito ou perdido revisao">
+            <h4 tabindex="-1">Por que conferir mesmo sem avisos</h4>
+            <p>As verificações não pegam todo erro do OCR. Um código lido como <strong>outro código válido</strong>, ou uma linha "ou" que se perdeu entre dois requisitos, não deixam marca na leitura nem nas contas. Num PDF escaneado, confira na prévia as disciplinas e os requisitos que mudam. Na dúvida, importe o CSV.</p>
           </article>
 
           <article class="centralAjuda__item" id="ajuda-conferencia-pdf-revisao" data-gradip-help-search-item data-search="revisao humana valores so do pdf pagina de origem paginas de 100 anterior proxima abrir todas as paginas caixa conferi no pdf confirmacao gravar">

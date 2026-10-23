@@ -322,7 +322,7 @@ Só vale um CSV + um PDF. Dois arquivos do mesmo tipo, ou mais de dois, são rec
 
 ### Quando a importação não pode ser gravada {#ajuda-importar-recusas}
 
-- O arquivo tem um **erro** de leitura (aparece na conferência).
+- O arquivo tem um **erro** de leitura (aparece na conferência). Num PDF escaneado, pode ser uma disciplina ou um requisito ilegível: veja [PDF lido por OCR recusado](#ajuda-conferencia-pdf-ilegivel).
 - A base guarda **outro curso**: cada base guarda um curso.
 - A estrutura do arquivo é **mais antiga** do que a da base para a mesma habilitação: confira se baixou o currículo vigente.
 - PDF lido por OCR, como estrutura completa, com números que as contas do relatório não confirmaram: importe o CSV primeiro.
@@ -356,6 +356,27 @@ Coerência aritmética mostra consistência, **não prova cada leitura**: dois e
 - no OCR, um número sem coerência verificada **não é gravado**;
 - se o currículo já está na base (complemento), o valor anterior continua;
 - se seria a estrutura completa de uma habilitação, a gravação é bloqueada, com a orientação de importar o CSV primeiro.
+
+### PDF lido por OCR recusado: disciplina ou requisito ilegível {#ajuda-conferencia-pdf-ilegivel}
+
+Num PDF escaneado, o OCR pode ler mal o código de uma disciplina ou de um requisito. Quando isso acontece, a disciplina ficaria de fora da base ou um requisito poderia ir para a disciplina errada. Por isso a conferência mostra "O arquivo não pode ser importado" e "Ver o que vai mudar" fica desativado. Nada é gravado.
+
+- **Disciplina ilegível**: a linha tem jeito de disciplina (código, versão e números), mas o código não pôde ser lido. Os requisitos logo abaixo dela não são ligados a outra disciplina.
+- **Requisito ilegível**: a linha tem jeito de requisito ("Requisito - …"), mas o código ou o rótulo não puderam ser lidos.
+- **Requisito sem disciplina**: o requisito apareceu sem uma disciplina reconhecida antes dele.
+
+**Como achar a linha:** a mensagem diz a página do PDF; abaixo dela aparece o texto que o OCR leu. Em "Ver linhas do PDF não reconhecidas", as linhas marcadas com "Erro" mostram a página e o texto.
+
+**O que fazer:** importe o CSV da estrutura (que é exato), use um PDF com texto gerado pelo Júpiter ou digitalize de novo com melhor qualidade (página reta, sem sombra, boa resolução).
+
+### Linhas não reconhecidas e contas que não fecharam {#ajuda-conferencia-pdf-linhas}
+
+- **"Ver linhas do PDF não reconhecidas"** mostra, com a página e o texto, as linhas que a leitura não usou. Títulos, rodapés e observações costumam aparecer ali e não impedem a importação. Só as marcadas com "Erro" impedem.
+- Quando o PDF foi lido por OCR e um **subtotal ou total de seção não fecha**, a caixa da conferência vira aviso e a lista de avisos diz a página e a conta. Pode faltar uma disciplina ou algum número pode ter sido mal lido: confira essas páginas no PDF.
+
+### Por que conferir mesmo sem avisos {#ajuda-conferencia-pdf-sem-avisos}
+
+As verificações não pegam todo erro do OCR. Um código lido como **outro código válido**, ou uma linha "ou" que se perdeu entre dois requisitos, não deixam marca na leitura nem nas contas. Num PDF escaneado, confira na prévia as disciplinas e os requisitos que mudam. Na dúvida, importe o CSV.
 
 ### Revisão dos valores só do PDF {#ajuda-conferencia-pdf-revisao}
 

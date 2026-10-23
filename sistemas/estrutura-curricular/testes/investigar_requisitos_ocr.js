@@ -7,8 +7,9 @@
 //
 // Para cada caso mostra: o que muda no resultado acadêmico (com os valores),
 // os avisos, a conferência numérica e as linhas não reconhecidas.
-// Serve à proposta de proteção (ETAPA4_TESTES_MISTOS.md, seção 9); o leitor
-// (src/) não é alterado.
+// Serviu à proposta de proteção (ETAPA4_TESTES_MISTOS.md, seção 9). Desde a
+// proteção B2 os casos e as funções daqui são reaproveitados pela
+// suíte testar_protecao_ocr.js (require); a investigação continua só descrevendo.
 // Uso: node investigar_requisitos_ocr.js [--json]
 'use strict';
 const { carregar } = require('./carregar_leitores');
@@ -78,6 +79,9 @@ const CASOS = [
   ['F7', 'linha "ou" perdida: alternativa vira exigência ("e")', remover(2, 'ou')],
   ['F8', 'requisito perdido E disciplina perdida na mesma página', juntos(trocar(2, 'TST0301(1)', 'TSTO0301(1)'), trocar(2, 'Requisito - TST0102', 'Requisito - TSTO0102'))]
 ];
+
+module.exports = { ler, palavras, academico, esperado, trocar, remover, juntos, CASOS, L };
+if (require.main !== module) return;
 
 const saida = [];
 for (const [id, nome, mutar] of CASOS) {

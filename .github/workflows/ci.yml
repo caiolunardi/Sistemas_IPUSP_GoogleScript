@@ -160,6 +160,12 @@ jobs:
       # Controles do classificador do diagnóstico não bloqueante (diagnostico-fontes.yml), sem navegador.
       - name: Classificador do diagnóstico de fontes (controles)
         run: node testar_diagnostico_fontes.js
+      # Proteção B2: disciplina ou requisito ilegível no OCR vira erro e bloqueia a importação
+      # (leitor, servidor simulado e painel), e as mutações que precisam reprovar a suíte.
+      - name: Proteção B2 do OCR (leitor, servidor e painel)
+        run: node testar_protecao_ocr.js
+      - name: Proteção B2 do OCR (mutações)
+        run: node mutacoes_protecao_ocr.js
       - run: node testar_recomeco_google.js
       - run: node testar_etapa7_trava_auditoria.js
       - run: node testar_etapa8_previa_envio.js

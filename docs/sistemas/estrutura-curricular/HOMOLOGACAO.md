@@ -135,6 +135,10 @@ A intercalação é **determinística**: o teste substitui a função do código
 
 CSV: 3 currículos; 183 disciplinas; 398 ofertas; 238 requisitos; 481 linhas de dados. PDF (OCR): as mesmas 398 ofertas e 238 requisitos; 1.098 números compartilhados iguais ao CSV; 24 disciplinas com EXT > 0; 3 blocos de Informações Básicas com 11 de 11 contas fechando cada.
 
+### 1.5a Proteção B2 do OCR (23/10/2026, em PR, só sintético)
+
+`testar_protecao_ocr.js` (leitor, servidor simulado e painel no Chromium) e `mutacoes_protecao_ocr.js` (14 mutações, todas reprovam a suíte), locais e na CI. Detalhes, resultados e limites em [Proteção B2](PROTECAO_B2_OCR.md). Falta: PDFs escaneados reais do Júpiter (conferência humana, sem copiar dados para o repositório) e homologação no Google, que dependem de autorização.
+
 ### 1.6 O que os testes locais NÃO provam
 
 - que o Sheets real se comporta como o simulador numa falha: no simulador, escrita que falha não é aplicada; no serviço real, uma exceção pode ocorrer depois de uma escrita parcialmente aplicada. A estratégia não depende disso para as abas (os dados novos ficam em cópias até a ativação), mas depende de a escrita de **um** metadado ser atômica;
