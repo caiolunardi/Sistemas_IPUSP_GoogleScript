@@ -128,9 +128,11 @@ Situação de cada número: **lido** (coerente com as contas), **corrigido** (re
 
 Mensagens do leitor:
 
-- **erro:** `PDF_SEM_DISCIPLINAS`, `PDF_SEM_SECAO`;
-- **aviso:** `PDF_SEM_CURSO`, `PDF_PAGINAS`, `PDF_OCR_NAO_CONFIRMADOS`, `PDF_LINHAS_NAO_RECONHECIDAS` (mais de 15 linhas), `PDF_DIVERGENTE_HABILITACOES`, `PDF_VERSAO_DIVERGENTE`, `PDF_DISCIPLINA_REPETIDA`, `PDF_INFO_SEM_CURRICULO`;
+- **erro:** `PDF_SEM_DISCIPLINAS`, `PDF_SEM_SECAO`; só no OCR (proteção B2, em PR, ainda sem versão): `PDF_OCR_DISCIPLINA_ILEGIVEL`, `PDF_OCR_REQUISITO_ILEGIVEL`, `PDF_OCR_REQUISITO_SEM_DISCIPLINA`. No OCR, os erros vêm antes dos avisos no pacote;
+- **aviso:** `PDF_SEM_CURSO`, `PDF_PAGINAS`, `PDF_OCR_NAO_CONFIRMADOS`, `PDF_LINHAS_NAO_RECONHECIDAS` (mais de 15 linhas), `PDF_DIVERGENTE_HABILITACOES`, `PDF_VERSAO_DIVERGENTE`, `PDF_DISCIPLINA_REPETIDA`, `PDF_INFO_SEM_CURRICULO`; só no OCR (B2): `PDF_OCR_CONTAS_NAO_CONFEREM` (subtotal ou total de seção que não fecha, com a página);
 - **info:** `PDF_COMPLEMENTO_CABECALHO`, `PDF_INFO_ATRIBUICAO`.
+
+Critérios, tratamento de `est.ultima` e limites da proteção B2: [Proteção B2](PROTECAO_B2_OCR.md).
 
 ## 5. Gravação (`Importacao.gs`)
 

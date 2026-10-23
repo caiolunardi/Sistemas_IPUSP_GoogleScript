@@ -395,7 +395,9 @@ var Importacao = (function (P) {
     var erros = listaAvisos(pacote.avisos, 'erro'), avisos = listaAvisos(pacote.avisos, 'aviso'), infos = listaAvisos(pacote.avisos, 'info');
     var html = '';
 
-    if (erros) html += '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">O arquivo não pode ser importado</div><ul>' + erros + '</ul></div>';
+    var erroOcr = pacote.avisos.some(function (a) { return a.nivel === 'erro' && /^PDF_OCR_/.test(a.codigo); });
+    if (erros) html += '<div class="alerta alerta--erro" role="alert"><div class="alerta__titulo">O arquivo não pode ser importado</div><ul>' + erros + '</ul>' +
+      (erroOcr ? '<div class="ajudaLinha">' + gatilho('ajuda-conferencia-pdf-ilegivel', 'PDF recusado por linha ilegível') + '</div>' : '') + '</div>';
 
     var origem = pacote.origem.formato === 'csv'
       ? 'CSV (' + esc(pacote.origem.codificacao || '') + ', ' + numero(r.linhasLidas) + ' linhas; ' + numero(r.linhasDeRequisito) + ' linhas extras de requisitos foram juntadas à disciplina)'
@@ -418,7 +420,9 @@ var Importacao = (function (P) {
     var cf = pacote.conferencia;
     if (cf) {
       var coerentes = (cf.numerosLidos || 0) + (cf.numerosCorrigidos || 0);
-      var classe = cf.numerosAConferir ? 'alerta--aviso' : 'alerta--info';
+      // No OCR, subtotal ou total de seção que não fechou é aviso (pode faltar uma disciplina).
+      var contasAbertas = pacote.origem.leitura === 'ocr' && ((cf.subtotaisConferem || 0) < (cf.subtotais || 0) || (cf.totaisSecaoConferem || 0) < (cf.totaisSecao || 0));
+      var classe = cf.numerosAConferir || contasAbertas ? 'alerta--aviso' : 'alerta--info';
       html += '<div class="alerta ' + classe + '"><div class="alerta__titulo">Leitura do PDF e coerência com as contas do relatório</div>' +
         '<p><strong>Leitura:</strong> ' + (pacote.origem.leitura === 'ocr' ? 'por reconhecimento de caracteres (OCR), sujeita a erro de leitura' : 'pela camada de texto do PDF (transcrição exata)') + '; ' + numero(cf.linhasDisciplina) + ' linhas de disciplina.</p>' +
         '<p><strong>Coerência aritmética:</strong> ' + numero(coerentes) + ' números são coerentes com as contas do próprio relatório (Tot. = Aula + Trab.; CH = 15 h × Aula + 30 h × Trab.; ' +
@@ -426,6 +430,7 @@ var Importacao = (function (P) {
         (cf.numerosCorrigidos ? numero(cf.numerosCorrigidos) + ' foram corrigidos pelas contas. ' : '') +
         'Coerência não prova cada leitura: dois erros que se compensam mantêm uma soma.</p>' +
         (cf.numerosAConferir ? '<p><strong>' + numero(cf.numerosAConferir) + ' números sem coerência verificada não serão gravados.</strong></p>' : '') +
+        (contasAbertas ? '<p><strong>Atenção: ' + numero((cf.subtotais || 0) - (cf.subtotaisConferem || 0)) + ' subtotais e ' + numero((cf.totaisSecao || 0) - (cf.totaisSecaoConferem || 0)) + ' totais de seção não fecharam.</strong> Pode faltar uma disciplina ou algum número pode ter sido mal lido; as páginas estão nos avisos abaixo.</p>' : '') +
         '<p class="pequeno">A comparação com a base (CSV) e a revisão dos valores que só o PDF traz aparecem no próximo passo.</p>' +
         gatilho('ajuda-conferencia-pdf', 'O que esta conferência prova') +
         '</div>';
@@ -437,6 +442,7 @@ var Importacao = (function (P) {
               (i.situacao === 'corrigido' ? ' → <strong>' + esc(i.valor) + '</strong>' : '') + ' <span class="texto-suave">(' + esc(i.motivo) + ')</span></li>';
           }).join('') + '</ul></details>';
       }
+      html += listaNaoReconhecidas(cf);
     }
 
     if (avisos) html += '<div class="alerta alerta--aviso"><div class="alerta__titulo">Avisos</div><ul>' + avisos + '</ul></div>';
@@ -448,6 +454,33 @@ var Importacao = (function (P) {
     rodape('<button type="button" class="botao botao--secundario" data-imp="outro">Escolher outro arquivo</button>' +
       '<button type="button" class="botao botao--primario" data-imp="previa"' + (erros ? ' disabled' : '') + '>Ver o que vai mudar</button>');
     focarTopo();
+  }
+
+  // O que cada linha suspeita do OCR significa (lista de linhas não reconhecidas).
+  var SUSPEITA_LINHA = {
+    disciplina: 'parece uma disciplina, mas o código não pôde ser lido',
+    requisito: 'parece um requisito, mas não pôde ser lido',
+    requisitoSemDisciplina: 'requisito sem uma disciplina reconhecida antes dele'
+  };
+  /**
+   * Lista recolhível das linhas do PDF que a leitura não reconheceu, com a
+   * página e o texto lido. As que tornam incerta uma disciplina ou um
+   * requisito (erros) vêm primeiro e são marcadas; as demais (títulos,
+   * rodapés, observações…) só ficam disponíveis para conferência.
+   */
+  function listaNaoReconhecidas(cf) {
+    var linhas = cf.linhasNaoReconhecidas || [];
+    var total = cf.totalLinhasNaoReconhecidas != null ? cf.totalLinhasNaoReconhecidas : linhas.length;
+    if (!total) return '';
+    var erros = linhas.filter(function (l) { return l.suspeita; }).length;
+    return '<details class="grupoMudancas" id="linhasNaoReconhecidas"><summary>Ver linhas do PDF não reconhecidas (' + numero(total) + (erros ? '; ' + numero(erros) + ' com erro' : '') + ')</summary>' +
+      '<p class="pequeno texto-suave">Linhas que a leitura não usou. Títulos, rodapés e observações costumam aparecer aqui e não impedem a importação; as marcadas com "Erro" impedem.</p>' +
+      '<ul class="listaMudancas">' + linhas.map(function (l) {
+        return '<li>' + (l.suspeita ? '<strong>Erro:</strong> ' + esc(SUSPEITA_LINHA[l.suspeita] || 'linha que impede a importação') + ' — ' : '') +
+          'página ' + esc(l.pagina) + ': <span class="mono">«' + esc(l.texto) + '»</span></li>';
+      }).join('') + '</ul>' +
+      (total > linhas.length ? '<p class="pequeno texto-suave">Mostrando ' + numero(linhas.length) + ' de ' + numero(total) + ' linhas.</p>' : '') +
+      '</details>';
   }
 
   /** Cópia do pacote sem o que o servidor não precisa (listas de conferência). */
