@@ -21,6 +21,9 @@ Os números pertencem a componentes distintos. O sistema Diplomas **não é** o 
 - [Inventário e origem](INVENTARIO_E_ORIGEM.md): arquivos, dependências e condições de incorporação.
 - [Arquitetura](ARQUITETURA.md): interação UI, servidor, parser, rulesets e auditoria.
 - [Modelo de dados](MODELO_DE_DADOS.md): planilhas, campos e chaves de integração.
+- [Endpoints](ENDPOINTS.md): inventário das chamadas do servidor e efeitos de leitura/escrita.
+- [Análise de Histórico Escolar](HISTORICO_ESCOLAR.md): parser, reconciliação, rulesets, auditoria e PDFs.
+- [Incorporação segura](INSTALACAO_E_INCORPORACAO.md): roteiro para o futuro PR de código sanitizado.
 - [Regras e fluxos](REGRAS_E_FLUXOS.md): estados, análise, relatórios e anexos.
 - [Manual de operação](MANUAL_OPERACAO.md): uso e problemas.
 - [Ajuda](AJUDA.md): tópicos presentes na Central de Ajuda.
