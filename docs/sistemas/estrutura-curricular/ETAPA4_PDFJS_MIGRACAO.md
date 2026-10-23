@@ -101,6 +101,8 @@ O leitor não configura `standardFontDataUrl`, `cMapUrl` nem `wasmUrl`, como ant
 
 ## 7. Conferência com PDFs reais do Júpiter (responsável, no computador autorizado)
 
+Antes desta conferência, os testes complementares com um PDF misto **sintético** (texto + páginas escaneadas, OCR, `LeitorPdfJupiter`, 3.11.174 × 6.4.299) estão em [ETAPA4_TESTES_MISTOS.md](ETAPA4_TESTES_MISTOS.md). Eles não substituem esta seção.
+
 Os arquivos ficam onde já estão; nenhum vai ao Git (`*.pdf`, `*.csv` e `saida/` estão no `.gitignore` de `testes/`) nem a outro serviço.
 
 **Preparação** (uma vez, no ramo do PR):

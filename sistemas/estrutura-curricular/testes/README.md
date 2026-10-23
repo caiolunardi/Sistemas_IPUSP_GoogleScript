@@ -24,15 +24,27 @@ node testar_pdf_sintetico.js                # ~30 s; código 0 = aprovada, 1 = a
 
 Mutações conferidas em 22/10/2026 (cópias descartáveis de `src/` por `DIR_SRC`): tirar a conferência do hash, executar os scripts do documento, não liberar os `blob:`, não copiar os bytes, deslocar 0,02 pt as posições e criar o worker sem `type: 'module'`: em todas a suíte reprovou (código 1). Para o desenho, uma cópia temporária do teste que pinta 1 pixel escuro a mais no canvas do 6.4.299 reprovou os três testes de desenho (imagem 1.860.673 ≠ 1.860.672; texto e script 44.481 ≠ 44.480; código 1).
 
-Não cobre a interpretação do relatório do Júpiter (`LeitorPdfJupiter`) nem o `/exec`; esses seguem nas suítes locais com os arquivos do Júpiter (abaixo). Roda no job "Estrutura Curricular" da CI ([docs/CI.md](../../../docs/CI.md)).
+Não cobre a interpretação do relatório do Júpiter (`LeitorPdfJupiter`) nem o `/exec`; a interpretação de um relatório sintético está no teste do PDF misto (abaixo) e a dos arquivos reais segue nas suítes locais (abaixo). Roda no job "Estrutura Curricular" da CI ([docs/CI.md](../../../docs/CI.md)).
 
-## OCR com PDF sintético (local, fora da CI)
+## OCR com PDF sintético (CI desde 22/10/2026)
 
 ```bash
 node testar_pdf_ocr_sintetico.js   # ~1 min; precisa de modelos/por.traineddata (ver Preparação); código 2 = modelo ausente, não executado
 ```
 
-Desenha uma página com texto inventado, monta um PDF só com a imagem (sem camada de texto) e lê pelo `LeitorPdfFontes.ler`: modo `ocr`, contrato da página, palavras reconhecidas, segunda leitura só de dígitos (`tokensNumericos`) e etapas do progresso, com o PDF.js 6.4.299 e o Tesseract.js 7.0.0. Não compara com o OCR do 3.11.174; essa comparação fica para os PDFs reais do Júpiter (roteiro na [Etapa 4](../../../docs/sistemas/estrutura-curricular/ETAPA4_PDFJS_MIGRACAO.md)).
+Desenha uma página com texto inventado, monta um PDF só com a imagem (sem camada de texto) e lê pelo `LeitorPdfFontes.ler`: modo `ocr`, contrato da página, palavras reconhecidas, segunda leitura só de dígitos (`tokensNumericos`) e etapas do progresso, com o PDF.js 6.4.299 e o Tesseract.js 7.0.0. A imagem é desenhada com a `LiberationSans-Regular.ttf` do `pdfjs-dist`, carregada por arquivo, e não com a "Arial" da máquina. Na CI, o modelo vem do `tessdata_fast` 4.1.0 (repositório público do Tesseract, tag fixa) e só é usado se o SHA-256 conferir.
+
+## PDF misto sintético: OCR e interpretação, 3.11.174 × 6.4.299 (CI desde 22/10/2026)
+
+```bash
+node testar_pdf_misto_sintetico.js   # ~3 min; precisa de modelos/por.traineddata e da LiberationSerif-Regular.ttf 2.1.5 (fontes/ ou a do sistema, conferida pelo SHA-256); baixa o 3.11.174 do npm se faltar
+node mutacoes_pdf_misto.js           # local, ~10 min: 8 mutações, cada uma deve reprovar a suíte
+node diagnosticar_fontes_naturais.js # diagnóstico NÃO bloqueante: a mesma suíte com LEITURA_NATURAL=1; EQUIVALENTE (0), DIVERGÊNCIA ACADÊMICA (1) ou ERRO DE INFRAESTRUTURA (3); relatório em saida/diagnostico_fontes_naturais.md
+node testar_diagnostico_fontes.js    # 15 controles do classificador, sem navegador (CI)
+node investigar_requisitos_ocr.js    # investigação, não é suíte: erros de OCR injetados na tabela e o que o LeitorPdfJupiter faz com eles
+```
+
+`jupiter_sintetico.js` gera, sempre igual, um PDF de 3 páginas com uma grade curricular **inventada** no leiaute do relatório do Júpiter (curso 99001, disciplinas `TST…`): a página 1 tem texto selecionável em Helvetica não embutida; as páginas 2 e 3 são imagens escaneadas sem camada de texto. Com 1 de 3 páginas com texto, o leitor escolhe o OCR (limiar de 0,5 inalterado). A suíte lê o mesmo arquivo, no mesmo Chromium e com o mesmo modelo, pelo leitor congelado do 3.11.174 e pelo atual do 6.4.299, passa o resultado pelo `LeitorPdfJupiter` e compara cada versão com o esperado escrito à mão em `esperado_jupiter_sintetico.js` (códigos, nomes, versões, créditos, períodos, requisitos e grupos, conferência dos subtotais e totais, avisos) e as duas versões entre si. As páginas escaneadas são desenhadas com a Liberation Serif 2.1.5 por arquivo conferido (a CI baixa o pacote `fonts-liberation` 1:2.1.5-3 do arquivo do Ubuntu para `fontes/`); sem ela a suíte devolve código 2. Os Chromium que leem o PDF têm o hinting de fontes desligado (decisão de 22/10/2026; `LEITURA_NATURAL=1` volta ao comportamento da máquina, em que a leitura da página 1 pode errar — seção 6.2 do relatório). Repete tudo num segundo cenário de fontes (fontconfig temporário que troca a Helvetica do sistema). Diferenças de pixel, confiança e palavras soltas são registradas em `saida/misto_sintetico_registro.json` sem reprovar; qualquer diferença acadêmica reprova. Relatório: [ETAPA4_TESTES_MISTOS.md](../../../docs/sistemas/estrutura-curricular/ETAPA4_TESTES_MISTOS.md).
 
 ## Protótipo do PDF.js moderno (Etapa 3, fora da CI)
 

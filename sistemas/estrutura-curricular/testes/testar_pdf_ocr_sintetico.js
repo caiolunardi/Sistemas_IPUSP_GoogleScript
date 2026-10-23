@@ -16,6 +16,8 @@ const { pdfDeImagem } = require('./pdf_sintetico');
 
 const ADMIN = 'dono@unidade.example';
 const MODELO = path.join(__dirname, 'modelos', 'por.traineddata');
+// Fonte do desenho fixada no arquivo do pdfjs-dist: "Arial" do sistema muda de máquina para máquina.
+const FONTE = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'standard_fonts', 'LiberationSans-Regular.ttf');
 const LIMITE_MS = 240000;
 const LINHAS = [
   'GRADE CURRICULAR SINTETICA OCR',
@@ -39,19 +41,29 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
     console.log('NÃO EXECUTADO: falta ' + path.relative(process.cwd(), MODELO) + ' (ver README.md, "Modelo do OCR").');
     process.exit(2);
   }
-  const nav = await abrirNavegador();
+  // Rasterização do texto fixada para o Chromium que desenha a imagem (fontconfig_desenho.js).
+  const { prepararFontconfigDesenho, opcoesDeRasterizacao } = require('./fontconfig_desenho');
+  const fcDesenho = prepararFontconfigDesenho();
+  console.log('     rasterização — sistema:', opcoesDeRasterizacao('LiberationFixture'), '· desenho:', opcoesDeRasterizacao('LiberationFixture', fcDesenho.arquivo));
+  process.env.FONTCONFIG_FILE = fcDesenho.arquivo;
+  // Sem a opção, o Chromium sem tela escolhe o hinting pelas regras de fontes da máquina
+  // (na CI: métricas inteiras e outro desenho; aqui: métricas fracionárias).
+  const nav = await abrirNavegador(['--font-render-hinting=' + (process.env.HINTING_DESENHO || 'none')]);
   console.log('Chromium', nav.version());
   const amb = criarAmbiente({ dirSrc: DIR_SRC, usuario: ADMIN, dono: ADMIN });
   const p = await abrirPainel(nav, { amb, latencia: 0 });
   await esperarCarregado(p.pagina);
 
   // Página de 2480×3508 px (A4 a 300 dpi), texto preto em fundo branco.
-  const img = await p.pagina.evaluate((linhas) => {
+  const img = await p.pagina.evaluate(async ({ linhas, fonteB64 }) => {
+    const face = new FontFace('LiberationFixture', Uint8Array.from(atob(fonteB64), (ch) => ch.charCodeAt(0)).buffer);
+    await face.load();
+    document.fonts.add(face);
     const c = document.createElement('canvas');
     c.width = 2480; c.height = 3508;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { willReadFrequently: true });
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
-    ctx.fillStyle = '#000'; ctx.font = '60px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = '#000'; ctx.font = '60px LiberationFixture';
     linhas.forEach((l, i) => {
       if (i < 2) { ctx.fillText(l, 300, 300 + i * 100); return; }
       const [cod, nome, aula, trab] = l.split(' ');
@@ -66,13 +78,19 @@ function verdade(v, msg) { if (!v) throw new Error(msg || 'esperado verdadeiro')
     const d = ctx.getImageData(0, 0, c.width, c.height).data;
     const cinza = new Array(c.width * c.height);
     for (let i = 0, j = 0; i < d.length; i += 4, j++) cinza[j] = d[i];
-    return { largura: c.width, altura: c.height, cinza };
-  }, LINHAS);
+    // Registro para comparar máquinas: largura do texto (só depende da fonte) e tons do desenho.
+    const larguras = ['Fundamentos', 'ZZZ0001'].map((t) => Math.round(ctx.measureText(t).width * 100) / 100);
+    let escuros = 0, intermediarios = 0;
+    const tons = new Set();
+    for (const v of cinza) { if (v < 128) escuros++; if (v > 0 && v < 255) intermediarios++; tons.add(v); }
+    return { largura: c.width, altura: c.height, cinza, registro: { larguras, escuros, intermediarios, tons: tons.size, fonteCarregada: document.fonts.check('60px LiberationFixture') } };
+  }, { linhas: LINHAS, fonteB64: fs.readFileSync(FONTE).toString('base64') });
   const pdf = pdfDeImagem(Buffer.from(img.cinza), img.largura, img.altura);
+  console.log('     desenho:', JSON.stringify(img.registro));
   // Cópia local (saida/ e *.pdf estão no .gitignore), para comparar versões com comparar_pdfjs_versoes.js.
   fs.mkdirSync(path.join(__dirname, 'saida'), { recursive: true });
   fs.writeFileSync(path.join(__dirname, 'saida', 'ocr_sintetico.pdf'), pdf);
-  console.log('     PDF só com imagem:', pdf.length, 'bytes (cópia em saida/ocr_sintetico.pdf)');
+  console.log('     PDF só com imagem:', pdf.length, 'bytes, sha256', require('crypto').createHash('sha256').update(pdf).digest('hex'), '(cópia em saida/ocr_sintetico.pdf)');
 
   const r = await p.pagina.evaluate(async ({ arr, limite }) => {
     const etapas = [];

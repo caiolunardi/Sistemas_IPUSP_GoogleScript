@@ -39,8 +39,8 @@ function arquivoDoCdn(url) {
   return path.join(MODULOS, pacote, resto);
 }
 
-async function abrirNavegador() {
-  return chromium.launch({ args: ['--no-sandbox'] });
+async function abrirNavegador(argsExtras) {
+  return chromium.launch({ args: ['--no-sandbox'].concat(argsExtras || []) });
 }
 
 /**
