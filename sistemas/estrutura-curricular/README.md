@@ -1,10 +1,10 @@
-# Estrutura Curricular e Grade Horária — 1.12.1
+# Estrutura Curricular e Grade Horária — 1.13.0
 
 Web App interno do Serviço de Graduação do IPUSP. Importa a estrutura do Júpiter, mantém ajustes operacionais, prepara a grade e acompanha o preenchimento pelas secretarias.
 
-A versão no código (`VERSAO_SISTEMA` em `Codigo.gs`) é a **1.12.1** (22/10/2026: leitor de PDF no PDF.js 6.4.299 com biblioteca e worker conferidos por SHA-384, sobre a 1.12.0 da base única `DISCIPLINAS`); o que mudou em cada versão desde a 1.10.0 está no [índice da documentação](../../docs/sistemas/estrutura-curricular/README.md). A fonte parte do pacote **1.9.3 auditado**, com a camada visual **1.10.0**. Abre com menu lateral e permite alternar para abas, com ícones Lucide, brilho discreto e elevação no hover. Os controladores de negócio e as regras do servidor permanecem iguais à baseline; `Codigo.gs` muda apenas a versão.
+A versão no código (`VERSAO_SISTEMA` em `Codigo.gs`) é a **1.13.0** (23/10/2026: proteção B2 do OCR, sobre a 1.12.1 do PDF.js 6.4.299); o que mudou em cada versão desde a 1.10.0 está no [índice da documentação](../../docs/sistemas/estrutura-curricular/README.md). A fonte parte do pacote **1.9.3 auditado**, com a camada visual **1.10.0**. Abre com menu lateral e permite alternar para abas, com ícones Lucide, brilho discreto e elevação no hover. Os controladores de negócio e as regras do servidor permanecem iguais à baseline; `Codigo.gs` muda apenas a versão.
 
-**Em PR, sem versão (23/10/2026):** proteção B2 do OCR em `LeitorPdf.html`, `PainelImportacao.html` e `EstruturaAjuda.html`; os outros 32 arquivos de `src/`, inclusive todos os `.gs`, ficam idênticos ([Proteção B2](../../docs/sistemas/estrutura-curricular/PROTECAO_B2_OCR.md)).
+**1.13.0 (23/10/2026, ainda não implantada):** proteção B2 do OCR em `LeitorPdf.html`, `PainelImportacao.html` e `EstruturaAjuda.html`; em `Codigo.gs` muda só `VERSAO_SISTEMA`; os outros 31 arquivos de `src/`, inclusive `Importacao.gs` e os demais `.gs`, ficam idênticos. No Apps Script: trocar esses quatro arquivos ([Proteção B2](../../docs/sistemas/estrutura-curricular/PROTECAO_B2_OCR.md)).
 
 **Estado:** código e verificações locais versionados. Implantação e homologação desta versão no Google Workspace ainda pendentes. Código publicado no Git não atualiza automaticamente o `/exec`.
 

@@ -1,6 +1,8 @@
 # Proteção B2: leituras do OCR que tornam incerta uma disciplina ou um requisito
 
-**Estado:** preparada em 23/10/2026 num ramo próprio, com PR aberto e **sem merge**. Não foi implantada nem homologada no Google. Nenhum `clasp`, `/dev`, `/exec`, planilha ou dado foi tocado. A versão do sistema **não subiu**: `VERSAO_SISTEMA` fica em `Codigo.gs`, que está fora dos arquivos autorizados nesta rodada (ver §9).
+**Estado:** versão **1.13.0**, preparada em 23/10/2026 num ramo próprio, com PR aberto e **sem merge**. Implementada e validada localmente; **não** foi implantada nem homologada no Google. Nenhum `clasp`, `/dev`, `/exec`, planilha ou dado foi tocado. Em `Codigo.gs`, só `VERSAO_SISTEMA` mudou ([notas da versão](../../../notas-de-versao/estrutura-curricular-v1.13.0.md)).
+
+**Testes e CI:** as suítes da B2 (`testar_protecao_ocr.js` e `mutacoes_protecao_ocr.js`) ficam no repositório e rodam **manualmente** (§6). Elas **ainda não fazem parte da CI exigida**: a execução automática depende de um PR próprio, só do `.github/workflows/ci.yml`, aberto depois que a B2 estiver no `main` (o fluxo não mistura mudança de CI com mudança de sistema). A rodada 39893033804 do GitHub, de uma versão anterior deste PR em que os dois passos estavam no workflow, registrou 43/43 e 14/14 e fica como evidência histórica. O diagnóstico de fontes naturais (`diagnostico-fontes.yml`) é independente, não bloqueia e pode ficar vermelho.
 
 **Validação:** só **sintética**. Ela usa as palavras do PDF sintético de `jupiter_sintetico.js` e o OCR real do PDF misto. Nenhum PDF real do Júpiter foi usado. A suíte mostra o que a regra faz nos casos testados. Ela não prova que a regra acerta em todo documento escaneado.
 
@@ -18,7 +20,7 @@ Uma falha de OCR que torne incerta a identificação de uma disciplina, ou a ass
 | `src/PainelImportacao.html` | caixa da conferência como aviso quando, no OCR, subtotal ou total de seção não fecha; lista recolhível "Ver linhas do PDF não reconhecidas" (D6); botão "?" para a ajuda nos erros do OCR |
 | `src/EstruturaAjuda.html` | três itens novos em "Conferência do PDF e OCR" e uma referência em "Quando a importação não pode ser gravada" |
 
-Arquivos que **não** mudaram: `Importacao.gs` e todos os `.gs`, `LeitorComum.html`, `LeitorCsv.html`, `LeitorPdfFontes.html` (PDF.js 6.4.299, Tesseract, modelo e workers), `PainelEstilos.html` e os outros sistemas. O modo texto (PDF com camada de texto) dá o mesmo pacote de antes, byte a byte, em todas as variações da suíte (§6).
+Fora isso, só `VERSAO_SISTEMA` em `Codigo.gs` (1.12.1 → 1.13.0). Arquivos que **não** mudaram: `Importacao.gs` e os demais `.gs`, `LeitorComum.html`, `LeitorCsv.html`, `LeitorPdfFontes.html` (PDF.js 6.4.299, Tesseract, modelo e workers), `PainelEstilos.html` e os outros sistemas. O modo texto (PDF com camada de texto) dá o mesmo pacote de antes, byte a byte, em todas as variações da suíte (§6).
 
 ## 3. Mensagens novas do leitor
 
@@ -62,7 +64,7 @@ Todas as detecções valem **só no modo OCR** e só depois do cabeçalho da pá
 
 ## 6. Testes (sintéticos)
 
-`testes/testar_protecao_ocr.js` (na CI) roda em três partes:
+`testes/testar_protecao_ocr.js` (manual; fora da CI exigida até o PR de CI) roda em três partes:
 
 1. **Leitor.**
    - F1, F2, F5, F6 e F8 viram erro com a página e o texto, sem associação indevida e sem autorrequisito.
@@ -89,7 +91,7 @@ Todas as detecções valem **só no modo OCR** e só depois do cabeçalho da pá
 
 Total: 43 testes (44 com `DIR_SRC_ANTERIOR`, que compara o modo texto com a fonte anterior).
 
-`testes/mutacoes_protecao_ocr.js` (na CI) aplica 14 mutações numa cópia de `src/` e exige que a suíte reprove em todas:
+`testes/mutacoes_protecao_ocr.js` (manual; fora da CI exigida até o PR de CI) aplica 14 mutações numa cópia de `src/` e exige que a suíte reprove em todas:
 
 - desligar D1;
 - não invalidar `est.ultima`;
@@ -126,6 +128,7 @@ Falta a conferência com PDFs escaneados reais do Júpiter, sem copiar dados rea
 
 ## 9. Pendências que dependem do responsável
 
-- Subir a versão (proposta: **1.13.0**) em `Codigo.gs` e escrever `notas-de-versao/estrutura-curricular-v1.13.0.md`. `Codigo.gs` ficou fora dos arquivos autorizados.
+- Versão 1.13.0 e notas preparadas no PR, sem tag nem Release.
+- Integrar as duas suítes da B2 à CI exigida, num PR só do workflow, depois do merge da B2.
 - Decidir se o servidor deve ler todos os erros, e não só os 100 primeiros avisos (`Importacao.gs`).
 - B3 (segunda leitura das linhas suspeitas) e a Etapa 5 não foram iniciadas.

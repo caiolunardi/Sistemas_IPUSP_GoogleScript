@@ -8,12 +8,12 @@
 | [`AuditoriaGrade.gs`](../../../sistemas/estrutura-curricular/src/AuditoriaGrade.gs) | servidor | auditoria, índices e acionadores | byte idêntico |
 | [`AuditoriaPainel.gs`](../../../sistemas/estrutura-curricular/src/AuditoriaPainel.gs) | servidor | agregação de consulta/auditoria; (1.11.0) nome de quem aparece e `diagnosticarNomesAuditoria` | alterado na 1.11.0 |
 | [`BaseDisciplinas.gs`](../../../sistemas/estrutura-curricular/src/BaseDisciplinas.gs) | servidor | (1.12.0) migração para a planilha DISCIPLINAS: `simularMigracaoDisciplinas`, `migrarDisciplinasParaBaseUnica` (editor, só administradores) | novo na 1.12.0 |
-| [`Codigo.gs`](../../../sistemas/estrutura-curricular/src/Codigo.gs) | servidor | doGet, include_ e versão | somente versão (1.12.1) |
+| [`Codigo.gs`](../../../sistemas/estrutura-curricular/src/Codigo.gs) | servidor | doGet, include_ e versão | somente versão (1.13.0) |
 | [`Configuracao.gs`](../../../sistemas/estrutura-curricular/src/Configuracao.gs) | servidor | propriedades, ID_INDEX e diagnóstico | byte idêntico |
 | [`Consulta.gs`](../../../sistemas/estrutura-curricular/src/Consulta.gs) | servidor | payload consistente do painel | byte idêntico |
 | [`EnvioGrade.gs`](../../../sistemas/estrutura-curricular/src/EnvioGrade.gs) | servidor | assinatura de conteúdo, backup e envio | byte idêntico |
 | [`Esquema.gs`](../../../sistemas/estrutura-curricular/src/Esquema.gs) | servidor | abas, colunas, formatos e preparação | (1.11.0) posição de aba nova pelo ID |
-| [`EstruturaAjuda.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjuda.html) | página | conteúdo estático da Central | (1.11.0) item "Nome de quem aparece"; (1.12.1) causas do problema de leitura do PDF |
+| [`EstruturaAjuda.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjuda.html) | página | conteúdo estático da Central | (1.11.0) item "Nome de quem aparece"; (1.12.1) causas do problema de leitura do PDF; (1.13.0) itens da proteção B2 |
 | [`EstruturaAjudaEstilos.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjudaEstilos.html) | página | aparência da Central | byte idêntico |
 | [`EstruturaAjudaUI.html`](../../../sistemas/estrutura-curricular/src/EstruturaAjudaUI.html) | página | busca, FAQ, foco e fechamento da Central | byte idêntico |
 | [`EstruturaIcones.html`](../../../sistemas/estrutura-curricular/src/EstruturaIcones.html) | página | 12 ícones Lucide e licença | novo, apresentação |
@@ -28,13 +28,13 @@
 | [`Importacao.gs`](../../../sistemas/estrutura-curricular/src/Importacao.gs) | servidor | validação, prévia, revisão e confirmação | byte idêntico |
 | [`LeitorComum.html`](../../../sistemas/estrutura-curricular/src/LeitorComum.html) | página | formato do pacote e utilidades | byte idêntico |
 | [`LeitorCsv.html`](../../../sistemas/estrutura-curricular/src/LeitorCsv.html) | página | leitura CSV Júpiter | byte idêntico |
-| [`LeitorPdf.html`](../../../sistemas/estrutura-curricular/src/LeitorPdf.html) | página | reconstrução da grade pelas palavras | byte idêntico |
+| [`LeitorPdf.html`](../../../sistemas/estrutura-curricular/src/LeitorPdf.html) | página | reconstrução da grade pelas palavras | (1.13.0) proteção B2 do OCR ([B2](PROTECAO_B2_OCR.md)) |
 | [`LeitorPdfFontes.html`](../../../sistemas/estrutura-curricular/src/LeitorPdfFontes.html) | página | PDF.js/OCR, modelo, integridade e progresso | (1.12.1) PDF.js 6.4.299 legacy com biblioteca e worker conferidos por SHA-384 ([Etapa 4](ETAPA4_PDFJS_MIGRACAO.md)) |
 | [`Painel.html`](../../../sistemas/estrutura-curricular/src/Painel.html) | página | composição da página e includes | composição visual |
 | [`PainelApp.html`](../../../sistemas/estrutura-curricular/src/PainelApp.html) | página | dados, filtros, listas, fichas e pilha de modais | byte idêntico |
 | [`PainelAuditoria.html`](../../../sistemas/estrutura-curricular/src/PainelAuditoria.html) | página | consultas e vistas de auditoria | (1.11.0) nome, vínculo e e-mail das pessoas |
 | [`PainelEstilos.html`](../../../sistemas/estrutura-curricular/src/PainelEstilos.html) | página | CSS funcional existente | (1.11.0) estilos da pessoa na auditoria |
-| [`PainelImportacao.html`](../../../sistemas/estrutura-curricular/src/PainelImportacao.html) | página | leitura/conferência/prévia/gravação no cliente | byte idêntico |
+| [`PainelImportacao.html`](../../../sistemas/estrutura-curricular/src/PainelImportacao.html) | página | leitura/conferência/prévia/gravação no cliente | (1.13.0) erros e lista de linhas da B2 |
 | [`PainelPreparacao.html`](../../../sistemas/estrutura-curricular/src/PainelPreparacao.html) | página | etapas, edição, lotes, Outros e envio | byte idêntico |
 | [`Planilha.gs`](../../../sistemas/estrutura-curricular/src/Planilha.gs) | servidor | leitura/escrita por título de coluna | byte idêntico |
 | [`Preparacao.gs`](../../../sistemas/estrutura-curricular/src/Preparacao.gs) | servidor | ajustes, Outros, seleção e pendências | (1.11.0) recomeço apaga abas pelo ID |
