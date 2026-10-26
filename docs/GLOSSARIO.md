@@ -45,6 +45,7 @@ Termos que aparecem na documentação e nas telas, para quem não é do Serviço
 | **clasp** | Ferramenta de linha de comando do Google que leva o código de uma pasta do computador ao projeto Apps Script (`clasp push`) e traz de volta (`clasp pull`). Usa a conta institucional, independente do GitHub. O `.clasp.json` (ID do projeto) fica fora do Git; o `.claspignore` de cada `src/` diz que só código vai ao Google. Ver [desenvolvimento local](../DEVELOPMENT_LOCAL.md). |
 | **`ID_INDEX`** | Planilha mestre que liga cada chave (por exemplo `PERIODOS`) ao ID da planilha correspondente. Ver [arquitetura geral](ARQUITETURA_GERAL.md). |
 | **Chave** | Nome estável de um recurso no `ID_INDEX`. A documentação cita a chave, nunca o ID. |
+| **Nome do projeto (`GRADIP · <Sistema> · <AMBIENTE>`)** | Nome de cada projeto Apps Script no Google, por exemplo `GRADIP · Gerenciador de Pessoas · PRODUÇÃO`. O nome do Google é o oficial e a documentação usa o mesmo; a lista fica na planilha da chave `SISTEMAS`. Ver [nomes dos projetos](IMPLANTACAO.md#nome-dos-projetos-no-google). |
 | **Auditoria** | Registro de quem fez o quê, quando e onde num sistema, numa planilha própria que só acrescenta linhas. Ver [docs/auditoria](auditoria/README.md). |
 | **Selo encadeado (hash)** | Código calculado de cada linha da auditoria junto com o da linha anterior. Mudar, apagar ou inserir uma linha à mão quebra a corrente, e a conferência aponta onde. |
 | **Sessão (auditoria)** | Uma aba do navegador aberta num sistema, do momento em que abre até a última ação registrada. |

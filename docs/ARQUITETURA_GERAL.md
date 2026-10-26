@@ -42,6 +42,7 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 | `AUDITORIA_GRADES_ANTERIORES` | pasta das auditorias por semestre | Estrutura Curricular (G) | [modelo de dados](sistemas/estrutura-curricular/MODELO_DE_DADOS.md#auditoria-por-semestre) |
 | `AUDITORIA_PAINEL_SERVIDORES` | auditoria do Painel dos servidores: eventos, alterações (antes/depois), sessões, resumo diário, pendências | Painel dos servidores 1.3 (G) | [docs/auditoria](auditoria/README.md) |
 | `AUDITORIA_ABERTURA_HABILITACOES` | auditoria do Gerenciador de Abertura de Habilitações: eventos, alterações (antes/depois), sessões, resumo diário; a cópia de homologação usa uma planilha de auditoria própria na coluna Homologação | Gerenciador de Abertura de Habilitações 2.1 (G) | [docs/auditoria](auditoria/README.md) |
+| `SISTEMAS` | lista dos projetos Apps Script do setor, de produção e de homologação: nome no Google, aba em `PERMISSOES_DE_ACESSO` e endereço `/exec` (aba `Página1`, colunas `SISTEMA`, `ABA_PERMISSOES`, `LINK_EXEC`) | nenhum sistema lê; é consultada pela equipe | [nomes dos projetos](IMPLANTACAO.md#nome-dos-projetos-no-google) |
 | `OFICIOS` | pasta do futuro Gerenciador de Ofícios | ainda sem código | [ideia](sistemas/gerenciador-oficios/README.md) |
 
 O Painel dos servidores também lê, desde a 1.4 pelo `ID_INDEX`, as planilhas de quatro sistemas cujos formulários estão fora do repositório:

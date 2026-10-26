@@ -32,9 +32,9 @@ Os formulários só aceitam quem está logado com uma conta `@usp.br`, e o e-mai
 | Sistema | O que faz | Documentação |
 |---|---|---|
 | Painel de Sistemas (servidores) | Entrada da equipe: abre os sistemas internos, mostra os pedidos pendentes e configura os períodos dos formulários e as Regras Curriculares. | [docs](docs/sistemas/painel-servidores/README.md) · [código](sistemas/painel-servidores/README.md) |
-| Estrutura Curricular e Grade Horária | Importa a estrutura curricular do Júpiter, prepara a grade horária, envia a planilha para as secretarias dos departamentos e audita o preenchimento. | [docs](docs/sistemas/estrutura-curricular/README.md) · [código](sistemas/estrutura-curricular/README.md) |
+| Grade Horaria - Config (Estrutura Curricular e Grade Horária) | Importa a estrutura curricular do Júpiter, prepara a grade horária, envia a planilha para as secretarias dos departamentos e audita o preenchimento. | [docs](docs/sistemas/estrutura-curricular/README.md) · [código](sistemas/estrutura-curricular/README.md) |
 | Planilha das secretarias | Validações da planilha que as secretarias preenchem (conflito de horário, com caixa de aviso, e modalidade prática) e proteção para que só e-mails autorizados editem. | [docs](docs/sistemas/planilha-grade-secretarias/README.md) · [código](sistemas/estrutura-curricular/planilha-grade/README.md) |
-| Comunidade IPUSP | Busca de alunos, docentes, servidores e setores por nome, nº USP ou e-mail, com ficha e exportação de listas. | [docs](docs/sistemas/busca-alunos/README.md) · [código](sistemas/busca-alunos/README.md) |
+| Gerenciador de Pessoas (antes Comunidade IPUSP) | Busca de alunos, docentes, servidores e setores por nome, nº USP ou e-mail, com ficha e exportação de listas. | [docs](docs/sistemas/busca-alunos/README.md) · [código](sistemas/busca-alunos/README.md) |
 | Gerenciador de Trancamento Total | Tratamento dos pedidos de trancamento total pela equipe. | [código](sistemas/trancamento-total/gerenciador/README.md) |
 | Gerenciador de Abertura de Habilitações | Tratamento dos pedidos de abertura de habilitação pela equipe: pendentes, concluídos, histórico, aviso ao aluno por e-mail e relatórios. Versão 2.1, com auditoria, implantada em 22/10/2026. | [docs](docs/sistemas/abertura-habilitacoes/README.md) · [código](sistemas/abertura-habilitacoes/gerenciador/README.md) |
 

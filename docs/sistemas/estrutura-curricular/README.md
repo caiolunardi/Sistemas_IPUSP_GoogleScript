@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.13.0
+# Grade Horaria - Config (Estrutura Curricular e Grade Horária) — 1.13.0
+
+**Nome no Google:** `GRADIP · Grade Horaria - Config · PRODUÇÃO`; a homologação, quando existir, será `GRADIP · Grade Horaria - Config · HOMOLOGAÇÃO` ([nomes dos projetos](../../IMPLANTACAO.md#nome-dos-projetos-no-google)). No resto da documentação, "Estrutura Curricular" continua designando este sistema até cada texto ser revisto.
 
 **1.13.0 (preparada em 23/10/2026, sobre a 1.12.1; ainda não implantada): proteção B2 do OCR.** Num PDF escaneado, uma linha com jeito de disciplina ou de requisito que o OCR não conseguiu ler passa a ser erro, com a página e o texto lido: a importação não segue e nenhum requisito é ligado à disciplina errada. Subtotais e totais que não fecham viram aviso com a página, e as linhas não reconhecidas ficam numa lista recolhível. PDF com texto e CSV não mudam. Só o navegador mudou; no servidor, só o número da versão em `Codigo.gs`. Validada só com PDFs sintéticos; falta a conferência com PDFs escaneados reais do Júpiter e a homologação no Google ([Proteção B2](PROTECAO_B2_OCR.md)).
 

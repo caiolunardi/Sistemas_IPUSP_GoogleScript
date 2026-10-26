@@ -165,7 +165,7 @@ O PR #13 (6.4.299 só nos testes) **não** serve como solução: troca o espelho
    - rodar localmente `testar_pdf_texto.js`, `testar_navegador.js` e `gerar_paginas_ocr.js` com os PDFs do Júpiter, comparando o pacote lido pelo 3.11.174 e pelo candidato (vínculos, números, requisitos, conferência);
    - nenhum PDF real entra no Git.
 5. **Homologação no Google:**
-   - `clasp push` só com ordem expressa, para um projeto de **homologação** (`GRADIP · Estrutura Curricular · HOMOLOGAÇÃO`, a confirmar);
+   - `clasp push` só com ordem expressa, para um projeto de **homologação** (`GRADIP · Grade Horaria - Config · HOMOLOGAÇÃO`);
    - no `/dev`, importar o PDF sintético, um corrompido, o PDF do Júpiter com texto e o impresso (OCR);
    - no DevTools, conferir que não há erros nem violações de CSP, que existe um Worker `blob:` e que a rede respondeu 200;
    - testar no Chrome e no Edge da equipe.
