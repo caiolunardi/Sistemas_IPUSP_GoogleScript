@@ -125,9 +125,45 @@ var LeitorPdfJupiter = (function (C) {
     referencia: /Curr[íi]culo\s+(\d{5})\s*-\s*([0-9Oo]{1,3})\b/i
   };
 
+  // Linhas da grade que o OCR leu mal a ponto de tornar incerta uma
+  // disciplina ou um requisito (proteção B2). Critério estrito: o formato
+  // "código(versão)" do relatório, com o código fora do padrão
+  // (6 a 9 caracteres, pelo menos 3 dígitos); sem os parênteses, só com
+  // a linha de números da tabela.
+  var RE_SUSPEITA = {
+    codigoVersao: /^([A-Za-z0-9|!]{6,9})\s?\(\s?([^\s()]{1,2})\s?\)/,
+    codigoSolto: /^([A-Za-z0-9|!]{6,9})(?:\s|$)/,
+    rotuloRequisito: /^([A-Za-zÀ-ÿ|!]{3,}(?:[\s-]+[A-Za-zÀ-ÿ|!]{2,}){0,2})\s*(\(f\))?\s*[-–—]\s*(\S.*)$/
+  };
+  var ROTULOS_REQUISITO = ['requisito', 'requisitofraco', 'indicacaodeconjunto', 'corequisito'];
+  var MIN_NUMEROS_LINHA = 6;   // números na tabela para aceitar um código sem "(versão)"
+
   // ------------------------------------------------------------------
   //  Pequenas utilidades
   // ------------------------------------------------------------------
+  /** Quantos dígitos (0–9) há no texto. */
+  function digitos(t) { return (String(t).match(/\d/g) || []).length; }
+  /** Distância de edição (Levenshtein) entre dois textos curtos. */
+  function distancia(a, b) {
+    var ant = [], i, j;
+    for (j = 0; j <= b.length; j++) ant[j] = j;
+    for (i = 1; i <= a.length; i++) {
+      var atual = [i];
+      for (j = 1; j <= b.length; j++) atual[j] = Math.min(ant[j] + 1, atual[j - 1] + 1, ant[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+      ant = atual;
+    }
+    return ant[b.length];
+  }
+  /** "Reqmsito fraco" → parece "Requisito fraco"? (rótulo de requisito com poucas letras trocadas pelo OCR) */
+  function rotuloPareceRequisito(rotulo) {
+    var r = C.semAcento(rotulo).toLowerCase().replace(/[1|!]/g, 'i').replace(/0/g, 'o').replace(/[^a-z]/g, '');
+    return ROTULOS_REQUISITO.some(function (alvo) { return distancia(r, alvo) <= Math.max(1, Math.floor(alvo.length * 0.3)); });
+  }
+  /** Começo de texto no formato "código(versão)" com o código fora do padrão (ou ilegível). */
+  function codigoVersaoSuspeito(texto) {
+    var m = RE_SUSPEITA.codigoVersao.exec(texto);
+    return !!m && digitos(m[1]) >= 3;
+  }
   /** Rótulo de cabeçalho comparável: sem acento, minúsculo, só letras, dígitos e ponto. */
   function normRotulo(t) { return C.semAcento(t).toLowerCase().replace(/[^a-z0-9.]/g, ''); }
   /** Mediana de uma lista de números (null se vazia). */
@@ -454,6 +490,10 @@ var LeitorPdfJupiter = (function (C) {
     var blocos = [];        // blocos de "Informações Básicas do Currículo"
     var cabecalhos = [];    // por página: { curriculo, complemento }
     var naoReconhecidas = [];
+    // Linhas que tornam incerta uma disciplina ou um requisito (só OCR):
+    // viram erro e aparecem na lista de linhas não reconhecidas.
+    var suspeitas = { disciplina: [], requisito: [], requisitoSemDisciplina: [] };
+    var contasDivergentes = [];   // subtotais e totais de seção que não fecharam (OCR)
     var complementoIncoerente = 0;
     var rodape = null, totalPaginasRodape = null;
 
@@ -545,12 +585,39 @@ var LeitorPdfJupiter = (function (C) {
           var col = detectarColunas(linha);
           if (col) { est.colunas = col; dentroTabela = true; return; }
           if (/^Disciplina\b/i.test(texto) && est.colunas) { dentroTabela = true; return; }
+          // OCR: cabeçalho da tabela ilegível nesta página, mas a linha tem
+          // jeito de disciplina — a página não pode ser ignorada em silêncio.
+          if (modo === 'ocr' && est.colunas && pareceDisciplina(linha)) { suspeitarDisciplina(numPag, texto); return; }
           naoReconhecidas.push({ pagina: numPag, texto: texto });
           return;
         }
         lerLinhaGrade(linha, numPag);
       });
     });
+
+    // Anota uma linha suspeita (tipo: chave de "suspeitas").
+    function suspeitar(tipo, numPag, texto) {
+      naoReconhecidas.push({ pagina: numPag, texto: texto, suspeita: tipo });
+      suspeitas[tipo].push({ pagina: numPag, texto: texto });
+    }
+    // Disciplina ilegível: os requisitos seguintes não podem ser ligados à
+    // disciplina anterior (est.ultima deixa de valer).
+    function suspeitarDisciplina(numPag, texto) {
+      suspeitar('disciplina', numPag, texto);
+      est.ultima = null;
+      est.pendenteOu = false;
+    }
+    // Linha da grade (OCR) com jeito de disciplina cujo código não foi lido:
+    // "código(versão)" fora do padrão, ou código sem a versão seguido dos
+    // números da tabela. Rodapé, legenda, títulos, subtotais e totais já
+    // foram reconhecidos antes.
+    function pareceDisciplina(linha) {
+      if (codigoVersaoSuspeito(linha.texto)) return true;
+      var m = RE_SUSPEITA.codigoSolto.exec(linha.texto);
+      if (!m || digitos(m[1]) < 3) return false;
+      var lc = lerColunas(linha, est.colunas, est.numericos, modo);
+      return COLUNAS.filter(function (c) { return lc.valores[c] != null; }).length >= MIN_NUMEROS_LINHA;
+    }
     fecharSecao();
     if (est.blocoInfo) { blocos.push(est.blocoInfo); est.blocoInfo = null; }
 
@@ -612,6 +679,16 @@ var LeitorPdfJupiter = (function (C) {
         aplicarValores(est.ultima, lc);
         est.ultima.linhaSemNumeros = false;
         return;
+      }
+      if (modo === 'ocr') {
+        // Rótulo de requisito mal lido ("Reqmsito - CÓDIGO(V)…").
+        if ((m = RE_SUSPEITA.rotuloRequisito.exec(texto)) && rotuloPareceRequisito(m[1]) &&
+            (codigoVersaoSuspeito(m[3]) || RE.inicioCodigo.test(m[3]))) {
+          suspeitar('requisito', numPag, texto);
+          est.pendenteOu = false;
+          return;
+        }
+        if (pareceDisciplina(linha)) { suspeitarDisciplina(numPag, texto); return; }
       }
       naoReconhecidas.push({ pagina: numPag, texto: texto });
     }
@@ -684,14 +761,29 @@ var LeitorPdfJupiter = (function (C) {
     // anterior (alternativa); senão abre um grupo novo ("e").
     function lerRequisito(m, numPag, texto) {
       var oc = est.ultima;
-      if (!oc) { naoReconhecidas.push({ pagina: numPag, texto: texto }); return; }
+      // No OCR, requisito sem disciplina reconhecida antes (ex.: a disciplina
+      // ficou ilegível) é erro: nunca é ligado a outra disciplina.
+      if (!oc) {
+        if (modo === 'ocr') { suspeitar('requisitoSemDisciplina', numPag, texto); est.pendenteOu = false; }
+        else naoReconhecidas.push({ pagina: numPag, texto: texto });
+        return;
+      }
       var tipo = C.normalizarEspacos(m[1]);
       tipo = tipo.charAt(0).toUpperCase() + tipo.slice(1).toLowerCase();
       var fraco = !!m[2] || /fraco/i.test(tipo);
       var resto = m[3];
       var mm = RE.inicioCodigo.exec(resto);
       var cod = mm ? lerCodigo(mm[1], modo) : null;
-      if (!cod) { naoReconhecidas.push({ pagina: numPag, texto: texto }); est.pendenteOu = false; return; }
+      if (!cod) {
+        // No OCR, código do requisito ilegível é erro (o requisito não é inventado).
+        // "Indicação de conjunto" (formato não visto em relatório real) só
+        // quando o que vem depois do traço tem jeito de código.
+        var semCodigoPossivel = /^indica/i.test(C.semAcento(tipo)) && !codigoVersaoSuspeito(resto) && !(RE_SUSPEITA.codigoSolto.test(resto) && digitos(RE_SUSPEITA.codigoSolto.exec(resto)[1]) >= 3);
+        if (modo === 'ocr' && !semCodigoPossivel) suspeitar('requisito', numPag, texto);
+        else naoReconhecidas.push({ pagina: numPag, texto: texto });
+        est.pendenteOu = false;
+        return;
+      }
       var ver = lerVersao(mm[2], modo);
       if (mm[3]) fraco = true;
       var nome = C.normalizarEspacos(String(mm[4] || '').replace(/\(f\)/ig, ''));
@@ -836,9 +928,10 @@ var LeitorPdfJupiter = (function (C) {
       grupos.forEach(function (g) {
         if (!g.subtotal) { if (registrarContagem) conf.gruposSemSubtotal++; return; }
         var todosConferem = true, algumIlegivel = false;
+        var problemas = [];   // colunas que não fecharam (para o aviso do OCR)
         COLUNAS_SOMA.forEach(function (c) {
           var S = g.subtotal[c];
-          if (S == null) { algumIlegivel = true; return; }
+          if (S == null) { algumIlegivel = true; problemas.push(NOME_COLUNA[c] + ': número do subtotal ilegível'); return; }
           var semValor = g.ocorrencias.filter(function (oc) { return oc.v[c] == null; });
           var soma = g.ocorrencias.reduce(function (s, oc) { return s + (oc.v[c] == null ? 0 : oc.v[c]); }, 0);
           if (!semValor.length) {
@@ -850,6 +943,7 @@ var LeitorPdfJupiter = (function (C) {
               g.ocorrencias.forEach(function (oc) { if (oc.st[c] === 'pendente') oc.st[c] = 'conferir'; });
               g.divergencias = g.divergencias || {};
               g.divergencias[c] = { soma: soma, subtotal: S };
+              problemas.push(NOME_COLUNA[c] + ': soma das disciplinas ' + soma + ', impresso ' + S);
             }
             return;
           }
@@ -864,8 +958,10 @@ var LeitorPdfJupiter = (function (C) {
             }
           }
           todosConferem = false;
+          problemas.push(NOME_COLUNA[c] + ': ' + semValor.length + ' número(s) ilegível(is) nas disciplinas');
         });
         if (registrarContagem) {
+          if (problemas.length) contasDivergentes.push({ pagina: g.paginaSubtotal, elemento: 'Subtotal', secao: g.secao, curriculo: g.curriculo, problemas: problemas });
           conf.subtotais++;
           if (algumIlegivel) conf.subtotaisIlegiveis++;
           else if (todosConferem) conf.subtotaisConferem++;
@@ -954,19 +1050,21 @@ var LeitorPdfJupiter = (function (C) {
     secoes.forEach(function (s) {
       if (!s.total) return;
       conf.totaisSecao++;
-      var ok = true;
+      var ok = true, problemas = [];
       COLUNAS_SOMA.forEach(function (c) {
         if (s.total[c] == null) return;
         var soma = 0, completa = true;
         s.grupos.forEach(function (g) { g.ocorrencias.forEach(function (oc) { if (oc.v[c] == null) completa = false; else soma += oc.v[c]; }); });
-        if (!completa) { ok = false; return; }
+        if (!completa) { ok = false; problemas.push(NOME_COLUNA[c] + ': número(s) ilegível(is) nas disciplinas'); return; }
         if (soma === s.total[c]) {
           s.grupos.forEach(function (g) { g.ocorrencias.forEach(function (oc) { if (oc.st[c] === 'pendente' || oc.st[c] === 'conferir') oc.st[c] = 'lido'; }); });
         } else {
           ok = false;
+          problemas.push(NOME_COLUNA[c] + ': soma das disciplinas ' + soma + ', impresso ' + s.total[c]);
         }
       });
       if (ok) conf.totaisSecaoConferem++; else conf.totaisSecaoNaoConferem++;
+      if (!ok) contasDivergentes.push({ pagina: s.paginaTotal, elemento: 'Total da seção', secao: s.secao, curriculo: s.curriculo, problemas: problemas });
     });
     // O que o Total confirmou pode confirmar a mesma disciplina em outra
     // habilitação.
@@ -1224,7 +1322,9 @@ var LeitorPdfJupiter = (function (C) {
       totaisSecaoConferem: conf.totaisSecaoConferem,
       totaisSecaoNaoConferem: conf.totaisSecaoNaoConferem,
       itens: itensConferencia.slice(0, 400),
-      linhasNaoReconhecidas: naoReconhecidas.slice(0, 60),
+      // As suspeitas (erros) vêm primeiro, para não ficarem fora do corte.
+      linhasNaoReconhecidas: naoReconhecidas.filter(function (l) { return l.suspeita; })
+        .concat(naoReconhecidas.filter(function (l) { return !l.suspeita; })).slice(0, 60),
       totalLinhasNaoReconhecidas: naoReconhecidas.length
     };
 
@@ -1236,6 +1336,50 @@ var LeitorPdfJupiter = (function (C) {
     }
     if (naoReconhecidas.length > 15) {
       C.avisar(pacote, 'aviso', 'PDF_LINHAS_NAO_RECONHECIDAS', naoReconhecidas.length + ' linhas do PDF não foram reconhecidas. Confira a prévia com atenção.');
+    }
+
+    // 6.1 Leituras do OCR que tornam incerta uma disciplina ou um requisito
+    // (proteção B2): erro, que impede a prévia e a gravação. A mensagem leva as
+    // páginas (é o que o servidor guarda); o detalhe, o texto lido.
+    if (modo === 'ocr') {
+      var paginasDe = function (lista) {
+        var ps = lista.map(function (x) { return x.pagina; }).filter(function (n, i, l) { return l.indexOf(n) === i; });
+        return (ps.length > 1 ? 'páginas ' : 'página ') + ps.join(', ');
+      };
+      var textosDe = function (lista) {
+        return lista.slice(0, 20).map(function (x) { return 'Página ' + x.pagina + ': «' + x.texto + '»'; }).join('; ') +
+          (lista.length > 20 ? ' (e mais ' + (lista.length - 20) + ')' : '');
+      };
+      var ORIENTACAO = ' Confira o PDF na página indicada. Para importar, use o CSV, um PDF com texto ou uma nova digitalização mais nítida.';
+      if (suspeitas.disciplina.length) {
+        C.avisar(pacote, 'erro', 'PDF_OCR_DISCIPLINA_ILEGIVEL',
+          'O OCR não conseguiu ler o código de ' + suspeitas.disciplina.length + ' linha(s) que parecem ser de disciplina (' + paginasDe(suspeitas.disciplina) + '). ' +
+          'A disciplina ficaria de fora e os requisitos dela poderiam ir para a disciplina errada.' + ORIENTACAO,
+          textosDe(suspeitas.disciplina));
+      }
+      if (suspeitas.requisito.length) {
+        C.avisar(pacote, 'erro', 'PDF_OCR_REQUISITO_ILEGIVEL',
+          'O OCR não conseguiu ler ' + suspeitas.requisito.length + ' linha(s) de requisito (' + paginasDe(suspeitas.requisito) + '). O requisito ficaria de fora.' + ORIENTACAO,
+          textosDe(suspeitas.requisito));
+      }
+      if (suspeitas.requisitoSemDisciplina.length) {
+        C.avisar(pacote, 'erro', 'PDF_OCR_REQUISITO_SEM_DISCIPLINA',
+          suspeitas.requisitoSemDisciplina.length + ' linha(s) de requisito apareceram sem uma disciplina reconhecida antes delas (' + paginasDe(suspeitas.requisitoSemDisciplina) + '). ' +
+          'Elas não foram ligadas a nenhuma disciplina.' + ORIENTACAO,
+          textosDe(suspeitas.requisitoSemDisciplina));
+      }
+      // 6.2 Subtotais e totais de seção que não fecharam: aviso com a página.
+      if (contasDivergentes.length) {
+        C.avisar(pacote, 'aviso', 'PDF_OCR_CONTAS_NAO_CONFEREM',
+          contasDivergentes.length + ' conta(s) do relatório não fecharam (subtotais ou totais de seção; ' + paginasDe(contasDivergentes) + '). ' +
+          'Pode faltar uma disciplina ou algum número pode ter sido mal lido: confira essas páginas no PDF.',
+          contasDivergentes.slice(0, 20).map(function (x) {
+            return 'Página ' + x.pagina + ', ' + x.elemento + (x.secao && C.TIPOS[x.secao] ? ' (' + C.TIPOS[x.secao].plural + ')' : '') + ': ' + x.problemas.join('; ');
+          }).join(' · ') + (contasDivergentes.length > 20 ? ' (e mais ' + (contasDivergentes.length - 20) + ')' : ''));
+      }
+      // O servidor lê só os 100 primeiros avisos: os erros vêm antes.
+      pacote.avisos = pacote.avisos.filter(function (a) { return a.nivel === 'erro'; })
+        .concat(pacote.avisos.filter(function (a) { return a.nivel !== 'erro'; }));
     }
 
     pacote.resumoLeitura = C.resumir(pacote);

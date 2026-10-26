@@ -348,6 +348,8 @@ A aprovação destes testes **não** significa que:
 
 Na implantação controlada, a primeira importação com documento real deve receber conferência humana antes de os resultados serem aceitos.
 
+A proposta de proteção que saiu do diagnóstico dos casos F1–F8 foi implementada como **proteção B2**, num PR próprio: [PROTECAO_B2_OCR.md](PROTECAO_B2_OCR.md). Ela trata F1, F2, F5, F6 e F8. F3, F4 e F7 continuam sem detecção automática.
+
 ## 8. Arquivos
 
 | Arquivo | Papel |

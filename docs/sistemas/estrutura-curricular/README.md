@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.12.1
+# Estrutura Curricular e Grade Horária — 1.13.0
+
+**1.13.0 (preparada em 23/10/2026, sobre a 1.12.1; ainda não implantada): proteção B2 do OCR.** Num PDF escaneado, uma linha com jeito de disciplina ou de requisito que o OCR não conseguiu ler passa a ser erro, com a página e o texto lido: a importação não segue e nenhum requisito é ligado à disciplina errada. Subtotais e totais que não fecham viram aviso com a página, e as linhas não reconhecidas ficam numa lista recolhível. PDF com texto e CSV não mudam. Só o navegador mudou; no servidor, só o número da versão em `Codigo.gs`. Validada só com PDFs sintéticos; falta a conferência com PDFs escaneados reais do Júpiter e a homologação no Google ([Proteção B2](PROTECAO_B2_OCR.md)).
 
 **1.12.1 (preparada em 22/10/2026, sobre a 1.12.0; Etapa 4 da modernização do PDF.js):** o leitor de PDF passa do PDF.js 3.11.174 ao 6.4.299 (build `legacy`). A biblioteca e o worker são baixados do jsDelivr e só executados se o SHA-384 conferir; um só worker de verdade atende a página; JavaScript embutido em PDF não é executado. Palavras e posições do PDF sintético são iguais às do 3.11.174; o desenho também, com a mesma fonte (o 6.x pede a Helvetica ao sistema antes da fonte substituta, por isso o pixel depende das fontes instaladas). Um PDF misto sintético (texto + páginas escaneadas, lido pelo OCR) dá o mesmo resultado acadêmico nas duas versões e no esperado escrito à mão ([testes mistos](ETAPA4_TESTES_MISTOS.md)). A importação, o OCR e as regras não mudam; duas mensagens de erro novas (componente diferente do esperado; componente que não inicia). Falta a conferência com PDFs reais do Júpiter e a homologação no Google ([Etapa 4](ETAPA4_PDFJS_MIGRACAO.md)).
 
@@ -25,6 +27,7 @@ Este índice permite retomar o projeto por objetivo, sem depender de outra conve
 | [Modelo de dados](MODELO_DE_DADOS.md) | todas as abas/colunas, índices, metadados e planilha operacional |
 | [Regras](REGRAS.md) | negócio preservado da 1.9.3 |
 | [CSV × PDF](CSV_X_PDF.md) | leitura, complementos e limites do OCR |
+| [Proteção B2 do OCR](PROTECAO_B2_OCR.md) | disciplina ou requisito ilegível no PDF escaneado vira erro: critérios, testes e limites (1.13.0) |
 | [Navegação e visual](NAVEGACAO_E_VISUAL_1_10_0.md) | implementação de sidebar/abas, ícones, temas e efeitos |
 | [UX](UX.md) | comportamento de interface e acessibilidade |
 | [Ajuda](AJUDA.md) | Central estática, FAQ e orientação auditada |

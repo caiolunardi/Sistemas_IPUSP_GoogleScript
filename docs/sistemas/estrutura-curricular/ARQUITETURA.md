@@ -199,7 +199,7 @@ O formato completo está comentado no topo de `LeitorComum.html`. Em resumo:
 - `naoConfirmados`: campos sem coerência verificada pelas contas do relatório. No servidor, esses campos nunca sobrescrevem a base.
 - `paginas` (disciplinas) e `info.pagina` (currículos): páginas do PDF, mostradas na revisão humana.
 - `info.conferido` vindo do navegador é descartado: o servidor refaz as contas das Informações Básicas (REGRAS.md §5.6).
-- Antes do envio, o navegador remove as listas de conferência (`conferencia.itens`, `linhasNaoReconhecidas`), que só servem para a tela.
+- Antes do envio, o navegador remove as listas de conferência (`conferencia.itens`, `linhasNaoReconhecidas`), que só servem para a tela. Na proteção B2 (1.13.0), as linhas de `linhasNaoReconhecidas` que tornam incerta uma disciplina ou um requisito levam `suspeita` (`disciplina`, `requisito` ou `requisitoSemDisciplina`) e vêm primeiro; o que bloqueia é o aviso de nível erro correspondente ([Proteção B2](PROTECAO_B2_OCR.md)).
 - Um aviso de nível `erro` impede a gravação; no servidor ele vira bloqueio.
 
 ## 6. Planilha ESTRUTURA_CURRICULAR
