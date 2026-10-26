@@ -137,7 +137,7 @@ CSV: 3 currículos; 183 disciplinas; 398 ofertas; 238 requisitos; 481 linhas de 
 
 ### 1.5a Proteção B2 do OCR (1.13.0, 23/10/2026, só sintético)
 
-`testar_protecao_ocr.js` (leitor, servidor simulado e painel no Chromium) e `mutacoes_protecao_ocr.js` (14 mutações, todas reprovam a suíte), locais. Ficam fora da CI exigida até um PR próprio do workflow; a rodada 39893033804 do GitHub, com os dois passos numa versão anterior do PR, é registro histórico. Detalhes, resultados e limites em [Proteção B2](PROTECAO_B2_OCR.md). Falta: PDFs escaneados reais do Júpiter (conferência humana, sem copiar dados para o repositório) e homologação no Google, que dependem de autorização.
+`testar_protecao_ocr.js` (leitor, servidor simulado e painel no Chromium) e `mutacoes_protecao_ocr.js` (14 mutações, todas reprovam a suíte), locais e, desde o PR próprio do workflow, no job da Estrutura Curricular da CI (que entra em "CI concluída"). A rodada 39893033804, com os dois passos numa versão anterior do PR #28, também registrou 43/43 e 14/14. Detalhes, resultados e limites em [Proteção B2](PROTECAO_B2_OCR.md). Falta: PDFs escaneados reais do Júpiter (conferência humana, sem copiar dados para o repositório) e homologação no Google, que dependem de autorização.
 
 ### 1.6 O que os testes locais NÃO provam
 
