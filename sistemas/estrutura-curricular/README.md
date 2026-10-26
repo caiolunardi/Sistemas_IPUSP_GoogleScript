@@ -1,4 +1,6 @@
-# Estrutura Curricular e Grade Horária — 1.13.0
+# Grade Horaria - Config (Estrutura Curricular e Grade Horária) — 1.13.0
+
+No Google: `GRADIP · Grade Horaria - Config · PRODUÇÃO`.
 
 Web App interno do Serviço de Graduação do IPUSP. Importa a estrutura do Júpiter, mantém ajustes operacionais, prepara a grade e acompanha o preenchimento pelas secretarias.
 

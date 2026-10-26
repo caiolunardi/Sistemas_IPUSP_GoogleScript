@@ -1,4 +1,4 @@
-# Dados e segurança — Comunidade IPUSP (antiga Busca de Alunos)
+# Dados e segurança — Gerenciador de Pessoas (antes Comunidade IPUSP e Busca de Alunos)
 
 **Revisão da fonte para Git:** 14/10/2026 (v1.3). O preflight de conteúdo foi realizado; o [checklist de segurança](../../seguranca/SECURITY_CHECKLIST.md) do ambiente continua dependente da implantação real.
 

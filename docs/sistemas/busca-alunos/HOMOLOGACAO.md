@@ -1,4 +1,4 @@
-# Homologação — Comunidade IPUSP, antiga Busca de Alunos (v1.0 a v1.3)
+# Homologação — Gerenciador de Pessoas, antes Comunidade IPUSP e Busca de Alunos (v1.0 a v1.3)
 
 **Estado:** v1.3 verificada localmente em 14/10/2026; **homologação no `/exec` pendente** (v1.1 a v1.3). A v1.0 foi colada no Apps Script pelo responsável funcional em 13/10/2026 (primeiro erro de configuração resolvido: ID no lugar do nome da propriedade) e revelou que o título real da coluna é `eMail`, não `Tr eMail`; isso motivou a v1.1. Esta página registra as diferenças, os hashes e os testes. Ela não atesta a configuração da implantação.
 

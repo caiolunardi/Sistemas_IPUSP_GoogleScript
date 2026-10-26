@@ -1,4 +1,6 @@
-# Comunidade IPUSP (antiga Busca de Alunos) — equipe
+# Gerenciador de Pessoas (antes Comunidade IPUSP e Busca de Alunos) — equipe
+
+**Nome no Google:** `GRADIP · Gerenciador de Pessoas · PRODUÇÃO` ([nomes dos projetos](../../IMPLANTACAO.md#nome-dos-projetos-no-google)). A página e a Central de Ajuda ainda mostram "Comunidade IPUSP"; esse texto muda na próxima versão do sistema.
 
 **Versão:** v1.3 (14/10/2026), sobre a v1.2 (Comunidade IPUSP), a v1.1 (ficha, ingresso e exportação) e a v1.0 (tema GRADIP e Central de Ajuda), que partiu do código em uso recebido em 13/10/2026. O [código Apps Script](../../../sistemas/busca-alunos/README.md) está versionado e foi verificado localmente; **ainda não foi homologado no `/exec`**. O GitHub não informa qual versão está implantada no Apps Script.
 

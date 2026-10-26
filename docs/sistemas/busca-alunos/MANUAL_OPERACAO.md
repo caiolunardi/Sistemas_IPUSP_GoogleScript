@@ -1,4 +1,4 @@
-# Manual de operação — Comunidade IPUSP (v1.3)
+# Manual de operação — Gerenciador de Pessoas, antes Comunidade IPUSP (v1.3)
 
 Referência de uso, instalação e manutenção da Comunidade IPUSP, antiga Busca de Alunos (pasta `busca-alunos` e nomes de arquivo mantidos). A ajuda incorporada ao app está documentada em [AJUDA.md](AJUDA.md). Este manual descreve a fonte do Git, sem presumir que ela já esteja implantada.
 
