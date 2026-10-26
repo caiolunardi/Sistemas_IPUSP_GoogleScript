@@ -44,17 +44,15 @@ node testar_diagnostico_fontes.js    # 15 controles do classificador, sem navega
 node investigar_requisitos_ocr.js    # investigação, não é suíte: erros de OCR injetados na tabela e o que o LeitorPdfJupiter faz com eles
 ```
 
-## Proteção B2: disciplina ou requisito ilegível no OCR (1.13.0, manual)
+## Proteção B2: disciplina ou requisito ilegível no OCR (1.13.0, CI)
 
 ```bash
 node testar_protecao_ocr.js          # segundos, sem Tesseract: leitor (F1–F8 e falsos positivos), servidor simulado e painel no Chromium (360 a 768 px, claro e escuro); 43 testes
                                      # (44 com DIR_SRC_ANTERIOR=<src de antes da B2>: modo texto idêntico); --sem-navegador pula o painel (não conta como aprovado)
-node mutacoes_protecao_ocr.js        # ~40 s: 14 mutações numa cópia de src/, cada uma deve reprovar a suíte
+node mutacoes_protecao_ocr.js        # ~40 s: 14 mutações numa cópia de src/, cada uma deve reprovar a suíte (CI)
 ```
 
 Usa as palavras das 3 páginas do PDF sintético e os casos de `investigar_requisitos_ocr.js`. Confere que as linhas ilegíveis viram erro com a página e o texto, que nenhum requisito vai para a disciplina errada, que o servidor (`Importacao.gs` sem alteração) bloqueia a prévia e recusa a gravação sem mexer nas planilhas e que o painel desativa "Ver o que vai mudar" e lista as linhas não reconhecidas. Os casos F3, F4 e F7 são impressos como limitações, não como aprovações. Relatório: [PROTECAO_B2_OCR.md](../../../docs/sistemas/estrutura-curricular/PROTECAO_B2_OCR.md).
-
-As duas ainda não estão no `ci.yml`: rode-as à mão em toda mudança no leitor, no painel da importação ou na ajuda. A execução automática depende de um PR só do workflow, depois que a B2 estiver no `main`.
 
 `jupiter_sintetico.js` gera, sempre igual, um PDF de 3 páginas com uma grade curricular **inventada** no leiaute do relatório do Júpiter (curso 99001, disciplinas `TST…`): a página 1 tem texto selecionável em Helvetica não embutida; as páginas 2 e 3 são imagens escaneadas sem camada de texto. Com 1 de 3 páginas com texto, o leitor escolhe o OCR (limiar de 0,5 inalterado). A suíte lê o mesmo arquivo, no mesmo Chromium e com o mesmo modelo, pelo leitor congelado do 3.11.174 e pelo atual do 6.4.299, passa o resultado pelo `LeitorPdfJupiter` e compara cada versão com o esperado escrito à mão em `esperado_jupiter_sintetico.js` (códigos, nomes, versões, créditos, períodos, requisitos e grupos, conferência dos subtotais e totais, avisos) e as duas versões entre si. As páginas escaneadas são desenhadas com a Liberation Serif 2.1.5 por arquivo conferido (a CI baixa o pacote `fonts-liberation` 1:2.1.5-3 do arquivo do Ubuntu para `fontes/`); sem ela a suíte devolve código 2. Os Chromium que leem o PDF têm o hinting de fontes desligado (decisão de 22/10/2026; `LEITURA_NATURAL=1` volta ao comportamento da máquina, em que a leitura da página 1 pode errar — seção 6.2 do relatório). Repete tudo num segundo cenário de fontes (fontconfig temporário que troca a Helvetica do sistema). Diferenças de pixel, confiança e palavras soltas são registradas em `saida/misto_sintetico_registro.json` sem reprovar; qualquer diferença acadêmica reprova. Relatório: [ETAPA4_TESTES_MISTOS.md](../../../docs/sistemas/estrutura-curricular/ETAPA4_TESTES_MISTOS.md).
 
