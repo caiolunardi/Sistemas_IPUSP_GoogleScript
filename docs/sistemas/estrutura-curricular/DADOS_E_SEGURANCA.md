@@ -72,8 +72,24 @@ O código não contém o ID de nenhuma planilha nem pasta. Desde a 1.5.0 usa `Dr
 
 ## 4. Web App
 
-- **Quem pode acessar:** "Qualquer pessoa da Universidade de São Paulo" (domínio) — **A VALIDAR** na implantação.
-- **Executa como:** quem implantou (`USER_DEPLOYING`, "Eu"). Assim, leitores não precisam ter acesso direto às planilhas. Consequência: **a segurança não depende do compartilhamento da planilha**; o backend valida o papel em toda chamada.
+- **Manifesto (`src/appsscript.json`, versionado em 26/10/2026):** é o arquivo do **editor** do projeto de produção (`GRADIP · Grade Horaria - Config · PRODUÇÃO`), trazido por `clasp pull` só de leitura e copiado sem nenhuma mudança. Ele declara:
+  - `timeZone`: `America/Sao_Paulo`;
+  - `runtimeVersion`: `V8`;
+  - `exceptionLogging`: `STACKDRIVER`;
+  - `webapp.executeAs`: `USER_DEPLOYING`;
+  - `webapp.access`: `DOMAIN`;
+  - `dependencies`: vazio (nenhuma biblioteca e nenhum serviço avançado);
+  - `oauthScopes`: **ausente**.
+
+  Não há IDs, e-mails nem URLs no manifesto.
+- **Configuração declarada × configuração efetiva:** o manifesto diz com que opções uma **nova** versão da implantação seria criada. Ele **não prova** como está a implantação `/exec` em uso, que pode ter sido criada antes, com outra configuração, e que roda uma versão numerada do código ([implantação](../../IMPLANTACAO.md), seção 5). A configuração efetiva só se confere na tela **Gerenciar implantações** do projeto. Até lá:
+  - **Quem pode acessar o `/exec`:** declarado `DOMAIN` ("Qualquer pessoa da Universidade de São Paulo"); efetivo **A VALIDAR** na implantação.
+  - **Executa como:** declarado `USER_DEPLOYING` ("Eu", quem implanta); efetivo **A VALIDAR** na implantação. Com essa opção, leitores não precisam ter acesso direto às planilhas. Consequência: **a segurança não depende do compartilhamento da planilha**; o backend valida o papel em toda chamada.
+- **Escopos OAuth:** o manifesto não declara `oauthScopes`. O Apps Script detecta os escopos pelo código e os pede a quem implanta. Pelo código atual, isso inclui as planilhas (`SpreadsheetApp`), o Google Drive amplo (`auth/drive`), por causa do `DriveApp` (seção 3), o e-mail de quem usa (`Session`) e os gatilhos (`ScriptApp`, usado pela auditoria da grade). A lista exata só aparece na tela de autorização do projeto e não foi conferida. Declarar escopos no manifesto seria uma mudança de configuração, em PR próprio, e não faz parte do versionamento do arquivo real.
+- **Riscos do manifesto:**
+  - `DriveApp` com `auth/drive` dá ao código acesso a **todos** os arquivos da conta que implanta, não só às pastas do `ID_INDEX`. A mitigação é o código: ele só abre os IDs do `ID_INDEX` (seção 3).
+  - `exceptionLogging: STACKDRIVER` manda as falhas, com a pilha, ao Cloud Logging do projeto. O conteúdo segue a seção 6 (sem e-mails, IDs nem dados), e quem pode ler esses logs são os editores do projeto.
+  - O manifesto vale igual para a homologação e para a produção ([implantação](../../IMPLANTACAO.md), seção 3). Na homologação, o `/dev` só abre para quem edita o projeto, e `webapp.access` não é testado.
 - **Autorização server-side** (`Acesso.gs`):
   - conta identificada;
   - (1.7.0) e-mail na aba `ESTRUTURA_CURRICULAR` da planilha de permissões; administrador = Perfil `ADMINISTRADOR`; leitor = Perfil `LEITOR` (ou vazio/desconhecido); nunca por domínio, nem pelo dono da planilha;

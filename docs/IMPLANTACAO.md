@@ -19,7 +19,7 @@ Por isso o `clasp push` também é uma ação de produção quando o projeto tem
 | `painel-servidores/src` | **sim** | `ID_INDEX_SPREADSHEET_ID`, `URLS_SISTEMAS_EQUIPE`; chaves no `ID_INDEX` | não | `/exec` na 1.3; editor com a 1.4 (`3de7219` + correção `a36a33f`); `36266d6` ainda não enviado. Até a 1.3, IDs reais só no clone do PC (resolvido na 1.4) |
 | `busca-alunos/src` | não | `ID_INDEX_SPREADSHEET_ID` | não | a conferir (seção 4) |
 | `trancamento-total/gerenciador/src` | não | idem | não | em uso a v1.0 (ID literal no código, segundo o README do código); a v1.1 do Git não foi implantada |
-| `estrutura-curricular/src` | não | idem + gatilhos | não | a conferir |
+| `estrutura-curricular/src` (projeto `GRADIP · Grade Horaria - Config · PRODUÇÃO`) | **sim** (26/10/2026: arquivo do editor de produção, trazido por `clasp pull` só de leitura e copiado sem mudança) | idem + gatilhos | não (prevista num projeto separado, com `ID_INDEX` fictício: a Estrutura não lê `AMBIENTE`) | conferido em 26/10/2026 com `conferir_implantacao.js`: o editor tem o código da 1.12.0 (`32a077c`) com `VERSAO_SISTEMA` = `1.11.3`; a 1.12.1 (PDF.js 6.4.299), a proteção B2 e a 1.13.0 do `main` **não** foram enviadas. A 1.13.0 não foi homologada nem implantada. Versão do `/exec` não verificada |
 | `estrutura-curricular/planilha-grade` | não | script da planilha das secretarias | não | a conferir |
 | `painel-solicitacoes/src` | não | `ID_INDEX_SPREADSHEET_ID` | não | a conferir |
 | `grade-horaria-visual/src` | não | idem | não | a conferir |
