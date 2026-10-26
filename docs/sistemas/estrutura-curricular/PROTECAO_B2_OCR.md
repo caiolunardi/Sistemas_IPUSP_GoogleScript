@@ -1,6 +1,6 @@
 # Proteção B2: leituras do OCR que tornam incerta uma disciplina ou um requisito
 
-**Estado:** versão **1.13.0**, preparada em 23/10/2026 num ramo próprio, com PR aberto e **sem merge**. Implementada e validada localmente; **não** foi implantada nem homologada no Google. Nenhum `clasp`, `/dev`, `/exec`, planilha ou dado foi tocado. Em `Codigo.gs`, só `VERSAO_SISTEMA` mudou ([notas da versão](../../../notas-de-versao/estrutura-curricular-v1.13.0.md)).
+**Estado:** versão **1.13.0**, preparada em 23/10/2026 e no `main` desde 26/10/2026 (PR #28, merge `43a52d3`), sem tag nem Release. Implementada e validada com dados sintéticos; **não** foi implantada nem homologada no Google. Nenhum `clasp`, `/dev`, `/exec`, planilha ou dado foi tocado. Em `Codigo.gs`, só `VERSAO_SISTEMA` mudou ([notas da versão](../../../notas-de-versao/estrutura-curricular-v1.13.0.md)).
 
 **Testes e CI:** a B2 entrou no `main` pelo PR #28 (merge `43a52d3`, 26/10/2026) sem as suítes na CI, porque o fluxo não mistura mudança de CI com mudança de sistema. Um PR próprio, só do `.github/workflows/ci.yml`, acrescenta `testar_protecao_ocr.js` e `mutacoes_protecao_ocr.js` ao job da Estrutura Curricular, que entra em "CI concluída" (§6). Até esse PR entrar no `main`, elas rodam só à mão. A rodada 39893033804, de uma versão anterior do PR #28 com os dois passos, registrou 43/43 e 14/14. O diagnóstico de fontes naturais (`diagnostico-fontes.yml`) é independente, não bloqueia e pode ficar vermelho.
 
