@@ -153,7 +153,7 @@ Se houver diferença no OCR, verificar primeiro se o PDF usa fonte padrão não 
 
 O Chromium do Playwright não é o iframe do HtmlService. Itens a provar lá:
 
-1. **Projeto certo:** `GRADIP · Estrutura Curricular · HOMOLOGAÇÃO` ([IMPLANTACAO.md](../../IMPLANTACAO.md), "Nome dos projetos no Google"). Se não existir, criar é uma decisão do responsável.
+1. **Projeto certo:** `GRADIP · Grade Horaria - Config · HOMOLOGAÇÃO` ([IMPLANTACAO.md](../../IMPLANTACAO.md), "Nome dos projetos no Google"). Se não existir, criar é uma decisão do responsável.
 2. **Conta e destino do clasp:** conta institucional; `.clasp.json` em `sistemas/estrutura-curricular/src` apontando para o projeto de homologação. Rodar `clasp status` e conferir que a lista é só a do `.claspignore`.
 3. **Cópia e comparação antes do push:** `clasp pull` para uma pasta fora do repositório e `node ferramentas/conferir_implantacao.js <pasta> sistemas/estrutura-curricular/src --procurar` para registrar de qual commit o remoto está mais perto ([IMPLANTACAO.md §4](../../IMPLANTACAO.md)). Guardar a pasta como cópia do código anterior.
 4. **`clasp push`** do commit do PR, só com ordem expressa para esse push. Testar pelo `/dev` (implantação de teste); não criar nem alterar implantação `/exec`.

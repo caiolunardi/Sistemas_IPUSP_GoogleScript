@@ -57,7 +57,7 @@ GRADIP · <Sistema> · <AMBIENTE>
 | Parte | Regra |
 |---|---|
 | `GRADIP` | Prefixo fixo. Agrupa os projetos do setor na lista do Google e os separa de projetos pessoais ou antigos. |
-| `<Sistema>` | O mesmo nome do [catálogo](SISTEMAS.md), sem número de versão (a versão fica no Git e nas Releases). Formulário e gerenciador do mesmo assunto são sistemas diferentes. |
+| `<Sistema>` | O nome do sistema, sem número de versão (a versão fica no Git e nas Releases). **O nome que está no Google é o oficial** (decisão do responsável, 26/10/2026): o [catálogo](SISTEMAS.md) e a documentação usam o mesmo nome, e os nomes antigos são trocados aos poucos, à medida que cada sistema for desenvolvido. Formulário e gerenciador do mesmo assunto são sistemas diferentes. |
 | `<AMBIENTE>` | Em maiúsculas: `PRODUÇÃO` (o `/exec` que a equipe ou os alunos usam), `HOMOLOGAÇÃO` (testes, com `AMBIENTE=homologacao` e planilhas fictícias), `LEGADO` (versão antiga guardada para consulta ou para voltar atrás) ou `ARQUIVADO` (fora de uso; fica guardado em vez de ser apagado). |
 
 Separador: espaço, ponto médio (`·`) e espaço. Exemplos:
@@ -65,6 +65,26 @@ Separador: espaço, ponto médio (`·`) e espaço. Exemplos:
 - `GRADIP · Gerenciador de Abertura de Habilitações · PRODUÇÃO`
 - `GRADIP · Gerenciador de Abertura de Habilitações · HOMOLOGAÇÃO`
 - `GRADIP · Exclusão de Disciplinas · PRODUÇÃO`
+
+Projetos registrados em 26/10/2026, com o nome exatamente como está no Google. A lista completa, com o endereço `/exec` e a aba de permissões de cada um, fica na planilha da chave `SISTEMAS` do `ID_INDEX` (fora do Git); aqui vão só os nomes.
+
+| Projeto no Google | Documentação | Aba em `PERMISSOES_DE_ACESSO` |
+|---|---|---|
+| `GRADIP · Painel Alunos · PRODUÇÃO` | [Painel de Solicitações](sistemas/painel-solicitacoes/README.md) | (público aos alunos) |
+| `GRADIP · Painel Servidores · PRODUÇÃO` | [Painel de Sistemas](sistemas/painel-servidores/README.md) | `PAINEL_SERVIDORES` |
+| `GRADIP · Gerenciador de Pessoas · PRODUÇÃO` | [Gerenciador de Pessoas](sistemas/busca-alunos/README.md) (antes Comunidade IPUSP) | `PESSOAS_IPUSP` (o código atual não confere a aba) |
+| `GRADIP · Grade Horaria - Config · PRODUÇÃO` | [Grade Horaria - Config](sistemas/estrutura-curricular/README.md) (Estrutura Curricular e Grade Horária) | `ESTRUTURA_CURRICULAR` |
+| `GRADIP · Gerenciador de Abertura de Habilitações · PRODUÇÃO` | [Gerenciador de Abertura de Habilitações](sistemas/abertura-habilitacoes/README.md) | `GERENCIADOR_HABILITACOES` |
+| `GRADIP · Gerenciador de Abertura de Habilitações · HOMOLOGAÇÃO` | idem | `GERENCIADOR_HABILITACOES`, na planilha da coluna Homologação |
+| `GRADIP · Gerenciador de Trancamento Total de Matricula · PRODUÇÃO` | fora do repositório (o [gerenciador 1.1](sistemas/trancamento-total/README.md) do repositório não está implantado) | `GERENCIADOR_TRANCAMENTO_TOTAL` |
+| `GRADIP · Gerenciador de Trancamento Parcial de Matricula · PRODUÇÃO` | fora do repositório | `GERENCIADOR_TRANCAMENTO_PARCIAL` |
+| `GRADIP · Gerenciador de exclusão de disciplinas · PRODUÇÃO` | fora do repositório | `GERENCIADOR_EXCLUSAO_DISCIPLINAS` |
+| `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO` | fora do repositório | `EMISSAO_DIPLOMAS` |
+| `GRADIP · Gerenciador de Colação de Grau e Diplomas · HOMOLOGACAO` | fora do repositório | `EMISSAO_DIPLOMAS` |
+| `GRADIP · Gerenciador BUSP · PRODUÇÃO` | fora do repositório | `GERENCIADOR_BUSP` |
+| `GRADIP · Gerenciador de Matrícula dos Intercambistas · PRODUÇÃO` | fora do repositório | `GERENCIADOR_INTERCAMBISTAS` |
+
+A coluna da aba diz qual lista o sistema deveria usar; só o Painel dos servidores, a Grade Horaria - Config e o Gerenciador de Abertura de Habilitações conferem essa lista no servidor. Diferenças de grafia que ainda existem no Google (`HOMOLOGACAO`, `Matricula`, `Horaria`, `exclusão` em minúsculas) ficam como estão até o responsável renomear o projeto; a documentação acompanha o nome do Google.
 
 Como aplicar:
 

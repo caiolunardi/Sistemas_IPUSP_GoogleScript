@@ -1,4 +1,6 @@
-# Comunidade IPUSP (antiga Busca de Alunos) — fonte v1.3
+# Gerenciador de Pessoas (antes Comunidade IPUSP e Busca de Alunos) — fonte v1.3
+
+No Google: `GRADIP · Gerenciador de Pessoas · PRODUÇÃO`.
 
 Esta pasta contém os **nove arquivos Apps Script** da Comunidade IPUSP, em `src/`. A pasta e os nomes de arquivo continuam os da Busca de Alunos, para a atualização ser só substituir arquivos. A v1.0 aplicou o tema GRADIP (Sistema/Claro/Escuro) e a Central de Ajuda sobre os dois arquivos em uso (`Codigo.gs` e `BuscaAlunosApp.html`, recebidos em 13/10/2026). A **v1.1** corrige o título da coluna de e-mail para `eMail` e acrescenta, a pedido do Serviço de Graduação:
 
