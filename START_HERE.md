@@ -15,7 +15,7 @@
 
 | Tarefa ou nome informal | Documentação original |
 | --- | --- |
-| Estrutura Curricular, importação Júpiter, preparação da grade | [Estrutura Curricular](docs/sistemas/estrutura-curricular/README.md); contexto local, em adoção: [AGENTS da Estrutura](sistemas/estrutura-curricular/AGENTS.md) |
+| Estrutura Curricular, importação Júpiter, preparação da grade | [Estrutura Curricular](docs/sistemas/estrutura-curricular/README.md); contexto local `ADOTADO`: [instruções da Estrutura](sistemas/estrutura-curricular/AGENTS.md) |
 | Grade horária pública dos alunos | [Grade Horária visual](docs/sistemas/grade-horaria-visual/README.md) |
 | Formulários de Exclusão e Trancamento | [Sistemas dos alunos](docs/SISTEMAS.md#alunos) |
 | Painel interno e regras/períodos de solicitação | [Painel dos servidores](docs/sistemas/painel-servidores/README.md) |
