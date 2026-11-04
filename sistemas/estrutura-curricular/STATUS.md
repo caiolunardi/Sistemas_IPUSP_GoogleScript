@@ -3,9 +3,9 @@
 - **Sistema:** `estrutura-curricular`
 - **Protocolo:** `context/v1`
 - **Corte:** `2026-11-04`
-- **Código-base referenciado:** `a8af8e4b49519640d23ded7f99cbe87749162fbf` (`main`; o PR #32 aberto foi lido no mesmo corte, HEAD `a84c370c8ed9431b75afd5bd228ffa0d5e57f26c`)
+- **Código-base referenciado:** `80d0da2b400099e1afb0ff5b4840e9ac9023456e` (`main` depois do merge do PR #33, que só mudou documentação; o código da Estrutura é o mesmo de `a8af8e4`; o PR #32 aberto foi lido no mesmo corte, HEAD `a84c370c8ed9431b75afd5bd228ffa0d5e57f26c`)
 - **Estado editorial:** `PARCIAL`
-- **Última rodada reconhecida:** `EC-ROD-20261104-002`
+- **Última rodada reconhecida:** `EC-ROD-20261104-003`
 - **Estado de produção:** `NAO_VERIFICADO` (versão do `/exec` sem prova direta; o editor de produção tem um relato, ver "Estado em camadas")
 - **Marco Zero prospectivo:** [registro local](contexto/MARCO_ZERO.md), em PR próprio, **sem aceite nem ativação formal**. Estado da adoção: `PROPOSTA`.
 
@@ -48,12 +48,12 @@ A futura publicação é um **salto acumulado** (editor atual → PDF.js 6.4.299
   - [Manutenção e continuidade](../../docs/sistemas/estrutura-curricular/MANUTENCAO_E_CONTINUIDADE.md) (1.10.0) se apresenta como "ponto de entrada para retomar": **não** é a entrada vigente, que é [AGENTS local](AGENTS.md);
   - [Instalação e atualização](../../docs/sistemas/estrutura-curricular/INSTALACAO_E_ATUALIZACAO.md) é da 1.11.3;
   - desatualizados desde o PR #30: a [nota da 1.13.0](../../notas-de-versao/estrutura-curricular-v1.13.0.md) e o parágrafo "Testes e CI" de PROTECAO_B2_OCR ainda dizem que as suítes B2 rodam à mão; o [catálogo](../../docs/SISTEMAS.md) diz "B2 em PR".
-- **Adoção de contexto:** `PROPOSTA`, condicionada à decisão sobre o PR #33, a este PR, ao manifesto verificável, a um teste a frio independente e à decisão humana de corte de autoridade. Não declarar `ADOTADO` por existir STATUS proposto.
+- **Adoção de contexto:** `PROPOSTA`. A entrada geral (PR #33) está no `main` desde 04/11/2026 e já aponta para este contexto. A adoção segue condicionada à decisão sobre este PR, ao manifesto verificável, a um teste a frio independente e à decisão humana de corte de autoridade. Não declarar `ADOTADO` por existir STATUS proposto.
 
 ## Próxima ação possível (não autorizada por este texto)
 
 - **Estrutura:** concluir a A4 quando houver a segunda conta de teste (H13 e M2), sobre o HEAD congelado do PR #32; só então decidir o merge do #32, e depois, com ordens próprias, tag/Release, publicação e supervisão da primeira importação real.
-- **Contexto:** revisão independente destas correções; decisão sobre o PR #33; sincronizar este PR com o `main` e reconciliar a entrada geral ([pendências](contexto/PENDENCIAS.md), GE-01); depois `context.config.json` real, checker e teste a frio.
+- **Contexto:** revisão independente das correções (rodadas 002 e 003); decisão do responsável sobre este PR; depois `context.config.json` real, checker e teste a frio, em PR próprio.
 
 ## Fontes e continuidade
 

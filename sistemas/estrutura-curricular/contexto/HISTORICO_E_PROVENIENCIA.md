@@ -27,7 +27,7 @@ Situação hoje: **V** = continua válida; **P** = planejamento ou autorização
 
 ## Decisões gerais e específicas
 
-Não copiar retrospectivamente decisões globais como se tivessem sido tomadas **só** pela Estrutura. O mapa dos registros transversais (`GRADIP-DEC-001` a `GRADIP-DEC-006` e `GRADIP-ROD-20261022-003`) fica na camada geral, em `docs/contexto/README.md`, seção "Proveniência das decisões transversais" (PR #33; vira link na reconciliação GE-01 descrita nas [pendências](PENDENCIAS.md)). As normas públicas que a Estrutura aplica estão em:
+Não copiar retrospectivamente decisões globais como se tivessem sido tomadas **só** pela Estrutura. O mapa dos registros transversais (`GRADIP-DEC-001` a `GRADIP-DEC-006` e `GRADIP-ROD-20261022-003`) fica na camada geral, no [contexto geral](../../../docs/contexto/README.md), seção "Proveniência das decisões transversais". As normas públicas que a Estrutura aplica estão em:
 
 - [ADR-001 — plataforma](../../../docs/arquitetura/ADR-001_ESCOLHA_DA_PLATAFORMA_INSTITUCIONAL.md).
 - [Fluxo de mudanças e autorizações](../../../docs/governanca/FLUXO_DE_MUDANCAS.md).

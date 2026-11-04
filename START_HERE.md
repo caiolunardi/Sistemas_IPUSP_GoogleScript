@@ -15,7 +15,7 @@
 
 | Tarefa ou nome informal | Documentação original |
 | --- | --- |
-| Estrutura Curricular, importação Júpiter, preparação da grade | [Estrutura Curricular](docs/sistemas/estrutura-curricular/README.md) |
+| Estrutura Curricular, importação Júpiter, preparação da grade | [Estrutura Curricular](docs/sistemas/estrutura-curricular/README.md); contexto local, em adoção: [AGENTS da Estrutura](sistemas/estrutura-curricular/AGENTS.md) |
 | Grade horária pública dos alunos | [Grade Horária visual](docs/sistemas/grade-horaria-visual/README.md) |
 | Formulários de Exclusão e Trancamento | [Sistemas dos alunos](docs/SISTEMAS.md#alunos) |
 | Painel interno e regras/períodos de solicitação | [Painel dos servidores](docs/sistemas/painel-servidores/README.md) |
@@ -32,4 +32,4 @@ Cada Web App é um projeto Google Apps Script independente. A integração ocorr
 
 Repositório **público**: nunca publicar dados reais de estudantes/servidores, IDs internos, URLs de ferramentas internas, segredos, valores de Script Properties ou logs privados. Leia a [política de publicação](docs/seguranca/REPOSITORIO_PUBLICO.md) e o [fluxo de mudanças](docs/governanca/FLUXO_DE_MUDANCAS.md).
 
-**Adoção de contexto:** a estrutura geral está preparada; **contextos locais completos por aplicativo ainda não foram criados**. Cada aplicativo manterá STATUS e histórico próprios. Esta entrada não duplica nenhum estado vigente.
+**Adoção de contexto:** a estrutura geral está preparada. Estrutura Curricular: contexto local em adoção (`PROPOSTA`), a partir do [AGENTS da Estrutura](sistemas/estrutura-curricular/AGENTS.md); demais aplicativos ainda sem contexto local. Nenhum contexto local está ativado nem foi aceito como completo. Cada aplicativo manterá STATUS e histórico próprios. Esta entrada não duplica nenhum estado vigente.

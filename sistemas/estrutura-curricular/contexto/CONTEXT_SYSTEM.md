@@ -31,7 +31,7 @@ A aprovação do responsável cobre **preparar o contexto em branch**; não cobr
 | Código e testes reais | [src/](../src/), [testes/](../testes/README.md) | SHA, diff, branch e CI (só "CI concluída" é gate; o diagnóstico de fontes não bloqueia) |
 | Contratos e algoritmos | [arquitetura](../../../docs/sistemas/estrutura-curricular/ARQUITETURA.md) (§7: manifesto da versão ativa, recuperação), [contratos](../../../docs/sistemas/estrutura-curricular/CONTRATOS_E_FLUXOS.md), [modelo](../../../docs/sistemas/estrutura-curricular/MODELO_DE_DADOS.md) | Código, testes negativos, consumidores |
 | Política de segurança e governança | [CLAUDE.md](../../../CLAUDE.md), [segurança](../../../docs/seguranca/README.md), [fluxo de PR](../../../docs/governanca/FLUXO_DE_MUDANCAS.md) | Normas vigentes da raiz |
-| Decisões transversais do GRADIP | Camada geral: `docs/contexto/README.md`, seção "Proveniência das decisões transversais" (PR #33; vira link na reconciliação GE-01) | Não duplicar aqui; a Estrutura só referencia |
+| Decisões transversais do GRADIP | Camada geral: [contexto geral](../../../docs/contexto/README.md), seção "Proveniência das decisões transversais" | Não duplicar aqui; a Estrutura só referencia |
 | Estado editorial da Estrutura | [STATUS](../STATUS.md) | Checar corte, HEAD e evidências por SHA |
 | Histórico do projeto | [versões e decisões](../../../docs/sistemas/estrutura-curricular/VERSOES_E_DECISOES.md), [histórico e proveniência](HISTORICO_E_PROVENIENCIA.md) | Preservar fatos originais e seu alcance |
 | Decisões prospectivas e rodadas | [índice de rodadas](RODADAS.md) e rodadas indexadas | Identificador, atos, fontes, revisão/aceite |
