@@ -2,7 +2,7 @@
 
 - **Sistema:** `estrutura-curricular`
 - **Protocolo:** `context/v1`
-- **Estado da adoção:** `PROPOSTA`
+- **Estado da adoção:** `ADOTADO` (rodada 006)
 - **Corte:** `2026-11-04`
 
 ## Por que este sistema tem memória de IA
@@ -11,7 +11,7 @@ O aplicativo possui regras curriculares, importadores, rotinas de escrita/recupe
 
 ## Marco Zero
 
-O [Marco Zero](MARCO_ZERO.md) fixa o HEAD inspecionado, a proveniência, as lacunas e a transição entre acervo histórico e continuidade prospectiva. **O histórico anterior não é reconstituído integralmente nem reclassificado como prova.** A [matriz histórica](HISTORICO_E_PROVENIENCIA.md) relaciona registros anteriores às fontes públicas disponíveis, sem copiar originais privados. O primeiro registro prospectivo é [EC-ROD-20261104-001](rodadas/EC-ROD-20261104-001.md); a correção pós-auditoria é [EC-ROD-20261104-002](rodadas/EC-ROD-20261104-002.md); a sincronização com o `main` e a reconciliação da entrada geral, [EC-ROD-20261104-003](rodadas/EC-ROD-20261104-003.md); os ajustes da revisão independente, [EC-ROD-20261104-004](rodadas/EC-ROD-20261104-004.md); o manifesto e as decisões de 04/11/2026, [EC-ROD-20261104-005](rodadas/EC-ROD-20261104-005.md).
+O [Marco Zero](MARCO_ZERO.md) fixa o HEAD inspecionado, a proveniência, as lacunas e a transição entre acervo histórico e continuidade prospectiva. **O histórico anterior não é reconstituído integralmente nem reclassificado como prova.** A [matriz histórica](HISTORICO_E_PROVENIENCIA.md) relaciona registros anteriores às fontes públicas disponíveis, sem copiar originais privados. O primeiro registro prospectivo é [EC-ROD-20261104-001](rodadas/EC-ROD-20261104-001.md); a correção pós-auditoria é [EC-ROD-20261104-002](rodadas/EC-ROD-20261104-002.md); a sincronização com o `main` e a reconciliação da entrada geral, [EC-ROD-20261104-003](rodadas/EC-ROD-20261104-003.md); os ajustes da revisão independente, [EC-ROD-20261104-004](rodadas/EC-ROD-20261104-004.md); o manifesto e as decisões de 04/11/2026, [EC-ROD-20261104-005](rodadas/EC-ROD-20261104-005.md); o teste a frio, as correções que ele pediu e o corte de autoridade, [EC-ROD-20261104-006](rodadas/EC-ROD-20261104-006.md).
 
 ## Como foi concebida
 
@@ -58,4 +58,4 @@ Tudo aqui será público depois de eventual merge. Nenhum arquivo secreto, crede
 
 ## Como verificar a própria memória
 
-A revisão documental confere links, escopo, autoria e consistência do STATUS com o SHA real. O manifesto `context.config.json`, na raiz, existe desde a rodada 005. O verificador estrutural não fica no repositório: quem tem acesso a ele o roda e anexa a saída ao PR. Ele confere campos e índices e lê só os arquivos que o manifesto lista e as rodadas; o Marco Zero e a matriz histórica ficam fora dele. Nem um checker verde nem a indexação histórica provam que todas as decisões anteriores foram recuperadas, que a IA manterá contexto espontaneamente ou que o Apps Script está implantado. Teste a frio por outra IA e revisão humana ainda são necessários.
+A revisão documental confere links, escopo, autoria e consistência do STATUS com o SHA real. O manifesto `context.config.json`, na raiz, existe desde a rodada 005. O verificador estrutural não fica no repositório: quem tem acesso a ele o roda e anexa a saída ao PR. Ele confere campos e índices e lê só os arquivos que o manifesto lista e as rodadas; o Marco Zero e a matriz histórica ficam fora dele. Nem um checker verde nem a indexação histórica provam que todas as decisões anteriores foram recuperadas, que a IA manterá contexto espontaneamente ou que o Apps Script está implantado. O teste a frio da rodada 006 cobriu 14 perguntas e não prova o que ficou fora delas; a revisão humana continua necessária.

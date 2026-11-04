@@ -131,6 +131,7 @@ Falta a conferência com PDFs escaneados reais do Júpiter, sem copiar dados rea
 ## 9. Pendências que dependem do responsável
 
 - Versão 1.13.0 no `main` (PR #28), sem tag nem Release.
-- Merge do PR do workflow que põe as duas suítes da B2 na CI exigida.
-- Decidir se o servidor deve ler todos os erros, e não só os 100 primeiros avisos (`Importacao.gs`).
+- Fazer o servidor ler todos os erros, e não só os 100 primeiros avisos (`Importacao.gs`): o responsável decidiu em 04/11/2026 corrigir isso em PR próprio, depois da publicação da 1.13.0.
 - B3 (segunda leitura das linhas suspeitas) e a Etapa 5 não foram iniciadas.
+
+O merge do workflow que põe as duas suítes da B2 na CI exigida, antes nesta lista, foi feito no PR #30 (26/10/2026).

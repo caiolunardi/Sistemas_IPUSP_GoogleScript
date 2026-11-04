@@ -1,6 +1,6 @@
 # Estrutura Curricular — reconciliação do histórico anterior
 
-**Natureza:** índice de proveniência para converter continuidade histórica em documentos locais **sem transcrever conteúdo reservado no repositório público**. Identificadores históricos são preservados como referências, **não** renumerados como rodadas locais `EC-ROD-`. A origem completa dos apontamentos anteriores permanece em acervo com acesso restrito; este contexto opera usando somente os **documentos públicos e os commits indicados**. O acervo termina em **26/10/2026 (manhã)**; o que veio depois está na última linha da matriz.
+**Natureza:** índice de proveniência para converter continuidade histórica em documentos locais **sem transcrever conteúdo reservado no repositório público**. Identificadores históricos são preservados como referências, **não** renumerados como rodadas locais `EC-ROD-`. A origem completa dos apontamentos anteriores permanece em acervo com acesso restrito; este contexto opera usando somente os **documentos públicos e os commits indicados**. O acervo termina em **26/10/2026 (manhã)**; o que veio depois está na última linha da matriz. Desde o corte de autoridade de 04/11/2026 ([EC-ROD-20261104-006](rodadas/EC-ROD-20261104-006.md)), o acervo fica congelado como histórico, sem novas entradas, e não é referência para este aplicativo.
 
 ## Matriz de proveniência e reconciliação
 
