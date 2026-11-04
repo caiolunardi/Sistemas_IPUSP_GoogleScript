@@ -204,10 +204,14 @@ async function contraste(p, scheme, seletores, rotulo=''){
   await p.evaluate(()=>{const c=document.getElementById('caixaBusca');c.value='diplomas';filtrarSistemas()});
   await p.waitForTimeout(1700);
   await p.evaluate(()=>PainelAuditoria.enviar()); await p.waitForFunction(()=>PainelAuditoria.fila().length===0&&!PainelAuditoria.enviando(), null, {timeout:5000}).catch(()=>{});
-  const aud = await p.evaluate(()=>({ev:window.__auditoria, lotes:window.__lotes.map(l=>({sessao:l.sessao_id, ctx:l.contexto}))}));
+  const aud = await p.evaluate(()=>({ev:window.__auditoria, lotes:window.__lotes.map(l=>({sessao:l.sessao_id, ctx:l.contexto, eventos:l.eventos.map(e=>e.evento)}))}));
   const tem = (cod, f=()=>true) => aud.ev.some(e=>e.evento===cod&&f(e));
   chk(`${T} auditoria: ACESSO.ABRIR com tempo de carga`, tem('ACESSO.ABRIR', e=>e.duracao_ms>0&&e.detalhes.papel==='admin'));
-  chk(`${T} auditoria: lotes com a sessão e o contexto`, aud.lotes.length>0&&aud.lotes.every(l=>l.sessao==='11111111-2222-4333-8444-555555555555'&&l.ctx.tema===scheme&&l.ctx.largura_tela===1280&&/·/.test(l.ctx.navegador)), JSON.stringify(aud.lotes[0]));
+  // Falhou uma vez na CI (04/11/2026) sem se repetir: a mensagem lista todos os lotes
+  // que não conferem, com a posição e os eventos de cada um, para achar a causa.
+  const loteConfere = l=>l.sessao==='11111111-2222-4333-8444-555555555555'&&l.ctx.tema===scheme&&l.ctx.largura_tela===1280&&/·/.test(l.ctx.navegador);
+  const lotesDivergentes = aud.lotes.map((l,i)=>loteConfere(l)?null:{lote:i+1, ...l}).filter(Boolean);
+  chk(`${T} auditoria: lotes com a sessão e o contexto`, aud.lotes.length>0&&lotesDivergentes.length===0, JSON.stringify({lotes:aud.lotes.length, divergentes:lotesDivergentes}));
   chk(`${T} auditoria: CARD.ABRIR com o nome, sem a URL`, tem('CARD.ABRIR', e=>e.alvo_id==='Pessoas do IPUSP')&&!JSON.stringify(aud.ev).includes('FICTICIO_'));
   chk(`${T} auditoria: TELA.ABRIR de Formulários e Regras`, tem('TELA.ABRIR', e=>e.alvo_id==='Configurações › Formulários')&&tem('TELA.ABRIR', e=>e.alvo_id==='Configurações › Regras Curriculares'));
   chk(`${T} auditoria: FORMULARIO.ABRIR e FECHAR com duração`, tem('FORMULARIO.ABRIR', e=>e.alvo_id==='Formulário de Teste Sazonal')&&tem('FORMULARIO.FECHAR', e=>e.alvo_id==='Pedido de Colação de Grau'&&e.duracao_ms>=0));
