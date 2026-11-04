@@ -4,6 +4,8 @@ Código e documentação dos sistemas web que o **Serviço de Graduação do Ins
 
 O repositório é público para que a comunidade do IPUSP (alunos, docentes, servidores e comissões) possa consultar como os sistemas funcionam, e para que outros setores possam reaproveitar o que for útil.
 
+Para um novo mantenedor ou agente de IA: [comece por aqui](START_HERE.md), nossa entrada única para localizar sistemas, normas e instruções de continuidade sem depender de conversas anteriores.
+
 ## O que você encontra aqui
 
 - **O que cada sistema faz, para quem e em que estado está** ([catálogo](docs/SISTEMAS.md)).
