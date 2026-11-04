@@ -22,14 +22,29 @@
 - "Sistema" pode agrupar mais de um **projeto Apps Script**, com códigos e implantações diferentes. A fronteira dos futuros contextos deve ser definida por responsabilidades e ciclo de manutenção **verificados**, não apenas pela quantidade de pastas.
 - Os sistemas são independentes, mas compartilham dados e componentes. Mudanças de contrato requerem verificar produtores e consumidores; um STATUS local não autoriza alterações nos demais.
 - Históricos externos ou privados não são dependência operacional nem autorização. A fonte pública precisa ser autossuficiente para a retomada e nunca receber dados institucionais reais.
+- **Transição e corte de autoridade.** Até haver decisão humana expressa de corte de autoridade, os registros externos de continuidade anteriores a esta estrutura são **fontes históricas**, não um segundo STATUS operacional concorrente. Divergência entre eles e o contexto deste repositório é registrada como achado e reconciliada com evidência, sem presumir qual lado está certo. O corte definitivo **ainda depende de decisão do responsável**; nada aqui declara o acervo anterior descontinuado, migrado por inteiro ou dispensável.
 
 ## Fases
 
-**Agora:** entrada de contexto, continuidade geral e Marco Zero público. Não alterar `src/`, `shared/`, scripts, CI, deployments, dados nem código de aplicativos.
+**Etapa de instalação (só documentação, PRs #33 e #34):** entrada de contexto, continuidade geral e Marco Zero público. **Nesta etapa** não se alteram `src/`, `shared/`, scripts, CI, deployments, dados nem código de aplicativos. A restrição vale só para estes PRs de contexto: o desenvolvimento dos aplicativos continua pelo [fluxo de mudanças](../governanca/FLUXO_DE_MUDANCAS.md), com as autorizações próprias de cada mudança.
 
-**Depois, por autorização própria:** iniciar um contexto específico na Estrutura Curricular, revalidando código, PR/CI, documentação e o estado Google. Registrar Marco Zero próprio, STATUS único e um teste a frio. Incorporar outros contextos gradualmente.
+**Contexto local da Estrutura Curricular:** proposto em PR próprio, com estado `PROPOSTA`, revalidando código, PR/CI, documentação e o estado Google, com Marco Zero próprio e STATUS único. Só entra no `main` por decisão do responsável; depois disso, a entrada geral é reconciliada e vem o teste a frio. Outros contextos são incorporados gradualmente.
 
 **Manifesto verificável:** `context.config.json` só será criado quando existir **ao menos um app com contexto local completo**. O verificador requer uma lista não vazia de apps e seus arquivos reais. Criar configurações vazias ou fictícias nesta fase produziria falso sinal de conformidade. Por isso o manifesto **não foi criado**, deliberadamente.
+
+## Proveniência das decisões transversais
+
+Antes desta estrutura, decisões que valem para todo o GRADIP foram registradas num acervo externo de acesso restrito. O mapa abaixo diz onde cada uma tem expressão pública canônica. Os identificadores são só referência de proveniência: o texto original não é transcrito e não é fonte obrigatória para trabalhar aqui. Contextos locais (como o da Estrutura Curricular) apontam para esta tabela em vez de copiá-la.
+
+| Identificador histórico | Assunto | Expressão pública canônica |
+| --- | --- | --- |
+| `GRADIP-DEC-001` | Plataforma institucional | [ADR-001](../arquitetura/ADR-001_ESCOLHA_DA_PLATAFORMA_INSTITUCIONAL.md) e a seção "Por que Google Sheets e Google Apps Script?" do [README](../../README.md) |
+| `GRADIP-DEC-002` | Governança, PR, CI e implantação | [Fluxo de mudanças](../governanca/FLUXO_DE_MUDANCAS.md), [proteção do main](../governanca/PROTECAO_DO_MAIN.md), [implantação](../IMPLANTACAO.md) e [CLAUDE.md](../../CLAUDE.md) |
+| `GRADIP-DEC-003` | Desempenho e refatorações | Parcial: [ADR-001](../arquitetura/ADR-001_ESCOLHA_DA_PLATAFORMA_INSTITUCIONAL.md) §4 (limitações e desempenho), [guia de continuidade](../arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md) §3 (projetos independentes) e §6 (medir antes de concluir) e a fronteira do [START_HERE](../../START_HERE.md) (sem autorização para unificar backends). Orientação do responsável, sem benchmark: não fundir projetos só para reduzir implantações; refatoração ampla só com motivo concreto (defeito, modernização de legado ou gargalo medido) |
+| `GRADIP-DEC-004` | Confidencialidade, publicidade e dados | [Repositório público](../seguranca/REPOSITORIO_PUBLICO.md), [classificação de dados](../seguranca/CLASSIFICACAO_DE_DADOS.md) e as regras de segurança do [CLAUDE.md](../../CLAUDE.md). Uma parte é de escopo restrito e não é reproduzida |
+| `GRADIP-DEC-005` | Backup de continuidade no acervo externo | Escopo histórico restrito. Aqui vale a regra de transição acima: fonte histórica até o corte de autoridade |
+| `GRADIP-DEC-006` | Atualização do acervo externo por marcos | Escopo histórico restrito. Neste repositório vale a "Atualização sem burocracia" abaixo, sempre por PR; a iniciativa de commit dada naquele acervo **não** se estende a este repositório |
+| `GRADIP-ROD-20261022-003` | Instalação do acervo de continuidade | Escopo histórico restrito; origem da `GRADIP-DEC-005` |
 
 ## Atualização sem burocracia
 

@@ -22,3 +22,13 @@ A raiz disponibiliza [START_HERE](../../START_HERE.md), sem duplicar [SISTEMAS](
 ## Próximo passo possível
 
 Autorizar, em trabalho separado, o Marco Zero local da **Estrutura Curricular**, confrontando fonte, PR/CI, estado de homologação e autorização Google. Só depois registrar seu STATUS, continuidade e rodadas com teste a frio. Esta página não concede merge, alteração de dados ou deploy.
+
+## Revisão pós-auditoria (sucessora, 04/11/2026)
+
+Uma auditoria independente do texto original (HEAD `46269d0`) considerou esta camada adequada, com ressalvas. Correções aplicadas nesta mesma branch, sem reescrever o texto acima:
+
+- regra de transição e corte de autoridade pendente para o acervo anterior ([contexto geral](README.md));
+- a restrição de "não alterar código" limitada à etapa de instalação;
+- mapa de proveniência das decisões transversais (`GRADIP-DEC-001` a `006` e `GRADIP-ROD-20261022-003`) na camada geral.
+
+Fica para a etapa seguinte, e não é aplicado aqui: quando o contexto da Estrutura Curricular for sincronizado com o `main` depois deste PR, o [START_HERE](../../START_HERE.md) passa a apontar para o AGENTS local da Estrutura e a frase sobre contextos locais é atualizada, sem declarar adoção completa. O texto original desta página é recuperável no Git pelo commit `46269d0`.
