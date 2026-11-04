@@ -1,5 +1,7 @@
 # Instalação e atualização — 1.11.3
 
+> **Aviso (04/11/2026):** os passos abaixo vão só até a 1.11.3. Os arquivos que mudam nas versões seguintes estão nas notas de versão ([1.12.0](../../../notas-de-versao/estrutura-curricular-v1.12.0.md), [1.12.1](../../../notas-de-versao/estrutura-curricular-v1.12.1.md) e [1.13.0](../../../notas-de-versao/estrutura-curricular-v1.13.0.md)), e o envio pelo clasp está no [guia de desenvolvimento local](../../../DEVELOPMENT_LOCAL.md). A 1.13.0 ainda não foi homologada nem implantada ([PR #32](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/pull/32)). O texto abaixo foi mantido como estava.
+
 ## Atualizar um Web App 1.11.2 para 1.11.3
 
 1. **Substitua** o conteúdo de sete arquivos: `Painel.html`, `PainelAuditoria.html`, `PainelEstilos.html`, `EstruturaNavegacaoUI.html`, `EstruturaIcones.html`, `EstruturaAjuda.html` e `Codigo.gs`. Nenhum arquivo novo; o servidor não muda.
