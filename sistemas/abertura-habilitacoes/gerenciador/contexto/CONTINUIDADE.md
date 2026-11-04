@@ -4,7 +4,7 @@
 
 1. Ler [AGENTS local](../AGENTS.md), [AGENTS da raiz](../../../../AGENTS.md), [normas](../../../../CLAUDE.md), [status](../STATUS.md) e [sistema de contexto](CONTEXT_SYSTEM.md).
 2. Identificar o gerenciador da equipe, não o Google Forms. Consultar [pendências](PENDENCIAS.md), [rodadas](RODADAS.md) e [proveniência](HISTORICO_E_PROVENIENCIA.md) conforme a demanda.
-3. Conferir `main`/HEAD, PRs, CI, versão do [código](../src/Configuracao.gs), [homologação](../../../../docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md) e documento técnico. V2.1 publicada em 22/10 é **registro**; `/exec` atual é `NAO_VERIFICADO` sem inspeção.
+3. Conferir `main`/HEAD, PRs, CI, versão do [código](../src/Configuracao.gs), [homologação](../../../../docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md) e documento técnico. V2.1 publicada em 22/10 é **registro documental**; em 04/11 o responsável confirmou **v2.1 em produção**, com captura da interface ([rodada 002](rodadas/AHG-ROD-20261104-002.md)). O SHA do código implantado e as configurações atuais continuam `NAO_VERIFICADO` sem inspeção técnica.
 4. Para mudanças, ler [contratos](../../../../docs/sistemas/abertura-habilitacoes/REGRAS_E_CONTRATOS.md), [modelo](../../../../docs/sistemas/abertura-habilitacoes/MODELO_DE_DADOS.md), [auditoria](../../../../docs/sistemas/abertura-habilitacoes/AUDITORIA.md), [segurança](../../../../docs/sistemas/abertura-habilitacoes/DADOS_E_SEGURANCA.md) e documentação de consumidores.
 
 ## Não regressar

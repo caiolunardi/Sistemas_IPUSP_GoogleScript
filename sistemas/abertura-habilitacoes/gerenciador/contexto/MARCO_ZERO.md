@@ -16,6 +16,10 @@ O Forms externo grava sem trava do gerenciador; J/K podem deslocar; 2021–2022 
 
 Nenhuma visita ao Google, alteração em `src/`, testes, workflows, planilhas, formulários, gatilhos ou implantação. Nenhum material privado foi copiado. Estado histórico, código Git e produção são provas diferentes.
 
+## Atualização sucessora — 04/11/2026
+
+Após a fotografia inicial, o responsável afirmou explicitamente que o gerenciador **já está em produção na versão 2.1**, apresentando uma captura da interface com a indicação visual de `versão 2.1`. Este fato posterior está na [rodada 002](rodadas/AHG-ROD-20261104-002.md); não altera retroativamente a prova disponível no instante original do Marco Zero. A captura permaneceu fora do Git público. Não houve inspeção do editor ou verificação de SHA do deployment.
+
 ## Próximo gate
 
 Revisão documental independente, checker estrutural com `context.config.json`, varredura de publicação, CI, teste a frio com outra IA que leia só o Git e decisão humana de corte. O Google Forms não integra este contexto; nenhum gate permite merge ou operação por inferência.

@@ -5,5 +5,6 @@
 | ID | Objeto | Estado original | Documento |
 | --- | --- | --- | --- |
 | [AHG-ROD-20261104-001](rodadas/AHG-ROD-20261104-001.md) | Marco Zero de contexto local | PREPARADA | [registro](rodadas/AHG-ROD-20261104-001.md) |
+| [AHG-ROD-20261104-002](rodadas/AHG-ROD-20261104-002.md) | Confirmação do responsável: v2.1 em produção | PREPARADA | [registro sucessor](rodadas/AHG-ROD-20261104-002.md) |
 
-**Última rodada reconhecida:** `AHG-ROD-20261104-001`, igual ao [status](../STATUS.md). Novos fatos em rodadas sucessoras; não reclassificar retrospectivamente.
+**Última rodada reconhecida:** `AHG-ROD-20261104-002`, igual ao [status](../STATUS.md). Novos fatos em rodadas sucessoras; não reclassificar retrospectivamente.

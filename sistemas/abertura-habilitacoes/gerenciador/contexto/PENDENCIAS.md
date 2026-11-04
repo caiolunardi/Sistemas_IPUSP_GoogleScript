@@ -4,7 +4,7 @@ Corte 2026-11-04, baseline `main@5b6aba0ccd4ef7036bc294df769f61fd41994553`. Nenh
 
 | Tema | Evidência | Próximo gate |
 | --- | --- | --- |
-| Versão ativa do `/exec` | [homologação](../../../../docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md) registra implantação v2.1 versão 7 em 22/10; não houve inspeção direta atual | Conferir em ambiente autorizado, sem publicar IDs |
+| Produção e versão ativa | [homologação](../../../../docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md) documenta implantação da v2.1 em 22/10; em 04/11 o **responsável confirmou v2.1 em produção** e mostrou a interface indicando `versão 2.1` ([rodada 002](rodadas/AHG-ROD-20261104-002.md)) | **Confirmado pelo responsável** no nível de uso/interface. SHA do editor, detalhes técnicos da implantação e identidade de código seguem sem verificação independente; sem publicar captura/IDs |
 | Homologação v2.1 | G1–G4 `ok` documentados; G5–G8 não registrados como executados naquela rodada | Decidir se fazer ensaios complementares; não chamar não execução de falha |
 | Auditoria sem atomicidade | Planilha indisponível bloqueia escrita prévia, mas falha posterior do evento não desfaz alteração; registra termos de busca e observações | Preservar risco, validar retenção/base legal institucional |
 | Forms e planilha | Mudança de perguntas pode deslocar J/K; aba `2021 - 2022` só leitura | Conferir esquema e testar em cópia antes de mudança |
