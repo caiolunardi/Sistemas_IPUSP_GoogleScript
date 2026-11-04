@@ -15,4 +15,4 @@ Em resumo:
 
 ## Entrada de contexto para agentes novos
 
-Comece por [START_HERE.md](START_HERE.md) para localizar o sistema e por [continuidade geral](docs/contexto/CONTINUIDADE.md) para deixar o próximo passo verificável. Essas páginas **não substituem** `CLAUDE.md`, a política de segurança nem o fluxo de branches/PRs. Os contextos específicos serão criados gradualmente; não presuma que já existem.
+Comece por [START_HERE.md](START_HERE.md) para localizar o sistema e por [continuidade geral](docs/contexto/CONTINUIDADE.md) para deixar o próximo passo verificável. Essas páginas **não substituem** `CLAUDE.md`, a política de segurança nem o fluxo de branches/PRs. Os contextos específicos são criados gradualmente: hoje só a Estrutura Curricular tem contexto local, em adoção; não presuma que os demais existem.
