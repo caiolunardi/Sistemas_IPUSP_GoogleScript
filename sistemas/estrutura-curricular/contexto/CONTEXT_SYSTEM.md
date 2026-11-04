@@ -11,7 +11,7 @@ O aplicativo possui regras curriculares, importadores, rotinas de escrita/recupe
 
 ## Marco Zero
 
-O [Marco Zero](MARCO_ZERO.md) fixa o HEAD inspecionado, a proveniência, as lacunas e a transição entre acervo histórico e continuidade prospectiva. **O histórico anterior não é reconstituído integralmente nem reclassificado como prova.** A [matriz histórica](HISTORICO_E_PROVENIENCIA.md) relaciona registros anteriores às fontes públicas disponíveis, sem copiar originais privados. O primeiro registro prospectivo é [EC-ROD-20261104-001](rodadas/EC-ROD-20261104-001.md); a correção pós-auditoria é [EC-ROD-20261104-002](rodadas/EC-ROD-20261104-002.md).
+O [Marco Zero](MARCO_ZERO.md) fixa o HEAD inspecionado, a proveniência, as lacunas e a transição entre acervo histórico e continuidade prospectiva. **O histórico anterior não é reconstituído integralmente nem reclassificado como prova.** A [matriz histórica](HISTORICO_E_PROVENIENCIA.md) relaciona registros anteriores às fontes públicas disponíveis, sem copiar originais privados. O primeiro registro prospectivo é [EC-ROD-20261104-001](rodadas/EC-ROD-20261104-001.md); a correção pós-auditoria é [EC-ROD-20261104-002](rodadas/EC-ROD-20261104-002.md); a sincronização com o `main` e a reconciliação da entrada geral, [EC-ROD-20261104-003](rodadas/EC-ROD-20261104-003.md); os ajustes da revisão independente, [EC-ROD-20261104-004](rodadas/EC-ROD-20261104-004.md).
 
 ## Como foi concebida
 
@@ -58,4 +58,4 @@ Tudo aqui será público depois de eventual merge. Nenhum arquivo secreto, crede
 
 ## Como verificar a própria memória
 
-A revisão documental confere links, escopo, autoria e consistência do STATUS com o SHA real. Um verificador estrutural futuro conferirá campos e índices **somente após a entrada geral estar disponível e o manifesto ser configurado**. Nem um checker verde nem a indexação histórica provam que todas as decisões anteriores foram recuperadas, que a IA manterá contexto espontaneamente ou que o Apps Script está implantado. Teste a frio por outra IA e revisão humana ainda são necessários.
+A revisão documental confere links, escopo, autoria e consistência do STATUS com o SHA real. A entrada geral já está no `main`. Um verificador estrutural conferirá campos e índices **somente depois que o manifesto (`context.config.json`) for configurado**, em PR de ativação próprio. Ele lê só os arquivos que o manifesto lista e as rodadas; o Marco Zero e a matriz histórica ficam fora dele. Nem um checker verde nem a indexação histórica provam que todas as decisões anteriores foram recuperadas, que a IA manterá contexto espontaneamente ou que o Apps Script está implantado. Teste a frio por outra IA e revisão humana ainda são necessários.
