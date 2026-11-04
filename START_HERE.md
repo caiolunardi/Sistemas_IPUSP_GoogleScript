@@ -20,9 +20,11 @@
 | Formulários de Exclusão e Trancamento | [Sistemas dos alunos](docs/SISTEMAS.md#alunos) |
 | Painel interno e regras/períodos de solicitação | [Painel dos servidores](docs/sistemas/painel-servidores/README.md) |
 | Busca de pessoas, cadastro de alunos/docentes/servidores | [Gerenciador de Pessoas](docs/sistemas/busca-alunos/README.md) |
-| Habilitações | [Gerenciador de Habilitações](docs/sistemas/abertura-habilitacoes/README.md) |
+| Gerenciador de Abertura de Habilitações (equipe) | [documentação](docs/sistemas/abertura-habilitacoes/README.md); contexto local em **proposta**: [instruções do gerenciador](sistemas/abertura-habilitacoes/gerenciador/AGENTS.md) |
 | Validação e proteção da planilha das secretarias | [Planilha das secretarias](docs/sistemas/planilha-grade-secretarias/README.md) |
 | Diplomas, colação, BUSP ou módulos ainda não incorporados | [Limites do acervo](docs/ARQUITETURA_GERAL.md#6-limites-conhecidos); conferir PRs/documentos autorizados antes de assumir código na main |
+
+**Abertura de Habilitações:** o formulário dos alunos é um Google Forms externo; não tem contexto de código neste PR. O gerenciador interno é o Web App acima.
 
 **Desambiguação:** nomes de processos acadêmicos podem corresponder a formulário, gerenciador e/ou script vinculado a planilha, com implantações independentes. Não escolher o primeiro caminho encontrado sem identificar o componente.
 
@@ -32,4 +34,4 @@ Cada Web App é um projeto Google Apps Script independente. A integração ocorr
 
 Repositório **público**: nunca publicar dados reais de estudantes/servidores, IDs internos, URLs de ferramentas internas, segredos, valores de Script Properties ou logs privados. Leia a [política de publicação](docs/seguranca/REPOSITORIO_PUBLICO.md) e o [fluxo de mudanças](docs/governanca/FLUXO_DE_MUDANCAS.md).
 
-**Adoção de contexto:** a estrutura geral está preparada. Estrutura Curricular: contexto local adotado (`ADOTADO`), a partir do [AGENTS da Estrutura](sistemas/estrutura-curricular/AGENTS.md); demais aplicativos ainda sem contexto local. O acervo anterior ao contexto fica congelado como histórico desde 04/11/2026. Cada aplicativo manterá STATUS e histórico próprios. Esta entrada não duplica nenhum estado vigente.
+**Adoção de contexto:** a estrutura geral está preparada. Estrutura Curricular: contexto `ADOTADO`, a partir das [instruções da Estrutura](sistemas/estrutura-curricular/AGENTS.md). Gerenciador de Abertura de Habilitações: contexto local `PROPOSTA`, pendente de revisão, teste a frio e decisão humana; os demais ainda não possuem contexto local. O acervo anterior ao contexto fica congelado como histórico desde 04/11/2026. Cada aplicativo manterá STATUS e histórico próprios. Esta entrada não duplica nenhum estado vigente.

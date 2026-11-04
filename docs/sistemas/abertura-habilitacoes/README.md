@@ -1,5 +1,7 @@
 # Abertura de Habilitações — Gerenciador
 
+**Contexto específico do gerenciador (em proposta):** [status](../../../sistemas/abertura-habilitacoes/gerenciador/STATUS.md) e [continuidade](../../../sistemas/abertura-habilitacoes/gerenciador/contexto/CONTINUIDADE.md). O Google Forms dos alunos é externo; esse contexto não cobre sua implementação.
+
 **Versão:** gerenciador da equipe **v2.1**, **IMPLANTADA em 22/10/2026** (versão 7 da implantação de produção, código do commit `8a3aa63`), homologada na cópia de testes (ver [HOMOLOGACAO.md](HOMOLOGACAO.md)). A v2.0 (commit `314fbef`, implantada em 21/10/2026 com homologação parcial) é a versão 6 da mesma implantação. A v1.0, recebida em 21/10/2026, era a versão 5 da mesma implantação; voltar a ela segue [INSTALACAO_E_ATUALIZACAO.md §5](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás). O código está em [`sistemas/abertura-habilitacoes/gerenciador/`](../../../sistemas/abertura-habilitacoes/gerenciador/README.md). A v2.1 trouxe o nome e a observação de quem acessou no cabeçalho e a [auditoria](AUDITORIA.md) completa. O GitHub não informa qual versão está implantada no Apps Script.
 
 ## Finalidade e escopo

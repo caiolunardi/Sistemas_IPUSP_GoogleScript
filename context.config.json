@@ -13,6 +13,18 @@
       "roundsIndex": "contexto/RODADAS.md",
       "roundsDirectory": "contexto/rodadas",
       "backlog": "contexto/PENDENCIAS.md"
+    },
+    {
+      "id": "abertura-habilitacoes-gerenciador",
+      "root": "sistemas/abertura-habilitacoes/gerenciador",
+      "recordPrefix": "AHG",
+      "agents": "AGENTS.md",
+      "status": "STATUS.md",
+      "continuity": "contexto/CONTINUIDADE.md",
+      "contextSystem": "contexto/CONTEXT_SYSTEM.md",
+      "roundsIndex": "contexto/RODADAS.md",
+      "roundsDirectory": "contexto/rodadas",
+      "backlog": "contexto/PENDENCIAS.md"
     }
   ]
 }
