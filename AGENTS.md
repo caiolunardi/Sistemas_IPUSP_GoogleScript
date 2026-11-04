@@ -12,3 +12,7 @@ Em resumo:
 - Funcionalidade nova traz um CSV de dados fictícios para a homologação em `docs/sistemas/<sistema>/dados-ficticios/` ([padrão](docs/sistemas/AMBIENTE_DE_HOMOLOGACAO.md#dados-fictícios-para-a-homologação)).
 - Rode os testes do sistema alterado e atualize a documentação seguindo [`docs/ATUALIZAR_DOCUMENTACAO.md`](docs/ATUALIZAR_DOCUMENTACAO.md).
 - Para entender as ligações entre sistemas: [`docs/ARQUITETURA_GERAL.md`](docs/ARQUITETURA_GERAL.md) e [`docs/GLOSSARIO.md`](docs/GLOSSARIO.md).
+
+## Entrada de contexto para agentes novos
+
+Comece por [START_HERE.md](START_HERE.md) para localizar o sistema e por [continuidade geral](docs/contexto/CONTINUIDADE.md) para deixar o próximo passo verificável. Essas páginas **não substituem** `CLAUDE.md`, a política de segurança nem o fluxo de branches/PRs. Os contextos específicos serão criados gradualmente; não presuma que já existem.
