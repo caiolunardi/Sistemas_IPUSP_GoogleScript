@@ -28,7 +28,7 @@
 
 **Etapa de instalação (só documentação, PRs #33 e #34):** entrada de contexto, continuidade geral e Marco Zero público. **Nesta etapa** não se alteram `src/`, `shared/`, scripts, CI, deployments, dados nem código de aplicativos. A restrição vale só para estes PRs de contexto: o desenvolvimento dos aplicativos continua pelo [fluxo de mudanças](../governanca/FLUXO_DE_MUDANCAS.md), com as autorizações próprias de cada mudança.
 
-**Contexto local da Estrutura Curricular:** proposto em PR próprio, com estado `PROPOSTA`, revalidando código, PR/CI, documentação e o estado Google, com Marco Zero próprio e STATUS único. Só entra no `main` por decisão do responsável; depois disso, a entrada geral é reconciliada e vem o teste a frio. Outros contextos são incorporados gradualmente.
+**Contexto local da Estrutura Curricular:** primeiro contexto local, em adoção (`PROPOSTA`), a partir do [AGENTS da Estrutura](../../sistemas/estrutura-curricular/AGENTS.md), com Marco Zero próprio e STATUS único, revalidando código, PR/CI, documentação e o estado Google. A ativação do `context.config.json` e o teste a frio independente vêm depois, em PR próprio. Outros contextos são incorporados gradualmente.
 
 **Manifesto verificável:** `context.config.json` só será criado quando existir **ao menos um app com contexto local completo**. O verificador requer uma lista não vazia de apps e seus arquivos reais. Criar configurações vazias ou fictícias nesta fase produziria falso sinal de conformidade. Por isso o manifesto **não foi criado**, deliberadamente.
 
