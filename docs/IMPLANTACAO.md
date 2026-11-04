@@ -43,6 +43,7 @@ commit do main com CI ✓ ──(ordem explícita)──▶ projeto de PRODUÇÃ
 ```
 
 - **Configuração por ambiente:** o código é o mesmo; o que muda fica no projeto, nunca no Git. IDs pelo `ID_INDEX` (coluna `ID de Produção` ou `Homologação`), escolha pela Script Property `AMBIENTE` ([ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md)), URLs da equipe em `URLS_SISTEMAS_EQUIPE`. Script Properties não são cofre: qualquer editor do projeto as lê.
+- **Exceção: Estrutura Curricular (`Grade Horaria - Config`).** Ela não lê `AMBIENTE` e usa sempre a coluna `ID de Produção`. A homologação dela é um projeto separado cuja `ID_INDEX_SPREADSHEET_ID` aponta para um `ID_INDEX` fictício e isolado ([ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md), aviso no topo).
 - **Manifesto por ambiente:** o mesmo `appsscript.json` vale para os dois projetos. Se a homologação precisar de opção diferente (por exemplo, acesso mais restrito), registre a diferença no README do sistema em vez de manter dois manifestos.
 - **Migração gradual:** os três formulários já seguem o modelo. Os outros entram um por vez, quando cada um tiver mudança a implantar: primeiro o manifesto (seção 5), depois, se fizer sentido, a coluna `Homologação` e a propriedade `AMBIENTE`.
 

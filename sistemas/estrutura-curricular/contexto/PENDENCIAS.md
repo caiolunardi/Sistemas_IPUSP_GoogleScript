@@ -1,6 +1,6 @@
 # Estrutura Curricular — pendências verificáveis no Marco Zero
 
-**Corte:** 2026-11-04. Os estados abaixo foram confrontados com o repositório público no `main@16fdaf75336c84391e7b7400583095b265cc06f1` (antes, `a8af8e4`), com o PR #32 (corpo e comentários até 27/10/2026, HEAD `a84c370c8ed9431b75afd5bd228ffa0d5e57f26c`) e com o registro mínimo da A4 autorizado pelo responsável em 04/11/2026. **Não equivalem a autorização de trabalho.**
+**Corte:** 2026-11-04. Os estados abaixo foram confrontados com o repositório público no `main@e3fe1e187cd1ec5499426213e0796dc9ca41ae72` (antes, `16fdaf7` e `a8af8e4`), com o PR #32 (corpo e comentários até 27/10/2026, HEAD `a84c370c8ed9431b75afd5bd228ffa0d5e57f26c`) e com o registro mínimo da A4 autorizado pelo responsável em 04/11/2026. **Não equivalem a autorização de trabalho.**
 
 | Item | Situação e prova | Gate seguinte |
 | --- | --- | --- |
@@ -13,7 +13,7 @@
 | Publicação em produção | O editor de produção tem o código da 1.12.0 com rótulo `1.11.3` (A1 relatada no PR #32); `/exec` não verificado; sem tag/Release da 1.13.0; o responsável vai conferir a versão servida em "Gerenciar implantações" | Depois da homologação: tag/Release, `clasp push`/implantação e supervisão da primeira importação real, cada um com ordem própria; rollback pela cópia da A1, fora do Git |
 | Segurança, autenticação e perfil | [dados e segurança](../../../docs/sistemas/estrutura-curricular/DADOS_E_SEGURANCA.md) tem itens `A VALIDAR`; `Session.getActiveUser` pode ficar indisponível conforme a implantação | Só revisão com dados/ambiente autorizados; o backend deve negar acesso se a identidade não for verificada |
 | Etapa 5 / integridade de dependências | Plano em [Etapa 4](../../../docs/sistemas/estrutura-curricular/ETAPA4_PDFJS_MIGRACAO.md); integridade do Tesseract por CDN não concluída | Nova decisão específica |
-| Ativação do contexto | Manifesto `context.config.json` na raiz desde a [rodada 005](rodadas/EC-ROD-20261104-005.md). O verificador estrutural não fica no repositório, por decisão do responsável de 04/11/2026: quem tem acesso a ele o roda e anexa a saída ao PR | Teste a frio por outra IA que receba só o repositório; depois, decisão humana de corte de autoridade, que o responsável decidiu tomar só depois do teste a frio |
+| Exceção da Estrutura no fluxo de mudanças | O teste a frio da [rodada 006](rodadas/EC-ROD-20261104-006.md) notou que o [fluxo de mudanças](../../../docs/governanca/FLUXO_DE_MUDANCAS.md) §6 descreve a homologação com `AMBIENTE` sem citar a exceção da Estrutura. Ele remete ao guia do [ambiente de homologação](../../../docs/sistemas/AMBIENTE_DE_HOMOLOGACAO.md), que tem a exceção | Mudar a pasta de governança é classe crítica; só com decisão do responsável |
 | Diagnóstico de fontes vermelho | `diagnostico-fontes.yml` não bloqueia e está vermelho desde o PR #26. A investigação de 04/11/2026 (fora do Git) o atribuiu às fontes e ao hinting do executor, e não a uma regressão | Decisão do responsável entre as opções da investigação; mudança em workflow ou teste é PR próprio |
 
 **B3 (alterações adicionais no tratamento OCR) não está autorizada por esta documentação.** Decisões de corrigir ou aceitar riscos acadêmicos dependem do responsável. CI sintética, PR verde e STATUS documental nunca comprovam a implantação.
