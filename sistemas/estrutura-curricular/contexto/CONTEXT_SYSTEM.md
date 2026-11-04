@@ -2,7 +2,7 @@
 
 - **Sistema:** `estrutura-curricular`
 - **Protocolo:** `context/v1`
-- **Estado da adoção:** `PILOTO`
+- **Estado da adoção:** `PROPOSTA`
 - **Corte:** `2026-11-04`
 
 ## Por que este sistema tem memória de IA
@@ -11,7 +11,7 @@ O aplicativo possui regras curriculares, importadores, rotinas de escrita/recupe
 
 ## Marco Zero
 
-O [MARCO_ZERO.md](MARCO_ZERO.md) fixa o HEAD inspecionado, a proveniência, as lacunas e a transição entre acervo histórico e continuidade prospectiva. **O histórico anterior não é reconstituído integralmente nem reclassificado como prova.** A [matriz histórica](HISTORICO_E_PROVENIENCIA.md) relaciona registros anteriores às fontes públicas disponíveis, sem copiar originais privados. O primeiro registro prospectivo é [EC-ROD-20261104-001](rodadas/EC-ROD-20261104-001.md).
+O [Marco Zero](MARCO_ZERO.md) fixa o HEAD inspecionado, a proveniência, as lacunas e a transição entre acervo histórico e continuidade prospectiva. **O histórico anterior não é reconstituído integralmente nem reclassificado como prova.** A [matriz histórica](HISTORICO_E_PROVENIENCIA.md) relaciona registros anteriores às fontes públicas disponíveis, sem copiar originais privados. O primeiro registro prospectivo é [EC-ROD-20261104-001](rodadas/EC-ROD-20261104-001.md); a correção pós-auditoria é [EC-ROD-20261104-002](rodadas/EC-ROD-20261104-002.md).
 
 ## Como foi concebida
 
@@ -28,14 +28,15 @@ A aprovação do responsável cobre **preparar o contexto em branch**; não cobr
 
 | Assunto | Fonte canônica | Como revalidar |
 | --- | --- | --- |
-| Código e testes reais | [src/](../src/), [testes/](../testes/README.md) | SHA, diff, branch e CI |
-| Contratos e algoritmos | [ARQUITETURA](../../../docs/sistemas/estrutura-curricular/ARQUITETURA.md), [CONTRATOS](../../../docs/sistemas/estrutura-curricular/CONTRATOS_E_FLUXOS.md), [MODELO](../../../docs/sistemas/estrutura-curricular/MODELO_DE_DADOS.md) | Código, testes negativos, consumidores |
-| Política de segurança e governaça | [CLAUDE](../../../CLAUDE.md), [segurança](../../../docs/seguranca/README.md), [PR](../../../docs/governanca/FLUXO_DE_MUDANCAS.md) | Normas vigentes da raiz |
-| Estado editorial da Estrutura | [STATUS.md](../STATUS.md) | Checar corte, HEAD e evidências por SHA |
-| Histórico do projeto | [VERSOES_E_DECISOES](../../../docs/sistemas/estrutura-curricular/VERSOES_E_DECISOES.md), [HISTORICO_E_PROVENIENCIA](HISTORICO_E_PROVENIENCIA.md) | Preservar fatos originais e seu alcance |
-| Decisões prospectivas e rodadas | [RODADAS](RODADAS.md) e rodadas indexadas | Identificador, atos, fontes, revisão/aceite |
-| Pendências | [PENDENCIAS](PENDENCIAS.md) | PRs, documentos, CI e decisões humanas |
-| Produção e implantação | [HOMOLOGACAO](../../../docs/sistemas/estrutura-curricular/HOMOLOGACAO.md), [IMPLANTACAO](../../../docs/IMPLANTACAO.md), editor Google quando autorizado | O Git é insuficiente para comprovar versão no `/exec` |
+| Código e testes reais | [src/](../src/), [testes/](../testes/README.md) | SHA, diff, branch e CI (só "CI concluída" é gate; o diagnóstico de fontes não bloqueia) |
+| Contratos e algoritmos | [arquitetura](../../../docs/sistemas/estrutura-curricular/ARQUITETURA.md) (§7: manifesto da versão ativa, recuperação), [contratos](../../../docs/sistemas/estrutura-curricular/CONTRATOS_E_FLUXOS.md), [modelo](../../../docs/sistemas/estrutura-curricular/MODELO_DE_DADOS.md) | Código, testes negativos, consumidores |
+| Política de segurança e governança | [CLAUDE.md](../../../CLAUDE.md), [segurança](../../../docs/seguranca/README.md), [fluxo de PR](../../../docs/governanca/FLUXO_DE_MUDANCAS.md) | Normas vigentes da raiz |
+| Decisões transversais do GRADIP | Camada geral: `docs/contexto/README.md`, seção "Proveniência das decisões transversais" (PR #33; vira link na reconciliação GE-01) | Não duplicar aqui; a Estrutura só referencia |
+| Estado editorial da Estrutura | [STATUS](../STATUS.md) | Checar corte, HEAD e evidências por SHA |
+| Histórico do projeto | [versões e decisões](../../../docs/sistemas/estrutura-curricular/VERSOES_E_DECISOES.md), [histórico e proveniência](HISTORICO_E_PROVENIENCIA.md) | Preservar fatos originais e seu alcance |
+| Decisões prospectivas e rodadas | [índice de rodadas](RODADAS.md) e rodadas indexadas | Identificador, atos, fontes, revisão/aceite |
+| Pendências | [pendências](PENDENCIAS.md) | PRs, documentos, CI e decisões humanas |
+| Produção e implantação | [implantação](../../../docs/IMPLANTACAO.md), corpo e comentários do [PR #32](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/pull/32), [homologação histórica](../../../docs/sistemas/estrutura-curricular/HOMOLOGACAO.md) (1.9.3), editor Google quando autorizado | O Git é insuficiente para comprovar versão no `/exec` |
 
 ## Como é alimentada
 
@@ -49,7 +50,7 @@ Históricos são imutáveis como fotografias. Se uma prova posterior alterar a i
 
 ## Como entrar a frio
 
-Começar por [AGENTS](../AGENTS.md) e [STATUS](../STATUS.md), então [CONTINUIDADE](CONTINUIDADE.md). Conferir o Git e o catálogo geral antes de agir. Documentos antigos de 1.10.0/1.11.3 ajudam com evolução mas não anulam fontes de 1.13.0; conflitos são achados com datas/versões, não atalhos para refatorar. Consultar somente histórico relevante.
+Começar pelo [AGENTS local](../AGENTS.md) e pelo [STATUS](../STATUS.md), então pela [continuidade](CONTINUIDADE.md). Conferir o Git e o catálogo geral antes de agir. Documentos antigos de 1.9.3/1.10.0/1.11.3 ajudam com evolução mas não anulam fontes de 1.13.0; conflitos são achados com datas/versões, não atalhos para refatorar. Consultar somente histórico relevante.
 
 ## Privacidade, autorização e manutenção
 
