@@ -19,7 +19,7 @@ A Central de Ajuda tem três itens novos em "Conferência do PDF e OCR" e explic
 
 Por isso a ajuda pede conferir a prévia mesmo sem avisos. A detecção roda no navegador, então não protege contra uma requisição manipulada. O servidor lê só os 100 primeiros avisos; os erros vêm primeiro para contornar isso.
 
-**Validação:** só com PDFs sintéticos (dados inventados) e com o OCR real desses PDFs. **Nenhum PDF real do Júpiter foi usado.** A versão precisa de conferência com PDFs escaneados reais e de homologação no Google antes do uso institucional. As suítes da proteção (`testar_protecao_ocr.js` e `mutacoes_protecao_ocr.js`) estão no repositório e rodam manualmente; a inclusão delas na CI exigida fica para um PR próprio.
+**Validação:** só com PDFs sintéticos (dados inventados) e com o OCR real desses PDFs. **Nenhum PDF real do Júpiter foi usado.** A versão precisa de conferência com PDFs escaneados reais e de homologação no Google antes do uso institucional. As suítes da proteção (`testar_protecao_ocr.js` e `mutacoes_protecao_ocr.js`) estão no repositório e rodam na CI exigida desde o PR #30 (26/10/2026).
 
 **No Apps Script:** trocar `LeitorPdf.html`, `PainelImportacao.html`, `EstruturaAjuda.html` e `Codigo.gs` (nele, só o número da versão muda). Nenhuma planilha, Script Property, gatilho ou permissão muda.
 

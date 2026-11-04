@@ -1,5 +1,7 @@
 # Manutenção e continuidade — 1.10.0
 
+> **Aviso (04/11/2026):** este guia descreve a 1.10.0 e não é mais o ponto de entrada para retomar o trabalho. Comece pelo [START_HERE](../../../START_HERE.md), que leva à documentação e ao contexto atuais da Estrutura, e pelo [README do sistema](README.md). O texto abaixo foi mantido como registro histórico.
+
 Ponto de entrada para retomar em outra conversa/ferramenta. Este app pertence a `Sistemas_IPUSP_GoogleScript`. Lunaris/Licita são referências visuais de outros projetos, não bases de regra de negócio aqui.
 
 ## Estado

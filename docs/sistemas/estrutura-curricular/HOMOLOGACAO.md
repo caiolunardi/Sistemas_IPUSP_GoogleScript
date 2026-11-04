@@ -1,5 +1,7 @@
 # Homologação — Estrutura Curricular 1.9.3
 
+> **Aviso (04/11/2026):** este documento é o registro histórico das homologações até a 1.10.0. Ele não é o roteiro da versão atual. O código no `main` está na 1.13.0, e os requisitos de homologação dela estão no [PR #32](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/pull/32). Para o estado atual, comece pelo [START_HERE](../../../START_HERE.md) e pelo [README do sistema](README.md). O texto abaixo foi mantido como estava.
+
 > **1.12.1 (PDF.js 6.4.299, Etapa 4):** o roteiro de homologação do leitor de PDF no HtmlService está na [seção 8 da Etapa 4](ETAPA4_PDFJS_MIGRACAO.md#8-plano-de-homologação-no-htmlservice-não-executado-exige-autorização); a conferência com PDFs do Júpiter, na seção 7.
 
 > Fonte atual 1.10.0 sobre baseline 1.9.3. Registros abaixo são evidências históricas recebidas; os testes desta rodada estão em [VERIFICACAO_1_10_0.md](VERIFICACAO_1_10_0.md). Homologação no Google permanece pendente.

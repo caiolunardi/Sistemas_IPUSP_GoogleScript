@@ -4,6 +4,8 @@
 
 **Testes e CI:** a B2 entrou no `main` pelo PR #28 (merge `43a52d3`, 26/10/2026) sem as suítes na CI, porque o fluxo não mistura mudança de CI com mudança de sistema. Um PR próprio, só do `.github/workflows/ci.yml`, acrescenta `testar_protecao_ocr.js` e `mutacoes_protecao_ocr.js` ao job da Estrutura Curricular, que entra em "CI concluída" (§6). Até esse PR entrar no `main`, elas rodam só à mão. A rodada 39893033804, de uma versão anterior do PR #28 com os dois passos, registrou 43/43 e 14/14. O diagnóstico de fontes naturais (`diagnostico-fontes.yml`) é independente, não bloqueia e pode ficar vermelho.
 
+> **Atualização (04/11/2026):** o PR citado acima é o [PR #30](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/pull/30), no `main` desde 26/10/2026 (merge `bd8e64e`). Desde então, as duas suítes rodam na CI exigida e já não rodam só à mão.
+
 **Validação:** só **sintética**. Ela usa as palavras do PDF sintético de `jupiter_sintetico.js` e o OCR real do PDF misto. Nenhum PDF real do Júpiter foi usado. A suíte mostra o que a regra faz nos casos testados. Ela não prova que a regra acerta em todo documento escaneado.
 
 Origem: [diagnóstico e proposta do PR #26](ETAPA4_TESTES_MISTOS.md) (casos F1–F8 de `testes/investigar_requisitos_ocr.js`). Antes da B2, uma disciplina com o código ilegível sumia em silêncio e os requisitos dela iam para a disciplina anterior (F1, F2). Um requisito ilegível também sumia em silêncio (F5, F6).
