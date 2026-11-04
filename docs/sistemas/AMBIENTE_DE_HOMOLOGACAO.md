@@ -2,6 +2,8 @@
 
 Vale para os formulários dos alunos que leem as planilhas pelo `ID_INDEX`: [Exclusão de Disciplinas](exclusao-disciplinas/README.md) (v1.2), [Trancamento Parcial](trancamento-parcial/README.md) (v1.2) e [Trancamento Total](trancamento-total/README.md) (v1.3).
 
+> **Não vale para a Estrutura Curricular (Grade Horaria - Config).** Ela não lê `AMBIENTE`: usa sempre a coluna `ID de Produção` do `ID_INDEX` e nunca a coluna `Homologação` ([`Configuracao.gs`](../../sistemas/estrutura-curricular/src/Configuracao.gs)). Por isso, os passos abaixo não isolam a Estrutura. Um projeto de homologação dela com o `ID_INDEX` da produção leria e gravaria as planilhas reais. A homologação da Estrutura precisa de um projeto próprio, com `ID_INDEX_SPREADSHEET_ID` apontando para um `ID_INDEX` fictício ([PR #32](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/pull/32)).
+
 A homologação é uma **cópia do projeto Apps Script** que grava em **cópias das planilhas**. Assim dá para enviar pedidos de verdade pelo `/exec`, conferir o recibo e o que foi gravado, sem tocar nas planilhas de produção e sem pedido falso aparecendo para a equipe.
 
 ## Como o código escolhe a planilha
@@ -95,5 +97,6 @@ Quando a planilha real ganhar coluna, aba ou formato novo, o CSV e o `README.md`
 
 ## Limites
 
+- A Estrutura Curricular não lê `AMBIENTE` (ver o aviso no início desta página).
 - O Painel dos servidores e os gerenciadores ainda leem só a produção (exceção: o [Gerenciador de Abertura de Habilitações](abertura-habilitacoes/INSTALACAO_E_ATUALIZACAO.md#3-montar-a-homologação-recomendado-antes-de-tudo) 2.0, ainda não implantado, já aceita `AMBIENTE=homologacao`). Para ver um pedido de homologação no Painel, eles também precisariam de uma cópia com `AMBIENTE`.
 - Os caches são separados por ambiente, mas valem por projeto: depois de trocar um ID na coluna `Homologação`, rode `diagnosticarConfiguracao` (que limpa o cache) ou espere 10 minutos.
