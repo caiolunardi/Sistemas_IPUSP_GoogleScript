@@ -28,4 +28,4 @@
 
 ## Prontidão de adoção
 
-Este conjunto está **em PR, com estado `PROPOSTA`**, não aprovado como instância completa. O [Marco Zero](MARCO_ZERO.md) fixa a base; a entrada geral (PR #33) já está no `main` e foi reconciliada com este contexto; ainda faltam a decisão sobre este PR, o manifesto de caminhos/verificador e um **teste a frio independente recebendo só o repositório**, seguido de decisão humana de corte. Até lá, seu valor é como proposta verificável, sem mudar Google ou código.
+Este conjunto está **no `main` desde 04/11/2026, com estado `PROPOSTA`**, não aprovado como instância completa. O [Marco Zero](MARCO_ZERO.md) fixa a base; a entrada geral leva a este contexto, e o manifesto `context.config.json` foi criado na rodada 005. Ainda faltam um **teste a frio independente recebendo só o repositório** e a decisão humana de corte, que o responsável decidiu tomar depois do teste. Até lá, seu valor é como proposta verificável, sem mudar Google ou código.
