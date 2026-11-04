@@ -1,5 +1,7 @@
 # Gerenciador de Abertura de Habilitações — fonte v2.1
 
+**Continuidade para agentes:** [instruções locais](AGENTS.md), [status](STATUS.md) e [roteiro de retomada](contexto/CONTINUIDADE.md), em `PROPOSTA` até revisão e teste a frio. Essa documentação não prova a versão `/exec` hoje.
+
 Web App interno do Serviço de Graduação para tratar os pedidos de abertura de habilitação: pendentes, dez concluídos mais recentes, busca no histórico (inclui a aba 2021–2022, só consulta), relatórios e, em cada pedido, observações, **Concluir solicitação** (ou reabrir) e **Avisar aluno por e-mail**.
 
 **Estado:** v2.1 implantada em 22/10/2026 (versão 7 da implantação de produção, commit `8a3aa63`), com nome e observação de quem acessou no cabeçalho e [auditoria](../../../docs/sistemas/abertura-habilitacoes/AUDITORIA.md). O GitHub não sincroniza com o Apps Script: o registro de implantação fica em [`docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md`](../../../docs/sistemas/abertura-habilitacoes/HOMOLOGACAO.md).
