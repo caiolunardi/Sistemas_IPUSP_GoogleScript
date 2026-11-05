@@ -11,7 +11,7 @@ Os alunos pedem a abertura de uma habilitação (Bacharelado ou Licenciatura em 
 - consulta os **10 concluídos mais recentes** e faz a **busca no histórico**, que inclui a aba `2021 - 2022` (somente consulta);
 - vê **relatórios** por habilitação, ano e mês.
 
-O formulário dos alunos em uso (v1.0) não está no repositório; a v2.0 está em [`sistemas/abertura-habilitacoes/formulario/`](../../../sistemas/abertura-habilitacoes/formulario/README.md), ainda não implantada. O Painel dos servidores conta as pendências desta planilha ([contrato](REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
+O formulário dos alunos em uso é a v2.0, em [`sistemas/abertura-habilitacoes/formulario/`](../../../sistemas/abertura-habilitacoes/formulario/README.md), implantada em 05/11/2026 no lugar da v1.0 (que estava fora do repositório). O Painel dos servidores conta as pendências desta planilha ([contrato](REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
 
 ## O que mudou da 1.0 para a 2.0, em resumo
 

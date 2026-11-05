@@ -2,7 +2,7 @@
 
 Web App em que o aluno, logado com a conta `@usp.br`, pede a abertura do Bacharelado e/ou da Licenciatura em Psicologia. O pedido é gravado como `pendente` na aba `Respostas ao formulário 2` da planilha `ABERTURA_HABILITACOES`, que o [Gerenciador](../gerenciador/README.md) lê.
 
-**Estado:** v2.0 no repositório, **homologada em 05/11/2026 e não implantada**. Em uso está a v1.0, um Web App próprio fora do repositório, que substituiu o Google Forms original (origem histórica dos títulos e dos registros antigos). Documentação: [docs/sistemas/abertura-habilitacoes/formulario](../../../docs/sistemas/abertura-habilitacoes/formulario/README.md).
+**Estado:** v2.0 **implantada em 05/11/2026**. Ela substituiu a v1.0, um Web App próprio fora do repositório, que por sua vez substituiu o Google Forms original (origem histórica dos títulos e dos registros antigos). Documentação: [docs/sistemas/abertura-habilitacoes/formulario](../../../docs/sistemas/abertura-habilitacoes/formulario/README.md).
 
 ## Arquivos de `src/` (vão para o Apps Script)
 
@@ -27,5 +27,5 @@ Web App em que o aluno, logado com a conta `@usp.br`, pede a abertura do Bachare
 | Versão | Alterações |
 |---|---|
 | origem | Google Forms; as respostas formaram a aba atual e a `2021 - 2022`. |
-| v1.0 (em uso) | Web App próprio no lugar do Forms, gravando na mesma aba; IDs de planilha no código; fora do repositório. |
-| v2.0 (05/11/2026) | `ID_INDEX`, homologação, esquema A–K conferido antes de gravar (nada é criado), `appendRow`, Registro ID e Versão na linha nova, alunos pelo título, recibo, confirmação de pedido repetido, tema GRADIP e Central de Ajuda. Ver [notas](../../../notas-de-versao/abertura-habilitacoes-formulario-v2.0.md). |
+| v1.0 (em uso até 05/11/2026) | Web App próprio no lugar do Forms, gravando na mesma aba; IDs de planilha no código; fora do repositório. |
+| v2.0 (implantada em 05/11/2026) | `ID_INDEX`, homologação, esquema A–K conferido antes de gravar (nada é criado), `appendRow`, Registro ID e Versão na linha nova, alunos pelo título, recibo, confirmação de pedido repetido, tema GRADIP e Central de Ajuda. Ver [notas](../../../notas-de-versao/abertura-habilitacoes-v2.0.md). |

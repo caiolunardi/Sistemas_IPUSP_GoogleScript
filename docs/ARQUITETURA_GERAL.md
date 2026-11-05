@@ -86,7 +86,7 @@ Passo a passo de cada projeto: [Como reaproveitar](COMO_REAPROVEITAR.md) e o man
 
 ## 6. Limites conhecidos
 
-- O formulário de Abertura de Habilitação em uso (v1.0, Web App próprio que substituiu o Google Forms original) não está no repositório; a v2.0 está, ainda não implantada.
+- O formulário de Abertura de Habilitação (Web App próprio que substituiu o Google Forms original) está em uso na v2.0 desde 05/11/2026, com as planilhas pelo `ID_INDEX`; a v1.0, com IDs literais, ficou fora do repositório.
 - Os gerenciadores de Exclusão, Trancamento Parcial, 2ª via do BUSP, Intercambistas e Diplomas, e os formulários de BUSP, Colação e Intercambistas, **ainda não estão no repositório**.
 - O Painel dos servidores lê todas as planilhas pelo `ID_INDEX` desde a 1.4 (seção 2). A 1.3, que está no `/exec`, ainda tem IDs literais, mantidos fora do Git ([inventário](IMPLANTACAO.md#2-inventário-20102026)). O Gerenciador de Trancamento Total em uso (v1.0) também tem ID literal e não está no repositório; a v1.1 do Git usa o `ID_INDEX`. O Gerenciador de Abertura de Habilitações usa o `ID_INDEX` desde a v2.0, implantada em 21/10/2026 no lugar da v1.0 (que tinha ID literal).
 - A contagem de pendências do Painel dos servidores lê a situação por posição de coluna e com critério próprio, diferente do critério dos formulários ([contratos](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md#4-o-que-não-se-deve-modificar-inadvertidamente)). Em Habilitações, o painel conta só a situação `pendente`, enquanto o gerenciador trata como pendente tudo o que não contém "conclu" ([contrato](sistemas/abertura-habilitacoes/REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
