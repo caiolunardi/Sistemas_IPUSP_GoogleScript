@@ -11,7 +11,7 @@ Este catálogo apresenta os sistemas incorporados ao repositório e separa **doc
 | Exclusão de Disciplinas | pedido de exclusão de disciplinas do semestre | [docs](sistemas/exclusao-disciplinas/README.md) | [formulário v1.2](../sistemas/exclusao-disciplinas/README.md) | verificado localmente; homologação pendente; gerenciador da equipe fora do repositório |
 | Trancamento Parcial de Matrícula | pedido de trancamento de disciplinas específicas | [docs](sistemas/trancamento-parcial/README.md) | [formulário v1.2](../sistemas/trancamento-parcial/README.md) | verificado localmente; homologação pendente; gerenciador da equipe fora do repositório |
 | Trancamento Total de Matrícula | pedido de trancamento total | [docs](sistemas/trancamento-total/README.md) | [formulário v1.3](../sistemas/trancamento-total/README.md) | verificado localmente; homologação pendente |
-| Abertura de Habilitação | pedido de abertura do Bacharelado e/ou da Licenciatura em Psicologia | [docs](sistemas/abertura-habilitacoes/formulario/README.md) | [formulário v2.0](../sistemas/abertura-habilitacoes/formulario/README.md) | Web App próprio (substituiu o Google Forms original, cujos registros continuam na mesma planilha); v1.0 em uso, fora do repositório; v2.0 homologada em 05/11/2026, implantação pendente |
+| Abertura de Habilitação | pedido de abertura do Bacharelado e/ou da Licenciatura em Psicologia | [docs](sistemas/abertura-habilitacoes/formulario/README.md) | [formulário v2.0](../sistemas/abertura-habilitacoes/formulario/README.md) | Web App próprio (substituiu o Google Forms original, cujos registros continuam na mesma planilha); v2.0 **implantada em 05/11/2026** no lugar da v1.0 (que estava fora do repositório) |
 
 ## Equipe do Serviço de Graduação
 

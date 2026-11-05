@@ -1,6 +1,6 @@
 # Homologação — formulário 2.0
 
-**Estado: HOMOLOGADO em 05/11/2026** (rodada 1, H1–H9 aprovados pelo responsável no projeto `· HOMOLOGAÇÃO`, commit `dc2b361`). Não implantado em produção.
+**Estado: HOMOLOGADO em 05/11/2026** (rodada 1, H1–H9 aprovados pelo responsável no projeto `· HOMOLOGAÇÃO`, commit `dc2b361`). Implantado em produção no mesmo dia (seção 5).
 
 ## 1. Antes de começar
 
@@ -58,3 +58,11 @@ Resultados: registrar aqui, com data, commit homologado e quem testou.
 | H9 | ok: temas Claro, Escuro e Sistema e tela no celular conferidos pelo responsável |
 
 Observação: na primeira tentativa a página não abriu porque foi usado o link da **Biblioteca** da implantação (criada como App da Web e Biblioteca). O link certo é o do App da Web, que termina em `/exec`.
+
+## 5. Produção (05/11/2026)
+
+- Ordem do responsável para o envio à produção: 05/11/2026, depois da rodada 1. Código de `bdadc28` (merge do PR #40, CI 28/28).
+- Antes: cópia de segurança da 1.0 com `clasp pull` em pasta fora do Git (`Backend.js`, `SolicitacaoApp.html`, `appsscript.json`; manifesto da 1.0 com `USER_DEPLOYING` e `DOMAIN`, sem bibliotecas, igual ao da 2.0).
+- `clasp push --force` feito pelo responsável no projeto `· PRODUÇÃO`. Conferência depois (`clasp pull` e `ferramentas/conferir_implantacao.js --commit bdadc28`): 10 de 10 idênticos, sem arquivos da 1.0 sobrando.
+- `diagnosticarConfiguracao` na produção: todas as linhas `OK`, sem `AMBIENTE` de homologação.
+- Nova versão na implantação existente (mesmo `/exec`), criada pelo responsável. Voltar atrás: escolher a versão anterior da implantação.

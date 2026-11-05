@@ -72,7 +72,7 @@ A 2.0 acrescenta, sem mudar as contagens: linhas **sem data** reconhecível e o 
 
 - **Histórico:** a aba nasceu de um Google Forms; os títulos de A–J são as perguntas dele. **Aplicação atual:** um Web App próprio, que substituiu o Forms e grava na mesma aba, com os mesmos títulos ([formulário](formulario/README.md)).
 - Grava a aba `Respostas ao formulário 2`, colunas A–K (K = `pendente`). O gerenciador acha A–I pelo **título exato** da linha 1 (ver [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md)). Renomear um título pode parar o gerenciador (`ESTRUTURA`).
-- A 1.0 do formulário (em uso) procura `Situação` pelo título e, se não achar, cria a coluna no fim da linha 1. A 2.0 (no repositório) confere A–K antes de gravar e recusa qualquer diferença, sem criar coluna; também preenche `Registro ID` e `Versão` = 1 na linha nova quando as colunas existem ([compatibilidade](formulario/COMPATIBILIDADE.md)).
+- A 1.0 do formulário (usada até 05/11/2026) procurava `Situação` pelo título e, se não achasse, criava a coluna no fim da linha 1. A 2.0 (em uso desde 05/11/2026) confere A–K antes de gravar e recusa qualquer diferença, sem criar coluna; também preenche `Registro ID` e `Versão` = 1 na linha nova quando as colunas existem ([compatibilidade](formulario/COMPATIBILIDADE.md)).
 - Uma coluna nova antes de J/K empurraria Observações e Situação. O gerenciador recusa trabalhar quando J ou K contêm um título conhecido; a 2.0 do formulário recusa gravar.
 - O formulário grava por fora da trava do gerenciador (projetos diferentes). Se o Google Forms original ainda estiver ligado à planilha, ele também grava por fora; o estado desse vínculo não foi conferido.
 
