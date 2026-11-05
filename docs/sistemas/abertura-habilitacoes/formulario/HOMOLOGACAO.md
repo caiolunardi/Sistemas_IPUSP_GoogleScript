@@ -53,6 +53,7 @@ Resultados: registrar aqui, com data, commit homologado e quem testou.
 | H6 | ok: o pedido aparece como Pendente no Gerenciador de homologação e abre sem "Preparar pedido" |
 | H4 | ok: com pedido pendente de Bacharelado, aviso no topo e confirmação no fim; sem a caixa marcada, recusa ("Marque a confirmação acima…"); com a caixa, grava a segunda linha, que aparece como Pendente no Gerenciador |
 | H5 | ok: pedido de Licenciatura gravado sem confirmação, com Bacharelado pendente |
-| H7–H9 | a fazer (H7 opcional) |
+| H7 | ok: com a K da cópia renomeada, o envio é recusado com a mensagem genérica de configuração e nada é gravado; título restaurado depois |
+| H8, H9 | a fazer (opcionais) |
 
 Observação: na primeira tentativa a página não abriu porque foi usado o link da **Biblioteca** da implantação (criada como App da Web e Biblioteca). O link certo é o do App da Web, que termina em `/exec`.
