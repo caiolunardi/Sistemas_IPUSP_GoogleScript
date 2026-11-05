@@ -8,7 +8,7 @@
 - [ ] Conferir se o Google Forms original ainda está ligado à planilha (na planilha: menu Formulários; no Forms: Respostas). Só anotar o estado: ligado, aceitando respostas ou não. Não desligar sem autorização específica.
 - [x] Projeto de homologação criado pelo responsável (05/11/2026).
 - [x] `ABERTURA_HABILITACOES` com ID na coluna `Homologação` do `ID_INDEX` (informado em 05/11/2026).
-- [ ] Conferir a C1 da cópia de respostas e as linhas `PLANILHA_ALUNOS` e `PERIODOS` na coluna `Homologação` ([INSTALACAO.md](INSTALACAO.md), seção 2).
+- [x] A C1 da cópia de respostas tem o texto da declaração, e `PLANILHA_ALUNOS` e `PERIODOS` têm ID na coluna `Homologação` (confirmado pelo responsável em 05/11/2026; [INSTALACAO.md](INSTALACAO.md), seção 2).
 
 ## 2. Testes locais (05/11/2026)
 
