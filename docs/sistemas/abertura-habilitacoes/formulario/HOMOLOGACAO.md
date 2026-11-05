@@ -42,3 +42,15 @@ Limites: os serviços do Google são simulados; o login real, a autorização do
 | H9 | Temas, celular e Central de Ajuda | como nas [capturas](../evidencias/formulario-2.0/README.md) |
 
 Resultados: registrar aqui, com data, commit homologado e quem testou.
+
+### Rodada 1 — 05/11/2026, commit `dc2b361` (código de `ac25439`), testada pelo responsável
+
+| # | Resultado |
+|---|---|
+| H1 | ok: as 10 linhas `OK`, inclusive o esquema A–K com Registro ID = L, Versão = M, E-mail Enviado = N e Data de Conclusão = O |
+| H2 | ok: faixa de homologação, saudação com o primeiro nome e dados pré-preenchidos |
+| H3 | ok: linha nova na cópia com C = `Sim` e o pedido de Bacharelado; recibo com `[HOMOLOGAÇÃO]` no assunto e o texto aprovado |
+| H6 | ok: o pedido aparece como Pendente no Gerenciador de homologação e abre sem "Preparar pedido" |
+| H4, H5, H7–H9 | a fazer |
+
+Observação: na primeira tentativa a página não abriu porque foi usado o link da **Biblioteca** da implantação (criada como App da Web e Biblioteca). O link certo é o do App da Web, que termina em `/exec`.
