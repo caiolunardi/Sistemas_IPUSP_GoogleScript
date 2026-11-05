@@ -1,6 +1,6 @@
 # Homologação — formulário 2.0
 
-**Estado: NÃO HOMOLOGADO.** Só os testes locais com dados fictícios foram feitos.
+**Estado: HOMOLOGADO em 05/11/2026** (rodada 1, H1–H9 aprovados pelo responsável no projeto `· HOMOLOGAÇÃO`, commit `dc2b361`). Não implantado em produção.
 
 ## 1. Antes de começar
 
@@ -55,6 +55,6 @@ Resultados: registrar aqui, com data, commit homologado e quem testou.
 | H5 | ok: pedido de Licenciatura gravado sem confirmação, com Bacharelado pendente |
 | H7 | ok: com a K da cópia renomeada, o envio é recusado com a mensagem genérica de configuração e nada é gravado; título restaurado depois |
 | H8 | ok: período Sazonal fora das datas mostra "Formulário fora do período de abertura" com a janela e o "Como resolver?" |
-| H9 | a fazer (opcional) |
+| H9 | ok: temas Claro, Escuro e Sistema e tela no celular conferidos pelo responsável |
 
 Observação: na primeira tentativa a página não abriu porque foi usado o link da **Biblioteca** da implantação (criada como App da Web e Biblioteca). O link certo é o do App da Web, que termina em `/exec`.

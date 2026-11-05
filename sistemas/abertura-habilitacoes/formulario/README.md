@@ -2,7 +2,7 @@
 
 Web App em que o aluno, logado com a conta `@usp.br`, pede a abertura do Bacharelado e/ou da Licenciatura em Psicologia. O pedido é gravado como `pendente` na aba `Respostas ao formulário 2` da planilha `ABERTURA_HABILITACOES`, que o [Gerenciador](../gerenciador/README.md) lê.
 
-**Estado:** v2.0 no repositório, **não homologada nem implantada**. Em uso está a v1.0, um Web App próprio fora do repositório, que substituiu o Google Forms original (origem histórica dos títulos e dos registros antigos). Documentação: [docs/sistemas/abertura-habilitacoes/formulario](../../../docs/sistemas/abertura-habilitacoes/formulario/README.md).
+**Estado:** v2.0 no repositório, **homologada em 05/11/2026 e não implantada**. Em uso está a v1.0, um Web App próprio fora do repositório, que substituiu o Google Forms original (origem histórica dos títulos e dos registros antigos). Documentação: [docs/sistemas/abertura-habilitacoes/formulario](../../../docs/sistemas/abertura-habilitacoes/formulario/README.md).
 
 ## Arquivos de `src/` (vão para o Apps Script)
 

@@ -1,6 +1,6 @@
 # Pedido de Abertura de Habilitação (formulário dos alunos) — v2.0
 
-**Estado:** no repositório, não homologada nem implantada. Sem tag nem Release até a homologação.
+**Estado:** homologada em 05/11/2026 (H1–H9, projeto de homologação); não implantada em produção. Sem tag nem Release até a implantação.
 
 - Planilhas pelo `ID_INDEX` (`PLANILHA_ALUNOS`, `ABERTURA_HABILITACOES`, `PERIODOS`); nenhum ID no código.
 - Ambiente de homologação por `AMBIENTE=homologacao`.

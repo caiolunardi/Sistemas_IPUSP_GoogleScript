@@ -1,6 +1,6 @@
 # Pedido de Abertura de Habilitação — formulário dos alunos
 
-**Versão no repositório:** 2.0, **não homologada nem implantada**. A versão em uso é a 1.0, um Web App próprio que está fora do repositório. O código da 2.0 está em [`sistemas/abertura-habilitacoes/formulario/`](../../../../sistemas/abertura-habilitacoes/formulario/README.md).
+**Versão no repositório:** 2.0, **homologada em 05/11/2026 e não implantada**. A versão em uso é a 1.0, um Web App próprio que está fora do repositório. O código da 2.0 está em [`sistemas/abertura-habilitacoes/formulario/`](../../../../sistemas/abertura-habilitacoes/formulario/README.md).
 
 ## Histórico do sistema
 
