@@ -176,7 +176,7 @@ Fonte: [catálogo](../SISTEMAS.md), estado conferido em 20/10/2026. Detalhes de 
 
 ### Sistemas fora do repositório e ideias
 
-- **Fora do repositório:** gerenciadores de Exclusão, Trancamento Parcial, Habilitações, 2ª via do BUSP, Intercambistas e Diplomas; formulários de Habilitação, BUSP, Colação e Intercambistas ([limites conhecidos](../ARQUITETURA_GERAL.md#6-limites-conhecidos)). **Não há código nem regra deles aqui**; o Painel dos servidores só lê as planilhas de alguns. Uma migração começa por incorporá-los ao repositório, com o mesmo cuidado de documentação.
+- **Fora do repositório:** gerenciadores de Exclusão, Trancamento Parcial, Habilitações, 2ª via do BUSP e Intercambistas; formulários de Habilitação, BUSP, Colação e Intercambistas ([limites conhecidos](../ARQUITETURA_GERAL.md#6-limites-conhecidos)). **Não há código nem regra deles aqui**; o Painel dos servidores só lê as planilhas de alguns. Uma migração começa por incorporá-los ao repositório, com o mesmo cuidado de documentação.
 - **Ideia em desenvolvimento, sem código:** [Gerenciador de Ofícios e Modelos](../sistemas/gerenciador-oficios/README.md). Seu estado deve ser preservado como ideia, sem ser tratado como sistema existente.
 
 ## 6. Estratégia de migração segura

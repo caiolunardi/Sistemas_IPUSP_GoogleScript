@@ -31,9 +31,9 @@
 }
 
 .ajudaBotaoHeader{
-    background:#eaf2fa;
-    border:1px solid #cfe0f0;
-    color:#005AA9;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
     font-size:13px;
     font-weight:bold;
     padding:8px 14px;
@@ -44,8 +44,8 @@
 }
 
 .ajudaBotaoHeader:hover{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
 }
 
 /*=================================
@@ -60,7 +60,7 @@
     top:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.5);
+    background:var(--gradip-overlay);
     align-items:center;
     justify-content:center;
     box-sizing:border-box;
@@ -72,7 +72,7 @@
 }
 
 .ajudaModalCaixa{
-    background:white;
+    background:var(--gradip-surface);
     width:1050px;
     max-width:94vw;
     height:90vh;
@@ -89,8 +89,8 @@
 ==================================*/
 
 .ajudaTopo{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     padding:14px 20px;
     border-radius:10px 10px 0 0;
     display:flex;
@@ -135,6 +135,8 @@
 
 .ajudaBuscaContainer:focus-within{
     background:rgba(255,255,255,.25);
+    outline:3px solid var(--gradip-on-primary);
+    outline-offset:1px;
 }
 
 .ajudaBuscaIcone{
@@ -147,20 +149,21 @@
     flex:1;
     border:none;
     background:transparent;
-    color:white;
+    color:var(--gradip-on-primary);
     font-size:13.5px;
     padding:10px 0;
     outline:none;
 }
 
 #ajudaBuscaCampo::placeholder{
-    color:rgba(255,255,255,.75);
+    color:var(--gradip-on-primary);
+    opacity:.8;
 }
 
 .ajudaBuscaLimpar{
     background:none;
     border:none;
-    color:white;
+    color:var(--gradip-on-primary);
     opacity:.8;
     cursor:pointer;
     font-size:15px;
@@ -175,7 +178,7 @@
 .ajudaFecharBotao{
     background:rgba(255,255,255,.15);
     border:none;
-    color:white;
+    color:var(--gradip-on-primary);
     font-size:22px;
     line-height:1;
     width:34px;
@@ -197,10 +200,10 @@
     flex-shrink:0;
     padding:6px 20px;
     font-size:11px;
-    color:#888;
+    color:var(--gradip-text-muted);
     text-align:right;
-    border-top:1px solid #eee;
-    background:#fafafa;
+    border-top:1px solid var(--gradip-border);
+    background:var(--gradip-surface-2);
     border-radius:0 0 10px 10px;
 }
 
@@ -218,8 +221,8 @@
 .ajudaNav{
     width:250px;
     flex-shrink:0;
-    background:#f5f5f5;
-    border-right:1px solid #ddd;
+    background:var(--gradip-surface-2);
+    border-right:1px solid var(--gradip-border);
     overflow-y:auto;
     padding:10px 0 20px 0;
 }
@@ -229,7 +232,7 @@
     font-weight:bold;
     text-transform:uppercase;
     letter-spacing:.04em;
-    color:#999;
+    color:var(--gradip-text-muted);
     padding:14px 18px 6px 18px;
 }
 
@@ -242,19 +245,19 @@
     border-left:3px solid transparent;
     padding:9px 18px;
     font-size:13.5px;
-    color:#333;
+    color:var(--gradip-text);
     cursor:pointer;
     font-family:inherit;
 }
 
 .ajudaNavItem:hover{
-    background:#eaf2fa;
+    background:var(--gradip-info-bg);
 }
 
 .ajudaNavItem.ajudaNavAtiva{
-    background:#eaf2fa;
-    border-left-color:#005AA9;
-    color:#005AA9;
+    background:var(--gradip-info-bg);
+    border-left-color:var(--gradip-link);
+    color:var(--gradip-link);
     font-weight:bold;
 }
 
@@ -280,12 +283,12 @@
 .ajudaSecao h2{
     margin:0 0 6px 0;
     font-size:20px;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .ajudaSubtituloSecao{
     font-size:13px;
-    color:#777;
+    color:var(--gradip-text-muted);
     margin:0 0 22px 0;
 }
 
@@ -293,9 +296,9 @@
     font-size:13px;
     text-transform:uppercase;
     letter-spacing:.03em;
-    color:#005AA9;
+    color:var(--gradip-link);
     margin:26px 0 12px 0;
-    border-bottom:2px solid #eaf2fa;
+    border-bottom:2px solid var(--gradip-border);
     padding-bottom:6px;
 }
 
@@ -305,14 +308,14 @@
 
 .ajudaSecao h4{
     font-size:13.5px;
-    color:#222;
+    color:var(--gradip-text);
     margin:16px 0 8px 0;
 }
 
 .ajudaSecao p{
     font-size:13.5px;
     line-height:1.65;
-    color:#333;
+    color:var(--gradip-text);
     margin:0 0 12px 0;
 }
 
@@ -320,7 +323,7 @@
 .ajudaSecao ol{
     font-size:13.5px;
     line-height:1.65;
-    color:#333;
+    color:var(--gradip-text);
     margin:0 0 14px 0;
     padding-left:20px;
 }
@@ -330,14 +333,14 @@
 }
 
 .ajudaSecao strong{
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .ajudaLinkInterno{
     background:none;
     border:none;
     padding:0;
-    color:#005AA9;
+    color:var(--gradip-link);
     text-decoration:underline;
     font-size:inherit;
     font-family:inherit;
@@ -357,19 +360,19 @@
 
 .ajudaAtalhoCard{
     text-align:left;
-    border:1px solid #e3e8ec;
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:12px 14px;
-    background:white;
+    background:var(--gradip-surface);
     cursor:pointer;
     font-size:13px;
-    color:#333;
+    color:var(--gradip-text);
     font-family:inherit;
 }
 
 .ajudaAtalhoCard:hover{
-    border-color:#005AA9;
-    background:#eaf2fa;
+    border-color:var(--gradip-link);
+    background:var(--gradip-info-bg);
 }
 
 .ajudaFluxoEtapas{
@@ -381,8 +384,8 @@
 }
 
 .ajudaFluxoEtapa{
-    background:#eaf2fa;
-    color:#005AA9;
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
     padding:8px 14px;
     border-radius:20px;
     font-size:12.5px;
@@ -391,7 +394,7 @@
 }
 
 .ajudaFluxoSeta{
-    color:#aaa;
+    color:var(--gradip-text-muted);
     font-size:16px;
 }
 
@@ -407,15 +410,15 @@
 }
 
 .ajudaGuiaCard{
-    border:1px solid #e3e8ec;
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:16px;
-    background:#fafafa;
+    background:var(--gradip-surface-2);
 }
 
 .ajudaGuiaCardNumero{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     width:26px;
     height:26px;
     border-radius:50%;
@@ -430,14 +433,14 @@
 .ajudaGuiaCard h4{
     margin:0 0 8px 0;
     font-size:14px;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .ajudaGuiaCard ul{
     margin:0;
     padding-left:18px;
     font-size:12.5px;
-    color:#555;
+    color:var(--gradip-text);
     line-height:1.6;
 }
 
@@ -453,8 +456,8 @@
 }
 
 .ajudaTabela th{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     text-align:left;
     padding:9px 12px;
 }
@@ -464,13 +467,13 @@
 
 .ajudaTabela td{
     padding:8px 12px;
-    border-bottom:1px solid #eee;
-    color:#333;
+    border-bottom:1px solid var(--gradip-border);
+    color:var(--gradip-text);
     vertical-align:top;
 }
 
 .ajudaTabela tr:nth-child(even) td{
-    background:#fafafa;
+    background:var(--gradip-surface-2);
 }
 
 /*=================================
@@ -478,9 +481,9 @@
 ==================================*/
 
 .ajudaAviso{
-    background:#fff3cd;
-    border:1px solid #e5893a;
-    color:#8a5a1e;
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    color:var(--gradip-warning);
     border-radius:6px;
     padding:12px 14px;
     font-size:13px;
@@ -489,15 +492,15 @@
 }
 
 .ajudaAvisoPerigo{
-    background:#fdecea;
-    border-color:#b71c1c;
-    color:#7a1414;
+    background:var(--gradip-danger-bg);
+    border-color:var(--gradip-danger);
+    color:var(--gradip-danger);
 }
 
 .ajudaAvisoOk{
-    background:#e8f5e9;
-    border-color:#2e7d32;
-    color:#1e5c22;
+    background:var(--gradip-success-bg);
+    border-color:var(--gradip-success);
+    color:var(--gradip-success);
 }
 
 /*=================================
@@ -511,30 +514,30 @@
     padding:4px 11px;
     border-radius:14px;
     white-space:nowrap;
-    background:#eee;
-    color:#666;
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text-muted);
 }
 
-.ajudaBadge.apto{ background:#e8f5e9; color:#2e7d32; }
-.ajudaBadge.naoApto{ background:#fdecea; color:#b71c1c; }
-.ajudaBadge.conferir{ background:#fdf1e6; color:#a1590f; }
+.ajudaBadge.apto{ background:var(--gradip-success-bg); color:var(--gradip-success); }
+.ajudaBadge.naoApto{ background:var(--gradip-danger-bg); color:var(--gradip-danger); }
+.ajudaBadge.conferir{ background:var(--gradip-warning-bg); color:var(--gradip-warning); }
 
 /*=================================
     PROBLEMAS COMUNS
 ==================================*/
 
 .ajudaProblemaCard{
-    border:1px solid #e3e8ec;
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:14px 16px;
     margin-bottom:12px;
-    background:white;
+    background:var(--gradip-surface);
 }
 
 .ajudaProblemaTitulo{
     font-weight:bold;
     font-size:13.5px;
-    color:#222;
+    color:var(--gradip-text);
     margin:0 0 8px 0;
 }
 
@@ -542,13 +545,13 @@
     font-size:10.5px;
     text-transform:uppercase;
     letter-spacing:.03em;
-    color:#999;
+    color:var(--gradip-text-muted);
     margin-top:10px;
 }
 
 .ajudaProblemaTexto{
     font-size:13px;
-    color:#444;
+    color:var(--gradip-text);
     margin:3px 0 0 0;
     line-height:1.55;
 }
@@ -558,7 +561,7 @@
 ==================================*/
 
 .ajudaFaqItem{
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid var(--gradip-border);
 }
 
 .ajudaFaqPergunta{
@@ -569,7 +572,7 @@
     padding:14px 4px;
     font-size:13.5px;
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
     cursor:pointer;
     display:flex;
     justify-content:space-between;
@@ -579,12 +582,12 @@
 }
 
 .ajudaFaqPergunta:hover{
-    color:#005AA9;
+    color:var(--gradip-link);
 }
 
 .ajudaFaqIcone{
     flex-shrink:0;
-    color:#005AA9;
+    color:var(--gradip-link);
     font-size:15px;
     transition:transform .15s ease;
 }
@@ -597,7 +600,7 @@
     display:none;
     padding:0 4px 16px 4px;
     font-size:13px;
-    color:#444;
+    color:var(--gradip-text);
     line-height:1.6;
 }
 
@@ -611,7 +614,7 @@
 
 .ajudaGlossarioLista dt{
     font-weight:bold;
-    color:#005AA9;
+    color:var(--gradip-link);
     margin-top:14px;
     font-size:13.5px;
 }
@@ -619,7 +622,7 @@
 .ajudaGlossarioLista dd{
     margin:4px 0 0 0;
     font-size:13px;
-    color:#444;
+    color:var(--gradip-text);
     line-height:1.55;
 }
 
@@ -628,11 +631,11 @@
 ==================================*/
 
 .ajudaDetalhesTecnicos{
-    border:1px dashed #ccc;
+    border:1px dashed var(--gradip-border-strong);
     border-radius:8px;
     padding:6px 16px;
     margin-top:24px;
-    background:#fafafa;
+    background:var(--gradip-surface-2);
 }
 
 .ajudaDetalhesTecnicosTitulo{
@@ -643,7 +646,7 @@
     cursor:pointer;
     font-size:12.5px;
     font-weight:bold;
-    color:#666;
+    color:var(--gradip-text-muted);
     padding:12px 0;
     display:flex;
     justify-content:space-between;
@@ -655,7 +658,7 @@
     display:none;
     margin:0 0 14px 0;
     font-size:12.5px;
-    color:#555;
+    color:var(--gradip-text);
     line-height:1.65;
 }
 
@@ -665,7 +668,7 @@
 
 .ajudaDetalhesTecnicosCorpo h4{
     font-size:12.5px;
-    color:#444;
+    color:var(--gradip-text);
     margin:14px 0 6px 0;
 }
 
@@ -680,7 +683,7 @@
 
 .ajudaResultadosTitulo{
     font-size:12px;
-    color:#777;
+    color:var(--gradip-text-muted);
     margin:0 0 14px 0;
 }
 
@@ -690,38 +693,38 @@
     text-align:left;
     background:none;
     border:none;
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid var(--gradip-border);
     padding:12px 4px;
     cursor:pointer;
     font-family:inherit;
 }
 
 .ajudaResultadoItem:hover{
-    background:#eaf2fa;
+    background:var(--gradip-info-bg);
 }
 
 .ajudaResultadoTitulo{
     font-weight:bold;
-    color:#005AA9;
+    color:var(--gradip-link);
     font-size:13.5px;
 }
 
 .ajudaResultadoCaminho{
     font-size:11px;
-    color:#999;
+    color:var(--gradip-text-muted);
     margin-top:2px;
 }
 
 .ajudaResultadoTrecho{
     font-size:12.5px;
-    color:#666;
+    color:var(--gradip-text-muted);
     margin-top:5px;
     line-height:1.5;
 }
 
 .ajudaSemResultado{
     font-size:13px;
-    color:#777;
+    color:var(--gradip-text-muted);
     padding:20px 4px;
 }
 
@@ -736,12 +739,12 @@
     width:18px;
     height:18px;
     border-radius:50%;
-    background:#eaf2fa;
-    color:#005AA9;
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
     font-size:11px;
     font-weight:bold;
     cursor:pointer;
-    border:1px solid #cfe0f0;
+    border:1px solid var(--gradip-info-border);
     vertical-align:middle;
     margin-left:6px;
     user-select:none;
@@ -751,8 +754,8 @@
 }
 
 .ajudaGatilho:hover{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
 }
 
 .ajudaGatilhoAba{
@@ -762,12 +765,12 @@
     width:22px;
     height:22px;
     border-radius:50%;
-    background:rgba(0,90,169,.1);
-    color:#005AA9;
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
     font-size:12px;
     font-weight:bold;
     cursor:pointer;
-    border:1px solid #cfe0f0;
+    border:1px solid var(--gradip-info-border);
     vertical-align:middle;
     margin-left:8px;
     user-select:none;
@@ -776,13 +779,13 @@
 }
 
 .ajudaGatilhoAba:hover{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
 }
 
 .ajudaGatilho:focus-visible,
 .ajudaGatilhoAba:focus-visible{
-    outline:2px solid #005AA9;
+    outline:2px solid var(--gradip-focus);
     outline-offset:2px;
 }
 
@@ -813,7 +816,7 @@ body.ajudaBodyTravado{
 .ajudaModalCaixa a:focus-visible,
 .ajudaModalCaixa button:focus-visible,
 .ajudaModalCaixa input:focus-visible{
-    outline:2px solid #005AA9;
+    outline:2px solid var(--gradip-focus);
     outline-offset:2px;
 }
 
@@ -852,7 +855,7 @@ body.ajudaBodyTravado{
         width:100%;
         max-height:120px;
         border-right:none;
-        border-bottom:1px solid #ddd;
+        border-bottom:1px solid var(--gradip-border);
         display:flex;
         flex-wrap:nowrap;
         overflow-x:auto;
@@ -874,7 +877,7 @@ body.ajudaBodyTravado{
 
     .ajudaNavItem.ajudaNavAtiva{
         border-left-color:transparent;
-        border-bottom-color:#005AA9;
+        border-bottom-color:var(--gradip-link);
     }
 
     .ajudaNavSubitem{

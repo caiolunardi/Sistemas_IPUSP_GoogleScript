@@ -1074,6 +1074,7 @@ function historicoRelatorioGerarPdfSessao_(registroId, sessaoAnaliseId, modoVers
 // etapa, mesmo raciocínio de HistoricoConsultas.gs: só confirma que o
 // registro existe.
 function historicoVerificarVersaoRelatorioIndividual(registroId, sessaoAnaliseId) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
   const detalheSessao = historicoObterSessaoAnalise(registroId, sessaoAnaliseId);
@@ -1219,6 +1220,7 @@ function historicoRelatorioPreflightLote_(itens) {
 // historicoVerificarVersaoRelatorioIndividual, acima — "regra do 1",
 // §7).
 function historicoPreflightRelatoriosLote(itens) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return historicoRelatorioPreflightLote_(itens);
 }
 
@@ -1226,6 +1228,7 @@ function historicoPreflightRelatoriosLote(itens) {
 // de UMA sessão já persistida. NUNCA altera Diplomas/etapa/versão/
 // ruleset/status (ver cabeçalho do arquivo).
 function historicoGerarRelatorioIndividual(registroId, sessaoAnaliseId, modoVersionamento) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return historicoRelatorioGerarPdfSessao_(registroId, sessaoAnaliseId, modoVersionamento);
 }
 
@@ -1958,5 +1961,6 @@ function historicoRelatorioGerarPdfConsolidado_(alunos, loteInfo) {
 //         (§20-21 — ver historicoRelatorioValidarAlunosConsolidado_).
 // loteInfo: {totalSelecionados, totalProcessados, cancelado} (§21).
 function historicoGerarRelatorioConsolidado(alunos, loteInfo) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return historicoRelatorioGerarPdfConsolidado_(alunos, loteInfo);
 }

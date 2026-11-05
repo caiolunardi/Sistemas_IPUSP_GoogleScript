@@ -25,7 +25,7 @@
     <div class="ajudaTopo">
       <div class="ajudaTituloBloco">
         <h2 class="ajudaTituloTopo" id="ajudaTituloTopo">❓ Central de Ajuda</h2>
-        <span class="ajudaSubtituloTopo">Emissão de Diplomas e Colação de Grau<span class="ajudaSubtituloTopoExtra"> · Guia de uso, perguntas frequentes e solução de problemas.</span></span>
+        <span class="ajudaSubtituloTopo">Gerenciador de Colação de Grau e Diplomas<span class="ajudaSubtituloTopoExtra"> · Guia de uso, perguntas frequentes e solução de problemas.</span></span>
       </div>
 
       <div class="ajudaBuscaContainer">
@@ -46,6 +46,7 @@
         <div class="ajudaNavGrupoTitulo">Primeiros passos</div>
         <button type="button" class="ajudaNavItem" data-alvo="ajuda-comece-aqui">Comece aqui</button>
         <button type="button" class="ajudaNavItem" data-alvo="ajuda-guia-rapido">Guia rápido</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-acesso">Acesso e perfis</button>
 
         <div class="ajudaNavGrupoTitulo">Telas do sistema</div>
         <button type="button" class="ajudaNavItem" data-alvo="ajuda-lista-alunos">Lista de alunos</button>
@@ -94,9 +95,10 @@
         <!-- ===================== COMECE AQUI ===================== -->
         <div class="ajudaSecao ajudaSecaoAtiva" id="ajuda-comece-aqui" data-ajuda-titulo="Comece aqui">
           <h2>Comece aqui</h2>
-          <p class="ajudaSubtituloSecao">Uma visão geral do sistema Emissão de Diplomas.</p>
+          <p class="ajudaSubtituloSecao">Uma visão geral do Gerenciador de Colação de Grau e Diplomas.</p>
 
-          <p>O sistema Emissão de Diplomas acompanha o aluno da conferência dos dados pessoais até o encaminhamento do diploma.</p>
+          <p>O Gerenciador de Colação de Grau e Diplomas acompanha o aluno da conferência dos dados pessoais até o encaminhamento do diploma.</p>
+          <p>No topo aparecem o seu nome e, logo abaixo, a sua descrição na lista de acesso. Em <strong>Aparência</strong> você escolhe Sistema, Claro ou Escuro; a escolha fica guardada só neste navegador. O que você pode fazer depende do seu perfil: veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-acesso">Acesso e perfis</button>.</p>
 
           <h3>Como o aluno avança</h3>
           <div class="ajudaFluxoEtapas">
@@ -129,6 +131,17 @@
             <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-devolver">↩️ Corrigir/voltar uma etapa</button>
             <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-problemas">🛠️ Resolver um problema</button>
           </div>
+        </div>
+
+        <div class="ajudaSecao" id="ajuda-acesso" data-ajuda-titulo="Acesso e perfis" data-ajuda-palavraschave="acesso perfil leitor administrador consulta permissão sem acesso conta">
+          <h2>Acesso e perfis</h2>
+          <p class="ajudaSubtituloSecao">Quem pode abrir o gerenciador e o que cada perfil pode fazer.</p>
+          <p>Só abre o gerenciador quem está na lista de acesso mantida pelo Serviço de Graduação. A conferência é feita pela conta institucional com que você entrou no navegador.</p>
+          <ul>
+            <li><strong>Leitor:</strong> vê as colações, a lista de alunos, os detalhes de cada aluno, os anexos e as análises de histórico já registradas. Aparece a faixa <em>Somente consulta</em> e os botões de alterar não são mostrados.</li>
+            <li><strong>Administrador:</strong> além de ver, salva dados, cria pastas, envia anexos, analisa históricos, gera certificados, ofícios, listas, arquivos ZIP e relatórios, envia e-mails, avança ou devolve etapas e exclui.</li>
+          </ul>
+          <p>Se aparecer <em>Sem acesso a este gerenciador</em>, a sua conta não está na lista. Se aparecer <em>Conta não identificada</em>, entre com a sua conta institucional @usp.br e abra o endereço de novo. Para pedir acesso ou outro perfil, fale com o responsável pelo Serviço de Graduação.</p>
         </div>
 
         <!-- ===================== GUIA RÁPIDO ===================== -->
@@ -553,6 +566,7 @@
           <h2>Por que o sistema às vezes recusa uma ação?</h2>
           <p>Algumas recusas não são erro — são o sistema se protegendo contra situações arriscadas. Em linguagem simples:</p>
           <ul>
+            <li><strong>Lista de acesso:</strong> a cada ação o servidor confere se a sua conta está na lista e se o seu perfil permite aquilo. Esconder ou mostrar um botão é só conveniência; quem decide é o servidor.</li>
             <li><strong>Registro e versão:</strong> cada aluno tem um identificador interno e um número de versão que aumenta a cada salvamento. Se alguém mais salvou uma alteração nesse meio-tempo, o sistema avisa em vez de sobrescrever silenciosamente.</li>
             <li><strong>Travas (locks):</strong> em operações sensíveis, o sistema evita que duas ações conflitantes aconteçam ao mesmo tempo sobre o mesmo aluno.</li>
             <li><strong>Validação da etapa no servidor:</strong> mesmo que a tela pareça permitir uma ação, o servidor confere de novo se aquilo realmente é permitido para a etapa atual — a tela nunca é a única linha de defesa.</li>
@@ -700,6 +714,16 @@
           <p class="ajudaSubtituloSecao">Dúvidas de conceito e recorrentes. Para uma situação concreta, veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-problemas">Problemas Comuns</button>.</p>
 
           <div id="ajudaListaFaq">
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqRespAcesso1" data-titulo="Por que aparece Somente consulta?">Por que aparece "Somente consulta"?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqRespAcesso1">O seu perfil na lista de acesso é Leitor: você pode ver tudo, mas não alterar, gerar documentos, enviar e-mails nem excluir. Para isso, peça o perfil de administrador ao responsável pelo Serviço de Graduação.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqRespAcesso2" data-titulo="Como mudo entre tema claro e escuro?">Como mudo entre tema claro e escuro?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqRespAcesso2">No topo, em Aparência, escolha Claro ou Escuro. Em Sistema, o gerenciador acompanha o tema do seu computador ou celular. A escolha fica guardada só neste navegador.</div>
+            </div>
 
             <div class="ajudaFaqItem">
               <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp1" data-titulo="O sistema decide sozinho se o aluno pode colar grau?">O sistema decide sozinho se o aluno pode colar grau?<span class="ajudaFaqIcone">+</span></button>

@@ -241,6 +241,7 @@ function historicoCapturarFalhaDrive_(fn) {
   (individual ou pra cada aluno de um lote).
 =====================================================*/
 function prepararAnaliseHistorico(registroId, versaoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
   const versaoAtual = exigirVersaoAtual_(aba, mapa, linha, versaoEsperada);
@@ -361,6 +362,7 @@ function prepararAnaliseHistorico(registroId, versaoEsperada) {
   antes (ver HistoricoAuditoria.gs).
 =====================================================*/
 function historicoCriarSessaoAnalise(registroId, versaoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
   exigirVersaoAtual_(aba, mapa, linha, versaoEsperada);
@@ -382,6 +384,7 @@ function historicoCriarSessaoAnalise(registroId, versaoEsperada) {
   partir do registro.
 =====================================================*/
 function obterDocumentoHistoricoParaAnalise(registroId, versaoEsperada, chaveHabilitacao) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const cfgHabilitacao = historicoConfigHabilitacao_(chaveHabilitacao); // lança erro se chave inválida
 
@@ -459,6 +462,7 @@ function obterDocumentoHistoricoParaAnalise(registroId, versaoEsperada, chaveHab
                     formato sozinha nunca provou.
 =====================================================*/
 function avaliarHistoricoExtraido(registroId, versaoEsperada, chaveHabilitacao, sessaoAnaliseId, dadosExtraidos, arquivoEsperado, tokenSessao) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   // RODADA B/C — formato, cedo e barato (sem tocar planilha nenhuma),
   // antes de qualquer outra validação deste endpoint — mesmo raciocínio

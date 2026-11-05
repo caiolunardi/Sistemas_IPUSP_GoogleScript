@@ -28,6 +28,8 @@
 
 
 
+const VERSAO_DIPLOMAS = "4.0.0";
+
 const ABA_DIPLOMAS = "Diplomas";
 const ABA_INFOS = "INFOS";
 
@@ -124,23 +126,39 @@ const CABECALHOS = {
 
 function doGet(e) {
 
-  // Migração automática e idempotente: na prática só faz trabalho de
-  // verdade na primeira carga depois de implantar esta versão (ou
-  // quando alguém mexeu manualmente na planilha). Rodar em toda carga
-  // de página é seguro e barato porque a checagem rápida sai sem lock
-  // quando não há nada pendente — ver precisaMigrar_.
-  try {
-    migrarParaRegistroId_();
-  } catch (err) {
-    // Não trava o carregamento da página por causa da migração — se
-    // algo daqui pra frente realmente precisar de Registro ID e não
-    // encontrar a coluna, o próprio endpoint vai reclamar sozinho.
-    Logger.log("Falha na migração automática de Registro ID: " + err);
+  // 4.0: o projeto é autônomo e a implantação fica aberta; quem decide
+  // se a página abre é a aba EMISSAO_DIPLOMAS (DiplomasAcesso.gs).
+  // Sem acesso: página só com o aviso, sem nenhum dado.
+  const acesso = verificarAcessoParaPaginaDiplomas_();
+  if (!acesso.ok) return paginaSemAcessoDiplomas_(acesso);
+
+  // Correção automática e idempotente de Registro ID/Versão (só grava
+  // quando há linha sem ID, com ID repetido ou sem Versão — por
+  // exemplo, linha acrescentada à mão na planilha). Desde a 4.0 roda
+  // só depois da conferência de acesso e só para ADMINISTRADOR: quem
+  // não pode gravar não dispara gravação ao abrir a página. Decisão do
+  // responsável em 05/11/2026.
+  if (acesso.perfil === ACESSO_DIPLOMAS.ADMINISTRADOR) {
+    try {
+      migrarParaRegistroId_();
+    } catch (err) {
+      // Não trava o carregamento da página por causa da migração — se
+      // algo daqui pra frente realmente precisar de Registro ID e não
+      // encontrar a coluna, o próprio endpoint vai reclamar sozinho.
+      Logger.log("Falha na migração automática de Registro ID: " + err);
+    }
   }
 
-  return HtmlService.createTemplateFromFile("DiplomasApp")
-    .evaluate()
-    .setTitle("Emissão de Diplomas")
+  const pagina = HtmlService.createTemplateFromFile("DiplomasApp");
+  pagina.perfil = acesso.perfil;
+  // Topo da página: nome (B) e observação (D) da aba de acesso; sem
+  // nome, o e-mail (decisão do responsável em 05/11/2026).
+  pagina.usuarioNome = acesso.nome || acesso.email;
+  pagina.usuarioDescricao = acesso.observacao;
+  pagina.versao = VERSAO_DIPLOMAS;
+  pagina.homologacao = ehHomologacaoDiplomas_();
+  return pagina.evaluate()
+    .setTitle(prefixoAmbienteDiplomas_() + "Gerenciador de Colação de Grau e Diplomas")
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
@@ -153,8 +171,24 @@ function include_(nomeArquivo) {
   operação que faz sentido chamar direto do navegador)
 =====================================================*/
 
+// Desde a 4.0 o projeto é autônomo: a planilha de diplomas vem da chave
+// EMISSAO_DIPLOMAS do ID_INDEX (coluna Homologação quando AMBIENTE =
+// homologacao), não mais de getActiveSpreadsheet().
+const CHAVE_PLANILHA_DIPLOMAS = "EMISSAO_DIPLOMAS";
+
+// Aberta uma vez por execução: obterAba_ é chamado várias vezes por
+// requisição e cada consulta ao ID_INDEX abre outra planilha.
+let planilhaDiplomasDaExecucao_ = null;
+
+function abrirPlanilhaDiplomas_() {
+  if (!planilhaDiplomasDaExecucao_) {
+    planilhaDiplomasDaExecucao_ = SpreadsheetApp.openById(obterIdRecursoDiplomas_(CHAVE_PLANILHA_DIPLOMAS, "spreadsheet"));
+  }
+  return planilhaDiplomasDaExecucao_;
+}
+
 function obterAba_() {
-  const aba = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ABA_DIPLOMAS);
+  const aba = abrirPlanilhaDiplomas_().getSheetByName(ABA_DIPLOMAS);
   if (!aba) throw new Error(`Aba "${ABA_DIPLOMAS}" não encontrada.`);
   return aba;
 }
@@ -624,6 +658,7 @@ function sanitizarNomeArquivo_(nome) {
 =====================================================*/
 
 function obterColacoes() {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
   const aba = obterAba_();
   const mapa = mapearCabecalhos_(aba);
@@ -652,6 +687,7 @@ function obterColacoes() {
 =====================================================*/
 
 function obterAlunos(colacao, statusDesejado) {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
   const aba = obterAba_();
   const mapa = mapearCabecalhos_(aba);
@@ -747,6 +783,7 @@ function obterAlunos(colacao, statusDesejado) {
 }
 
 function obterDetalheAluno(registroId) {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
   const ultimaColuna = aba.getLastColumn();
@@ -1143,6 +1180,7 @@ function garantirPastaInterno_(aba, mapa, linha) {
 // lock: duas sessões clicando nesse botão pro mesmo aluno ao mesmo
 // tempo não podem criar duas pastas.
 function garantirPasta(registroId) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -1162,8 +1200,9 @@ function garantirPasta(registroId) {
 =====================================================*/
 
 function obterTiposDeArquivo() {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = abrirPlanilhaDiplomas_();
   const aba = ss.getSheetByName(ABA_INFOS);
   if (!aba) return [];
 
@@ -1189,6 +1228,7 @@ function obterExtensao_(nomeArquivo) {
 =====================================================*/
 
 function uploadArquivo(registroId, tipoArquivo, nomeArquivoOriginal, mimeType, base64) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
 
@@ -1238,6 +1278,7 @@ function uploadArquivo(registroId, tipoArquivo, nomeArquivoOriginal, mimeType, b
 }
 
 function excluirArquivo(registroId, idArquivo) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
   const pastaValidada = garantirPastaInterno_(aba, mapa, linha);
@@ -1322,6 +1363,7 @@ function aplicarEdicaoDadosPessoais_(aba, mapa, linha, dados) {
 }
 
 function salvarEdicaoAluno(registroId, versaoEsperada, dados) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) =>
     aplicarEdicaoDadosPessoais_(aba, mapa, linha, dados)
   );
@@ -1336,6 +1378,7 @@ function salvarEdicaoAluno(registroId, versaoEsperada, dados) {
 // campo e clicava em "Confirmar" sem antes clicar em "Salvar
 // Alterações" perdia a edição.
 function salvarDadosPessoaisEConfirmar(registroId, versaoEsperada, dados) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) => {
     const resultadoEdicao = aplicarEdicaoDadosPessoais_(aba, mapa, linha, dados);
     aba.getRange(linha, obterColuna_(mapa, "status")).setValue("OK");
@@ -1377,6 +1420,7 @@ function rebindPastaAposEdicao_(aba, mapa, linha, ctx) {
 =====================================================*/
 
 function confirmarDadosPessoais(registroId, versaoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) => {
     exigirEtapa_(aba, mapa, linha, "dados_pessoais");
     aba.getRange(linha, obterColuna_(mapa, "status")).setValue("OK");
@@ -1390,6 +1434,7 @@ function confirmarDadosPessoais(registroId, versaoEsperada) {
 // Dados Pessoais, ao reconfirmar ele pularia direto de volta pra
 // Diploma sem ninguém rever Histórico/Colação de novo.
 function devolverParaConferencia(registroId, versaoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) => {
     exigirEtapaEm_(aba, mapa, linha, ["historico", "colacao", "diploma"]);
 
@@ -1458,6 +1503,7 @@ function avancarParaEncerramento_(aba, mapa, linha) {
 }
 
 function salvarRequisitosEAvancar(registroId, versaoEsperada, requisitos) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) => {
     exigirEtapa_(aba, mapa, linha, "historico");
     salvarRequisitos_(aba, mapa, linha, requisitos);
@@ -1467,6 +1513,7 @@ function salvarRequisitosEAvancar(registroId, versaoEsperada, requisitos) {
 }
 
 function devolverParaHistorico(registroId, versaoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) => {
     exigirEtapaEm_(aba, mapa, linha, ["colacao", "diploma"]);
 
@@ -1528,6 +1575,7 @@ function avancarParaDiploma_(aba, mapa, linha) {
 }
 
 function salvarColacaoEAvancar(registroId, versaoEsperada, colacao) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) => {
     exigirEtapa_(aba, mapa, linha, "colacao");
     salvarColacaoRealizada_(aba, mapa, linha, colacao);
@@ -1537,6 +1585,7 @@ function salvarColacaoEAvancar(registroId, versaoEsperada, colacao) {
 }
 
 function devolverParaColacao(registroId, versaoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   return executarMutacao_(registroId, versaoEsperada, (aba, mapa, linha) => {
     exigirEtapaEm_(aba, mapa, linha, ["diploma"]);
     const col = obterOuCriarColuna_(aba, mapa, "statusColacaoEncerramento");
@@ -1660,6 +1709,7 @@ Equipe do Serviço de Graduação`;
 // gravados (são eventos diferentes, de propósito — não fazemos
 // rollback automático) mas o e-mail NÃO fica marcado como enviado.
 function salvarDiplomaEEnviarEmail(registroId, versaoEsperada, diplomas, reenviar) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -1790,6 +1840,7 @@ function gerarBlobConviteColacao_(alunosOrdenados, dataColacao) {
 // destinatários por mensagem dividindo em blocos, e confere a cota
 // diária ANTES de começar a mandar qualquer coisa.
 function enviarEmailColacaoLote(registroIds, dataColacao, horaColacao) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const ids = validarArrayDeIds_(registroIds);
   const dataValidada = validarDataBr_(dataColacao);
@@ -1945,6 +1996,7 @@ function marcarEnviado_(aba, coluna, itens, carimbo) {
 // pedido explícito de confirmação de reenvio (REENVIO_NECESSARIO)
 // em vez de recusar silenciosamente ou reenviar sem avisar.
 function enviarEmailColacaoIndividual(registroId, versaoEsperada, dataColacao, horaColacao, reenviar) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const dataValidada = validarDataBr_(dataColacao);
   const horaValidada = validarHorario_(horaColacao);
@@ -2053,6 +2105,7 @@ Assistência Acadêmica e Serviço de Graduação do IPUSP`;
 // próximo envio em LOTE também (a lista de pendentes do lote se
 // baseia exatamente nessa coluna estar vazia).
 function desmarcarEmailEnviado(registroId, versaoEsperada, tipo) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   if (tipo !== "colacao" && tipo !== "diploma") {
     throw new Error("Tipo de e-mail inválido.");
@@ -2084,6 +2137,7 @@ function desmarcarEmailEnviado(registroId, versaoEsperada, tipo) {
 =====================================================*/
 
 function obterObservacoes(registroId) {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
   const pastaValidada = garantirPastaInterno_(aba, mapa, linha);
@@ -2112,6 +2166,7 @@ function obterObservacoes(registroId) {
 }
 
 function salvarObservacoes(registroId, texto, versaoArquivoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
   const pastaValidada = garantirPastaInterno_(aba, mapa, linha);
@@ -2191,7 +2246,7 @@ function escapeRegExpDoc_(texto) {
 // com a concordância de gênero certa.
 function obterSecretarioGeral_() {
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = abrirPlanilhaDiplomas_();
   const aba = ss.getSheetByName(ABA_INFOS);
   if (!aba) {
     throw new Error(`Não encontrei a aba "${ABA_INFOS}" pra descobrir quem é o(a) Secretário(a) Geral atual.`);
@@ -2401,6 +2456,7 @@ function gerarPdfDocumento_(aba, mapa, linha, tipoDocumento, dataColacao) {
 }
 
 function gerarDocumento(registroId, tipoDocumento, dataColacao) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   tipoDocumento = validarTipoDocumento_(tipoDocumento);
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
@@ -2416,6 +2472,7 @@ function gerarDocumento(registroId, tipoDocumento, dataColacao) {
 }
 
 function gerarZipDocumentos(registroIds, tipoDocumento, dataColacao) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const ids = validarArrayDeIds_(registroIds);
   tipoDocumento = validarTipoDocumento_(tipoDocumento);
@@ -2451,6 +2508,7 @@ function gerarZipDocumentos(registroIds, tipoDocumento, dataColacao) {
 =====================================================*/
 
 function adicionarAluno(colacao, dados) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const colacaoValidada = validarCodigoColacao_(colacao);
   const nome = sanitizarTextoPlano_(dados.nome);
@@ -2538,6 +2596,7 @@ function excluirAlunoInterno_(aba, mapa, linha) {
 }
 
 function excluirAluno(registroId, versaoEsperada) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -2560,6 +2619,7 @@ function excluirAluno(registroId, versaoEsperada) {
 // ATUAL dentro do próprio loop, então funciona corretamente mesmo com
 // deleteRow indo deslocando as posições dos IDs ainda não processados.
 function excluirAlunosEmLote(registroIds) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const ids = validarArrayDeIds_(registroIds);
 
@@ -2611,6 +2671,7 @@ function formatarPeriodo_(valor) {
 }
 
 function gerarListaFormandos(registroIds, dataColacao) {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const ids = validarArrayDeIds_(registroIds);
   const dataValidada = validarDataBr_(dataColacao);

@@ -1,0 +1,8 @@
+N. USP,Nome,e-mail,Observação,Perfil
+1000001,Pessoa Administradora Fictícia,admin.ficticio@exemplo.invalid,Equipe Fictícia do Serviço de Graduação,ADMINISTRADOR
+1000002,Pessoa Leitora Fictícia,leitor.ficticio@exemplo.invalid,,LEITOR
+,,setor.ficticio@exemplo.invalid,Setor Fictício,ADMINISTRADOR
+,Coringa,*@exemplo.invalid,,ADMINISTRADOR
+,Perfil inválido,outra@exemplo.invalid,,EDITOR
+1000003,Pessoa Repetida Fictícia,repetida@exemplo.invalid,Primeira linha,ADMINISTRADOR
+1000003,Pessoa Repetida Fictícia,repetida@exemplo.invalid,Segunda linha,LEITOR

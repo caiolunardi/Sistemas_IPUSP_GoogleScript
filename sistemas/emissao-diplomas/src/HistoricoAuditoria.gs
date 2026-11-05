@@ -396,6 +396,7 @@ function historicoColunaSessaoAnaliseExiste_(aba) {
 }
 
 function migrarAnaliseHistoricoRelatoriosV1() {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const abaChecagem = historicoObterAba_(historicoAbrirPlanilhaRegras_(), ABA_REGRAS_AUDITORIA);
 

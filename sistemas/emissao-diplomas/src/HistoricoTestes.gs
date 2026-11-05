@@ -3306,6 +3306,7 @@ function historicoTestesIntegracaoInfos_(resultados) {
   de texto com o resumo de tudo.
 =====================================================*/
 function rodarTestesHistorico() {
+  exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const linhasRelatorio = [];
   const registrar = (linha) => { linhasRelatorio.push(linha); Logger.log(linha); };

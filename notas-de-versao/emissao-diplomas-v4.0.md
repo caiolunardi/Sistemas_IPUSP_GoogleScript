@@ -1,0 +1,7 @@
+**Gerenciador de Colação de Grau e Diplomas** — versão 4.0.0, de 05/11/2026.
+
+Primeira versão no repositório como **projeto autônomo**, sem vínculo com a planilha de diplomas. As funções da 3.x continuam as mesmas (etapas, pasta do aluno, análise de histórico, relatórios, certificado, ofício, lista de formandos, e-mails e lote). Muda: a planilha de diplomas é aberta pela chave `EMISSAO_DIPLOMAS` do `ID_INDEX`, com ambiente de homologação; o acesso é conferido no servidor pela aba `EMISSAO_DIPLOMAS` da planilha de permissões, com perfis LEITOR (só consulta) e ADMINISTRADOR (grava, gera documentos, envia e-mails e exclui); a correção automática de Registro ID ao abrir a página só roda para ADMINISTRADOR; tema GRADIP Sistema/Claro/Escuro com marcas IPUSP e USP; nome e observação de quem acessou no topo, centralizados; nome na tela igual ao do projeto no Google; Central de Ajuda 1.1 com a seção "Acesso e perfis".
+
+**Implantação:** não homologada nem implantada. O código vai primeiro para o projeto de homologação, pelo responsável. Os projetos vinculados saem de uso depois da troca do link no Painel dos servidores. Esta nota não cria tag nem Release; a Release só é criada depois do merge, por decisão do responsável.
+
+Detalhes, roteiro de homologação e pendências: [docs/sistemas/emissao-diplomas/](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/blob/main/docs/sistemas/emissao-diplomas/README.md).

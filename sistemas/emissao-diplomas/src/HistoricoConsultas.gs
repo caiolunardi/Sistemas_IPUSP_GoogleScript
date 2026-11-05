@@ -447,6 +447,7 @@ function historicoResumirSessaoParaLista_(detalheSessao) {
 // mais recente primeiro. Nunca lança erro por não haver nenhuma
 // análise ainda — devolve { sessoes: [] } normalmente.
 function historicoListarSessoesAnalise(registroId) {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
   resolverRegistroPorId_(registroId);
 
@@ -471,6 +472,7 @@ function historicoListarSessoesAnalise(registroId) {
 // identificador-legado de uma pseudo-sessão; o chamador nunca precisa
 // saber a diferença, os dois são resolvidos aqui da mesma forma).
 function historicoObterSessaoAnalise(registroId, sessaoAnaliseId) {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
   resolverRegistroPorId_(registroId);
 
@@ -501,6 +503,7 @@ function historicoObterSessaoAnalise(registroId, sessaoAnaliseId) {
 // com resultados:{} (o chamador decide como tratar isso na tela, ex.:
 // esconder o botão "Ver última análise").
 function historicoObterUltimaSessaoAnalise(registroId) {
+  exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
   resolverRegistroPorId_(registroId);
 

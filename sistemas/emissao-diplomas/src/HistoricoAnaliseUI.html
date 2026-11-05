@@ -1024,6 +1024,7 @@ function historicoCriarPainelRelatoriosLote_() {
 
     const botaoRelatorios = document.createElement("button");
     botaoRelatorios.className = "botaoSecundario";
+    botaoRelatorios.setAttribute("data-somente-admin", ""); // só ADMINISTRADOR gera relatório
     botaoRelatorios.style.width = "100%";
     botaoRelatorios.textContent = `📄 Gerar Relatórios (${alunosComRelatorio.length} aluno(s))`;
     botaoRelatorios.disabled = alunosComRelatorio.length === 0;
@@ -1069,6 +1070,7 @@ function historicoCriarPainelRelatoriosLote_() {
 
         const botaoConsolidado = document.createElement("button");
         botaoConsolidado.className = "botaoSecundario";
+        botaoConsolidado.setAttribute("data-somente-admin", ""); // só ADMINISTRADOR gera relatório
         botaoConsolidado.style.width = "100%";
         botaoConsolidado.style.marginTop = "8px";
         botaoConsolidado.textContent = `📄 Ver Relatório Consolidado (${historicoUltimoLote.alunos.length} aluno(s), efêmero — não é salvo)`;
@@ -1638,6 +1640,7 @@ function historicoCriarBotaoGerarRelatorio_(registroId, sessaoAnaliseId, nomeAlu
 
     const botao = document.createElement("button");
     botao.className = "botaoSecundario";
+    botao.setAttribute("data-somente-admin", ""); // só ADMINISTRADOR gera relatório
     botao.style.width = "100%";
     botao.textContent = "📄 Gerar Relatório desta Análise";
     wrapper.appendChild(botao);

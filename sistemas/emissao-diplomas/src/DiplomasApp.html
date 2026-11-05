@@ -1,59 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
 <base target="_top">
+<meta charset="UTF-8">
+<!-- Tema GRADIP antes de qualquer estilo: o tema certo já no primeiro desenho. -->
+<?!= include_('GradipTema') ?>
+<script>
+  // Lido pelo servidor (DiplomasAcesso.gs) antes de servir a página.
+  // Esconder botões aqui é só conveniência: quem protege é o servidor.
+  // Nome e observação vêm da aba de acesso e vão para a tela como
+  // texto; "<" vira \u003c para nenhum texto fechar a tag script.
+  window.DIPLOMAS_CONFIG = <?!= JSON.stringify({ perfil: perfil, versao: versao, homologacao: homologacao, usuario: { nome: usuarioNome, descricao: usuarioDescricao } }).replace(/</g, '\\u003c') ?>;
+  // Já no <head>: o LEITOR nunca chega a ver os botões que gravam.
+  document.documentElement.setAttribute("data-perfil", window.DIPLOMAS_CONFIG.perfil === "ADMINISTRADOR" ? "ADMINISTRADOR" : "LEITOR");
+</script>
 
 <style>
+/* Cores próprias do sistema, com par claro/escuro (UX_DESIGN_SYSTEM §4):
+   véu do "Processando" e o roxo de "erro técnico" da análise de histórico. */
+:root{
+    --diplomas-loading-veu:rgba(255,255,255,.75);
+    --diplomas-erro-tecnico:#7a1fa2;
+    --diplomas-erro-tecnico-bg:#f1e6f5;
+    --diplomas-erro-tecnico-borda:#d9b8e6;
+}
+[data-theme="dark"]{
+    --diplomas-loading-veu:rgba(8,18,25,.82);
+    --diplomas-erro-tecnico:#d8b4fe;
+    --diplomas-erro-tecnico-bg:#231a2e;
+    --diplomas-erro-tecnico-borda:#5b3d72;
+}
+
+/* Campos nativos com os tokens GRADIP nos dois temas (UX_COMPONENT_RECIPES §7). */
+input, select, textarea{
+    background-color:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+    font-family:inherit;
+}
+input::placeholder, textarea::placeholder{ color:var(--gradip-input-placeholder); }
+input:disabled, select:disabled, textarea:disabled{
+    background-color:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+}
+
 body{
     margin:0;
     font-family:Arial, Helvetica, sans-serif;
-    background:#f5f5f5;
-    color:#333;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
 }
 
 #headerSistema{
-    background:white;
-    height:72px;
+    background:var(--gradip-header-bg);
+    min-height:72px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 22px;
-    border-bottom:1px solid #ddd;
+    gap:12px;
+    padding:8px 22px;
+    border-bottom:1px solid var(--gradip-border);
+    box-sizing:border-box;
 }
 
 .logoEsquerda{
     display:flex;
     align-items:center;
     gap:15px;
+    min-width:0;
+    flex:0 1 auto;
 }
 
-.logoEsquerda img{
+.logoEsquerda .marcaIpuspSvg{
     height:52px;
+    flex:0 0 auto;
+}
+
+.tituloBloco{
+    min-width:0;
 }
 
 .logoUSP{
     height:44px;
+    width:auto;
+    flex:0 0 auto;
+}
+
+.logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
 }
 
 .tituloSistema{
     font-size:17px;
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
+    overflow-wrap:anywhere;
 }
 
 .subtituloSistema{
     font-size:13px;
-    color:#666;
+    color:var(--gradip-text-muted);
     margin-top:2px;
+}
+
+/* Quem está usando: nome (linha 1) e observação (linha 2) da aba
+   EMISSAO_DIPLOMAS, centralizados no topo. Sem "olá" nem "bom dia". */
+.identificacaoUsuario{
+    flex:1 1 auto;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    line-height:1.3;
+}
+
+.identificacaoUsuario[hidden]{ display:none; }
+
+.identificacaoUsuario__nome{
+    max-width:100%;
+    font-size:15px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    overflow-wrap:anywhere;
+}
+
+.identificacaoUsuario__descricao{
+    max-width:100%;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+    overflow-wrap:anywhere;
+}
+
+.identificacaoUsuario__descricao:empty{ display:none; }
+
+.somenteLeitor{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+}
+
+.faixaAviso{
+    margin:0;
+    padding:10px 22px;
+    font-size:14px;
+    line-height:1.45;
+    background:var(--gradip-info-bg);
+    border-bottom:1px solid var(--gradip-info-border);
+    color:var(--gradip-text);
+}
+
+.faixaAviso[hidden]{ display:none; }
+
+.faixaAviso--homologacao{
+    background:var(--gradip-warning-bg);
+    border-bottom-color:var(--gradip-warning-border);
+}
+
+/* Perfil LEITOR: some tudo que grava, cria arquivo, envia e-mail ou
+   exclui. Só conveniência; o servidor recusa do mesmo jeito. */
+html[data-perfil="LEITOR"] [data-somente-admin]{ display:none !important; }
+
+@media (max-width:1000px){
+    #headerSistema{ flex-wrap:wrap; }
+    /* Sem espaço ao lado dos botões: a identificação desce para uma
+       linha própria, ainda centralizada. */
+    .identificacaoUsuario{ order:3; flex:1 1 100%; }
+}
+
+@media (max-width:760px){
+    /* Ações e marca USP numa linha própria, que pode quebrar. */
+    #headerSistema .ajudaAcoesHeader{ flex:1 1 100%; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+}
+
+@media (max-width:600px){
+    #headerSistema{ padding:8px 14px; }
+    .logoEsquerda .marcaIpuspSvg{ height:40px; }
+    .logoUSP{ height:34px; }
+    .faixaAviso{ padding:10px 14px; }
 }
 
 .trocarColacao{
     font-size:12px;
-    color:#005AA9;
+    color:var(--gradip-link);
     cursor:pointer;
     text-decoration:underline;
 }
 
 .barraAzul{
     height:6px;
-    background:#005AA9;
+    background:var(--gradip-header-accent);
 }
 
 #conteudo{
@@ -75,11 +218,11 @@ body{
 
 #telaColacoes h1{
     font-size:20px;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 #telaColacoes p{
-    color:#777;
+    color:var(--gradip-text-muted);
     font-size:14px;
     margin-bottom:26px;
 }
@@ -91,41 +234,41 @@ body{
 }
 
 .botaoColacao{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:16px 20px;
     font-size:15px;
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
     cursor:pointer;
     transition:.15s;
     text-align:left;
 }
 
 .botaoColacao:hover{
-    border-color:#005AA9;
-    box-shadow:0 2px 8px rgba(0,90,169,.15);
-    color:#005AA9;
+    border-color:var(--gradip-link);
+    box-shadow:var(--gradip-shadow);
+    color:var(--gradip-link);
 }
 
 .botaoAdicionarColacao{
     background:none;
-    border:1.5px dashed #999;
+    border:1.5px dashed var(--gradip-border-strong);
     border-radius:8px;
     padding:14px 20px;
     font-size:14px;
     font-weight:bold;
-    color:#666;
+    color:var(--gradip-text-muted);
     cursor:pointer;
     transition:.15s;
     margin-top:6px;
 }
 
 .botaoAdicionarColacao:hover{
-    border-color:#005AA9;
-    color:#005AA9;
-    background:#eaf2fa;
+    border-color:var(--gradip-link);
+    color:var(--gradip-link);
+    background:var(--gradip-info-bg);
 }
 
 /*=================================
@@ -133,32 +276,32 @@ body{
 ==================================*/
 
 .cardResumo{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:16px 20px;
     margin-bottom:16px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    box-shadow:0 1px 3px rgba(0,0,0,.05);
+    box-shadow:var(--gradip-shadow);
 }
 
 .cardResumo h1{
     font-size:18px;
     margin:0;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .cardResumo p{
     margin:4px 0 0 0;
     font-size:13px;
-    color:#777;
+    color:var(--gradip-text-muted);
 }
 
 .badgeContador{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     font-weight:bold;
     font-size:20px;
     border-radius:20px;
@@ -173,25 +316,25 @@ body{
 
 .botaoAba{
     padding:11px 20px;
-    background:#eee;
+    background:var(--gradip-surface-2);
     border:none;
     border-radius:6px 6px 0 0;
     font-size:14px;
     font-weight:bold;
-    color:#777;
+    color:var(--gradip-text-muted);
     cursor:pointer;
 }
 
 .botaoAba.ativa{
-    background:white;
-    color:#005AA9;
-    box-shadow:0 -2px 6px rgba(0,0,0,.04);
+    background:var(--gradip-surface);
+    color:var(--gradip-link);
+    box-shadow:none;
 }
 
 .caixaBusca{
     width:100%;
     padding:11px 14px;
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:6px;
     font-size:14px;
     box-sizing:border-box;
@@ -209,7 +352,7 @@ body{
 
 .linkSelecionarTodos{
     font-size:13px;
-    color:#005AA9;
+    color:var(--gradip-link);
     cursor:pointer;
     text-decoration:underline;
     display:flex;
@@ -234,23 +377,23 @@ body{
     font-size:12px;
     font-weight:bold;
     cursor:pointer;
-    color:white;
+    color:var(--gradip-on-primary);
 }
 
 .botaoLote.excluir{
-    background:#b71c1c;
+    background:var(--gradip-danger);
 }
 
 .botaoLote.excluir:hover{
-    background:#8f1414;
+    background:var(--gradip-danger);
 }
 
 .botaoLote.formandos{
-    background:#005AA9;
+    background:var(--gradip-primary);
 }
 
 .botaoLote.formandos:hover{
-    background:#00468a;
+    background:var(--gradip-primary-hover);
 }
 
 .checkboxAluno{
@@ -262,9 +405,9 @@ body{
 
 .botaoAdicionarAluno{
     padding:9px 16px;
-    background:white;
-    border:1.5px solid #005AA9;
-    color:#005AA9;
+    background:var(--gradip-surface);
+    border:1.5px solid var(--gradip-link);
+    color:var(--gradip-link);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -273,18 +416,18 @@ body{
 }
 
 .botaoAdicionarAluno:hover{
-    background:#eaf2fa;
+    background:var(--gradip-info-bg);
 }
 
 .secaoPerigo{
-    border-top:1px solid #eee;
+    border-top:1px solid var(--gradip-border);
     margin-top:8px;
     padding-top:16px;
 }
 
 .subSecaoColacaoDiploma{
-    background:#fafbfc;
-    border:1px solid #e3e8ec;
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:14px 16px;
     margin-bottom:16px;
@@ -294,7 +437,7 @@ body{
     font-size:12px;
     text-transform:uppercase;
     letter-spacing:.03em;
-    color:#666;
+    color:var(--gradip-text-muted);
     margin:0 0 8px 0;
 }
 
@@ -305,9 +448,9 @@ body{
 .botaoExcluirAluno{
     width:100%;
     padding:11px;
-    background:white;
-    border:1.5px solid #b71c1c;
-    color:#b71c1c;
+    background:var(--gradip-surface);
+    border:1.5px solid var(--gradip-danger);
+    color:var(--gradip-danger);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -315,7 +458,7 @@ body{
 }
 
 .botaoExcluirAluno:hover{
-    background:#fdecea;
+    background:var(--gradip-danger-bg);
 }
 
 .listaAlunos{
@@ -325,8 +468,8 @@ body{
 }
 
 .cardAluno{
-    background:white;
-    border:1px solid #d9d9d9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:14px 18px;
     display:flex;
@@ -334,12 +477,12 @@ body{
     align-items:center;
     cursor:pointer;
     transition:.15s;
-    box-shadow:0 1px 3px rgba(0,0,0,.04);
+    box-shadow:var(--gradip-shadow);
 }
 
 .cardAluno:hover{
-    border-color:#005AA9;
-    box-shadow:0 2px 8px rgba(0,90,169,.15);
+    border-color:var(--gradip-link);
+    box-shadow:var(--gradip-shadow);
 }
 
 .infoAluno{
@@ -352,19 +495,19 @@ body{
     display:block;
     text-align:left;
     font-size:15px;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .infoAluno div{
     display:block;
     text-align:left;
     font-size:12px;
-    color:#777;
+    color:var(--gradip-text-muted);
     margin-top:3px;
 }
 
 .avisoEmailListaCard{
-    color:#1a7d3a !important;
+    color:var(--gradip-success) !important;
     font-weight:bold;
     font-size:12px;
     margin-top:4px;
@@ -375,19 +518,19 @@ body{
     font-weight:bold;
     padding:5px 12px;
     border-radius:14px;
-    background:#fdecea;
-    color:#b71c1c;
+    background:var(--gradip-danger-bg);
+    color:var(--gradip-danger);
     white-space:nowrap;
 }
 
 .badgeStatus.ok{
-    background:#e8f5e9;
-    color:#2e7d32;
+    background:var(--gradip-success-bg);
+    color:var(--gradip-success);
 }
 
 .vazio{
     text-align:center;
-    color:#999;
+    color:var(--gradip-text-muted);
     padding:60px 20px;
     font-size:14px;
 }
@@ -404,11 +547,11 @@ body{
     top:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,0.45);
+    background:var(--gradip-overlay);
 }
 
 .modalConteudo{
-    background:white;
+    background:var(--gradip-surface);
     width:640px;
     min-width:480px;
     max-width:92vw;
@@ -423,8 +566,8 @@ body{
 }
 
 .modalHeader{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     padding:18px 24px;
     border-radius:10px 10px 0 0;
     display:flex;
@@ -471,9 +614,9 @@ body{
     font-size:13px;
     text-transform:uppercase;
     letter-spacing:.03em;
-    color:#005AA9;
+    color:var(--gradip-link);
     margin:0 0 12px 0;
-    border-bottom:2px solid #eaf2fa;
+    border-bottom:2px solid var(--gradip-border);
     padding-bottom:6px;
 }
 
@@ -484,7 +627,7 @@ body{
 .campoEditavel label{
     display:block;
     font-size:12px;
-    color:#666;
+    color:var(--gradip-text-muted);
     margin-bottom:4px;
     font-weight:bold;
 }
@@ -493,7 +636,7 @@ body{
 .campoEditavel input[type=text]{
     width:100%;
     padding:9px 10px;
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:4px;
     font-size:14px;
     box-sizing:border-box;
@@ -509,7 +652,7 @@ body{
 }
 
 .caixaHabilitacoes{
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:4px;
     padding:10px 14px;
 }
@@ -532,7 +675,7 @@ body{
     width:56px;
     flex:0 0 56px;
     padding:6px 4px;
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:4px;
     font-size:13px;
     text-align:center;
@@ -560,15 +703,15 @@ body{
 .tabelaHabilitacoes{
     width:100%;
     border-collapse:collapse;
-    background:white;
+    background:var(--gradip-surface);
     border-radius:6px;
     overflow:hidden;
-    border:1px solid #dde3e8;
+    border:1px solid var(--gradip-border);
 }
 
 .tabelaHabilitacoes th{
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     font-size:11px;
     font-weight:bold;
     text-transform:uppercase;
@@ -584,9 +727,9 @@ body{
 
 .tabelaHabilitacoes td{
     padding:10px 12px;
-    border-top:1px solid #eef1f4;
+    border-top:1px solid var(--gradip-border);
     font-size:13px;
-    color:#333;
+    color:var(--gradip-text);
 }
 
 .tabelaHabilitacoes tr:first-child td{
@@ -594,7 +737,7 @@ body{
 }
 
 .tabelaHabilitacoes tbody tr:hover{
-    background:#f5f9fc;
+    background:var(--gradip-surface-2);
 }
 
 .tabelaHabilitacoes .celulaCheckHab{
@@ -609,9 +752,9 @@ body{
 
 .botaoSecundario{
     padding:10px 16px;
-    background:white;
-    border:1px solid #005AA9;
-    color:#005AA9;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-link);
+    color:var(--gradip-link);
     border-radius:6px;
     font-size:13px;
     font-weight:bold;
@@ -619,7 +762,7 @@ body{
 }
 
 .botaoSecundario:hover{
-    background:#eaf2fa;
+    background:var(--gradip-info-bg);
 }
 
 /*=================================
@@ -643,7 +786,7 @@ body{
 
 .painelObservacoesCaixa{
     pointer-events:auto;
-    background:white;
+    background:var(--gradip-surface);
     width:420px;
     max-width:90vw;
     min-width:320px;
@@ -670,7 +813,7 @@ body{
     height:100%;
     min-height:0;
     resize:none;
-    border:1px solid #ddd;
+    border:1px solid var(--gradip-border);
     border-radius:6px;
     padding:12px;
     font-family:inherit;
@@ -681,7 +824,7 @@ body{
 
 .painelObservacoesRodape{
     padding:14px 16px;
-    border-top:1px solid #eee;
+    border-top:1px solid var(--gradip-border);
     display:flex;
     gap:10px;
     justify-content:flex-end;
@@ -692,7 +835,7 @@ body{
 .linkPasta{
     display:inline-block;
     font-size:13px;
-    color:#005AA9;
+    color:var(--gradip-link);
     cursor:pointer;
     text-decoration:underline;
 }
@@ -705,7 +848,7 @@ body{
 
 .listaArquivosExistentes li{
     padding:8px 10px;
-    border:1px solid #eee;
+    border:1px solid var(--gradip-border);
     border-radius:4px;
     margin-bottom:6px;
     font-size:13px;
@@ -715,20 +858,20 @@ body{
 }
 
 .listaArquivosExistentes a{
-    color:#005AA9;
+    color:var(--gradip-link);
     text-decoration:none;
     flex:1;
 }
 
 .listaArquivosExistentes .removerArquivo{
-    color:#b71c1c;
+    color:var(--gradip-danger);
     cursor:pointer;
     font-size:12px;
     margin-left:10px;
 }
 
 .linhaUpload{
-    border:1px dashed #bbb;
+    border:1px dashed var(--gradip-border-strong);
     border-radius:8px;
     padding:14px;
     margin-bottom:10px;
@@ -736,33 +879,33 @@ body{
 }
 
 .linhaUpload.arrastando{
-    border-color:#005AA9;
-    background:#f2f8fd;
+    border-color:var(--gradip-link);
+    background:var(--gradip-info-bg);
 }
 
 .linhaUpload .zonaClique{
     text-align:center;
-    color:#777;
+    color:var(--gradip-text-muted);
     font-size:13px;
     cursor:pointer;
 }
 
 .linhaUpload.comArquivo{
     border-style:solid;
-    border-color:#005AA9;
+    border-color:var(--gradip-link);
 }
 
 .linhaUpload .nomeArquivoEscolhido{
     font-size:13px;
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
     margin-bottom:8px;
 }
 
 .linhaUpload select{
     width:100%;
     padding:8px 10px;
-    border:1px solid #ccc;
+    border:1px solid var(--gradip-border-strong);
     border-radius:4px;
     font-size:13px;
     box-sizing:border-box;
@@ -772,33 +915,33 @@ body{
     position:absolute;
     top:8px;
     right:10px;
-    color:#999;
+    color:var(--gradip-text-muted);
     cursor:pointer;
     font-size:16px;
 }
 
 .botaoAdicionarLinha{
     background:none;
-    border:1px dashed #999;
+    border:1px dashed var(--gradip-border-strong);
     border-radius:6px;
     padding:8px;
     width:100%;
-    color:#666;
+    color:var(--gradip-text-muted);
     font-size:13px;
     cursor:pointer;
     margin-bottom:14px;
 }
 
 .botaoAdicionarLinha:hover{
-    border-color:#005AA9;
-    color:#005AA9;
+    border-color:var(--gradip-link);
+    color:var(--gradip-link);
 }
 
 .botaoPrimario{
     width:100%;
     padding:13px;
-    background:#005AA9;
-    color:white;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
     border:none;
     border-radius:6px;
     font-size:14px;
@@ -809,48 +952,48 @@ body{
 }
 
 .botaoPrimario:hover{
-    background:#00468a;
+    background:var(--gradip-primary-hover);
 }
 
 .botaoPrimario:disabled{
-    background:#9fb8cc;
+    background:var(--gradip-border-strong);
     cursor:default;
 }
 
 .botaoVerde{
-    background:#2e7d32;
+    background:var(--gradip-success);
 }
 
 .botaoVerde:hover{
-    background:#245e27;
+    background:var(--gradip-success);
 }
 
 .botaoLaranja{
-    background:#e5893a;
+    background:var(--gradip-warning);
 }
 
 .botaoLaranja:hover{
-    background:#c76f26;
+    background:var(--gradip-warning);
 }
 
 .botaoNeutro{
-    background:#666;
+    background:var(--gradip-text-muted);
 }
 
 .botaoNeutro:hover{
-    background:#4d4d4d;
+    background:var(--gradip-text);
 }
 
 .avisoDocGerado{
     font-size:11px;
-    color:#2e7d32;
+    color:var(--gradip-success);
     margin-top:6px;
     text-align:center;
 }
 
 .linkDesmarcarEmail{
     font-size:11px;
-    color:#b71c1c;
+    color:var(--gradip-danger);
     text-align:center;
     text-decoration:underline;
     cursor:pointer;
@@ -859,7 +1002,7 @@ body{
 }
 
 .linkDesmarcarEmail:hover{
-    color:#8f1414;
+    color:var(--gradip-danger);
 }
 
 /*=================================
@@ -874,32 +1017,36 @@ body{
     top:0;
     width:100%;
     height:100%;
-    background:rgba(255,255,255,0.75);
+    background:var(--diplomas-loading-veu);
     align-items:center;
     justify-content:center;
 }
 
 #loadingBox{
-    background:white;
+    background:var(--gradip-surface);
     border-radius:10px;
-    box-shadow:0 4px 20px rgba(0,0,0,.15);
+    border:1px solid var(--gradip-border);
+    box-shadow:var(--gradip-shadow);
     padding:30px 40px;
     text-align:center;
 }
 
 #loadingLogo{
-    height:46px;
     margin-bottom:12px;
+}
+
+#loadingLogo .marcaIpuspSvg{
+    height:46px;
 }
 
 #loadingTitulo{
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
     font-size:15px;
 }
 
 #loadingTexto{
-    color:#777;
+    color:var(--gradip-text-muted);
     font-size:12px;
     margin-top:4px;
 }
@@ -910,21 +1057,37 @@ body{
 <?!= include_('DiplomasAjudaEstilos') ?>
 <?!= include_('HistoricoParser') ?>
 
+</head>
+<body>
+
 <header id="headerSistema">
     <div class="logoEsquerda">
-        <img src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/logo_ip.png">
-        <div>
-            <div class="tituloSistema">Emissão de Diplomas</div>
-            <div class="subtituloSistema" id="subtitulo">Instituto de Psicologia</div>
+        <?!= include_('GradipMarcaIPUSP') ?>
+        <div class="tituloBloco">
+            <div class="tituloSistema">Gerenciador de Colação de Grau e Diplomas</div>
+            <div class="subtituloSistema" id="subtitulo">Serviço de Graduação — Instituto de Psicologia</div>
         </div>
     </div>
+    <div class="identificacaoUsuario" id="identificacaoUsuario" hidden>
+        <span class="somenteLeitor">Conectado como </span>
+        <span class="identificacaoUsuario__nome" id="identificacaoNome"></span>
+        <span class="identificacaoUsuario__descricao" id="identificacaoDescricao"></span>
+    </div>
     <div class="ajudaAcoesHeader">
+        <?!= include_('GradipTemaControle') ?>
         <button type="button" class="ajudaBotaoHeader" onclick="ajudaAbrir('ajuda-comece-aqui')">❓ Ajuda</button>
-        <img class="logoUSP" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/usp.png">
+        <span class="logoUSPWrap"><?!= include_('GradipMarcaUSP') ?></span>
     </div>
 </header>
 
 <div class="barraAzul"></div>
+
+<div id="faixaHomologacao" class="faixaAviso faixaAviso--homologacao" role="note" hidden>
+    <strong>Ambiente de homologação.</strong> Esta cópia usa planilhas de teste. Não use para atender alunos de verdade.
+</div>
+<div id="avisoSomenteLeitura" class="faixaAviso" role="note" hidden>
+    <strong>Somente consulta.</strong> Você pode ver colações, alunos, detalhes, anexos e análises já registradas, mas não pode alterar dados, gerar documentos, enviar e-mails nem excluir.
+</div>
 
 <!-- TELA 1: SELEÇÃO DE COLAÇÃO -->
 
@@ -932,7 +1095,7 @@ body{
     <h1>Selecione a colação de grau</h1>
     <p>Escolha qual colação você quer trabalhar</p>
     <div class="listaColacoes" id="listaColacoes"></div>
-    <button class="botaoAdicionarColacao" onclick="adicionarColacao()">+ Adicionar nova colação</button>
+    <button data-somente-admin class="botaoAdicionarColacao" onclick="adicionarColacao()">+ Adicionar nova colação</button>
 </div>
 
 <!-- TELA 2: PENDENTES / VERIFICADOS -->
@@ -945,7 +1108,7 @@ body{
             <p id="subtituloLista">&nbsp;</p>
         </div>
         <div style="display:flex; align-items:center; gap:14px;">
-            <button class="botaoAdicionarAluno" onclick="abrirModalAdicionar()">+ Adicionar Aluno</button>
+            <button data-somente-admin class="botaoAdicionarAluno" onclick="abrirModalAdicionar()">+ Adicionar Aluno</button>
             <div class="badgeContador" id="contador">0</div>
         </div>
     </div>
@@ -966,12 +1129,12 @@ body{
         </span>
         <button type="button" class="ajudaGatilho" onclick="ajudaAbrir('ajuda-acoes-lote')" title="Ajuda sobre ações em lote" aria-label="Ajuda sobre ações em lote">?</button>
         <div class="acoesLote" id="acoesLote" style="display:none;">
-            <button class="botaoLote excluir" onclick="excluirSelecionados()">🗑️ Excluir selecionados (<span id="contadorSelecionadosExcluir">0</span>)</button>
-            <button class="botaoLote formandos" id="botaoEmailColacao" onclick="enviarEmailColacaoEmLote()" style="display:none;">📧 Enviar E-mail de Colação de Grau (<span id="contadorSelecionadosEmailColacao">0</span>)</button>
-            <button class="botaoLote formandos" id="botaoZipCertificados" onclick="gerarZipEmLote('certificado')" style="display:none;">📄 Emitir Certificados (ZIP) (<span id="contadorSelecionadosZipCert">0</span>)</button>
-            <button class="botaoLote formandos" id="botaoZipOficios" onclick="gerarZipEmLote('oficio')" style="display:none;">📑 Emitir Ofícios (ZIP) (<span id="contadorSelecionadosZipOficio">0</span>)</button>
-            <button class="botaoLote formandos" id="botaoFormandos" onclick="gerarListaFormandos()" style="display:none;">📋 Gerar Lista de Formandos (<span id="contadorSelecionadosFormandos">0</span>)</button>
-            <button class="botaoLote formandos" id="botaoAnaliseHistoricoLote" onclick="historicoIniciarAnaliseLote()" style="display:none;">🔍 Analisar Histórico em Lote (<span id="contadorSelecionadosHistorico">0</span>)</button>
+            <button data-somente-admin class="botaoLote excluir" onclick="excluirSelecionados()">🗑️ Excluir selecionados (<span id="contadorSelecionadosExcluir">0</span>)</button>
+            <button data-somente-admin class="botaoLote formandos" id="botaoEmailColacao" onclick="enviarEmailColacaoEmLote()" style="display:none;">📧 Enviar E-mail de Colação de Grau (<span id="contadorSelecionadosEmailColacao">0</span>)</button>
+            <button data-somente-admin class="botaoLote formandos" id="botaoZipCertificados" onclick="gerarZipEmLote('certificado')" style="display:none;">📄 Emitir Certificados (ZIP) (<span id="contadorSelecionadosZipCert">0</span>)</button>
+            <button data-somente-admin class="botaoLote formandos" id="botaoZipOficios" onclick="gerarZipEmLote('oficio')" style="display:none;">📑 Emitir Ofícios (ZIP) (<span id="contadorSelecionadosZipOficio">0</span>)</button>
+            <button data-somente-admin class="botaoLote formandos" id="botaoFormandos" onclick="gerarListaFormandos()" style="display:none;">📋 Gerar Lista de Formandos (<span id="contadorSelecionadosFormandos">0</span>)</button>
+            <button data-somente-admin class="botaoLote formandos" id="botaoAnaliseHistoricoLote" onclick="historicoIniciarAnaliseLote()" style="display:none;">🔍 Analisar Histórico em Lote (<span id="contadorSelecionadosHistorico">0</span>)</button>
         </div>
     </div>
 
@@ -1048,7 +1211,7 @@ body{
                     </div>
                 </div>
 
-                <button class="botaoSecundario" style="width:100%;" id="btnAcaoDados" onclick="salvarDadosAluno()">💾 Salvar Alterações</button>
+                <button data-somente-admin class="botaoSecundario" style="width:100%;" id="btnAcaoDados" onclick="salvarDadosAluno()">💾 Salvar Alterações</button>
 
             </div>
 
@@ -1091,29 +1254,29 @@ body{
 
                 <div id="linhasUpload"></div>
 
-                <button class="botaoAdicionarLinha" onclick="adicionarLinhaUpload()">+ Adicionar arquivo</button>
+                <button data-somente-admin class="botaoAdicionarLinha" onclick="adicionarLinhaUpload()">+ Adicionar arquivo</button>
 
-                <button class="botaoPrimario botaoSecundario" style="background:#005AA9;color:white;" onclick="salvarAnexos()">Salvar Anexos</button>
+                <button data-somente-admin class="botaoPrimario botaoSecundario" style="background:var(--gradip-primary);color:var(--gradip-on-primary);" onclick="salvarAnexos()">Salvar Anexos</button>
 
             </div>
 
             <div class="secao" id="secaoAcaoPendente">
-                <button class="botaoPrimario botaoVerde" onclick="confirmarDados()">
+                <button data-somente-admin class="botaoPrimario botaoVerde" onclick="confirmarDados()">
                     ✅ Confirmar Dados Pessoais
                 </button>
             </div>
 
             <div class="secao" id="secaoEtapa2" style="display:none;">
 
-                <button class="botaoSecundario" style="width:100%; margin-bottom:10px;" onclick="historicoAbrirAnaliseIndividual()">
+                <button data-somente-admin class="botaoSecundario" style="width:100%; margin-bottom:10px;" onclick="historicoAbrirAnaliseIndividual()">
                     🔍 Analisar Histórico Escolar (automático)
                 </button>
                 <button type="button" class="ajudaGatilho" onclick="ajudaAbrir('ajuda-analise-automatica')" title="Ajuda sobre a análise automática" aria-label="Ajuda sobre a análise automática">?</button>
 
-                <button class="botaoPrimario botaoVerde" onclick="avancarEtapa2()">
+                <button data-somente-admin class="botaoPrimario botaoVerde" onclick="avancarEtapa2()">
                     ➡️ Avançar para Encerramento
                 </button>
-                <button class="botaoPrimario botaoLaranja" onclick="devolverConferencia()">
+                <button data-somente-admin class="botaoPrimario botaoLaranja" onclick="devolverConferencia()">
                     ↩️ Devolver para Dados Pessoais
                 </button>
                 <button type="button" class="ajudaGatilho" onclick="ajudaAbrir('ajuda-devolver')" title="Ajuda sobre devolver para etapas anteriores" aria-label="Ajuda sobre devolver para etapas anteriores">?</button>
@@ -1122,54 +1285,54 @@ body{
 
             <div class="secao" id="secaoEtapa3" style="display:none;">
 
-                <button class="botaoPrimario" style="margin-top:0;" onclick="enviarEmailColacaoAluno()">
+                <button data-somente-admin class="botaoPrimario" style="margin-top:0;" onclick="enviarEmailColacaoAluno()">
                     📧 Enviar E-mail de Colação de Grau ao Aluno
                 </button>
 
                 <div class="avisoDocGerado" id="avisoEmailColacaoEnviado"></div>
-                <div class="linkDesmarcarEmail" id="linkDesmarcarEmailColacao" style="display:none;" onclick="desmarcarEmail('colacao')">🔓 Desmarcar e-mail enviado (permitir reenvio)</div>
+                <div data-somente-admin class="linkDesmarcarEmail" id="linkDesmarcarEmailColacao" style="display:none;" onclick="desmarcarEmail('colacao')">🔓 Desmarcar e-mail enviado (permitir reenvio)</div>
 
-                <button class="botaoPrimario" id="btnGerarCertificado" onclick="gerarDocumento('certificado')">
+                <button data-somente-admin class="botaoPrimario" id="btnGerarCertificado" onclick="gerarDocumento('certificado')">
                     📄 Emitir Certificado de Conclusão de Curso
                 </button>
 
-                <button class="botaoPrimario botaoVerde" onclick="avancarEtapa3()">
+                <button data-somente-admin class="botaoPrimario botaoVerde" onclick="avancarEtapa3()">
                     ➡️ Avançar para Emissão de Diploma
                 </button>
-                <button class="botaoPrimario botaoLaranja" onclick="devolverConferencia()">
+                <button data-somente-admin class="botaoPrimario botaoLaranja" onclick="devolverConferencia()">
                     ↩️ Devolver para Dados Pessoais
                 </button>
-                <button class="botaoPrimario botaoLaranja" onclick="devolverParaHistoricoAluno()">
+                <button data-somente-admin class="botaoPrimario botaoLaranja" onclick="devolverParaHistoricoAluno()">
                     ↩️ Devolver para Histórico Escolar
                 </button>
             </div>
 
             <div class="secao" id="secaoEtapa4" style="display:none;">
 
-                <button class="botaoPrimario" style="margin-top:0;" onclick="enviarEmailDiplomaAluno()">
+                <button data-somente-admin class="botaoPrimario" style="margin-top:0;" onclick="enviarEmailDiplomaAluno()">
                     📧 Enviar E-mail de Diploma ao Aluno
                 </button>
 
                 <div class="avisoDocGerado" id="avisoEmailEnviado"></div>
-                <div class="linkDesmarcarEmail" id="linkDesmarcarEmailDiploma" style="display:none;" onclick="desmarcarEmail('diploma')">🔓 Desmarcar e-mail enviado (permitir reenvio)</div>
+                <div data-somente-admin class="linkDesmarcarEmail" id="linkDesmarcarEmailDiploma" style="display:none;" onclick="desmarcarEmail('diploma')">🔓 Desmarcar e-mail enviado (permitir reenvio)</div>
 
-                <button class="botaoPrimario" id="btnGerarOficio" onclick="gerarDocumento('oficio')">
+                <button data-somente-admin class="botaoPrimario" id="btnGerarOficio" onclick="gerarDocumento('oficio')">
                     📑 Emitir Ofício de Diploma
                 </button>
 
-                <button class="botaoPrimario botaoLaranja" onclick="devolverConferencia()">
+                <button data-somente-admin class="botaoPrimario botaoLaranja" onclick="devolverConferencia()">
                     ↩️ Devolver para Dados Pessoais
                 </button>
-                <button class="botaoPrimario botaoLaranja" onclick="devolverParaHistoricoAluno()">
+                <button data-somente-admin class="botaoPrimario botaoLaranja" onclick="devolverParaHistoricoAluno()">
                     ↩️ Devolver para Histórico Escolar
                 </button>
-                <button class="botaoPrimario botaoLaranja" onclick="devolverParaColacaoAluno()">
+                <button data-somente-admin class="botaoPrimario botaoLaranja" onclick="devolverParaColacaoAluno()">
                     ↩️ Devolver para Colação de Grau
                 </button>
             </div>
 
             <div class="secaoPerigo">
-                <button class="botaoExcluirAluno" onclick="excluirAlunoAtual()">
+                <button data-somente-admin class="botaoExcluirAluno" onclick="excluirAlunoAtual()">
                     🗑️ Excluir Aluno (apaga também a pasta no Drive)
                 </button>
             </div>
@@ -1198,7 +1361,7 @@ body{
 
         <div class="painelObservacoesRodape">
             <button class="botaoSecundario" onclick="fecharObservacoes()">Fechar</button>
-            <button class="botaoPrimario" style="margin-top:0;" onclick="salvarObservacoesTexto()">💾 Salvar Observações</button>
+            <button data-somente-admin class="botaoPrimario" style="margin-top:0;" onclick="salvarObservacoesTexto()">💾 Salvar Observações</button>
         </div>
 
     </div>
@@ -1209,8 +1372,8 @@ body{
 
 <div id="loadingOverlay">
     <div id="loadingBox">
-        <img id="loadingLogo" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/logo_ip.png">
-        <div id="loadingTitulo">Emissão de Diplomas</div>
+        <div id="loadingLogo"><?!= include_('GradipMarcaIPUSP') ?></div>
+        <div id="loadingTitulo">Gerenciador de Colação de Grau e Diplomas</div>
         <div id="loadingTexto">Processando<span id="loadingPontos"></span></div>
     </div>
 </div>
@@ -1241,6 +1404,23 @@ let requestSequencia = 0;
 //-----------------------------------
 // Inicialização
 //-----------------------------------
+
+// Identificação no topo (nome na 1ª linha, observação na 2ª), faixa de
+// homologação e aviso de somente consulta. Tudo por textContent.
+const DIPLOMAS_CONFIG = window.DIPLOMAS_CONFIG || { perfil: "LEITOR", usuario: {} };
+const ehAdministrador = DIPLOMAS_CONFIG.perfil === "ADMINISTRADOR";
+
+(function aplicarConfiguracaoDaPagina() {
+    const usuario = DIPLOMAS_CONFIG.usuario || {};
+    const nome = String(usuario.nome || "").trim();
+    if (nome) {
+        document.getElementById("identificacaoNome").textContent = nome;
+        document.getElementById("identificacaoDescricao").textContent = String(usuario.descricao || "").trim();
+        document.getElementById("identificacaoUsuario").hidden = false;
+    }
+    document.getElementById("faixaHomologacao").hidden = !DIPLOMAS_CONFIG.homologacao;
+    document.getElementById("avisoSomenteLeitura").hidden = ehAdministrador;
+})();
 
 //-----------------------------------
 // Arrastar telas (card do aluno e
@@ -2006,6 +2186,7 @@ function abrirObservacoes() {
         .withSuccessHandler(resultado => {
             esconderLoading();
             document.getElementById("textoObservacoes").value = resultado.texto;
+            document.getElementById("textoObservacoes").readOnly = !ehAdministrador;
             observacoesVersaoArquivo = resultado.versaoArquivo;
             observacoesAlteradas = false;
             document.getElementById("painelObservacoes").style.display = "flex";
@@ -2128,8 +2309,19 @@ function preencherModal(detalhe) {
 
     renderizarTabelaUnificada(detalhe);
 
+    // LEITOR: campos só para ver (os botões que gravam já estão ocultos).
+    if (!ehAdministrador) bloquearCamposParaLeitor(document.getElementById("modalDetalhe"));
+
     document.getElementById("modalDetalhe").style.display = "block";
 
+}
+
+function bloquearCamposParaLeitor(raiz) {
+    if (!raiz) return;
+    raiz.querySelectorAll("input, select, textarea").forEach(campo => {
+        if (campo.tagName === "TEXTAREA" || campo.type === "text") campo.readOnly = true;
+        else campo.disabled = true;
+    });
 }
 
 //-----------------------------------
@@ -2442,6 +2634,9 @@ function atualizarLinkPasta(linkPasta) {
     if (linkPasta) {
         el.textContent = "Abrir pasta no Drive →";
         el.onclick = () => window.open(linkPasta, "_blank", "noopener,noreferrer");
+    } else if (!ehAdministrador) {
+        el.textContent = "Pasta ainda não criada no Drive";
+        el.onclick = () => abrirOuCriarPasta();
     } else {
         el.textContent = "Criar pasta no Drive →";
         el.onclick = () => abrirOuCriarPasta();
@@ -2450,6 +2645,17 @@ function atualizarLinkPasta(linkPasta) {
 }
 
 function abrirOuCriarPasta() {
+
+    // LEITOR não cria pasta (garantirPasta é só de ADMINISTRADOR): abre
+    // a pasta já registrada, se houver.
+    if (!ehAdministrador) {
+        if (alunoAtual && alunoAtual.linkPasta) {
+            window.open(alunoAtual.linkPasta, "_blank", "noopener,noreferrer");
+        } else {
+            alert("Este aluno ainda não tem pasta no Drive. Só um administrador pode criá-la.");
+        }
+        return;
+    }
 
     mostrarLoading("Preparando pasta");
 
@@ -2478,7 +2684,7 @@ function atualizarListaArquivosExistentes(arquivos) {
 
     if (!arquivos || arquivos.length === 0) {
         const li = document.createElement("li");
-        li.style.color = "#999";
+        li.style.color = "var(--gradip-text-muted)";
         li.style.border = "none";
         li.textContent = "Nenhum arquivo na pasta ainda.";
         lista.appendChild(li);
@@ -2497,6 +2703,7 @@ function atualizarListaArquivosExistentes(arquivos) {
 
         const removerSpan = document.createElement("span");
         removerSpan.className = "removerArquivo";
+        removerSpan.setAttribute("data-somente-admin", "");
         removerSpan.textContent = "remover";
         removerSpan.addEventListener("click", () => removerArquivoExistente(arq.id));
 
@@ -2861,3 +3068,6 @@ function mostrarErro(erro) {
 }
 
 </script>
+
+</body>
+</html>

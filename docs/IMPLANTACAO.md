@@ -80,12 +80,13 @@ Projetos registrados em 26/10/2026, com o nome exatamente como está no Google. 
 | `GRADIP · Gerenciador de Trancamento Total de Matricula · PRODUÇÃO` | fora do repositório (o [gerenciador 1.1](sistemas/trancamento-total/README.md) do repositório não está implantado) | `GERENCIADOR_TRANCAMENTO_TOTAL` |
 | `GRADIP · Gerenciador de Trancamento Parcial de Matricula · PRODUÇÃO` | fora do repositório | `GERENCIADOR_TRANCAMENTO_PARCIAL` |
 | `GRADIP · Gerenciador de exclusão de disciplinas · PRODUÇÃO` | fora do repositório | `GERENCIADOR_EXCLUSAO_DISCIPLINAS` |
-| `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO` | fora do repositório | `EMISSAO_DIPLOMAS` |
-| `GRADIP · Gerenciador de Colação de Grau e Diplomas · HOMOLOGACAO` | fora do repositório | `EMISSAO_DIPLOMAS` |
+| `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO` | [Gerenciador de Colação de Grau e Diplomas](sistemas/emissao-diplomas/README.md) (projeto autônomo; recebe a 4.0.0) | `EMISSAO_DIPLOMAS` |
+| `GRADIP · Gerenciador de Colação de Grau e Diplomas · HOMOLOGACAO` | idem (`AMBIENTE=homologacao`) | `EMISSAO_DIPLOMAS`, na planilha da coluna Homologação |
+| `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO - Vinculado` e `· HOMOLOGACAO - vinculado` | 3.x, ligados à planilha de diplomas; saem de uso depois da troca do link no Painel dos servidores | (a 3.x não confere lista) |
 | `GRADIP · Gerenciador BUSP · PRODUÇÃO` | fora do repositório | `GERENCIADOR_BUSP` |
 | `GRADIP · Gerenciador de Matrícula dos Intercambistas · PRODUÇÃO` | fora do repositório | `GERENCIADOR_INTERCAMBISTAS` |
 
-A coluna da aba diz qual lista o sistema deveria usar; só o Painel dos servidores, a Grade Horaria - Config e o Gerenciador de Abertura de Habilitações conferem essa lista no servidor. Diferenças de grafia que ainda existem no Google (`HOMOLOGACAO`, `Matricula`, `Horaria`, `exclusão` em minúsculas) ficam como estão até o responsável renomear o projeto; a documentação acompanha o nome do Google.
+A coluna da aba diz qual lista o sistema deveria usar; só o Painel dos servidores, a Grade Horaria - Config e o Gerenciador de Abertura de Habilitações conferem essa lista no servidor (o Gerenciador de Colação de Grau e Diplomas passa a conferir na 4.0.0, ainda não implantada). Diferenças de grafia que ainda existem no Google (`HOMOLOGACAO`, `Matricula`, `Horaria`, `exclusão` em minúsculas) ficam como estão até o responsável renomear o projeto; a documentação acompanha o nome do Google.
 
 Como aplicar:
 
