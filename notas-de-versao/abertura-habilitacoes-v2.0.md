@@ -1,6 +1,6 @@
 # Pedido de Abertura de Habilitação (formulário dos alunos) — v2.0
 
-**Estado:** homologada em 05/11/2026 (H1–H9, projeto de homologação); não implantada em produção. Sem tag nem Release até a implantação.
+**Implantação:** implantada em 05/11/2026, numa nova versão da implantação de produção que já existia (o `/exec` não mudou), com o código de `bdadc28` (merge do PR #40), depois da homologação H1–H9 do mesmo dia. Antes do envio, cópia de segurança da 1.0 (`Backend.js`, `SolicitacaoApp.html`, `appsscript.json`); depois, conferência dos 10 arquivos do projeto com `bdadc28` (idênticos) e `diagnosticarConfiguracao` todo `OK`. Voltar à 1.0 é escolher a versão anterior da implantação; a planilha de respostas não muda de formato.
 
 - Planilhas pelo `ID_INDEX` (`PLANILHA_ALUNOS`, `ABERTURA_HABILITACOES`, `PERIODOS`); nenhum ID no código.
 - Ambiente de homologação por `AMBIENTE=homologacao`.

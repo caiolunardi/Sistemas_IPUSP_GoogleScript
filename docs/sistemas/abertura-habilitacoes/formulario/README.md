@@ -1,14 +1,14 @@
 # Pedido de Abertura de Habilitação — formulário dos alunos
 
-**Versão no repositório:** 2.0, **homologada em 05/11/2026 e não implantada**. A versão em uso é a 1.0, um Web App próprio que está fora do repositório. O código da 2.0 está em [`sistemas/abertura-habilitacoes/formulario/`](../../../../sistemas/abertura-habilitacoes/formulario/README.md).
+**Versão em uso:** 2.0, **implantada em 05/11/2026** depois da homologação do mesmo dia ([notas](../../../../notas-de-versao/abertura-habilitacoes-v2.0.md)). A 1.0, um Web App próprio que nunca esteve no repositório, segue nas versões anteriores da implantação e numa cópia de segurança fora do Git. O código da 2.0 está em [`sistemas/abertura-habilitacoes/formulario/`](../../../../sistemas/abertura-habilitacoes/formulario/README.md).
 
 ## Histórico do sistema
 
 | Fase | O que era | O que ficou |
 |---|---|---|
 | **Origem histórica** | Um Google Forms. As respostas formaram a aba `Respostas ao formulário 2` (e a aba antiga `2021 - 2022`) da planilha `ABERTURA_HABILITACOES`. | Os títulos das colunas A–J são as perguntas do Forms. Os registros antigos continuam nas mesmas abas, sem migração nem transformação. |
-| **Aplicação atual (1.0)** | Um Web App próprio em Apps Script, no projeto `GRADIP · Formulário de Abertura de Habilitações · PRODUÇÃO`. Ele substituiu o Forms na operação e grava na mesma aba, com os mesmos títulos. | Em uso. IDs de planilha no código, fora do repositório. |
-| **Modernização (2.0)** | Este código: padrão GRADIP, `ID_INDEX`, homologação, conferência do esquema antes de gravar. | No repositório, à espera de homologação e implantação. |
+| **Aplicação anterior (1.0)** | Um Web App próprio em Apps Script, no projeto `GRADIP · Formulário de Abertura de Habilitações · PRODUÇÃO`. Ele substituiu o Forms na operação e grava na mesma aba, com os mesmos títulos. | Usada até 05/11/2026. IDs de planilha no código, fora do repositório; guardada nas versões anteriores da implantação. |
+| **Aplicação atual (2.0)** | Este código: padrão GRADIP, `ID_INDEX`, homologação, conferência do esquema antes de gravar. | Homologada e implantada em 05/11/2026, no mesmo projeto e no mesmo `/exec`. |
 
 **Atendimento:** o [Gerenciador de Abertura de Habilitações 2.1](../README.md) lê a mesma aba. O Painel dos servidores conta os pendentes. O formulário não lê nem altera nada do Gerenciador além de preencher, numa linha nova, as colunas que um pedido novo precisa.
 
@@ -16,7 +16,7 @@
 
 ## O que mudou da 1.0 para a 2.0
 
-| Tema | 1.0 (em uso) | 2.0 |
+| Tema | 1.0 | 2.0 |
 |---|---|---|
 | Configuração | IDs das três planilhas no código | `ID_INDEX` (`PLANILHA_ALUNOS`, `ABERTURA_HABILITACOES`, `PERIODOS`) e `ID_INDEX_SPREADSHEET_ID` nas propriedades do script |
 | Homologação | não havia | `AMBIENTE=homologacao` lê a coluna `Homologação` do `ID_INDEX`, sem volta para a produção, com faixa na página e `[HOMOLOGAÇÃO]` no assunto |
