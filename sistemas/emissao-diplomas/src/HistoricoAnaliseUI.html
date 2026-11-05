@@ -1,0 +1,1767 @@
+<!--=====================================================
+  ANÁLISE DE HISTÓRICO ESCOLAR — Modal + lógica de tela
+  (individual e em lote).
+
+  Este arquivo é incluído UMA vez em DiplomasApp.html (dentro do
+  corpo, perto do modal de detalhe já existente). Os DOIS botões que
+  disparam esta tela (um dentro de "secaoEtapa2", outro dentro de
+  "#acoesLote") ficam no PRÓPRIO DiplomasApp.html — não aqui — pra
+  não duplicar este arquivo (que também tem <script>) em dois pontos
+  da página.
+
+  Nunca chama salvarRequisitosEAvancar, nunca marca/desmarca
+  ".checkRequisito", nunca mexe em statusHistorico — é só consulta.
+  Fechar este modal NUNCA chama fecharModal()/carregarLista() (essas
+  são do modal de detalhe do aluno, que continua aberto por baixo).
+
+  Renderização 100% via createElement/textContent (mesma convenção
+  XSS-safe do resto do DiplomasApp.html) — nada do que vem do PDF ou
+  da planilha de regras vira innerHTML bruto aqui.
+=====================================================-->
+
+<div id="modalAnaliseHistorico" class="modal">
+    <div class="modalConteudo">
+        <div class="modalHeader">
+            <h2 id="historicoModalTitulo">Análise de Histórico Escolar</h2>
+            <span class="fechar" onclick="historicoFecharModalAnalise()">&times;</span>
+        </div>
+        <div class="modalBody" id="historicoModalBody"></div>
+    </div>
+</div>
+
+<!-- RODADA B/C (FASE B3): modal PEQUENO e independente do modal de
+     análise acima — só faz a pergunta de 3 vias de versionamento
+     ("Substituir a última versão" / "Criar nova versão atualizada" /
+     "Cancelar") antes de gerar um relatório em PDF. Fica por CIMA do
+     modalAnaliseHistorico (que continua aberto por baixo, mostrando a
+     sessão de onde "Gerar Relatório" foi clicado) — nunca o substitui
+     nem mexe no conteúdo dele. Reaproveitado tanto pelo fluxo
+     individual quanto, na FASE C1, pela pergunta única e coletiva do
+     lote (texto diferente, mesmos 3 botões). -->
+<div id="modalVersionamentoRelatorio" class="modal">
+    <div class="modalConteudo" style="max-width:440px;">
+        <div class="modalHeader">
+            <h2>Gerar Relatório</h2>
+            <span class="fechar" onclick="historicoVersionamentoResponder_(null)">&times;</span>
+        </div>
+        <div class="modalBody">
+            <p id="historicoVersionamentoTexto" class="historicoSubtitulo" style="margin-bottom:16px;"></p>
+            <button class="botaoPrimario botaoVerde" style="width:100%; margin-bottom:8px;" onclick="historicoVersionamentoResponder_('substituir')">
+                Substituir a última versão
+            </button>
+            <button class="botaoSecundario" style="width:100%; margin-bottom:8px;" onclick="historicoVersionamentoResponder_('nova')">
+                Criar nova versão atualizada
+            </button>
+            <button class="botaoSecundario" style="width:100%;" onclick="historicoVersionamentoResponder_(null)">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+/*=====================================================
+  Estado + vocabulário
+=====================================================*/
+
+let historicoBatchCancelado = false;
+let historicoBatchEmAndamento = false;
+
+// RODADA B/C (FASE C1) — estado do ÚLTIMO lote de ANÁLISE rodado
+// nesta tela, só em memória do navegador (nunca persistido, nunca
+// tratado como fonte acadêmica — os PDFs individuais/consolidado
+// continuam revalidando tudo a partir da persistência em
+// ANALISE_HISTORICO, nunca a partir deste objeto).
+//
+// RODADA B/C.1 (§3) — CORRIGIDO: passou de array simples (só quem
+// tinha ganhado sessaoAnaliseId) pra um objeto rico que representa a
+// EXECUÇÃO INTEIRA do lote — a versão anterior descartava em silêncio
+// quem não tinha sessão (sem habilitação ativa, ou falha ANTES da
+// sessão existir), e isso quebrava o relatório consolidado (§20: erros
+// técnicos precisam aparecer nele) e a própria contagem de
+// "processados". Populado em historicoIniciarAnaliseLote, abaixo:
+//   {
+//     iniciadoEm, finalizadoEm: ISO texto (ou null antes/durante),
+//     totalSelecionados, totalProcessados: inteiros,
+//     cancelado: booleano,
+//     alunos: [
+//       { registroId, nome, nusp,
+//         sessaoAnaliseId,   // null quando não chegou a existir sessão
+//         resultados,        // {} quando não chegou a existir sessão
+//         erros,             // erros OPERACIONAIS por habilitação (§4)
+//                             — nunca um resultado acadêmico
+//         erroTecnico        // string quando a análise INTEIRA falhou
+//                             antes da sessão existir; null caso contrário
+//       },
+//       ...
+//     ]
+//   }
+// TODO aluno(a) processado(a) entra em "alunos" — análise normal; sem
+// habilitação ativa; falha antes da sessão; falha depois da sessão;
+// falha em uma habilitação + sucesso em outra. É a partir desta lista
+// que "Gerar Relatórios" (individual, só quem tem sessaoAnaliseId) e
+// "Ver Relatório Consolidado" (2+ aluno(a)s do lote inteiro, nunca
+// persistido) operam — os dois botões são independentes entre si, os
+// dois leem este MESMO objeto.
+let historicoUltimoLote = { iniciadoEm: null, finalizadoEm: null, totalSelecionados: 0, totalProcessados: 0, cancelado: false, alunos: [] };
+
+const HISTORICO_ORDEM_HABILITACOES = ["psi", "bach", "lic"];
+const HISTORICO_LABEL_HABILITACAO = { psi: "Formação de Psicólogo(a)", bach: "Bacharelado", lic: "Licenciatura" };
+const HISTORICO_LABEL_CURTO_HABILITACAO = { psi: "Psi", bach: "Bach", lic: "Lic" };
+
+const HISTORICO_LABEL_FASE = {
+    buscando: "Buscando arquivo no Drive…",
+    extraindo: "Lendo o PDF no navegador…",
+    avaliando: "Avaliando requisitos…"
+};
+
+const HISTORICO_LABEL_BADGE = {
+    APTO: "✅ Apto",
+    NAO_APTO: "❌ Não apto",
+    CONFERIR: "⚠️ Conferir manualmente"
+};
+
+const HISTORICO_CLASSE_BADGE = { APTO: "apto", NAO_APTO: "naoApto", CONFERIR: "conferir" };
+
+/*=====================================================
+  google.script.run como Promise — só pra deixar o
+  fluxo sequencial (prepararAnaliseHistorico ->
+  obterDocumentoHistoricoParaAnalise -> PDF.js no
+  navegador -> avaliarHistoricoExtraido) legível com
+  async/await em vez de callback aninhado.
+=====================================================*/
+function historicoChamarServidor_(nomeFuncao) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    return new Promise((resolve, reject) => {
+        const chamada = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+        chamada[nomeFuncao].apply(chamada, args);
+    });
+}
+
+/*=====================================================
+  Núcleo: analisa TODAS as habilitações ativas de UM
+  aluno, sequencialmente, chamando aoAtualizarHabilitacao
+  a cada mudança de fase — usado tanto pela análise
+  individual quanto por cada item da análise em lote.
+
+  Implementa a regra "Psicólogo+Bacharelado juntos: só
+  baixa/lê o PDF do Psicólogo uma vez, aplica as duas
+  regras aos MESMOS dados extraídos" — nunca busca nem
+  reprocessa um segundo PDF pro Bacharelado nesse caso
+  (ver documentoDeOutraHabilitacao, decidido pelo
+  servidor em prepararAnaliseHistorico/obterDocumentoHistoricoParaAnalise).
+
+  RODADA B/C: antes de processar qualquer habilitação,
+  decide se esta execução vai gerar sessão — SÓ chama
+  historicoCriarSessaoAnalise (servidor) quando existe pelo
+  menos UMA habilitação ativa (mesmo critério que
+  historicoAbrirAnaliseIndividual já usa pra decidir "nada
+  para analisar"; equivale a "o loop abaixo vai rodar pelo
+  menos uma vez", já que "implementado" não entra nesse
+  filtro — mesmo Licenciatura ativa e não-implementada
+  consome o loop e grava uma linha). Zero habilitações
+  ativas devolve {sessaoAnaliseId:null, resultados:{}, erros:{}}
+  SEM chamar o servidor pra sessão nenhuma (evita gastar um
+  UUID/round-trip à toa) — é o caso já tratado hoje pela
+  análise em lote (historicoIniciarAnaliseLote), que chama
+  esta função pra TODO aluno selecionado, mesmo os sem
+  nenhuma habilitação ativa, e espera um resultado vazio de
+  volta, nunca um erro. Havendo pelo menos uma, UM ÚNICO
+  sessaoAnaliseId é gerado e reaproveitado em TODAS as
+  chamadas de avaliarHistoricoExtraido desta execução
+  (Psi+Bach incluso) — nunca um id por habilitação. Junto com
+  o sessaoAnaliseId, historicoCriarSessaoAnalise também devolve
+  um "tokenSessao" (RODADA B/C.1, §24) — um HMAC opaco pro
+  front-end, que só serve pra ser repassado, sem nenhuma
+  alteração, em TODAS essas mesmas chamadas de
+  avaliarHistoricoExtraido; o servidor confere a assinatura
+  antes de aceitar qualquer resultado, fechando a possibilidade
+  de um sessaoAnaliseId "forjado" ou reaproveitado nunca ter
+  passado de verdade por historicoCriarSessaoAnalise.
+
+  Devolve {sessaoAnaliseId, resultados, erros} (RODADA B/C.1,
+  §4 — ACRESCENTOU "erros"; antes só {sessaoAnaliseId,
+  resultados}). "erros" é um mapa OPERACIONAL por habilitação
+  (chave -> mensagem), preenchido SÓ quando a chamada ao
+  servidor daquela habilitação lança uma exceção — nunca é um
+  resultado acadêmico (isso continua 100% decidido dentro de
+  avaliarHistoricoExtraido/HistoricoMotor.gs) e nunca é
+  persistido em ANALISE_HISTORICO a partir daqui;
+  "resultados[chave]" continua null nesse mesmo caso
+  (comportamento antigo preservado) — "erros" só acrescenta o
+  motivo ao lado. Usado por historicoIniciarAnaliseLote (guarda
+  em historicoUltimoLote.alunos[].erros, §3) e pelo relatório
+  consolidado (§20, exibe esses erros mesmo quando a
+  habilitação nunca chegou a ter um resultado persistido).
+=====================================================*/
+async function historicoAnalisarAluno_(registroId, versaoEsperada, aoAtualizarHabilitacao) {
+
+    const prep = await historicoChamarServidor_("prepararAnaliseHistorico", registroId, versaoEsperada);
+
+    const ativasNaOrdem = HISTORICO_ORDEM_HABILITACOES.filter(chave => prep.habilitacoes[chave].ativa);
+
+    if (ativasNaOrdem.length === 0) {
+        return { sessaoAnaliseId: null, resultados: {}, erros: {} };
+    }
+
+    const sessao = await historicoChamarServidor_("historicoCriarSessaoAnalise", registroId, versaoEsperada);
+    const sessaoAnaliseId = sessao.sessaoAnaliseId;
+    const tokenSessao = sessao.tokenSessao;
+
+    const resultados = {};
+    const erros = {};
+    let documentoPsi = null;
+    let dadosExtraidosPsi = null;
+
+    for (const chave of ativasNaOrdem) {
+
+        const info = prep.habilitacoes[chave];
+
+        aoAtualizarHabilitacao(chave, { fase: "andamento" });
+
+        try {
+
+            if (!info.implementado) {
+                const resultado = await historicoChamarServidor_("avaliarHistoricoExtraido", registroId, versaoEsperada, chave, sessaoAnaliseId, null, null, tokenSessao);
+                resultados[chave] = resultado;
+                aoAtualizarHabilitacao(chave, { fase: "concluido", resultado: resultado });
+                continue;
+            }
+
+            if (info.motivoIndisponivel) {
+                // Arquivo indisponível já detectado em prepararAnaliseHistorico
+                // (não encontrado, ambíguo, MIME/tamanho inválido — ver
+                // HistoricoArquivos.gs). Mesmo assim, chama o servidor (em vez
+                // de só mostrar isso localmente) pra essa tentativa virar um
+                // resultado CONFERIR de verdade, com motivo, e ficar
+                // registrada em ANALISE_HISTORICO — nenhuma tentativa
+                // legítima de análise fica sem linha de auditoria. Mesmo
+                // padrão já usado 2 linhas acima pra Licenciatura.
+                const resultado = await historicoChamarServidor_("avaliarHistoricoExtraido", registroId, versaoEsperada, chave, sessaoAnaliseId, null, null, tokenSessao);
+                resultados[chave] = resultado;
+                aoAtualizarHabilitacao(chave, { fase: "concluido", resultado: resultado });
+                continue;
+            }
+
+            let documento, dadosExtraidos;
+
+            if (info.documentoDeOutraHabilitacao && dadosExtraidosPsi) {
+                documento = documentoPsi;
+                dadosExtraidos = dadosExtraidosPsi;
+                aoAtualizarHabilitacao(chave, { fase: "avaliando" });
+            } else {
+                aoAtualizarHabilitacao(chave, { fase: "buscando" });
+                try {
+                    documento = await historicoChamarServidor_("obterDocumentoHistoricoParaAnalise", registroId, versaoEsperada, chave);
+                } catch (errBusca) {
+                    // NOVO (auditoria, rodada 4): obterDocumentoHistoricoParaAnalise
+                    // (endpoint 3) pode lançar por causas variadas — arquivo
+                    // indisponível, mas também falha técnica real do Drive ao
+                    // ler blob/bytes/metadata (ver HistoricoEndpoints.gs e
+                    // HistoricoArquivos.gs). Antes desta correção, QUALQUER falha
+                    // aqui caía só no catch genérico lá embaixo — fase:"erro"
+                    // puramente local, sem nenhuma linha em ANALISE_HISTORICO.
+                    // Em vez de inspecionar aqui o motivo (o que duplicaria regra
+                    // acadêmica no front-end), reusa o mesmo mecanismo já usado
+                    // 2 blocos acima (Licenciatura / arquivo indisponível
+                    // detectado em prepararAnaliseHistorico): chama
+                    // avaliarHistoricoExtraido com dadosExtraidos=null, deixando
+                    // o servidor decidir e registrar CONFERIR com o motivo
+                    // técnico correto — endpoint 4 já sabe tratar tanto "arquivo
+                    // nunca esteve disponível" quanto "falha de infraestrutura
+                    // do Drive" (FALHA_INFRAESTRUTURA_DRIVE), sem exigir que
+                    // esta UI saiba distinguir os dois casos. Se essa CHAMADA DE
+                    // FALLBACK também lançar (ex.: conflito de Versão detectado
+                    // só agora), a exceção sobe normalmente pro catch externo —
+                    // sem auditoria, como já é o contrato pra Registro ID/Versão/
+                    // etapa inválidos.
+                    const resultado = await historicoChamarServidor_("avaliarHistoricoExtraido", registroId, versaoEsperada, chave, sessaoAnaliseId, null, null, tokenSessao);
+                    resultados[chave] = resultado;
+                    aoAtualizarHabilitacao(chave, { fase: "concluido", resultado: resultado });
+                    continue;
+                }
+                aoAtualizarHabilitacao(chave, { fase: "extraindo" });
+                dadosExtraidos = await window.HistoricoParser.extrairDeBase64(documento.base64, documento.arquivoInfo.nome);
+                if (chave === "psi") {
+                    documentoPsi = documento;
+                    dadosExtraidosPsi = dadosExtraidos;
+                }
+                aoAtualizarHabilitacao(chave, { fase: "avaliando" });
+            }
+
+            const arquivoEsperado = {
+                hashSha256: documento.arquivoInfo.hashSha256,
+                id: documento.arquivoInfo.id,
+                nome: documento.arquivoInfo.nome
+            };
+
+            const resultado = await historicoChamarServidor_(
+                "avaliarHistoricoExtraido", registroId, versaoEsperada, chave, sessaoAnaliseId, dadosExtraidos, arquivoEsperado, tokenSessao
+            );
+
+            resultados[chave] = resultado;
+            aoAtualizarHabilitacao(chave, { fase: "concluido", resultado: resultado });
+
+        } catch (err) {
+            // RODADA B/C.1 (§4): além de local (fase:"erro" no bloco/linha
+            // desta habilitação), o motivo agora também fica em "erros",
+            // pra sobreviver ao fechamento do modal e alimentar
+            // historicoUltimoLote/o relatório consolidado (§20) — nunca um
+            // resultado acadêmico, só um registro operacional de que ESTA
+            // chamada falhou.
+            const mensagemErro = (err && err.message) || String(err);
+            resultados[chave] = null;
+            erros[chave] = mensagemErro;
+            aoAtualizarHabilitacao(chave, { fase: "erro", motivo: mensagemErro });
+        }
+
+    }
+
+    return { sessaoAnaliseId: sessaoAnaliseId, resultados: resultados, erros: erros };
+
+}
+
+/*=====================================================
+  Fechar modal — NUNCA mexe em alunoAtual/carregarLista()
+  (ver cabeçalho do arquivo). Se uma análise em lote ainda
+  está rodando, confirma antes (nunca cancela silenciosamente
+  no meio, e a fila que já rodou continua auditada normalmente).
+=====================================================*/
+function historicoFecharModalAnalise() {
+
+    if (historicoBatchEmAndamento) {
+        const confirmado = confirm(
+            "A análise em lote ainda está em andamento. Fechar mesmo assim? " +
+            "Os alunos já analisados ficam registrados normalmente; o restante da fila não será processado."
+        );
+        if (!confirmado) return;
+        historicoBatchCancelado = true;
+    }
+
+    document.getElementById("modalAnaliseHistorico").style.display = "none";
+
+}
+
+/*=====================================================
+  MODO INDIVIDUAL
+=====================================================*/
+
+function historicoAbrirAnaliseIndividual() {
+
+    if (!alunoAtual) return;
+
+    const registroId = alunoAtual.registroId;
+    const versaoEsperada = alunoAtual.versao;
+
+    document.getElementById("historicoModalTitulo").textContent = "Análise de Histórico — " + alunoAtual.nome;
+
+    const corpo = document.getElementById("historicoModalBody");
+    corpo.innerHTML = "";
+
+    const subtitulo = document.createElement("div");
+    subtitulo.className = "historicoSubtitulo";
+    subtitulo.textContent = "Conferência automática, apenas consultiva — não marca os checkboxes de requisitos nem avança " +
+        "o aluno de etapa. Use como apoio; a decisão final continua sendo sua.";
+    corpo.appendChild(subtitulo);
+
+    const preparando = document.createElement("div");
+    preparando.className = "historicoFase";
+    preparando.textContent = "Preparando análise…";
+    corpo.appendChild(preparando);
+
+    document.getElementById("modalAnaliseHistorico").style.display = "block";
+
+    historicoChamarServidor_("prepararAnaliseHistorico", registroId, versaoEsperada)
+        .then(prep => {
+
+            corpo.innerHTML = "";
+            corpo.appendChild(subtitulo);
+
+            const ativasNaOrdem = HISTORICO_ORDEM_HABILITACOES.filter(chave => prep.habilitacoes[chave].ativa);
+
+            if (ativasNaOrdem.length === 0) {
+                const vazio = document.createElement("div");
+                vazio.className = "historicoFase";
+                vazio.textContent = "Este aluno não tem nenhuma habilitação marcada — nada para analisar.";
+                corpo.appendChild(vazio);
+                return null;
+            }
+
+            const blocosPorHabilitacao = {};
+            ativasNaOrdem.forEach(chave => {
+                const bloco = historicoCriarBlocoHabilitacao_(chave);
+                blocosPorHabilitacao[chave] = bloco;
+                corpo.appendChild(bloco.elemento);
+            });
+
+            return historicoAnalisarAluno_(registroId, versaoEsperada, (chave, estado) => {
+                historicoAtualizarBlocoHabilitacao_(blocosPorHabilitacao[chave], estado);
+            });
+
+        })
+        .then(resultadoAnalise => {
+
+            // RODADA B/C.1 (§11) — CORRIGIDO: o botão "Gerar Relatório"
+            // agora aparece NESTE MESMO modal, logo após a análise
+            // terminar — antes, só existia voltando a este aluno via
+            // "Ver Última Análise" (historicoAbrirUltimaAnalise, abaixo),
+            // uma etapa extra desnecessária. "resultadoAnalise" é o que
+            // historicoAnalisarAluno_ devolveu (undefined/null quando
+            // ativasNaOrdem.length===0, tratado 2 blocos acima — aquele
+            // "return null" também chega aqui, então o guard abaixo cobre
+            // os dois casos). Reaproveita historicoCriarBotaoGerarRelatorio_
+            // (mesmo botão já usado por historicoRenderizarDetalheSessao_,
+            // na consulta de sessões já persistidas) — nunca duplica
+            // HTML/lógica nova.
+            if (!resultadoAnalise || !resultadoAnalise.sessaoAnaliseId) return;
+
+            const temResultadoPersistido = Object.keys(resultadoAnalise.resultados)
+                .some(chave => !!resultadoAnalise.resultados[chave]);
+            if (!temResultadoPersistido) return;
+
+            corpo.appendChild(
+                historicoCriarBotaoGerarRelatorio_(registroId, resultadoAnalise.sessaoAnaliseId, alunoAtual.nome)
+            );
+
+        })
+        .catch(err => {
+            corpo.innerHTML = "";
+            corpo.appendChild(subtitulo);
+            const erroEl = document.createElement("div");
+            erroEl.className = "historicoMotivoIndisponivel";
+            erroEl.textContent = "❌ " + ((err && err.message) || err);
+            corpo.appendChild(erroEl);
+        });
+
+}
+
+function historicoCriarBlocoHabilitacao_(chave) {
+
+    const elemento = document.createElement("div");
+    elemento.className = "historicoBlocoHabilitacao";
+
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "historicoCabecalhoHabilitacao";
+
+    const titulo = document.createElement("strong");
+    titulo.textContent = HISTORICO_LABEL_HABILITACAO[chave];
+    cabecalho.appendChild(titulo);
+
+    const badge = document.createElement("span");
+    badge.className = "historicoBadge";
+    badge.textContent = "Aguardando…";
+    cabecalho.appendChild(badge);
+
+    elemento.appendChild(cabecalho);
+
+    const corpo = document.createElement("div");
+    elemento.appendChild(corpo);
+
+    return { elemento: elemento, badge: badge, corpo: corpo };
+
+}
+
+function historicoAtualizarBlocoHabilitacao_(bloco, estado) {
+
+    bloco.corpo.innerHTML = "";
+
+    if (estado.fase === "concluido") {
+        const resultado = estado.resultado;
+        bloco.badge.className = "historicoBadge " + (HISTORICO_CLASSE_BADGE[resultado.resultado] || "");
+        bloco.badge.textContent = HISTORICO_LABEL_BADGE[resultado.resultado] || resultado.resultado;
+        historicoRenderizarCorpoResultado_(bloco.corpo, resultado);
+        return;
+    }
+
+    if (estado.fase === "indisponivel") {
+        bloco.badge.className = "historicoBadge indisponivel";
+        bloco.badge.textContent = "◻️ Não verificado";
+        const motivo = document.createElement("div");
+        motivo.className = "historicoMotivoIndisponivel";
+        motivo.textContent = estado.motivo;
+        bloco.corpo.appendChild(motivo);
+        return;
+    }
+
+    if (estado.fase === "erro") {
+        bloco.badge.className = "historicoBadge erro";
+        bloco.badge.textContent = "⚠️ Erro na análise";
+        const motivo = document.createElement("div");
+        motivo.className = "historicoMotivoIndisponivel";
+        motivo.textContent = estado.motivo;
+        bloco.corpo.appendChild(motivo);
+        return;
+    }
+
+    // andamento / buscando / extraindo / avaliando
+    bloco.badge.className = "historicoBadge";
+    bloco.badge.textContent = "Em análise…";
+    const fase = document.createElement("div");
+    fase.className = "historicoFase";
+    fase.textContent = HISTORICO_LABEL_FASE[estado.fase] || "Processando…";
+    bloco.corpo.appendChild(fase);
+
+}
+
+/*=====================================================
+  Renderização do RESULTADO de uma habilitação — usada
+  tanto no modo individual quanto (dentro do bloco
+  expansível) no modo lote. Espelha o formato devolvido
+  por historicoAvaliarHabilitacao_/avaliarHistoricoExtraido.
+=====================================================*/
+function historicoRenderizarCorpoResultado_(container, resultado) {
+
+    if (resultado.auditoriaGravada === false) {
+        const aviso = document.createElement("div");
+        aviso.className = "historicoAvisoAuditoria";
+        aviso.textContent = "⚠️ " + resultado.avisoAuditoria;
+        container.appendChild(aviso);
+    }
+
+    const parecer = document.createElement("div");
+    parecer.className = "historicoParecer";
+    parecer.textContent = resultado.parecerTexto || "";
+    container.appendChild(parecer);
+
+    if (resultado.motivos && resultado.motivos.length > 0) {
+        const lista = document.createElement("ul");
+        lista.className = "historicoMotivosLista";
+        resultado.motivos.forEach(m => {
+            const li = document.createElement("li");
+            if (m.severidade === "BLOQUEIO") li.classList.add("bloqueio");
+            li.textContent = m.mensagem;
+            lista.appendChild(li);
+        });
+        container.appendChild(lista);
+    }
+
+    if (resultado.detalhes) {
+        const grid = document.createElement("div");
+        grid.className = "historicoDetalheGrid";
+        historicoRenderizarDetalhes_(grid, resultado.detalhes);
+        container.appendChild(grid);
+    }
+
+    const avisosTecnicos = (resultado.avisosParser || [])
+        .concat((resultado.camposNaoReconhecidosParser || []).map(c => `Campo não reconhecido no PDF: ${c}`));
+
+    if (avisosTecnicos.length > 0) {
+        const detalhesEl = document.createElement("details");
+        detalhesEl.className = "historicoAvisosTecnicos";
+        const sumario = document.createElement("summary");
+        sumario.textContent = `Avisos técnicos da extração (${avisosTecnicos.length})`;
+        detalhesEl.appendChild(sumario);
+        const ul = document.createElement("ul");
+        avisosTecnicos.forEach(a => {
+            const li = document.createElement("li");
+            li.textContent = a;
+            ul.appendChild(li);
+        });
+        detalhesEl.appendChild(ul);
+        container.appendChild(detalhesEl);
+    }
+
+}
+
+function historicoIconeSituacao_(situacao) {
+    if (situacao === "CUMPRIDO" || situacao === "CUMPRIDA") return "✅";
+    if (situacao === "NAO_CUMPRIDO" || situacao === "NAO_CUMPRIDA") return "❌";
+    return "⚠️";
+}
+
+function historicoLinhaDetalhe_(rotulo, situacao, valorTexto, notaExtra) {
+
+    const wrapper = document.createElement("div");
+
+    const linha = document.createElement("div");
+    linha.className = "historicoLinhaDetalhe";
+
+    const rotuloEl = document.createElement("span");
+    rotuloEl.className = "historicoRotuloDetalhe";
+    const icone = document.createElement("span");
+    icone.className = "historicoIconeSituacao";
+    icone.textContent = historicoIconeSituacao_(situacao);
+    rotuloEl.appendChild(icone);
+    rotuloEl.appendChild(document.createTextNode(rotulo));
+    linha.appendChild(rotuloEl);
+
+    const valorEl = document.createElement("span");
+    valorEl.className = "historicoValorDetalhe";
+    valorEl.textContent = valorTexto;
+    linha.appendChild(valorEl);
+
+    wrapper.appendChild(linha);
+
+    if (notaExtra) {
+        const nota = document.createElement("div");
+        nota.className = "historicoCompensacaoNota";
+        nota.textContent = notaExtra;
+        wrapper.appendChild(nota);
+    }
+
+    return wrapper;
+
+}
+
+function historicoTextoValorRequisito_(r) {
+    if (r.valorObtido === null || r.valorObtido === undefined) {
+        // obrigatorio===false e sem valor: não bloqueia a decisão
+        // automática (ver historicoAvaliarRequisitoNumericoSimples_ em
+        // HistoricoMotor.gs) — deixa isso explícito aqui também, pra
+        // não parecer, à primeira vista, igual a um requisito que
+        // travou o parecer.
+        return r.obrigatorio === false
+            ? "não encontrado no PDF (requisito não obrigatório — não impede o parecer)"
+            : "não encontrado no PDF";
+    }
+    return `obtido ${r.valorObtido} / exigido ${r.operador} ${r.valorExigido}${r.unidade ? " " + r.unidade : ""}`;
+}
+
+// Espelha, nesta ordem, o roteiro original: tempo de curso,
+// obrigatórias, eletivas, livres, estágio, AAC, EXT — depois
+// qualquer requisito numérico extra cadastrado na planilha, e por
+// fim as disciplinas/grupos específicos (ex.: as 2 disciplinas
+// obrigatórias + o grupo de eletivas de pesquisa do Bacharelado).
+function historicoRenderizarDetalhes_(container, detalhes) {
+
+    const tc = detalhes.tempoCurso;
+    if (tc) {
+        let valorTempoCurso, notaTempoCurso;
+        if (tc.semestresValidos === null || tc.semestresValidos === undefined) {
+            valorTempoCurso = "não verificado";
+            notaTempoCurso = null;
+        } else if (tc.excedeMaximo) {
+            // Acima do máximo configurado: motivo com o texto exigido já
+            // aparece na lista de motivos acima (historicoMontarMotivos_);
+            // aqui só reforça os números crus, igual ao formato "Faixa
+            // configurada" usado no caso normal, pra ficar fácil comparar.
+            valorTempoCurso = `${tc.semestresValidos} semestre(s) válido(s) — acima do máximo`;
+            notaTempoCurso = `Máximo configurado: ${tc.semestresMaximos} semestre(s). Necessita análise humana.`;
+        } else {
+            valorTempoCurso = `${tc.semestresValidos} semestre(s) válido(s)`;
+            notaTempoCurso = (tc.semestresMaximos === null || tc.semestresMaximos === undefined)
+                ? `Mínimo exigido: ${tc.semestresMinimos} semestre(s).`
+                : `Faixa configurada: mínimo ${tc.semestresMinimos} / máximo ${tc.semestresMaximos} semestre(s).`;
+        }
+        container.appendChild(historicoLinhaDetalhe_("Tempo de curso", tc.situacao, valorTempoCurso, notaTempoCurso));
+    }
+
+    const REQUISITOS_ORDEM = [
+        ["creditosObrigatorios", "Créditos Obrigatórios"],
+        ["creditosEletivas", "Créditos em Eletivas"],
+        ["creditosLivres", "Créditos em Livres"],
+        ["estagio", "Horas de Estágio"],
+        ["aac", "Horas de AAC"],
+        ["ext", "Horas de EXT"]
+    ];
+
+    REQUISITOS_ORDEM.forEach(par => {
+        const chave = par[0], rotulo = par[1];
+        const r = detalhes[chave];
+        if (!r) return;
+        let nota = null;
+        if (r.compensacao) {
+            nota = `Compensação aplicada: excedente de ${r.compensacao.excedenteEletivas} crédito(s) em eletivas somado ` +
+                `às livres (${r.compensacao.livresObtidasBruto} + ${r.compensacao.excedenteEletivas} = ${r.compensacao.livresConsideradas}).`;
+        }
+        container.appendChild(historicoLinhaDetalhe_(rotulo, r.situacao, historicoTextoValorRequisito_(r), nota));
+    });
+
+    (detalhes.outrosRequisitosNumericos || []).forEach(r => {
+        container.appendChild(historicoLinhaDetalhe_(r.descricao || r.criterio, r.situacao, historicoTextoValorRequisito_(r)));
+    });
+
+    if (detalhes.disciplinasObrigatoriasEspecificas && detalhes.disciplinasObrigatoriasEspecificas.length > 0) {
+        const subgrupo = document.createElement("div");
+        subgrupo.className = "historicoSubgrupo";
+        detalhes.disciplinasObrigatoriasEspecificas.forEach(d => {
+            const rotulo = d.sigla + (d.nome ? " — " + d.nome : "");
+            const valor = d.situacao === "CUMPRIDA" ? "cursada" : (d.naoEncontrada ? "não encontrada no histórico" : "sem situação de aprovação");
+            subgrupo.appendChild(historicoLinhaDetalhe_(rotulo, d.situacao, valor));
+        });
+        container.appendChild(subgrupo);
+    }
+
+    // RODADA B/C.1.2 (pedido de correção, item 2) — mostra só os
+    // membros CURSADOS do grupo (ex.: optativa "pelo menos uma"); antes
+    // listava também os não cursados, poluindo a tela sem necessidade.
+    // Se ninguém do grupo foi cursado, a sub-seção inteira não aparece
+    // (nada a mostrar) — a situação do grupo já está refletida no
+    // resultado da habilitação, calculado em HistoricoMotor.gs
+    // (intocado; isto é só exibição). Mesma mudança espelhada em
+    // historicoRelatorioMontarLinhasDetalhes_ (HistoricoRelatorios.gs).
+    (detalhes.gruposDisciplinas || []).forEach(g => {
+        const membrosCursados = (g.membros || []).filter(m => m.situacao === "CUMPRIDA");
+        if (membrosCursados.length === 0) return;
+        const subgrupo = document.createElement("div");
+        subgrupo.className = "historicoSubgrupo";
+        const tituloGrupo = document.createElement("div");
+        tituloGrupo.className = "historicoRotuloDetalhe";
+        tituloGrupo.style.fontWeight = "bold";
+        tituloGrupo.style.marginBottom = "4px";
+        tituloGrupo.textContent = g.nomeGrupo;
+        subgrupo.appendChild(tituloGrupo);
+        membrosCursados.forEach(m => {
+            const rotulo = m.sigla + (m.nome ? " — " + m.nome : "");
+            subgrupo.appendChild(historicoLinhaDetalhe_(rotulo, m.situacao, "cursada"));
+        });
+        container.appendChild(subgrupo);
+    });
+
+}
+
+/*=====================================================
+  MODO LOTE — processa selecionados SEQUENCIALMENTE
+  (nunca em paralelo — decisão explícita, evita sobrecarregar
+  Drive/planilha e mantém a ordem de exibição previsível).
+  Nunca fecha sozinho: só o próprio usuário fecha, depois de
+  ver o resumo final.
+=====================================================*/
+async function historicoIniciarAnaliseLote() {
+
+    if (selecionados.size === 0) return;
+
+    const alunosParaAnalisar = Array.from(selecionados)
+        .map(id => alunosCarregados.find(a => a.registroId === id))
+        .filter(a => !!a);
+
+    if (alunosParaAnalisar.length === 0) return;
+
+    if (!confirm(
+        `Analisar automaticamente o histórico de ${alunosParaAnalisar.length} aluno(s) selecionado(s)? ` +
+        `Isso pode levar alguns minutos — a lista é processada um aluno de cada vez, e cada resultado fica ` +
+        `registrado na auditoria conforme vai sendo calculado.`
+    )) {
+        return;
+    }
+
+    historicoBatchCancelado = false;
+    historicoBatchEmAndamento = true;
+    // RODADA B/C.1 (§3): objeto rico desde o início da execução — nunca
+    // um array vazio (ver declaração/comentário de historicoUltimoLote,
+    // no topo do arquivo).
+    historicoUltimoLote = {
+        iniciadoEm: new Date().toISOString(),
+        finalizadoEm: null,
+        totalSelecionados: alunosParaAnalisar.length,
+        totalProcessados: 0,
+        cancelado: false,
+        alunos: []
+    };
+
+    document.getElementById("historicoModalTitulo").textContent = "Análise de Histórico em Lote";
+
+    const corpo = document.getElementById("historicoModalBody");
+    corpo.innerHTML = "";
+
+    const contadorTitulo = document.createElement("div");
+    contadorTitulo.className = "historicoFase";
+    corpo.appendChild(contadorTitulo);
+
+    const barraFundo = document.createElement("div");
+    barraFundo.className = "historicoBarraProgressoLote";
+    const barraInterna = document.createElement("div");
+    barraInterna.className = "historicoBarraProgressoLoteInterna";
+    barraInterna.style.width = "0%";
+    barraFundo.appendChild(barraInterna);
+    corpo.appendChild(barraFundo);
+
+    const listaEl = document.createElement("div");
+    corpo.appendChild(listaEl);
+
+    document.getElementById("modalAnaliseHistorico").style.display = "block";
+
+    const contagemResumo = { APTO: 0, NAO_APTO: 0, CONFERIR: 0, indisponivel: 0, erro: 0 };
+
+    for (let i = 0; i < alunosParaAnalisar.length; i++) {
+
+        if (historicoBatchCancelado) break;
+
+        const aluno = alunosParaAnalisar[i];
+        contadorTitulo.textContent = `Analisando ${i + 1} de ${alunosParaAnalisar.length}: ${aluno.nome}`;
+        barraInterna.style.width = Math.round((i / alunosParaAnalisar.length) * 100) + "%";
+
+        const linha = historicoCriarLinhaLote_(aluno.nome, aluno.nUsp);
+        listaEl.appendChild(linha.elemento);
+
+        try {
+            const resultadoAnalise = await historicoAnalisarAluno_(aluno.registroId, aluno.versao, (chave, estado) => {
+                historicoAtualizarLinhaLoteHabilitacao_(linha, chave, estado, contagemResumo);
+            });
+            if (Object.keys(linha.badgesPorHabilitacao).length === 0) {
+                const badge = document.createElement("span");
+                badge.className = "historicoBadge indisponivel";
+                badge.textContent = "Nenhuma habilitação ativa";
+                linha.badges.appendChild(badge);
+            }
+            // RODADA B/C.1 (§3) — CORRIGIDO: TODO aluno(a) processado(a)
+            // entra em historicoUltimoLote.alunos agora, mesmo sem
+            // sessaoAnaliseId (sem nenhuma habilitação ativa) — a versão
+            // anterior descartava esses casos em silêncio, o que quebrava
+            // a contagem de "processados" e escondia esses alunos do
+            // relatório consolidado (§20 exige que apareçam).
+            historicoUltimoLote.alunos.push({
+                registroId: aluno.registroId,
+                nome: aluno.nome,
+                nusp: aluno.nUsp,
+                sessaoAnaliseId: (resultadoAnalise && resultadoAnalise.sessaoAnaliseId) || null,
+                resultados: (resultadoAnalise && resultadoAnalise.resultados) || {},
+                erros: (resultadoAnalise && resultadoAnalise.erros) || {},
+                erroTecnico: null
+            });
+            historicoUltimoLote.totalProcessados++;
+        } catch (err) {
+            historicoMarcarLinhaLoteComErro_(linha, (err && err.message) || String(err));
+            contagemResumo.erro++;
+            // RODADA B/C.1 (§3) — CORRIGIDO: falha ANTES da sessão existir
+            // (ex.: prepararAnaliseHistorico lançou) também vira uma
+            // entrada em historicoUltimoLote.alunos, com erroTecnico
+            // preenchido e sessaoAnaliseId null — nunca fica de fora da
+            // contagem nem do relatório consolidado (§20).
+            historicoUltimoLote.alunos.push({
+                registroId: aluno.registroId,
+                nome: aluno.nome,
+                nusp: aluno.nUsp,
+                sessaoAnaliseId: null,
+                resultados: {},
+                erros: {},
+                erroTecnico: (err && err.message) || String(err)
+            });
+            historicoUltimoLote.totalProcessados++;
+        }
+
+    }
+
+    barraInterna.style.width = "100%";
+    historicoBatchEmAndamento = false;
+    historicoUltimoLote.finalizadoEm = new Date().toISOString();
+    historicoUltimoLote.cancelado = historicoBatchCancelado;
+
+    const resumoFinal = historicoCriarResumoLote_(contagemResumo, historicoBatchCancelado);
+    corpo.insertBefore(resumoFinal, listaEl);
+
+    if (historicoUltimoLote.alunos.length > 0) {
+        corpo.insertBefore(historicoCriarPainelRelatoriosLote_(), listaEl);
+    }
+
+    contadorTitulo.textContent = historicoBatchCancelado
+        ? `Análise em lote interrompida pelo usuário (${listaEl.children.length} de ${alunosParaAnalisar.length} aluno(s) processado(s)).`
+        : "Análise em lote concluída.";
+
+}
+
+function historicoCriarLinhaLote_(nome, nUsp) {
+
+    const elemento = document.createElement("div");
+    elemento.className = "historicoLoteLinha";
+
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "historicoLoteCabecalho";
+
+    const nomeEl = document.createElement("strong");
+    nomeEl.textContent = nome + (nUsp ? ` (NUSP ${nUsp})` : "");
+    cabecalho.appendChild(nomeEl);
+
+    const badges = document.createElement("div");
+    badges.className = "historicoLoteBadges";
+    cabecalho.appendChild(badges);
+
+    elemento.appendChild(cabecalho);
+
+    const detalheOculto = document.createElement("div");
+    detalheOculto.className = "historicoLoteDetalheOculto";
+    elemento.appendChild(detalheOculto);
+
+    cabecalho.onclick = () => detalheOculto.classList.toggle("aberto");
+
+    return { elemento: elemento, badges: badges, detalheOculto: detalheOculto, badgesPorHabilitacao: {} };
+
+}
+
+function historicoAtualizarLinhaLoteHabilitacao_(linha, chave, estado, contagemResumo) {
+
+    let badge = linha.badgesPorHabilitacao[chave];
+    if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "historicoBadge";
+        linha.badgesPorHabilitacao[chave] = badge;
+        linha.badges.appendChild(badge);
+    }
+
+    const rotuloCurto = HISTORICO_LABEL_CURTO_HABILITACAO[chave] || chave;
+
+    if (estado.fase === "concluido") {
+
+        const resultado = estado.resultado;
+        badge.className = "historicoBadge " + (HISTORICO_CLASSE_BADGE[resultado.resultado] || "");
+        badge.textContent = rotuloCurto + ": " + (HISTORICO_LABEL_BADGE[resultado.resultado] || resultado.resultado);
+
+        if (contagemResumo && Object.prototype.hasOwnProperty.call(contagemResumo, resultado.resultado)) {
+            contagemResumo[resultado.resultado]++;
+        }
+
+        const blocoDetalhe = document.createElement("div");
+        blocoDetalhe.className = "historicoBlocoHabilitacao";
+        const tituloDetalhe = document.createElement("strong");
+        tituloDetalhe.textContent = HISTORICO_LABEL_HABILITACAO[chave];
+        blocoDetalhe.appendChild(tituloDetalhe);
+        const corpoDetalhe = document.createElement("div");
+        blocoDetalhe.appendChild(corpoDetalhe);
+        historicoRenderizarCorpoResultado_(corpoDetalhe, resultado);
+        linha.detalheOculto.appendChild(blocoDetalhe);
+
+    } else if (estado.fase === "indisponivel") {
+        badge.className = "historicoBadge indisponivel";
+        badge.textContent = rotuloCurto + ": não verificado";
+        if (contagemResumo) contagemResumo.indisponivel++;
+        const motivo = document.createElement("div");
+        motivo.className = "historicoMotivoIndisponivel";
+        motivo.textContent = HISTORICO_LABEL_HABILITACAO[chave] + ": " + estado.motivo;
+        linha.detalheOculto.appendChild(motivo);
+    } else if (estado.fase === "erro") {
+        badge.className = "historicoBadge erro";
+        badge.textContent = rotuloCurto + ": erro";
+        if (contagemResumo) contagemResumo.erro++;
+        const motivo = document.createElement("div");
+        motivo.className = "historicoMotivoIndisponivel";
+        motivo.textContent = HISTORICO_LABEL_HABILITACAO[chave] + ": " + estado.motivo;
+        linha.detalheOculto.appendChild(motivo);
+    } else {
+        badge.className = "historicoBadge";
+        badge.textContent = rotuloCurto + ": …";
+    }
+
+}
+
+function historicoMarcarLinhaLoteComErro_(linha, mensagem) {
+
+    const badge = document.createElement("span");
+    badge.className = "historicoBadge erro";
+    badge.textContent = "⚠️ Falhou";
+    linha.badges.appendChild(badge);
+
+    const motivo = document.createElement("div");
+    motivo.className = "historicoMotivoIndisponivel";
+    motivo.textContent = mensagem;
+    linha.detalheOculto.appendChild(motivo);
+    linha.detalheOculto.classList.add("aberto");
+
+}
+
+function historicoCriarResumoLote_(contagem, foiCancelado) {
+
+    const resumo = document.createElement("div");
+    resumo.className = "historicoResumoLote";
+
+    const legenda = document.createElement("div");
+    legenda.className = "historicoSubtitulo";
+    legenda.style.width = "100%";
+    legenda.textContent = "Contagem por habilitação analisada (um aluno com Psicólogo+Bacharelado conta uma vez em cada).";
+    resumo.appendChild(legenda);
+
+    [
+        ["Apto", contagem.APTO],
+        ["Não apto", contagem.NAO_APTO],
+        ["Conferir", contagem.CONFERIR],
+        ["Não verificado", contagem.indisponivel],
+        ["Falhas técnicas", contagem.erro]
+    ].forEach(par => {
+        const caixa = document.createElement("div");
+        caixa.className = "historicoContadorLote";
+        const numero = document.createElement("strong");
+        numero.textContent = String(par[1]);
+        caixa.appendChild(numero);
+        caixa.appendChild(document.createTextNode(par[0]));
+        resumo.appendChild(caixa);
+    });
+
+    if (foiCancelado) {
+        const avisoCancelado = document.createElement("div");
+        avisoCancelado.className = "historicoAvisoAuditoria";
+        avisoCancelado.style.width = "100%";
+        avisoCancelado.textContent = "⚠️ A análise em lote foi interrompida antes de terminar todos os alunos selecionados.";
+        resumo.appendChild(avisoCancelado);
+    }
+
+    return resumo;
+
+}
+
+/*=====================================================
+  RELATÓRIOS DO LOTE (RODADA B/C, FASE C1) — opera sobre
+  historicoUltimoLote.alunos (ver declaração no topo do arquivo), nunca
+  sobre "selecionados" de novo. RODADA B/C.1 (§3): desde que
+  historicoUltimoLote passou a objeto rico, "Gerar Relatórios" continua
+  só pra quem REALMENTE ganhou uma sessão (filtra por sessaoAnaliseId —
+  ver historicoCriarPainelRelatoriosLote_/historicoIniciarRelatoriosLote_,
+  abaixo) — mas "Ver Relatório Consolidado" passou a operar sobre o
+  LOTE INTEIRO, incluindo quem falhou tecnicamente ou não tinha nenhuma
+  habilitação ativa (§20).
+=====================================================*/
+
+// Painel com o botão "Gerar Relatórios" (+ uma linha de status logo
+// abaixo) — inserido no resumo final do lote de análise, só quando
+// historicoUltimoLote não está vazio. Com 2+ alunos, também inclui o
+// botão "Ver Relatório Consolidado" (RODADA B/C, FASE C2) — com
+// exatamente 1 aluno ele nunca aparece (o botão de cima já cobre esse
+// caso sozinho, pela "regra do 1" — ver historicoIniciarRelatoriosLote_,
+// abaixo). Devolve o wrapper pronto pra ser inserido (ver
+// historicoIniciarAnaliseLote, acima).
+function historicoCriarPainelRelatoriosLote_() {
+
+    // RODADA B/C.1 (§3): "Gerar Relatórios" (individual, por aluno) só
+    // faz sentido pra quem tem sessaoAnaliseId — filtra aqui, nunca usa
+    // historicoUltimoLote.alunos inteiro pra este botão. Já "Ver
+    // Relatório Consolidado", abaixo, considera o LOTE INTEIRO (§20
+    // exige que erros técnicos e alunos sem habilitação ativa também
+    // apareçam nele), por isso usa historicoUltimoLote.alunos.length sem
+    // filtro nenhum.
+    const alunosComRelatorio = historicoUltimoLote.alunos.filter(a => !!a.sessaoAnaliseId);
+
+    const painel = document.createElement("div");
+    painel.className = "historicoResumoLote";
+
+    const botaoRelatorios = document.createElement("button");
+    botaoRelatorios.className = "botaoSecundario";
+    botaoRelatorios.style.width = "100%";
+    botaoRelatorios.textContent = `📄 Gerar Relatórios (${alunosComRelatorio.length} aluno(s))`;
+    botaoRelatorios.disabled = alunosComRelatorio.length === 0;
+    painel.appendChild(botaoRelatorios);
+
+    const statusRelatorios = document.createElement("div");
+    statusRelatorios.className = "historicoFase";
+    statusRelatorios.style.width = "100%";
+    statusRelatorios.style.display = "none";
+    painel.appendChild(statusRelatorios);
+
+    // RODADA B/C.1 (§10): uma linha com botão "Abrir PDF" por aluno(a)
+    // com relatório gerado com sucesso NESTE lote de 2+ — nunca um
+    // window.open automático por item (abriria N abas sozinho, o que o
+    // §10 proíbe explicitamente); só um botão manual por linha. Sem
+    // isto, reabrir o PDF recém-gerado de um lote de 2+ exigiria
+    // "Ver Última Análise" -> "Gerar Relatório desta Análise" de novo,
+    // o que dispararia OUTRA pergunta de versionamento à toa — exatamente
+    // o round-trip que arquivoId/urlArquivo (§10) existem pra evitar.
+    const listaSucessosEl = document.createElement("div");
+    listaSucessosEl.style.width = "100%";
+    listaSucessosEl.style.display = "none";
+    painel.appendChild(listaSucessosEl);
+
+    const listaFalhasEl = document.createElement("ul");
+    listaFalhasEl.className = "historicoMotivosLista";
+    listaFalhasEl.style.width = "100%";
+    listaFalhasEl.style.display = "none";
+    painel.appendChild(listaFalhasEl);
+
+    botaoRelatorios.onclick = () => {
+        botaoRelatorios.disabled = true;
+        historicoIniciarRelatoriosLote_(statusRelatorios, listaFalhasEl, listaSucessosEl)
+            .finally(() => { botaoRelatorios.disabled = false; });
+    };
+
+    // RODADA B/C (FASE C2): relatório consolidado efêmero — só com 2+
+    // alunos PROCESSADOS no lote inteiro (§20 — inclui quem falhou
+    // tecnicamente ou não tinha nenhuma habilitação ativa; 1 aluno já É
+    // o relatório individual gerado pelo botão acima, via "regra do 1";
+    // um "consolidado de 1 pessoa só" não faria sentido).
+    if (historicoUltimoLote.alunos.length >= 2) {
+
+        const botaoConsolidado = document.createElement("button");
+        botaoConsolidado.className = "botaoSecundario";
+        botaoConsolidado.style.width = "100%";
+        botaoConsolidado.style.marginTop = "8px";
+        botaoConsolidado.textContent = `📄 Ver Relatório Consolidado (${historicoUltimoLote.alunos.length} aluno(s), efêmero — não é salvo)`;
+        painel.appendChild(botaoConsolidado);
+
+        const statusConsolidado = document.createElement("div");
+        statusConsolidado.className = "historicoFase";
+        statusConsolidado.style.width = "100%";
+        statusConsolidado.style.display = "none";
+        statusConsolidado.style.marginTop = "6px";
+        painel.appendChild(statusConsolidado);
+
+        botaoConsolidado.onclick = () => {
+            botaoConsolidado.disabled = true;
+            historicoAbrirRelatorioConsolidado_(statusConsolidado)
+                .finally(() => { botaoConsolidado.disabled = false; });
+        };
+
+    }
+
+    return painel;
+
+}
+
+// RODADA B/C.1 (§5-§7) — CORRIGIDO. Opera só sobre
+// historicoUltimoLote.alunos.filter(a => !!a.sessaoAnaliseId) — quem
+// não ganhou sessão (sem habilitação ativa, ou falha antes da sessão
+// existir) nunca teve relatório pra gerar, então nunca entra aqui.
+//
+// Regra do 1 (§7): exatamente 1 aluno COM sessão = mesmo fluxo do
+// botão individual (historicoGerarRelatorioSessao_, FASE B3) — só
+// pergunta versionamento SE já existir relatório anterior PARA ESTE
+// aluno especificamente. Nunca mostra a pergunta coletiva abaixo (que
+// faria pouco sentido, e soaria estranho, falando de "vários alunos"
+// quando só há um).
+//
+// 2+: primeiro roda um preflight real (historicoPreflightRelatoriosLote,
+// §5 — só leitura, nunca gera PDF/roda o motor/grava nada) pra saber
+// de verdade quem já tem relatório anterior; SÓ pergunta (§6) quando
+// pelo menos um tiver, e a pergunta lista por nome exatamente quem já
+// tem — nunca uma pergunta genérica sobre "o lote". Sem ninguém com
+// relatório anterior, a pergunta é pulada inteiramente (não há nada
+// pra decidir: todo mundo ganha v1 de qualquer forma — ver
+// historicoRelatorioDecidirVersaoAlvo_, HistoricoRelatorios.gs). Uma
+// vez decidido o modo, a mesma escolha vale IGUALMENTE pra todos —
+// geração sequencial (nunca em paralelo, mesma disciplina do resto do
+// lote), e uma falha NUNCA cancela o restante (try/catch por aluno,
+// mesmo padrão de historicoIniciarAnaliseLote acima).
+async function historicoIniciarRelatoriosLote_(status, listaFalhasEl, listaSucessosEl) {
+
+    const alunosComRelatorio = historicoUltimoLote.alunos.filter(a => !!a.sessaoAnaliseId);
+
+    if (alunosComRelatorio.length === 0) return;
+
+    listaFalhasEl.style.display = "none";
+    listaFalhasEl.innerHTML = "";
+    if (listaSucessosEl) {
+        listaSucessosEl.style.display = "none";
+        listaSucessosEl.innerHTML = "";
+    }
+
+    if (alunosComRelatorio.length === 1) {
+        const item = alunosComRelatorio[0];
+        status.style.display = "";
+        await historicoGerarRelatorioSessao_(item.registroId, item.sessaoAnaliseId, item.nome, status);
+        return;
+    }
+
+    status.style.display = "";
+    status.className = "historicoFase";
+    status.textContent = "Verificando relatórios anteriores…";
+
+    let preflight;
+    try {
+        preflight = await historicoChamarServidor_(
+            "historicoPreflightRelatoriosLote",
+            alunosComRelatorio.map(a => ({ registroId: a.registroId, sessaoAnaliseId: a.sessaoAnaliseId }))
+        );
+    } catch (err) {
+        status.textContent = "❌ " + ((err && err.message) || err);
+        status.className = "historicoMotivoIndisponivel";
+        return;
+    }
+
+    const comRelatorioAnterior = preflight.comRelatorioAnterior || [];
+
+    let escolha = "nova";
+    if (comRelatorioAnterior.length > 0) {
+        escolha = await historicoConfirmarVersionamentoRelatorio_(
+            `${comRelatorioAnterior.length} de ${alunosComRelatorio.length} aluno(s) já têm um relatório anterior:\n\n` +
+            comRelatorioAnterior.map(a => `• ${a.nome}`).join("\n") +
+            `\n\nSubstituir a última versão de quem já tem, ou criar uma nova versão atualizada? ` +
+            `(Quem nunca teve relatório antes ganha a v1 dos dois jeitos — esta escolha só afeta quem já está listado acima.)`
+        );
+        if (!escolha) {
+            status.textContent = "Geração de relatórios cancelada.";
+            status.className = "historicoFase";
+            return;
+        }
+    }
+
+    let sucesso = 0;
+    const falhas = [];
+    const sucessosComPdf = [];
+
+    for (let i = 0; i < alunosComRelatorio.length; i++) {
+        const item = alunosComRelatorio[i];
+        status.textContent = `Gerando relatório ${i + 1} de ${alunosComRelatorio.length}: ${item.nome}…`;
+        status.className = "historicoFase";
+        try {
+            const resultado = await historicoChamarServidor_("historicoGerarRelatorioIndividual", item.registroId, item.sessaoAnaliseId, escolha);
+            sucesso++;
+            // RODADA B/C.1 (§10): guarda o link de cada PDF gerado com
+            // sucesso pra oferecer "Abrir PDF" logo abaixo — nunca abre
+            // nada sozinho aqui dentro do loop. RODADA B/C.1.1 (§4):
+            // guarda também os avisos de limpeza (se houver) — o
+            // relatório deste(a) aluno(a) continua sendo um SUCESSO
+            // (nunca some da contagem de sucesso nem vira falha).
+            if (resultado && resultado.urlArquivo) {
+                sucessosComPdf.push({ nome: item.nome, urlArquivo: resultado.urlArquivo, avisos: resultado.avisos || [] });
+            }
+        } catch (err) {
+            falhas.push(`${item.nome}: ${(err && err.message) || err}`);
+        }
+    }
+
+    status.textContent = `✅ Relatórios gerados: ${sucesso} de ${alunosComRelatorio.length}.` +
+        (falhas.length > 0 ? ` ${falhas.length} falha(s) abaixo.` : "");
+    status.className = falhas.length > 0 ? "historicoAvisoAuditoria" : "historicoFase";
+
+    if (listaSucessosEl && sucessosComPdf.length > 0) {
+        listaSucessosEl.style.display = "";
+        sucessosComPdf.forEach(s => {
+            const linha = document.createElement("div");
+            linha.className = "historicoLinhaDetalhe";
+            const nomeEl = document.createElement("span");
+            nomeEl.textContent = s.nome;
+            linha.appendChild(nomeEl);
+            const botaoAbrir = document.createElement("button");
+            botaoAbrir.className = "botaoSecundario";
+            botaoAbrir.textContent = "📄 Abrir PDF";
+            botaoAbrir.onclick = () => window.open(s.urlArquivo, "_blank");
+            linha.appendChild(botaoAbrir);
+            listaSucessosEl.appendChild(linha);
+            // RODADA B/C.1.1 (§4): sucesso continua sendo sucesso — o
+            // aviso de limpeza aparece numa linha própria logo abaixo,
+            // nunca substituindo o "📄 Abrir PDF" nem virando falha.
+            (s.avisos || []).forEach(aviso => {
+                const avisoLinha = document.createElement("div");
+                avisoLinha.className = "historicoAvisoAuditoria";
+                avisoLinha.style.marginTop = "2px";
+                avisoLinha.textContent = "⚠️ " + aviso;
+                listaSucessosEl.appendChild(avisoLinha);
+            });
+        });
+    }
+
+    if (falhas.length > 0) {
+        listaFalhasEl.style.display = "";
+        falhas.forEach(f => {
+            const li = document.createElement("li");
+            li.className = "bloqueio";
+            li.textContent = f;
+            listaFalhasEl.appendChild(li);
+        });
+    }
+
+}
+
+/*=====================================================
+  CONSULTA DE SESSÕES JÁ PERSISTIDAS (RODADA B/C, FASE B2)
+  — "Ver Última Análise" / "Ver Histórico de Análises"
+  (botões definidos em DiplomasApp.html, fora de qualquer
+  secaoEtapaN — ver comentário lá).
+
+  100% LEITURA: chama só historicoObterUltimaSessaoAnalise /
+  historicoListarSessoesAnalise / historicoObterSessaoAnalise
+  (HistoricoConsultas.gs) — NUNCA prepararAnaliseHistorico,
+  NUNCA historicoCriarSessaoAnalise, NUNCA avaliarHistoricoExtraido.
+  Reabrir uma sessão já analisada nunca reexecuta PDF.js, o motor
+  de regras ou a seleção de ruleset, e nunca grava nenhuma linha
+  nova em ANALISE_HISTORICO.
+
+  Reaproveita o MESMO modal (#modalAnaliseHistorico) e as MESMAS
+  historicoCriarBlocoHabilitacao_/historicoAtualizarBlocoHabilitacao_
+  já usadas pelo modo individual — a reconstrução do servidor
+  (HistoricoConsultas.gs) devolve resultados no formato EXATO que
+  essas funções já sabem renderizar, então nenhuma delas precisa
+  de nenhuma alteração.
+=====================================================*/
+
+// Só formatação de exibição (fuso/formato brasileiro) — NUNCA usado
+// pra nenhuma lógica de ordenação/comparação (essa sempre usa o ISO
+// original, nunca o texto formatado aqui).
+function historicoFormatarDataHora_(isoTexto) {
+    if (!isoTexto) return "";
+    const data = new Date(isoTexto);
+    if (isNaN(data.getTime())) return String(isoTexto);
+    return data.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
+
+// Renderiza o detalhe COMPLETO de uma sessão já obtida do servidor
+// (historicoObterUltimaSessaoAnalise ou historicoObterSessaoAnalise)
+// dentro de "container" — usada tanto pelo modal de "última análise"
+// quanto, dentro do bloco expansível de uma linha, pelo "histórico de
+// análises". "container" já vem vazio (o chamador decide quando
+// limpar) — esta função só ACRESCENTA.
+//
+// RODADA B/C (FASE B3): "registroId" é NOVO (as 2 chamadas existentes,
+// abaixo, já foram atualizadas pra passá-lo) — só serve pra habilitar
+// o botão "Gerar Relatório desta Análise", que reaproveita este mesmo
+// sessaoAnaliseId. Passar "null"/omitir desabilita silenciosamente o
+// botão (nunca quebra a renderização do resto).
+function historicoRenderizarDetalheSessao_(container, detalheSessao, registroId) {
+
+    const metaEl = document.createElement("div");
+    metaEl.className = "historicoSubtitulo";
+    const partesMetadados = [];
+    if (detalheSessao.analisadoEm) {
+        partesMetadados.push("Analisado em: " + historicoFormatarDataHora_(detalheSessao.analisadoEm));
+    }
+    if (detalheSessao.legado) {
+        partesMetadados.push("Sessão anterior à migração de agrupamento por sessão — cada habilitação é mostrada isoladamente.");
+    }
+    metaEl.textContent = partesMetadados.length > 0 ? partesMetadados.join(" — ") : "Sessão de análise.";
+    container.appendChild(metaEl);
+
+    (detalheSessao.avisos || []).forEach(aviso => {
+        const avisoEl = document.createElement("div");
+        avisoEl.className = "historicoAvisoAuditoria";
+        avisoEl.textContent = "⚠️ " + aviso;
+        container.appendChild(avisoEl);
+    });
+
+    const chavesComResultado = HISTORICO_ORDEM_HABILITACOES.filter(chave => !!detalheSessao.resultados[chave]);
+
+    if (chavesComResultado.length === 0) {
+        const vazioEl = document.createElement("div");
+        vazioEl.className = "historicoFase";
+        vazioEl.textContent = "Esta sessão não tem nenhum resultado que possa ser exibido.";
+        container.appendChild(vazioEl);
+        return;
+    }
+
+    if (registroId && detalheSessao.sessaoAnaliseId) {
+        container.appendChild(
+            historicoCriarBotaoGerarRelatorio_(registroId, detalheSessao.sessaoAnaliseId, detalheSessao.nome)
+        );
+    }
+
+    chavesComResultado.forEach(chave => {
+        const bloco = historicoCriarBlocoHabilitacao_(chave);
+        container.appendChild(bloco.elemento);
+        historicoAtualizarBlocoHabilitacao_(bloco, { fase: "concluido", resultado: detalheSessao.resultados[chave] });
+    });
+
+}
+
+// "Ver Última Análise" — abre o modal já mostrando "carregando" e
+// preenche assim que o servidor responder (mesmo padrão de
+// historicoAbrirAnaliseIndividual: abre antes de ter os dados, nunca
+// espera o round-trip pra dar feedback visual de que algo está
+// acontecendo).
+function historicoAbrirUltimaAnalise() {
+
+    if (!alunoAtual) return;
+
+    const registroId = alunoAtual.registroId;
+
+    document.getElementById("historicoModalTitulo").textContent = "Última Análise de Histórico — " + alunoAtual.nome;
+
+    const corpo = document.getElementById("historicoModalBody");
+    corpo.innerHTML = "";
+    const carregando = document.createElement("div");
+    carregando.className = "historicoFase";
+    carregando.textContent = "Carregando última análise…";
+    corpo.appendChild(carregando);
+
+    document.getElementById("modalAnaliseHistorico").style.display = "block";
+
+    historicoChamarServidor_("historicoObterUltimaSessaoAnalise", registroId)
+        .then(detalheSessao => {
+            corpo.innerHTML = "";
+            if (!detalheSessao.existeAnalise) {
+                const vazio = document.createElement("div");
+                vazio.className = "historicoFase";
+                vazio.textContent = "Este aluno ainda não tem nenhuma análise de histórico registrada.";
+                corpo.appendChild(vazio);
+                return;
+            }
+            historicoRenderizarDetalheSessao_(corpo, detalheSessao, registroId);
+        })
+        .catch(err => {
+            corpo.innerHTML = "";
+            const erroEl = document.createElement("div");
+            erroEl.className = "historicoMotivoIndisponivel";
+            erroEl.textContent = "❌ " + ((err && err.message) || err);
+            corpo.appendChild(erroEl);
+        });
+
+}
+
+// "Ver Histórico de Análises" — lista todas as sessões (mais recente
+// primeiro, já vem ordenado do servidor), cada uma como uma linha
+// expansível; o detalhe completo de cada sessão só é buscado (uma
+// única vez, "lazy") quando a equipe efetivamente expande aquela
+// linha — evita N round-trips desnecessários pra quem só quer ver as
+// datas/badges de relance.
+function historicoAbrirHistoricoAnalises() {
+
+    if (!alunoAtual) return;
+
+    const registroId = alunoAtual.registroId;
+
+    document.getElementById("historicoModalTitulo").textContent = "Histórico de Análises — " + alunoAtual.nome;
+
+    const corpo = document.getElementById("historicoModalBody");
+    corpo.innerHTML = "";
+    const carregando = document.createElement("div");
+    carregando.className = "historicoFase";
+    carregando.textContent = "Carregando histórico de análises…";
+    corpo.appendChild(carregando);
+
+    document.getElementById("modalAnaliseHistorico").style.display = "block";
+
+    historicoChamarServidor_("historicoListarSessoesAnalise", registroId)
+        .then(resposta => {
+            corpo.innerHTML = "";
+            const sessoes = resposta.sessoes || [];
+            if (sessoes.length === 0) {
+                const vazio = document.createElement("div");
+                vazio.className = "historicoFase";
+                vazio.textContent = "Nenhuma análise registrada ainda para este aluno.";
+                corpo.appendChild(vazio);
+                return;
+            }
+            sessoes.forEach(sessao => {
+                corpo.appendChild(historicoCriarLinhaHistoricoSessao_(registroId, sessao));
+            });
+        })
+        .catch(err => {
+            corpo.innerHTML = "";
+            const erroEl = document.createElement("div");
+            erroEl.className = "historicoMotivoIndisponivel";
+            erroEl.textContent = "❌ " + ((err && err.message) || err);
+            corpo.appendChild(erroEl);
+        });
+
+}
+
+// Linha clicável/expansível de UMA sessão na lista de histórico —
+// mesmo padrão visual de historicoCriarLinhaLote_ (historicoLoteLinha/
+// historicoLoteCabecalho/historicoLoteBadges/historicoLoteDetalheOculto),
+// reaproveitado aqui de propósito em vez de duplicar CSS novo. O
+// detalhe completo (historicoObterSessaoAnalise) só é buscado na
+// PRIMEIRA vez que a linha é expandida ("carregado" evita refazer a
+// chamada se a equipe recolher/expandir de novo).
+function historicoCriarLinhaHistoricoSessao_(registroId, sessaoResumo) {
+
+    const elemento = document.createElement("div");
+    elemento.className = "historicoLoteLinha";
+
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "historicoLoteCabecalho";
+
+    const tituloEl = document.createElement("strong");
+    tituloEl.textContent = historicoFormatarDataHora_(sessaoResumo.analisadoEm) || "(data não registrada)";
+    cabecalho.appendChild(tituloEl);
+
+    const badges = document.createElement("div");
+    badges.className = "historicoLoteBadges";
+
+    if (sessaoResumo.legado) {
+        const legadoEl = document.createElement("span");
+        legadoEl.className = "historicoBadge indisponivel";
+        legadoEl.textContent = "Anterior ao agrupamento por sessão";
+        badges.appendChild(legadoEl);
+    }
+
+    sessaoResumo.habilitacoesAnalisadas.forEach(chave => {
+        const badge = document.createElement("span");
+        const resultado = sessaoResumo.resumoResultados[chave];
+        const rotuloCurto = HISTORICO_LABEL_CURTO_HABILITACAO[chave] || chave;
+        badge.className = "historicoBadge " + (HISTORICO_CLASSE_BADGE[resultado] || "");
+        badge.textContent = rotuloCurto + ": " + (HISTORICO_LABEL_BADGE[resultado] || resultado);
+        badges.appendChild(badge);
+    });
+
+    cabecalho.appendChild(badges);
+    elemento.appendChild(cabecalho);
+
+    (sessaoResumo.avisos || []).forEach(aviso => {
+        const avisoEl = document.createElement("div");
+        avisoEl.className = "historicoAvisoAuditoria";
+        avisoEl.textContent = "⚠️ " + aviso;
+        elemento.appendChild(avisoEl);
+    });
+
+    const detalheOculto = document.createElement("div");
+    detalheOculto.className = "historicoLoteDetalheOculto";
+    elemento.appendChild(detalheOculto);
+
+    let carregado = false;
+    cabecalho.onclick = () => {
+
+        detalheOculto.classList.toggle("aberto");
+        if (carregado || !detalheOculto.classList.contains("aberto")) return;
+        carregado = true;
+
+        const carregandoEl = document.createElement("div");
+        carregandoEl.className = "historicoFase";
+        carregandoEl.textContent = "Carregando detalhes…";
+        detalheOculto.appendChild(carregandoEl);
+
+        historicoChamarServidor_("historicoObterSessaoAnalise", registroId, sessaoResumo.sessaoAnaliseId)
+            .then(detalheSessao => {
+                detalheOculto.innerHTML = "";
+                historicoRenderizarDetalheSessao_(detalheOculto, detalheSessao, registroId);
+            })
+            .catch(err => {
+                detalheOculto.innerHTML = "";
+                const erroEl = document.createElement("div");
+                erroEl.className = "historicoMotivoIndisponivel";
+                erroEl.textContent = "❌ " + ((err && err.message) || err);
+                detalheOculto.appendChild(erroEl);
+            });
+
+    };
+
+    return elemento;
+
+}
+
+/*=====================================================
+  RELATÓRIO INDIVIDUAL EM PDF (RODADA B/C, FASE B3)
+
+  100% separado da ANÁLISE em si: só chama
+  historicoVerificarVersaoRelatorioIndividual/historicoGerarRelatorioIndividual
+  (HistoricoRelatorios.gs) — NUNCA prepararAnaliseHistorico,
+  historicoCriarSessaoAnalise ou avaliarHistoricoExtraido. Gerar (ou
+  regerar) um relatório NUNCA reexecuta PDF.js/motor/seleção de
+  ruleset e NUNCA cria uma linha nova em ANALISE_HISTORICO — é
+  estritamente uma leitura da sessão já persistida + escrita de um
+  arquivo na pasta do(a) próprio(a) aluno(a).
+=====================================================*/
+
+// Ponte modal-com-3-botões <-> Promise: historicoConfirmarVersionamentoRelatorio_
+// guarda o "resolve" pendente aqui; cada botão do #modalVersionamentoRelatorio
+// (ou o X de fechar) chama historicoVersionamentoResponder_ com a
+// escolha ("substituir"/"nova"/null=cancelar). Só existe UMA pergunta
+// pendente por vez (não é uma fila) — suficiente porque o modal é
+// sempre respondido (ou cancelado) antes de qualquer outra ação da
+// tela poder abrir uma segunda pergunta.
+let historicoVersionamentoResolverPendente_ = null;
+
+function historicoVersionamentoResponder_(escolha) {
+    if (!historicoVersionamentoResolverPendente_) return;
+    const resolver = historicoVersionamentoResolverPendente_;
+    historicoVersionamentoResolverPendente_ = null;
+    document.getElementById("modalVersionamentoRelatorio").style.display = "none";
+    resolver(escolha);
+}
+
+function historicoConfirmarVersionamentoRelatorio_(mensagem) {
+    return new Promise(resolve => {
+        historicoVersionamentoResolverPendente_ = resolve;
+        const textoEl = document.getElementById("historicoVersionamentoTexto");
+        textoEl.textContent = mensagem;
+        // RODADA B/C.1 (§6): a pergunta coletiva pode trazer uma lista de
+        // nomes com quebras de linha ("\n") — sem isto, um <p> com
+        // white-space:normal colapsaria todas elas, e a lista viraria um
+        // parágrafo só, ilegível. A pergunta individual (sem "\n") não é
+        // afetada por este estilo.
+        textoEl.style.whiteSpace = "pre-line";
+        document.getElementById("modalVersionamentoRelatorio").style.display = "block";
+    });
+}
+
+// Fluxo completo de UM relatório: detecta versão anterior -> (só
+// pergunta se existir alguma) -> gera. "elementoStatus" (opcional) é
+// onde o andamento/resultado é escrito (criado por
+// historicoCriarBotaoGerarRelatorio_, abaixo); devolve o resultado do
+// servidor em caso de sucesso, ou null se cancelado/erro (o erro já
+// fica visível em elementoStatus — o chamador não precisa tratar de
+// novo).
+async function historicoGerarRelatorioSessao_(registroId, sessaoAnaliseId, nomeAluno, elementoStatus) {
+
+    const marcarStatus = (texto, classe) => {
+        if (!elementoStatus) return;
+        elementoStatus.textContent = texto;
+        elementoStatus.className = classe || "historicoFase";
+        elementoStatus.style.display = texto ? "" : "none";
+    };
+
+    try {
+
+        marcarStatus("Verificando se já existe um relatório anterior…");
+        const deteccao = await historicoChamarServidor_("historicoVerificarVersaoRelatorioIndividual", registroId, sessaoAnaliseId);
+
+        let modo = "nova";
+        if (deteccao.existeAnterior) {
+            const escolha = await historicoConfirmarVersionamentoRelatorio_(
+                `Já existe um relatório anterior para ${nomeAluno || "este(a) aluno(a)"} (versão ${deteccao.ultimaVersao}). ` +
+                `Substituir essa versão, ou criar uma nova versão atualizada (mantendo a anterior)?`
+            );
+            if (!escolha) {
+                marcarStatus("Geração de relatório cancelada.");
+                return null;
+            }
+            modo = escolha;
+        }
+
+        marcarStatus("Gerando PDF do relatório…");
+        const resultado = await historicoChamarServidor_("historicoGerarRelatorioIndividual", registroId, sessaoAnaliseId, modo);
+
+        // RODADA B/C.1 (§10): em vez de só um texto de status, mostra
+        // também um botão "Abrir PDF" — arquivoId/urlArquivo vêm do File
+        // REAL recém-criado/substituído (devolvidos pelo próprio
+        // servidor, §10), então abrir aqui nunca precisa reabrir a
+        // sessão depois. Nunca window.open automático — só quando a
+        // própria pessoa clica, evitando N abas surgindo sozinhas num
+        // lote de vários alunos (ver historicoIniciarRelatoriosLote_,
+        // que chama esta função pra cada aluno sequencialmente).
+        if (elementoStatus) {
+            elementoStatus.innerHTML = "";
+            elementoStatus.className = "historicoAvisoAuditoria";
+            elementoStatus.style.display = "";
+            const textoEl = document.createElement("span");
+            textoEl.textContent = `✅ Relatório gerado (v${resultado.versao}): ${resultado.nomeArquivo}`;
+            elementoStatus.appendChild(textoEl);
+            if (resultado.urlArquivo) {
+                const botaoAbrir = document.createElement("button");
+                botaoAbrir.className = "botaoSecundario";
+                botaoAbrir.style.display = "block";
+                botaoAbrir.style.marginTop = "6px";
+                botaoAbrir.textContent = "📄 Abrir PDF";
+                botaoAbrir.onclick = () => window.open(resultado.urlArquivo, "_blank");
+                elementoStatus.appendChild(botaoAbrir);
+            }
+            // RODADA B/C.1.1 (§4): o novo PDF já foi salvo com sucesso
+            // mesmo quando não foi possível limpar uma cópia antiga da
+            // MESMA versão — nunca finge que nada aconteceu; mostra o
+            // ⚠️ JUNTO do ✅ acima (nunca no lugar dele).
+            (resultado.avisos || []).forEach(aviso => {
+                const avisoEl = document.createElement("div");
+                avisoEl.style.marginTop = "6px";
+                avisoEl.textContent = "⚠️ " + aviso;
+                elementoStatus.appendChild(avisoEl);
+            });
+        }
+        return resultado;
+
+    } catch (err) {
+        marcarStatus("❌ " + ((err && err.message) || err), "historicoMotivoIndisponivel");
+        return null;
+    }
+
+}
+
+// Botão + linha de status (inicialmente oculta) pra gerar o relatório
+// de UMA sessão — devolve um <div> wrapper pronto pra ser anexado
+// (ver historicoRenderizarDetalheSessao_, acima).
+function historicoCriarBotaoGerarRelatorio_(registroId, sessaoAnaliseId, nomeAluno) {
+
+    const wrapper = document.createElement("div");
+    wrapper.style.marginBottom = "12px";
+
+    const botao = document.createElement("button");
+    botao.className = "botaoSecundario";
+    botao.style.width = "100%";
+    botao.textContent = "📄 Gerar Relatório desta Análise";
+    wrapper.appendChild(botao);
+
+    const status = document.createElement("div");
+    status.className = "historicoFase";
+    status.style.display = "none";
+    status.style.marginTop = "6px";
+    wrapper.appendChild(status);
+
+    botao.onclick = () => {
+        botao.disabled = true;
+        historicoGerarRelatorioSessao_(registroId, sessaoAnaliseId, nomeAluno, status)
+            .finally(() => { botao.disabled = false; });
+    };
+
+    return wrapper;
+
+}
+
+/*=====================================================
+  RELATÓRIO CONSOLIDADO EFÊMERO (RODADA B/C, FASE C2) — chama
+  historicoGerarRelatorioConsolidado (HistoricoRelatorios.gs) sobre
+  historicoUltimoLote.alunos INTEIRO (nunca sobre "selecionados" de
+  novo, mesmo princípio de historicoCriarPainelRelatoriosLote_/
+  historicoIniciarRelatoriosLote_, acima — TODO aluno(a) processado(a)
+  entra, com ou sem sessaoAnaliseId/erroTecnico, §20) e abre o PDF
+  recebido (como base64) numa aba nova — SEM NUNCA salvar nada no
+  Drive: o arquivo só existe, por alguns instantes, como Blob local no
+  navegador de quem clicou.
+
+  RODADA B/C.1 (§14-23) — CORRIGIDO: a chamada ao servidor passou de
+  historicoGerarRelatorioConsolidado(itens) pra
+  historicoGerarRelatorioConsolidado(alunos, loteInfo) — "alunos" agora
+  carrega erroTecnico/errosHabilitacao junto (nunca só registroId+
+  sessaoAnaliseId), e "loteInfo" leva os totais do lote executado
+  (totalSelecionados/totalProcessados/cancelado) pro cabeçalho de
+  metadados do PDF (§17). O contrato de retorno não mudou (nomeArquivo/
+  base64/totalIncluidos/totalFalhas/falhas) — só o texto de status
+  abaixo passou a exibir também o nome sugerido pra salvar (§23).
+=====================================================*/
+
+// Decodifica uma string base64 (como o servidor devolve) pra um Blob
+// binário de verdade — puro/síncrono, sem nenhuma chamada de rede.
+function historicoBase64ParaBlob_(base64, tipoMime) {
+    const binario = atob(base64);
+    const tamanho = binario.length;
+    const bytes = new Uint8Array(tamanho);
+    for (let i = 0; i < tamanho; i++) {
+        bytes[i] = binario.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: tipoMime });
+}
+
+// Fluxo completo do relatório consolidado: abre uma aba em branco
+// ANTES de qualquer await (síncrono, dentro do próprio clique — abrir
+// só depois da resposta do servidor faria o navegador tratar como
+// pop-up não solicitado e bloquear), chama o servidor, e só então
+// redireciona essa aba já aberta pro PDF (via Blob + Object URL —
+// nunca um link pra um arquivo salvo em lugar nenhum, porque este PDF
+// nunca é salvo). Em caso de falha (ou de a aba ter sido bloqueada/
+// fechada), a aba é fechada de novo e o erro fica visível só no
+// próprio painel — nunca perde silenciosamente o resultado do
+// servidor se ele já tiver chegado.
+async function historicoAbrirRelatorioConsolidado_(status) {
+
+    if (historicoUltimoLote.alunos.length < 2) return;
+
+    const janela = window.open("", "_blank");
+
+    status.style.display = "";
+    status.className = "historicoFase";
+    status.textContent = "Gerando relatório consolidado…";
+
+    try {
+
+        // RODADA B/C.1 (§20-21): TODO aluno(a) do lote entra aqui — com
+        // sessaoAnaliseId (análise persistida), com erroTecnico (falhou
+        // antes da sessão existir) ou com nenhum dos dois (processado(a),
+        // sem nenhuma habilitação ativa) — nunca só quem teve sucesso.
+        // errosHabilitacao (§4) viaja junto pra virar aviso técnico no
+        // PDF (§19), sem nunca substituir um resultado persistido.
+        const alunos = historicoUltimoLote.alunos.map(item => ({
+            registroId: item.registroId,
+            sessaoAnaliseId: item.sessaoAnaliseId || null,
+            erroTecnico: item.erroTecnico || null,
+            errosHabilitacao: item.erros || {}
+        }));
+
+        const loteInfo = {
+            totalSelecionados: historicoUltimoLote.totalSelecionados,
+            totalProcessados: historicoUltimoLote.totalProcessados,
+            cancelado: historicoUltimoLote.cancelado
+        };
+
+        const resultado = await historicoChamarServidor_("historicoGerarRelatorioConsolidado", alunos, loteInfo);
+
+        if (!janela || janela.closed) {
+            status.textContent = "✅ Relatório consolidado gerado, mas a aba para abri-lo foi bloqueada ou " +
+                "fechada. Permita pop-ups para este site e clique novamente.";
+            status.className = "historicoAvisoAuditoria";
+            return;
+        }
+
+        const blob = historicoBase64ParaBlob_(resultado.base64, "application/pdf");
+        const url = URL.createObjectURL(blob);
+        janela.location.href = url;
+
+        // RODADA B/C.1 (§23): inclui o nome sugerido pro arquivo — este
+        // PDF nunca é salvo automaticamente (é só um Blob local nesta
+        // aba), então quem for salvar manualmente precisa desse nome pra
+        // não perder o padrão usado pelos demais relatórios.
+        const total = resultado.totalIncluidos + resultado.totalFalhas;
+        status.textContent = `✅ Relatório consolidado gerado (${resultado.totalIncluidos} de ${total} aluno(a)s). ` +
+            `Nome sugerido para salvar: "${resultado.nomeArquivo}".` +
+            (resultado.totalFalhas > 0 ? ` ${resultado.totalFalhas} não incluído(a)(s) — detalhes no próprio PDF.` : "");
+        status.className = resultado.totalFalhas > 0 ? "historicoAvisoAuditoria" : "historicoFase";
+
+    } catch (err) {
+        if (janela && !janela.closed) janela.close();
+        status.textContent = "❌ " + ((err && err.message) || err);
+        status.className = "historicoMotivoIndisponivel";
+    }
+
+}
+
+</script>

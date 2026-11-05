@@ -1,0 +1,436 @@
+<!--=====================================================
+  ANÁLISE DE HISTÓRICO ESCOLAR — Parser client-side (PDF.js).
+
+  Responsabilidade ÚNICA deste arquivo: dado o PDF (em base64)
+  do histórico escolar, devolver um objeto de dados EXTRAÍDOS,
+  normalizado. NUNCA decide "cumpre"/"não cumpre" nada — isso é
+  do HistoricoMotor.gs, no servidor. Este arquivo não fala com
+  google.script.run nenhuma vez.
+
+  Versão do PDF.js FIXA (nunca "latest" — HistoricoConfig.gs
+  documenta o valor pinado; aqui ele é escrito literalmente
+  porque HTML incluído por include_() não enxerga constantes
+  .gs do servidor).
+=====================================================-->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+(function () {
+
+  "use strict";
+
+  // Mantém em sincronia manual com HISTORICO_PARSER_VERSION em
+  // HistoricoConfig.gs — ao mudar a lógica de extração abaixo,
+  // suba os dois valores juntos.
+  var HISTORICO_PARSER_VERSION_CLIENTE = "HistoricoParser-v1.0.0";
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+  // Mesma lista de HISTORICO_STATUS_DISCIPLINA_CONHECIDOS em
+  // HistoricoConfig.gs — duplicada aqui só porque este arquivo
+  // roda no navegador e não enxerga constantes do servidor. Usada
+  // apenas para gerar avisos (nunca para rejeitar uma disciplina).
+  var STATUS_CONHECIDOS = [
+    "A", "T", "MA", "RN", "RA", "DI", "RF", "DS", "AE",
+    "I", "IR", "IT", "IP", "P", "IL"
+  ];
+
+  function base64ParaBytes(base64) {
+    var binario = atob(base64);
+    var bytes = new Uint8Array(binario.length);
+    for (var i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+    return bytes;
+  }
+
+  // Reconstrói o texto de uma página aproximando o efeito de
+  // "pdftotext -layout": agrupa os itens de texto por posição Y
+  // (mesma "linha" visual) e, dentro da linha, ordena por X.
+  function agruparItensEmLinhas(items) {
+
+    var comPosicao = items
+      .filter(function (it) { return it && typeof it.str === "string"; })
+      .map(function (it) {
+        return { texto: it.str, x: it.transform[4], y: it.transform[5], altura: it.height || 10 };
+      });
+
+    comPosicao.sort(function (a, b) { return (b.y - a.y) || (a.x - b.x); });
+
+    var linhas = [];
+    var linhaAtual = [];
+    var yLinhaAtual = null;
+
+    comPosicao.forEach(function (item) {
+      var novaLinha = yLinhaAtual === null || Math.abs(item.y - yLinhaAtual) > Math.max(3, item.altura * 0.6);
+      if (novaLinha) {
+        if (linhaAtual.length > 0) linhas.push(montarLinha(linhaAtual));
+        linhaAtual = [item];
+        yLinhaAtual = item.y;
+      } else {
+        linhaAtual.push(item);
+      }
+    });
+    if (linhaAtual.length > 0) linhas.push(montarLinha(linhaAtual));
+
+    return linhas;
+
+  }
+
+  function montarLinha(itensDaLinha) {
+    itensDaLinha.sort(function (a, b) { return a.x - b.x; });
+    return itensDaLinha.map(function (it) { return it.texto; }).join(" ").replace(/\s+/g, " ").trim();
+  }
+
+  async function reconstruirTexto(bytes) {
+    var pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    var textoCompleto = "";
+    for (var p = 1; p <= pdf.numPages; p++) {
+      var pagina = await pdf.getPage(p);
+      var conteudo = await pagina.getTextContent();
+      var linhas = agruparItensEmLinhas(conteudo.items);
+      textoCompleto += linhas.join("\n") + "\n";
+    }
+    return textoCompleto;
+  }
+
+  /*=====================================================
+    Extração por seções (todas defensivas: campo não
+    encontrado = null, NUNCA 0 ou string vazia tratada
+    como "cumprido").
+  =====================================================*/
+
+  function extrairCabecalho(texto) {
+
+    var doc = { nusp: null, nome: null, cursoCodigoDocumento: null, habilitacaoCodigoDocumento: null, habilitacaoNomeDocumento: null };
+
+    var mAluno = texto.match(/Aluno:\s*(\d+)\s*\/\s*\d+\s*-\s*([^\n]+)/);
+    if (mAluno) {
+      doc.nusp = mAluno[1].trim();
+      doc.nome = mAluno[2].trim();
+    }
+
+    var mCurso = texto.match(/Curso:\s*(\d+)\s*\/\s*(\d+)\s*-\s*[^\n]*\n\s*([^\n]+)/);
+    if (mCurso) {
+      doc.cursoCodigoDocumento = mCurso[1].trim();
+      doc.habilitacaoCodigoDocumento = mCurso[2].trim();
+      doc.habilitacaoNomeDocumento = mCurso[3].trim();
+    }
+
+    return doc;
+
+  }
+
+  function extrairDisciplinasDoBloco(textoBloco, avisos) {
+
+    var linhas = textoBloco.split("\n").map(function (l) { return l.trim(); });
+    var padraoSigla = /^([A-Z]{2,5}\d{3,5}|\d{7})\b/;
+    var disciplinas = [];
+
+    linhas.forEach(function (linha, indice) {
+
+      if (!linha) return;
+      var m = linha.match(padraoSigla);
+      if (!m) return;
+
+      var sigla = m[1];
+      var resto = linha.slice(m[0].length).trim();
+      var tokens = resto.split(/\s+/).filter(function (t) { return t !== ""; });
+      if (tokens.length === 0) return;
+
+      var ultimo = tokens[tokens.length - 1];
+      var status = null;
+      var tokensSemStatus = tokens;
+      if (/^[A-Z]{1,2}$/.test(ultimo)) {
+        status = ultimo;
+        tokensSemStatus = tokens.slice(0, -1);
+      }
+
+      var i = 0;
+      var nomeTokens = [];
+      while (i < tokensSemStatus.length && !/^[\d.,]+$/.test(tokensSemStatus[i])) {
+        nomeTokens.push(tokensSemStatus[i]);
+        i++;
+      }
+
+      var numericos = tokensSemStatus.slice(i)
+        .map(function (t) { return Number(String(t).replace(",", ".")); })
+        .filter(function (n) { return !isNaN(n); });
+
+      var nome = nomeTokens.join(" ");
+      if (!nome) {
+        // Nome de disciplina longo que quebrou em 2 linhas na
+        // diagramação original do PDF, com a linha de sigla+números
+        // "encaixada" entre as duas metades do nome — confirmado ao
+        // ler HP.pdf/HB.pdf reais (ex.: sigla 5940680). Sigla e
+        // status (o que decide a análise) já foram lidos acima;
+        // isto aqui é só cosmético pro relatório.
+        var anterior = indice > 0 ? linhas[indice - 1] : "";
+        var seguinte = indice < linhas.length - 1 ? linhas[indice + 1] : "";
+        var partes = [anterior, seguinte].filter(function (l) { return l && !padraoSigla.test(l); });
+        nome = partes.join(" ").trim() || null;
+      }
+
+      if (!status) {
+        avisos.push("Disciplina " + sigla + ": não identifiquei a situação (status) nessa linha do histórico — confira manualmente.");
+      } else if (STATUS_CONHECIDOS.indexOf(status) === -1) {
+        avisos.push("Disciplina " + sigla + ": situação \"" + status + "\" não está na lista de códigos conhecidos — confira a legenda do histórico.");
+      }
+
+      disciplinas.push({
+        sigla: sigla,
+        nome: nome,
+        au: numericos.length > 0 ? numericos[0] : null,
+        tr: numericos.length > 1 ? numericos[1] : null,
+        status: status
+      });
+
+    });
+
+    return disciplinas;
+
+  }
+
+  // Classifica um bloco de semestre em exatamente 3 situações — NUNCA
+  // infere "Trancamento Total" pela ausência de disciplinas/créditos
+  // (isso era um falso positivo da versão anterior desta função):
+  //   1) texto "Trancamento Total" explícito no bloco → trancamentoTotal
+  //      (o ÚNICO jeito de chegar em trancamentoTotal:true);
+  //   2) bloco com disciplina(s) e/ou créditos > 0, sem o texto
+  //      explícito → semestre acadêmico normal;
+  //   3) bloco vazio (sem disciplina e sem crédito) e SEM o texto
+  //      explícito → não dá pra decidir automaticamente entre
+  //      "trancamento não rotulado no PDF" e "falha de extração" —
+  //      marca estruturaInconsistente:true, que o motor server-side
+  //      (historicoAvaliarEstruturaExtracao_ em HistoricoMotor.gs) usa
+  //      pra forçar CONFERIR, em vez de silenciosamente tratar como
+  //      trancamento (ou como semestre normal).
+  function classificarBlocoSemestre_(temTextoTrancamentoExplicito, quantidadeDisciplinas, creditosNoSemestre) {
+
+    if (temTextoTrancamentoExplicito) {
+      return { trancamentoTotal: true, estruturaInconsistente: false };
+    }
+
+    var semDisciplinasECreditos = quantidadeDisciplinas === 0 &&
+      (!creditosNoSemestre || (creditosNoSemestre.aula === 0 && creditosNoSemestre.trabalho === 0));
+
+    if (semDisciplinasECreditos) {
+      return { trancamentoTotal: false, estruturaInconsistente: true };
+    }
+
+    return { trancamentoTotal: false, estruturaInconsistente: false };
+
+  }
+
+  function extrairSemestres(texto, avisos) {
+
+    var regexCabecalho = /(\d{4})\s*(1|2)º\.\s*Semestre/g;
+    var marcadores = [];
+    var m;
+    while ((m = regexCabecalho.exec(texto)) !== null) {
+      marcadores.push({ ano: Number(m[1]), semestre: Number(m[2]), inicio: m.index, fimCabecalho: m.index + m[0].length });
+    }
+
+    var idxCreditosObtidos = texto.search(/Cr[ée]ditos obtidos:/i);
+    var fimGeral = idxCreditosObtidos === -1 ? texto.length : idxCreditosObtidos;
+
+    var brutos = marcadores.map(function (marcador, i) {
+
+      var inicioBloco = marcador.fimCabecalho;
+      var fimBloco = (i + 1 < marcadores.length) ? marcadores[i + 1].inicio : fimGeral;
+      var textoBloco = texto.slice(inicioBloco, fimBloco);
+
+      var disciplinasDoBloco = extrairDisciplinasDoBloco(textoBloco, avisos);
+      var matchCreditos = textoBloco.match(/Cr[ée]ditos acumulados no Semestre\s+(\d+)\s+(\d+)/i);
+      var creditosNoSemestre = matchCreditos ? { aula: Number(matchCreditos[1]), trabalho: Number(matchCreditos[2]) } : null;
+
+      var trancamentoPorTexto = /Trancamento\s*Total/i.test(textoBloco);
+      var classificacao = classificarBlocoSemestre_(trancamentoPorTexto, disciplinasDoBloco.length, creditosNoSemestre);
+
+      if (classificacao.estruturaInconsistente) {
+        avisos.push(
+          "Semestre " + marcador.ano + "/" + marcador.semestre + ": bloco sem disciplinas e sem créditos, e sem " +
+          "o texto \"Trancamento Total\" explicitamente nesse trecho — não é possível confirmar automaticamente " +
+          "se é um trancamento não rotulado ou uma falha de extração. A análise final deste histórico ficará " +
+          "como CONFERIR por causa deste semestre. Confira manualmente."
+        );
+      }
+
+      return {
+        ano: marcador.ano,
+        semestre: marcador.semestre,
+        trancamentoTotal: classificacao.trancamentoTotal,
+        estruturaInconsistente: classificacao.estruturaInconsistente,
+        disciplinas: disciplinasDoBloco,
+        creditosNoSemestre: creditosNoSemestre
+      };
+
+    });
+
+    var vistos = {};
+    var semestresUnicos = [];
+    brutos.forEach(function (s) {
+      var chave = s.ano + "-" + s.semestre;
+      if (vistos[chave]) {
+        avisos.push("Bloco de semestre " + s.ano + "/" + s.semestre + " apareceu mais de uma vez no PDF — mantive só a primeira ocorrência.");
+        return;
+      }
+      vistos[chave] = true;
+      semestresUnicos.push(s);
+    });
+
+    return semestresUnicos;
+
+  }
+
+  function numeroOuNulo(valorTexto) {
+    if (valorTexto === undefined || valorTexto === null) return null;
+    var n = Number(String(valorTexto).trim().replace(",", "."));
+    return isNaN(n) ? null : n;
+  }
+
+  function extrairTotais(texto, avisos, camposNaoReconhecidos) {
+
+    var totais = {
+      creditosObtidos: { aula: null, trabalho: null, total: null },
+      creditosPorTipo: {
+        obrigatorias: { aula: null, trabalho: null },
+        eletivas: { aula: null, trabalho: null },
+        livres: { aula: null, trabalho: null }
+      },
+      cargaHorariaTotal: null,
+      cargaHorariaEstagio: null,
+      cargaHorariaAAC: null,
+      cargaHorariaEXT: null,
+      cargaHorariaCP: null,
+      mediaPonderadaFinal: null
+    };
+
+    var mObtidos = texto.match(/Cr[ée]ditos obtidos:\s*aula\s*:\s*(\d+)\s*trabalho\s*:\s*(\d+)\s*total:\s*(\d+)/i);
+    if (mObtidos) {
+      totais.creditosObtidos = { aula: Number(mObtidos[1]), trabalho: Number(mObtidos[2]), total: Number(mObtidos[3]) };
+    } else {
+      camposNaoReconhecidos.push("creditosObtidos");
+    }
+
+    var mMedia = texto.match(/Cr[ée]ditos obtidos:.*?M[ée]dia ponderada:\s*([\d.,]+)/i);
+    totais.mediaPonderadaFinal = mMedia ? numeroOuNulo(mMedia[1]) : null;
+    if (totais.mediaPonderadaFinal === null) camposNaoReconhecidos.push("mediaPonderadaFinal");
+
+    var mObrig = texto.match(/Obrigat[óo]rias\s+(\d+)\s+(\d+)/i);
+    if (mObrig) {
+      totais.creditosPorTipo.obrigatorias = { aula: Number(mObrig[1]), trabalho: Number(mObrig[2]) };
+    } else {
+      camposNaoReconhecidos.push("creditosPorTipo.obrigatorias");
+    }
+
+    var mEletivas = texto.match(/Opt\.?\s*Eletivas\s+(\d+)\s+(\d+)/i);
+    if (mEletivas) {
+      totais.creditosPorTipo.eletivas = { aula: Number(mEletivas[1]), trabalho: Number(mEletivas[2]) };
+    } else {
+      camposNaoReconhecidos.push("creditosPorTipo.eletivas");
+    }
+
+    var mLivres = texto.match(/Opt\.?\s*Livres\s+(\d+)\s+(\d+)/i);
+    if (mLivres) {
+      totais.creditosPorTipo.livres = { aula: Number(mLivres[1]), trabalho: Number(mLivres[2]) };
+    } else {
+      camposNaoReconhecidos.push("creditosPorTipo.livres");
+    }
+
+    var mCargaTotal = texto.match(/Carga Hor[áa]ria Total:\s*([\d.,]+)\s*h\s*\(Est[áa]gio:\s*([\d.,]+)\s*h\)/i);
+    if (mCargaTotal) {
+      totais.cargaHorariaTotal = numeroOuNulo(mCargaTotal[1]);
+      totais.cargaHorariaEstagio = numeroOuNulo(mCargaTotal[2]);
+    } else {
+      camposNaoReconhecidos.push("cargaHorariaTotal");
+      camposNaoReconhecidos.push("cargaHorariaEstagio");
+    }
+
+    var mExt = texto.match(/Carga hor[áa]ria total de EXT:\s*([\d.,]+)/i);
+    totais.cargaHorariaEXT = mExt ? numeroOuNulo(mExt[1]) : null;
+    if (totais.cargaHorariaEXT === null) camposNaoReconhecidos.push("cargaHorariaEXT");
+
+    // Rótulo do campo de AAC não confirmado contra um histórico real
+    // do currículo 47012 (HP.pdf/HB.pdf, usados como referência, são
+    // do currículo antigo 47011 e não têm essa linha) — tenta as
+    // variações mais prováveis; se nenhuma bater, fica null (NUNCA
+    // vira 0) e camposNaoReconhecidos registra a ausência, o que faz
+    // o motor de regras cair em CONFERIR quando AAC for exigido.
+    var mAac = texto.match(/Carga\s*Hor[áa]ria\s*(?:total\s*)?(?:em|de)?\s*AAC\s*:?\s*([\d.,]+)/i);
+    totais.cargaHorariaAAC = mAac ? numeroOuNulo(mAac[1]) : null;
+    if (totais.cargaHorariaAAC === null) {
+      camposNaoReconhecidos.push("cargaHorariaAAC");
+      avisos.push("Não encontrei um campo de Carga Horária em AAC neste histórico — ficou como não reconhecido (não é tratado como 0h).");
+    }
+
+    return totais;
+
+  }
+
+  /*=====================================================
+    Orquestrador público
+  =====================================================*/
+
+  async function extrairDeBase64(base64, nomeArquivo) {
+
+    var avisos = [];
+    var camposNaoReconhecidos = [];
+
+    try {
+
+      var bytes = base64ParaBytes(base64);
+      var texto = await reconstruirTexto(bytes);
+
+      var textoNormalizado = texto || "";
+      var pareceHistorico = /HIST[ÓO]RICO ESCOLAR/i.test(textoNormalizado) && /Aluno:/i.test(textoNormalizado);
+
+      if (textoNormalizado.trim().length < 200 || !pareceHistorico) {
+        return {
+          erro: "PDF_SEM_TEXTO",
+          mensagem:
+            "Não consegui ler texto reconhecível neste PDF (pode ser um arquivo digitalizado como imagem, ou não é " +
+            "um Histórico Escolar da Jupiter). A análise automática não pode prosseguir — necessário conferência manual.",
+          parserVersion: HISTORICO_PARSER_VERSION_CLIENTE,
+          nomeArquivo: nomeArquivo
+        };
+      }
+
+      var documento = extrairCabecalho(textoNormalizado);
+      if (!documento.nusp) camposNaoReconhecidos.push("documento.nusp");
+      if (!documento.nome) camposNaoReconhecidos.push("documento.nome");
+
+      var semestres = extrairSemestres(textoNormalizado, avisos);
+      var semestresValidos = semestres.filter(function (s) { return !s.trancamentoTotal; }).length;
+
+      var totais = extrairTotais(textoNormalizado, avisos, camposNaoReconhecidos);
+
+      return {
+        documento: documento,
+        semestres: semestres,
+        semestresValidos: semestresValidos,
+        totais: totais,
+        camposNaoReconhecidos: camposNaoReconhecidos,
+        avisos: avisos,
+        parserVersion: HISTORICO_PARSER_VERSION_CLIENTE,
+        nomeArquivo: nomeArquivo
+      };
+
+    } catch (erro) {
+      return {
+        erro: "ERRO_ESTRUTURAL",
+        mensagem: "Erro ao processar o PDF (" + (erro && erro.message ? erro.message : erro) + ").",
+        parserVersion: HISTORICO_PARSER_VERSION_CLIENTE,
+        nomeArquivo: nomeArquivo
+      };
+    }
+
+  }
+
+  window.HistoricoParser = {
+    extrairDeBase64: extrairDeBase64,
+    versao: HISTORICO_PARSER_VERSION_CLIENTE
+  };
+
+})();
+</script>

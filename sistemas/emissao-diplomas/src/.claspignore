@@ -1,0 +1,11 @@
+# Arquivos que o clasp envia ao Google (lista de permitidos). Ver DEVELOPMENT_LOCAL.md.
+# Primeiro ignora tudo; depois libera só o código e o manifesto.
+**/**
+!**/*.gs
+!**/*.js
+!**/*.html
+!appsscript.json
+# Mesmo liberados acima, nunca vão: dependências, testes e arquivos ocultos.
+**/node_modules/**
+**/testes/**
+**/.*

@@ -1,0 +1,433 @@
+<!--=====================================================
+  CENTRAL DE AJUDA — JavaScript (RODADA D).
+
+  Incluído via include_('DiplomasAjudaUI') em DiplomasApp.html,
+  imediatamente após o markup de HistoricoAnaliseUI e antes do
+  <script> principal começar a carregar — mesmo ponto onde a lógica
+  de HistoricoAnaliseUI já é incluída hoje.
+
+  100% client-side. ZERO chamadas ao backend (nenhuma ponte
+  cliente-servidor do Apps Script é usada aqui). ZERO atribuição
+  direta de HTML por string (toda montagem dinâmica — resultados de
+  busca — usa createElement/textContent). Todas as funções usam o
+  prefixo "ajuda" para não
+  colidir com nada de DiplomasApp.html, HistoricoAnaliseUI.html ou
+  HistoricoParser.html.
+
+  Reutiliza a variável global "abaAtual" (já declarada no <script>
+  principal de DiplomasApp.html) só na hora de CHAMAR
+  ajudaAbrirAbaAtual() — nunca cria estado paralelo próprio para a
+  aba atual.
+=====================================================-->
+<script>
+
+var DIPLOMAS_AJUDA_VERSION = "1.0.0";
+
+var ajudaInicializado = false;
+var ajudaFocoAnterior = null;
+var ajudaUltimaSecaoVisitada = null;
+var ajudaIndiceBusca = null;
+
+//-----------------------------------
+// Abrir / Fechar
+//-----------------------------------
+
+function ajudaAbrir(secaoId) {
+  var modal = document.getElementById('ajudaModalFundo');
+  if (!modal) { return; }
+
+  if (!ajudaInicializado) { ajudaInicializar(); }
+
+  ajudaLimparCampoBusca();
+
+  ajudaFocoAnterior = document.activeElement;
+
+  modal.classList.add('ajudaAberta');
+  document.body.classList.add('ajudaBodyTravado');
+
+  ajudaNavegarPara(secaoId || ajudaUltimaSecaoVisitada || 'ajuda-comece-aqui');
+
+  var campoBusca = document.getElementById('ajudaBuscaCampo');
+  if (campoBusca) {
+    window.setTimeout(function () { campoBusca.focus(); }, 0);
+  }
+}
+
+function ajudaFechar() {
+  var modal = document.getElementById('ajudaModalFundo');
+  if (!modal) { return; }
+
+  modal.classList.remove('ajudaAberta');
+  document.body.classList.remove('ajudaBodyTravado');
+
+  if (ajudaFocoAnterior && typeof ajudaFocoAnterior.focus === 'function') {
+    ajudaFocoAnterior.focus();
+  }
+  ajudaFocoAnterior = null;
+}
+
+// Atalho para o mapeamento aba atual → seção de ajuda (item 42 do
+// pedido). Reaproveita "abaAtual", que já existe no script principal
+// — não cria estado paralelo.
+function ajudaAbrirAbaAtual() {
+  var mapa = {
+    dados_pessoais: 'ajuda-dados-pessoais',
+    historico: 'ajuda-historico-arquivo',
+    colacao: 'ajuda-colacao',
+    diploma: 'ajuda-diploma'
+  };
+  var aba = (typeof abaAtual !== 'undefined' && abaAtual) ? abaAtual : 'dados_pessoais';
+  ajudaAbrir(mapa[aba] || 'ajuda-comece-aqui');
+}
+
+//-----------------------------------
+// Navegação entre seções
+//-----------------------------------
+
+function ajudaNavegarPara(secaoId) {
+  var secoes = document.querySelectorAll('#ajudaConteudo .ajudaSecao');
+  for (var i = 0; i < secoes.length; i++) {
+    secoes[i].classList.remove('ajudaSecaoAtiva');
+  }
+
+  var alvo = document.getElementById(secaoId);
+  if (!alvo || !alvo.classList.contains('ajudaSecao')) {
+    alvo = document.getElementById('ajuda-comece-aqui');
+    secaoId = 'ajuda-comece-aqui';
+  }
+  alvo.classList.add('ajudaSecaoAtiva');
+
+  var itensNav = document.querySelectorAll('#ajudaNav .ajudaNavItem');
+  for (var j = 0; j < itensNav.length; j++) {
+    var ativo = itensNav[j].getAttribute('data-alvo') === secaoId;
+    itensNav[j].classList.toggle('ajudaNavAtiva', ativo);
+  }
+
+  if (secaoId !== 'ajuda-resultados-busca') {
+    ajudaUltimaSecaoVisitada = secaoId;
+  }
+
+  var conteudo = document.getElementById('ajudaConteudo');
+  if (conteudo) { conteudo.scrollTop = 0; }
+}
+
+//-----------------------------------
+// FAQ (accordion) e Detalhes Técnicos
+//-----------------------------------
+
+function ajudaAlternarFaq(botao) {
+  var respostaId = botao.getAttribute('aria-controls');
+  var resposta = document.getElementById(respostaId);
+  var aberto = botao.getAttribute('aria-expanded') === 'true';
+
+  botao.setAttribute('aria-expanded', aberto ? 'false' : 'true');
+  if (resposta) { resposta.classList.toggle('ajudaAberta', !aberto); }
+}
+
+function ajudaAlternarDetalhesTecnicos(botao) {
+  var corpoId = botao.getAttribute('aria-controls');
+  var corpo = document.getElementById(corpoId);
+  var aberto = botao.getAttribute('aria-expanded') === 'true';
+
+  botao.setAttribute('aria-expanded', aberto ? 'false' : 'true');
+  if (corpo) { corpo.classList.toggle('ajudaAberta', !aberto); }
+}
+
+//-----------------------------------
+// Busca (100% client-side, sem chamada ao servidor)
+//-----------------------------------
+
+function ajudaNormalizarTexto(txt) {
+  return (txt || '')
+    .toString()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function ajudaConstruirIndiceBusca() {
+  var indice = [];
+
+  var secoes = document.querySelectorAll('#ajudaConteudo .ajudaSecao');
+  secoes.forEach(function (secao) {
+    if (secao.id === 'ajuda-resultados-busca') { return; }
+
+    var titulo = secao.getAttribute('data-ajuda-titulo') || secao.id;
+    var palavrasChave = secao.getAttribute('data-ajuda-palavraschave') || '';
+    var textoCompleto = (secao.textContent || '').replace(/\s+/g, ' ').trim();
+
+    indice.push({
+      tipo: 'secao',
+      titulo: titulo,
+      grupo: null,
+      alvo: secao.id,
+      itemAlvo: null,
+      textoBusca: ajudaNormalizarTexto(titulo + ' ' + palavrasChave + ' ' + textoCompleto),
+      trecho: textoCompleto.substring(0, 140)
+    });
+  });
+
+  document.querySelectorAll('.ajudaFaqItem').forEach(function (item) {
+    var botao = item.querySelector('.ajudaFaqPergunta');
+    var resposta = item.querySelector('.ajudaFaqResposta');
+    if (!botao || !resposta) { return; }
+
+    var titulo = botao.getAttribute('data-titulo') || botao.textContent;
+    var textoResposta = (resposta.textContent || '').replace(/\s+/g, ' ').trim();
+
+    indice.push({
+      tipo: 'faq',
+      titulo: titulo,
+      grupo: 'FAQ',
+      alvo: 'ajuda-faq',
+      itemAlvo: resposta.id,
+      textoBusca: ajudaNormalizarTexto(titulo + ' ' + textoResposta),
+      trecho: textoResposta.substring(0, 140)
+    });
+  });
+
+  document.querySelectorAll('.ajudaProblemaCard').forEach(function (card, idx) {
+    if (!card.id) { card.id = 'ajudaProblemaGerado' + (idx + 1); }
+
+    var titulo = card.getAttribute('data-ajuda-titulo') || ('Problema comum ' + (idx + 1));
+    var textoCompleto = (card.textContent || '').replace(/\s+/g, ' ').trim();
+
+    indice.push({
+      tipo: 'problema',
+      titulo: titulo,
+      grupo: 'Problemas Comuns',
+      alvo: 'ajuda-problemas',
+      itemAlvo: card.id,
+      textoBusca: ajudaNormalizarTexto(titulo + ' ' + textoCompleto),
+      trecho: textoCompleto.substring(0, 140)
+    });
+  });
+
+  return indice;
+}
+
+function ajudaLimparCampoBusca() {
+  var campo = document.getElementById('ajudaBuscaCampo');
+  var botaoLimpar = document.getElementById('ajudaBuscaLimparBotao');
+  if (campo) { campo.value = ''; }
+  if (botaoLimpar) { botaoLimpar.style.display = 'none'; }
+}
+
+function ajudaExecutarBusca(textoOriginal) {
+  var botaoLimpar = document.getElementById('ajudaBuscaLimparBotao');
+  var textoNormalizado = ajudaNormalizarTexto(textoOriginal);
+
+  if (!textoNormalizado) {
+    if (botaoLimpar) { botaoLimpar.style.display = 'none'; }
+    ajudaNavegarPara(ajudaUltimaSecaoVisitada || 'ajuda-comece-aqui');
+    return;
+  }
+
+  if (botaoLimpar) { botaoLimpar.style.display = 'inline-block'; }
+
+  if (!ajudaIndiceBusca) { ajudaIndiceBusca = ajudaConstruirIndiceBusca(); }
+
+  var resultados = ajudaIndiceBusca.filter(function (item) {
+    return item.textoBusca.indexOf(textoNormalizado) !== -1;
+  }).slice(0, 30);
+
+  ajudaRenderizarResultados(resultados, textoOriginal);
+
+  var secoes = document.querySelectorAll('#ajudaConteudo .ajudaSecao');
+  for (var i = 0; i < secoes.length; i++) {
+    secoes[i].classList.remove('ajudaSecaoAtiva');
+  }
+  var secaoResultados = document.getElementById('ajuda-resultados-busca');
+  if (secaoResultados) { secaoResultados.classList.add('ajudaSecaoAtiva'); }
+
+  var itensNav = document.querySelectorAll('#ajudaNav .ajudaNavItem');
+  for (var j = 0; j < itensNav.length; j++) {
+    itensNav[j].classList.remove('ajudaNavAtiva');
+  }
+
+  var conteudo = document.getElementById('ajudaConteudo');
+  if (conteudo) { conteudo.scrollTop = 0; }
+}
+
+// Monta o resultado via DOM (createElement/textContent) — nunca por
+// atribuição direta de HTML — porque o texto pesquisado pelo usuário
+// participa da renderização (resumo da busca) e os trechos, embora só
+// venham do conteúdo estático desta própria página, seguem o mesmo
+// padrão já usado no restante do sistema (ver comentário equivalente
+// em DiplomasApp.html sobre o subtítulo da colação).
+function ajudaRenderizarResultados(resultados, textoOriginal) {
+  var resumo = document.getElementById('ajudaResultadosResumo');
+  var lista = document.getElementById('ajudaListaResultadosConteudo');
+  if (!resumo || !lista) { return; }
+
+  while (lista.firstChild) { lista.removeChild(lista.firstChild); }
+
+  if (resultados.length === 0) {
+    resumo.textContent = 'Nenhum resultado para "' + textoOriginal + '".';
+
+    var vazio = document.createElement('div');
+    vazio.className = 'ajudaSemResultado';
+    vazio.textContent = 'Não encontramos esse assunto. Tente outra palavra ou consulte o FAQ.';
+    lista.appendChild(vazio);
+    return;
+  }
+
+  resumo.textContent = resultados.length + ' resultado(s) para "' + textoOriginal + '".';
+
+  resultados.forEach(function (item) {
+    var botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'ajudaResultadoItem';
+
+    var titulo = document.createElement('div');
+    titulo.className = 'ajudaResultadoTitulo';
+    titulo.textContent = item.titulo;
+    botao.appendChild(titulo);
+
+    if (item.grupo) {
+      var caminho = document.createElement('div');
+      caminho.className = 'ajudaResultadoCaminho';
+      caminho.textContent = item.grupo;
+      botao.appendChild(caminho);
+    }
+
+    if (item.trecho) {
+      var trecho = document.createElement('div');
+      trecho.className = 'ajudaResultadoTrecho';
+      trecho.textContent = item.trecho;
+      botao.appendChild(trecho);
+    }
+
+    botao.addEventListener('click', function () {
+      ajudaIrParaResultado(item);
+    });
+
+    lista.appendChild(botao);
+  });
+}
+
+function ajudaIrParaResultado(item) {
+  ajudaLimparCampoBusca();
+  ajudaNavegarPara(item.alvo);
+
+  if (!item.itemAlvo) { return; }
+
+  var elemento = document.getElementById(item.itemAlvo);
+  if (!elemento) { return; }
+
+  if (item.tipo === 'faq') {
+    var botaoFaq = elemento.previousElementSibling;
+    if (botaoFaq && botaoFaq.classList.contains('ajudaFaqPergunta') && botaoFaq.getAttribute('aria-expanded') === 'false') {
+      ajudaAlternarFaq(botaoFaq);
+    }
+  }
+
+  window.setTimeout(function () {
+    elemento.scrollIntoView({ block: 'center' });
+  }, 30);
+}
+
+//-----------------------------------
+// Acessibilidade: ESC e navegação circular por Tab
+//-----------------------------------
+
+function ajudaTratarTeclado(evento) {
+  var modal = document.getElementById('ajudaModalFundo');
+  if (!modal || !modal.classList.contains('ajudaAberta')) { return; }
+
+  if (evento.key === 'Escape' || evento.keyCode === 27) {
+    ajudaFechar();
+    return;
+  }
+
+  if (evento.key === 'Tab' || evento.keyCode === 9) {
+    ajudaAplicarFocoCircular(evento);
+  }
+}
+
+function ajudaAplicarFocoCircular(evento) {
+  var caixa = document.getElementById('ajudaModalCaixa');
+  if (!caixa) { return; }
+
+  var focaveis = caixa.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (focaveis.length === 0) { return; }
+
+  var primeiro = focaveis[0];
+  var ultimo = focaveis[focaveis.length - 1];
+
+  if (evento.shiftKey && document.activeElement === primeiro) {
+    evento.preventDefault();
+    ultimo.focus();
+  } else if (!evento.shiftKey && document.activeElement === ultimo) {
+    evento.preventDefault();
+    primeiro.focus();
+  }
+}
+
+//-----------------------------------
+// Inicialização (uma única vez)
+//-----------------------------------
+
+function ajudaInicializar() {
+  if (ajudaInicializado) { return; }
+
+  var modal = document.getElementById('ajudaModalFundo');
+  if (!modal) { return; }
+
+  var rodapeVersao = document.getElementById('ajudaRodapeVersao');
+  if (rodapeVersao) { rodapeVersao.textContent = DIPLOMAS_AJUDA_VERSION; }
+
+  var botaoFechar = document.getElementById('ajudaFecharBotao');
+  if (botaoFechar) { botaoFechar.addEventListener('click', ajudaFechar); }
+
+  document.querySelectorAll('#ajudaNav .ajudaNavItem').forEach(function (botao) {
+    botao.addEventListener('click', function () {
+      ajudaLimparCampoBusca();
+      ajudaNavegarPara(botao.getAttribute('data-alvo'));
+    });
+  });
+
+  document.querySelectorAll('.ajudaAtalhoCard, .ajudaLinkInterno').forEach(function (botao) {
+    botao.addEventListener('click', function () {
+      ajudaLimparCampoBusca();
+      ajudaNavegarPara(botao.getAttribute('data-alvo'));
+    });
+  });
+
+  document.querySelectorAll('.ajudaFaqPergunta').forEach(function (botao) {
+    botao.addEventListener('click', function () { ajudaAlternarFaq(botao); });
+  });
+
+  document.querySelectorAll('.ajudaDetalhesTecnicosTitulo').forEach(function (botao) {
+    botao.addEventListener('click', function () { ajudaAlternarDetalhesTecnicos(botao); });
+  });
+
+  var campoBusca = document.getElementById('ajudaBuscaCampo');
+  if (campoBusca) {
+    campoBusca.addEventListener('input', function () {
+      ajudaExecutarBusca(campoBusca.value);
+    });
+  }
+
+  var botaoLimparBusca = document.getElementById('ajudaBuscaLimparBotao');
+  if (botaoLimparBusca) {
+    botaoLimparBusca.addEventListener('click', function () {
+      ajudaLimparCampoBusca();
+      ajudaNavegarPara(ajudaUltimaSecaoVisitada || 'ajuda-comece-aqui');
+      if (campoBusca) { campoBusca.focus(); }
+    });
+  }
+
+  document.addEventListener('keydown', ajudaTratarTeclado);
+
+  ajudaInicializado = true;
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', ajudaInicializar);
+} else {
+  ajudaInicializar();
+}
+
+</script>
