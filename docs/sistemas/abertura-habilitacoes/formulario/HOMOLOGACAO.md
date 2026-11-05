@@ -51,6 +51,7 @@ Resultados: registrar aqui, com data, commit homologado e quem testou.
 | H2 | ok: faixa de homologação, saudação com o primeiro nome e dados pré-preenchidos |
 | H3 | ok: linha nova na cópia com C = `Sim` e o pedido de Bacharelado; recibo com `[HOMOLOGAÇÃO]` no assunto e o texto aprovado |
 | H6 | ok: o pedido aparece como Pendente no Gerenciador de homologação e abre sem "Preparar pedido" |
-| H4, H5, H7–H9 | a fazer |
+| H4 | ok: com pedido pendente de Bacharelado, aviso no topo e confirmação no fim; sem a caixa marcada, recusa ("Marque a confirmação acima…"); com a caixa, grava a segunda linha, que aparece como Pendente no Gerenciador |
+| H5, H7–H9 | a fazer |
 
 Observação: na primeira tentativa a página não abriu porque foi usado o link da **Biblioteca** da implantação (criada como App da Web e Biblioteca). O link certo é o do App da Web, que termina em `/exec`.
