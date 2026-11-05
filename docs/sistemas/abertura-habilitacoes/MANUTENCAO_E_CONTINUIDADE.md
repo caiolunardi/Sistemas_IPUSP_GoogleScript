@@ -15,7 +15,7 @@ Para quem vier a manter o gerenciador sem ter participado da 2.0. Regras gerais 
 | entender o sistema | [ARQUITETURA.md](ARQUITETURA.md), [FLUXOS.md](FLUXOS.md) |
 | saber por que algo é assim | [INVENTARIO_LEGADO.md](INVENTARIO_LEGADO.md), [VERSOES_E_DECISOES.md](VERSOES_E_DECISOES.md) |
 | mudar uma regra (situação, e-mail, relatório) | [REGRAS_E_CONTRATOS.md](REGRAS_E_CONTRATOS.md) e o teste de equivalência |
-| mudar a planilha ou o Forms | [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md), [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md#7-problemas-comuns) |
+| mudar a planilha ou o formulário dos alunos | [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md), [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md#7-problemas-comuns) |
 | dar acesso a alguém | [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md#2-lista-de-acesso-responsável) |
 
 ## Invariantes (não quebrar sem decisão expressa)
@@ -36,7 +36,7 @@ Para quem vier a manter o gerenciador sem ter participado da 2.0. Regras gerais 
 ## Como evoluir
 
 - Mudança de regra: altere o código, o teste de equivalência (transforme o caso em `DIFERENÇA: …`), [REGRAS_E_CONTRATOS.md](REGRAS_E_CONTRATOS.md), a [ajuda](AJUDA.md) se a equipe perceber, e registre a decisão em [VERSOES_E_DECISOES.md](VERSOES_E_DECISOES.md).
-- Novo campo do Forms: acrescente em `CABECALHOS` (`Planilha.gs`) só se o gerenciador for usá-lo; atualize [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md) e os dados sintéticos.
+- Novo campo do formulário dos alunos (Web App; antes, do Forms): acrescente em `CABECALHOS` (`Planilha.gs`) só se o gerenciador for usá-lo; atualize [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md) e os dados sintéticos.
 - Nova função para a página: guarda de acesso, validação da entrada, `paraPagina_` na saída, validador da resposta em `GerenciadorAppUI.html`, teste de servidor e de navegador.
 - Arquivos de `shared/`: nunca edite as cópias em `src/`; edite `shared/` e copie (a CI confere).
 - Versão: `VERSAO_GERENCIADOR` em `Configuracao.gs`, tabela do [README do código](../../../sistemas/abertura-habilitacoes/gerenciador/README.md), [VERSOES_E_DECISOES.md](VERSOES_E_DECISOES.md), [`docs/VERSOES.md`](../../VERSOES.md) e nota em `notas-de-versao/`.
@@ -45,9 +45,9 @@ Para quem vier a manter o gerenciador sem ter participado da 2.0. Regras gerais 
 
 | Risco | Efeito | Mitigação atual | Próximo passo possível |
 |---|---|---|---|
-| Forms empurra J/K com uma pergunta nova de título desconhecido | Observações e situação gravadas na coluna errada | Detecção só quando J/K têm título conhecido; manual | Conferir também os títulos esperados de J/K (exige saber os títulos reais) |
+| Coluna nova (no formulário ou à mão) empurra J/K de título desconhecido | Observações e situação gravadas na coluna errada | Detecção só quando J/K têm título conhecido; manual | Conferir também os títulos esperados de J/K (exige saber os títulos reais) |
 | Edição manual da planilha durante um salvamento | Uma das alterações se perde | Versão, reserva com data; ajuda pede para evitar | Proteção de intervalo nas colunas do gerenciador (decisão do responsável) |
-| Linhas novas sem Registro ID | Pedido não abre até ser preparado | **Preparar pedido**; migração | Gatilho `onFormSubmit` que atribui ID (exige criar gatilho; decisão) |
+| Linhas novas sem Registro ID | Pedido não abre até ser preparado | **Preparar pedido**; migração | Formulário 2.0 grava Registro ID e Versão na linha nova ([decisão pendente](formulario/DECISOES.md)); gatilho `onFormSubmit` só faria sentido se o Forms original ainda gravasse, e atribui ID (exige criar gatilho; decisão) |
 | Cota de e-mail da conta | Avisos falham | Resultado "salvo, e-mail falhou" | Monitorar no registro |
 | `Session.getActiveUser()` vazio para contas da equipe | Ninguém entra | Falha fechada; teste A5 da homologação | Ajustar acesso/implantação conforme o resultado |
 | Lista de acesso desatualizada | Pessoa que saiu continua entrando | Cache de 60 s; manual | Revisão periódica (A VALIDAR) |

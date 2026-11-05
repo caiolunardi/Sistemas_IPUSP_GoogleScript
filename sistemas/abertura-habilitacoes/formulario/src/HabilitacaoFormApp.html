@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedido de Abertura de Habilitação — IPUSP</title>
+
+<!-- GRADIP UI — tema (Sistema/Claro/Escuro), antes de qualquer <style>
+     e da carga de dados: o tema é só do navegador. -->
+<?!= include_('GradipTema') ?>
+
+<style>
+
+  /*=====================================================
+    PEDIDO DE ABERTURA DE HABILITAÇÃO — v2.0 (tema GRADIP +
+    Central de Ajuda). Todas as cores vêm dos tokens de
+    GradipTema.html; Claro e Escuro saem do mesmo CSS. Campos,
+    ordem das seções e textos informativos são os da v1.0.
+  =====================================================*/
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
+  }
+
+  [hidden]{ display:none !important; }
+
+  /*---------------- CABEÇALHO (padrão GRADIP) ----------------*/
+
+  .cabecalho{
+    background:var(--gradip-header-bg);
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid var(--gradip-border);
+    gap:12px;
+  }
+
+  .logoEsquerda{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    min-width:0;
+  }
+
+  .logoEsquerda .marcaIpuspSvg{
+    height:52px;
+    flex:0 0 auto;
+  }
+
+  .textoCabecalho{ min-width:0; }
+
+  .cabecalho h1{
+    margin:0;
+    font-size:17px;
+    font-weight:bold;
+    color:var(--gradip-text);
+  }
+
+  .cabecalho p{
+    margin:2px 0 0 0;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+  }
+
+  .cabecalhoDireita{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+  }
+
+  .logoUSP{
+    height:44px;
+    width:auto;
+    flex:0 0 auto;
+  }
+
+  .logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+    padding:4px 6px;
+  }
+
+  .botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+  }
+
+  .botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+  }
+
+  .botaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .barraAzul{
+    height:6px;
+    background:var(--gradip-header-accent);
+  }
+
+  /*---------------- CONTEÚDO ----------------*/
+
+  .conteudo{
+    max-width:760px;
+    margin:24px auto 60px auto;
+    padding:0 20px;
+  }
+
+  .cardResumo,
+  .cartaoPrincipal{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+  }
+
+  .cardResumo{
+    padding:18px 22px;
+    margin-bottom:16px;
+  }
+
+  .cardResumo h2{
+    font-size:18px;
+    margin:0;
+    color:var(--gradip-text);
+  }
+
+  .cardResumo p{
+    margin:4px 0 0 0;
+    font-size:13px;
+    color:var(--gradip-text-muted);
+  }
+
+  .cartaoPrincipal{
+    padding:8px 24px 24px 24px;
+  }
+
+  .secao{ padding-top:22px; }
+
+  .secao h3{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--gradip-link);
+    margin:0 0 14px 0;
+    border-bottom:2px solid var(--gradip-border);
+    padding-bottom:8px;
+  }
+
+  .textoInformativo p,
+  .textoInformativo ol{
+    font-size:14px;
+    line-height:1.6;
+    color:var(--gradip-text);
+    margin:0 0 12px 0;
+  }
+
+  .textoInformativo ol{ padding-left:22px; }
+
+  .textoInformativo p:last-child{ margin-bottom:0; }
+
+  .textoInformativo a{
+    color:var(--gradip-link);
+    overflow-wrap:anywhere;
+  }
+
+  .textoInformativo a:hover{ color:var(--gradip-link-hover); }
+
+  .textoInformativo a:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  /* Gatilhos de ajuda contextual (abrem a Central na seção certa). */
+  .ajudaContextualLinha{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px 18px;
+    margin-top:10px;
+  }
+
+  .linkAjudaContextual{
+    display:inline-block;
+    background:none;
+    border:none;
+    padding:15px 4px;
+    margin:-15px -4px;
+    font:inherit;
+    font-size:12.5px;
+    font-weight:bold;
+    text-decoration:underline;
+    cursor:pointer;
+    color:var(--gradip-link);
+  }
+
+  .linkAjudaContextual:hover{ color:var(--gradip-link-hover); }
+
+  .linkAjudaContextual:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:-10px;
+  }
+
+  .secao .ajudaContextualLinha{
+    margin:-4px 0 14px 0;
+  }
+
+  /*---------------- CAMPOS ----------------*/
+
+  .campoEditavel{ margin-bottom:18px; }
+  .campoEditavel:last-child{ margin-bottom:0; }
+
+  .campoEditavel label,
+  .campoEditavel legend{
+    display:block;
+    font-size:13px;
+    color:var(--gradip-text);
+    margin-bottom:6px;
+    font-weight:bold;
+    padding:0;
+  }
+
+  .ajudaCampo{
+    display:block;
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    margin:-2px 0 6px 0;
+    line-height:1.45;
+  }
+
+  .opcional{
+    font-weight:normal;
+    color:var(--gradip-text-muted);
+  }
+
+  .campoEditavel input[type=text],
+  .campoEditavel input[type=email],
+  .campoEditavel textarea{
+    width:100%;
+    min-height:44px;
+    padding:10px 12px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    font-size:15px;
+    font-family:inherit;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+  }
+
+  .campoEditavel input::placeholder,
+  .campoEditavel textarea::placeholder{
+    /* --gradip-input-placeholder fica abaixo de 4,5:1 no Claro;
+       --gradip-text-muted passa nos dois temas (mesmo ajuste dos
+       outros sistemas). */
+    color:var(--gradip-text-muted);
+  }
+
+  .campoEditavel input:hover,
+  .campoEditavel textarea:hover{
+    border-color:var(--gradip-link);
+  }
+
+  .campoEditavel input:focus-visible,
+  .campoEditavel textarea:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:1px;
+  }
+
+  .campoEditavel textarea{
+    min-height:85px;
+    resize:vertical;
+    line-height:1.5;
+  }
+
+  .campoEditavel textarea#campoObservacoes{ min-height:110px; }
+
+  .campoEditavel [aria-invalid="true"]{
+    border-color:var(--gradip-danger);
+    box-shadow:inset 4px 0 0 var(--gradip-danger);
+  }
+
+  .contador{
+    margin-top:6px;
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    text-align:right;
+  }
+
+  .contador.perto{
+    color:var(--gradip-warning);
+    font-weight:bold;
+  }
+
+  .obrigatorio{ color:var(--gradip-danger); }
+
+  .avisoPreenchido{
+    font-size:12.5px;
+    color:var(--gradip-success);
+    margin-top:6px;
+  }
+
+  .erroCampo{
+    font-size:13px;
+    color:var(--gradip-danger);
+    font-weight:bold;
+    margin-top:6px;
+  }
+
+  fieldset.campoEditavel{
+    border:0;
+    margin:0 0 18px 0;
+    padding:0;
+    min-width:0;
+  }
+
+  fieldset legend{ line-height:1.45; }
+
+  .caixaOpcoes{
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    padding:2px 14px;
+    background:var(--gradip-input-bg);
+  }
+
+  .caixaOpcoes[aria-invalid="true"]{
+    border-color:var(--gradip-danger);
+    box-shadow:inset 4px 0 0 var(--gradip-danger);
+  }
+
+  .itemOpcao,
+  .campoEditavel label.itemOpcao{
+    display:flex;
+    margin:0;
+    align-items:center;
+    gap:10px;
+    min-height:44px;
+    font-size:15px;
+    cursor:pointer;
+    color:var(--gradip-input-text);
+  }
+
+  .itemOpcao input{
+    width:18px;
+    height:18px;
+    margin:0;
+    accent-color:var(--gradip-primary);
+    flex:0 0 auto;
+  }
+
+  .itemOpcao input:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  /*---------------- AVISOS (padrão de alerta GRADIP) ----------------*/
+
+  .alerta{
+    border:1px solid;
+    border-left-width:4px;
+    border-radius:8px;
+    padding:12px 16px;
+    font-size:14px;
+    line-height:1.5;
+    margin-bottom:16px;
+    color:var(--gradip-text);
+  }
+
+  .alerta strong.tituloAlerta{
+    display:block;
+    margin-bottom:6px;
+  }
+
+  .alerta ul{
+    margin:0;
+    padding-left:18px;
+  }
+
+  .alerta li{ margin-bottom:3px; }
+
+  .alerta p{ margin:8px 0 0 0; }
+
+  .alerta--aviso{
+    background:var(--gradip-warning-bg);
+    border-color:var(--gradip-warning-border);
+  }
+  .alerta--aviso .tituloAlerta{ color:var(--gradip-warning); }
+
+  .alerta--info{
+    background:var(--gradip-info-bg);
+    border-color:var(--gradip-info-border);
+  }
+  .alerta--info .tituloAlerta{ color:var(--gradip-link); }
+
+  .alerta--erro{
+    background:var(--gradip-danger-bg);
+    border-color:var(--gradip-danger-border);
+  }
+  .alerta--erro .tituloAlerta{ color:var(--gradip-danger); }
+
+  .alerta--sucesso{
+    background:var(--gradip-success-bg);
+    border-color:var(--gradip-success-border);
+  }
+  .alerta--sucesso .tituloAlerta{ color:var(--gradip-success); }
+
+  .alerta:focus{ outline:none; }
+  .alerta:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  /* Selo de situação dos pedidos anteriores: texto + cor. */
+  .seloSituacao{
+    display:inline-block;
+    font-size:12px;
+    font-weight:bold;
+    padding:2px 8px;
+    border-radius:12px;
+    border:1px solid;
+    margin-right:6px;
+  }
+  .seloSituacao.pendente{
+    color:var(--gradip-warning);
+    border-color:var(--gradip-warning-border);
+    background:var(--gradip-surface);
+  }
+  .seloSituacao.concluido{
+    color:var(--gradip-success);
+    border-color:var(--gradip-success-border);
+    background:var(--gradip-surface);
+  }
+
+  .confirmacaoNovoPedido{
+    margin-top:10px;
+  }
+
+  .confirmacaoNovoPedido .itemOpcao{
+    color:var(--gradip-text);
+    font-size:14px;
+    align-items:flex-start;
+    padding:10px 0;
+    min-height:44px;
+  }
+
+  .confirmacaoNovoPedido .itemOpcao input{ margin-top:1px; }
+
+  /*---------------- BOTÃO ----------------*/
+
+  .botaoPrimario{
+    width:100%;
+    min-height:48px;
+    padding:12px 16px;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+    border:1px solid transparent;
+    border-radius:8px;
+    font:inherit;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:6px;
+  }
+
+  .botaoPrimario:hover{ background:var(--gradip-primary-hover); }
+
+  .botaoPrimario:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+  }
+
+  .botaoPrimario:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+    cursor:not-allowed;
+  }
+
+  /*---------------- TELAS DE BLOQUEIO / CONFIRMAÇÃO ----------------*/
+
+  .telaCentral{
+    max-width:600px;
+    margin:60px auto;
+    padding:28px 24px;
+    text-align:center;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+  }
+
+  .telaCentral .icone{
+    font-size:38px;
+    margin-bottom:10px;
+  }
+
+  .telaCentral h2{
+    font-size:19px;
+    margin:0 0 8px 0;
+    color:var(--gradip-text);
+  }
+
+  .telaCentral p{
+    color:var(--gradip-text);
+    font-size:15px;
+    line-height:1.6;
+    margin:8px 0 0 0;
+  }
+
+  .telaCentral p.secundario{
+    color:var(--gradip-text-muted);
+    font-size:14px;
+  }
+
+  .telaCentral .ajudaContextualLinha{
+    justify-content:center;
+    margin-top:16px;
+  }
+
+  .telaCentral:focus{ outline:none; }
+
+  /*---------------- CARREGANDO ----------------*/
+
+  #loadingOverlay{
+    display:flex;
+    position:fixed;
+    z-index:9000;
+    inset:0;
+    background:var(--gradip-overlay);
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  }
+
+  #loadingBox{
+    background:var(--gradip-surface-elevated);
+    color:var(--gradip-text);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:26px 36px;
+    text-align:center;
+    max-width:100%;
+  }
+
+  #loadingTitulo{
+    font-weight:bold;
+    font-size:15px;
+  }
+
+  #loadingTexto{
+    color:var(--gradip-text-muted);
+    font-size:13px;
+    margin-top:6px;
+  }
+
+  .rodape{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:12px;
+    padding:0 0 30px 0;
+  }
+
+  /*---------------- RESPONSIVO ----------------*/
+
+  @media (max-width:640px){
+    .cabecalho{
+      flex-wrap:wrap;
+      padding:10px 12px;
+      row-gap:8px;
+    }
+    .logoEsquerda{
+      gap:8px;
+      flex:1 1 100%;
+    }
+    .logoEsquerda .marcaIpuspSvg{ height:38px; }
+    .logoUSP{ height:32px; }
+    .logoUSPWrap{ padding:2px 3px; margin-left:auto; }
+    .cabecalho h1{ font-size:14px; }
+    .cabecalho p{ font-size:11.5px; }
+    .cabecalhoDireita{
+      gap:8px;
+      flex:1 1 100%;
+    }
+  }
+
+  @media (max-width:480px){
+    .botaoAjuda .textoAjuda{ display:none; }
+    .botaoAjuda{
+      padding:8px;
+      border-radius:50%;
+    }
+    .gradip-theme-control{ gap:0; }
+    .gradip-theme-control__select{
+      padding:0 26px 0 8px;
+      font-size:12px;
+    }
+    .conteudo{
+      margin-top:16px;
+      padding:0 12px;
+    }
+    .cardResumo{ padding:14px; }
+    .cartaoPrincipal{ padding:4px 14px 18px 14px; }
+    .telaCentral{
+      margin:24px 12px;
+      padding:22px 16px;
+    }
+  }
+
+</style>
+
+<style>
+  /* Faixa do ambiente de homologação (só aparece na cópia de testes). */
+  .faixaHomologacao{
+    background:var(--gradip-warning-bg);
+    border-bottom:2px solid var(--gradip-warning-border);
+    color:var(--gradip-text);
+    padding:10px 16px;
+    text-align:center;
+    font-size:.95rem;
+  }
+  .faixaHomologacao strong{ color:var(--gradip-warning); }
+</style>
+<style>
+  /* Janelas de abertura na tela de fora do período. */
+  .listaJanelas{
+    text-align:left;
+    margin:16px auto 0 auto;
+    max-width:420px;
+    background:var(--gradip-surface-2);
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:12px 16px;
+  }
+  .listaJanelas strong{
+    display:block;
+    font-size:12.5px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--gradip-link);
+    margin-bottom:6px;
+  }
+  .listaJanelas ul{
+    margin:0;
+    padding-left:18px;
+    font-size:14px;
+    line-height:1.6;
+    color:var(--gradip-text);
+  }
+  /* Saudação de quem abriu: nome da planilha de alunos (obterDadosIniciais);
+     o período vem do relógio do navegador, como no Painel dos servidores. */
+  .saudacaoUsuario{
+    flex:1 1 auto;
+    min-width:0;
+    text-align:center;
+    font-size:16px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .saudacaoUsuario:empty{ display:none; }
+  @media (max-width:1023px){
+    .cabecalho{ flex-wrap:wrap; row-gap:4px; padding-top:8px; padding-bottom:8px; }
+    .saudacaoUsuario{ order:3; flex:1 1 100%; text-align:left; font-size:15px; }
+  }
+
+  .sr-only{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+  .campoSomenteLeitura{
+    background:var(--gradip-surface-2) !important;
+    color:var(--gradip-text) !important;
+  }
+</style>
+
+<?!= include_('HabilitacaoFormAjudaEstilos') ?>
+
+</head>
+<body>
+
+  <header class="cabecalho">
+    <div class="logoEsquerda">
+      <?!= include_('GradipMarcaIPUSP') ?>
+      <div class="textoCabecalho">
+        <h1>Pedido de Abertura de Habilitação</h1>
+        <p>Bacharelado e Licenciatura em Psicologia — IPUSP</p>
+      </div>
+    </div>
+    <div id="saudacaoUsuario" class="saudacaoUsuario" aria-live="polite"></div>
+    <div class="cabecalhoDireita">
+      <?!= include_('GradipTemaControle') ?>
+      <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
+        <span aria-hidden="true">❓</span>
+        <span class="textoAjuda">Ajuda</span>
+      </button>
+      <span class="logoUSPWrap">
+        <?!= include_('GradipMarcaUSP') ?>
+      </span>
+    </div>
+  </header>
+
+  <div class="barraAzul"></div>
+  <? if (homologacao) { ?>
+  <div class="faixaHomologacao" role="note">
+    <strong>Ambiente de homologação.</strong> Endereço só para testes da equipe: pedidos enviados aqui não valem como solicitação.
+  </div>
+  <? } ?>
+
+  <!-- TELA DE BLOQUEIO (sem login / fora do período / erro) -->
+  <section id="telaBloqueada" class="telaCentral" tabindex="-1" aria-labelledby="tituloBloqueio" hidden>
+    <div class="icone" id="iconeBloqueio" aria-hidden="true">🔒</div>
+    <h2 id="tituloBloqueio">Login necessário</h2>
+    <p id="textoBloqueio">Não foi possível confirmar seu login institucional. Verifique se você está logado no navegador com o seu e-mail @usp.br e recarregue esta página.</p>
+    <div id="janelasBloqueio" class="listaJanelas" hidden></div>
+    <div class="ajudaContextualLinha">
+      <button type="button" class="linkAjudaContextual" id="ajudaBloqueio" data-gradip-help-open="ajuda-problemas">Como resolver?</button>
+    </div>
+  </section>
+
+  <!-- TELA DE CONFIRMAÇÃO (depois do envio) -->
+  <section id="telaConfirmacao" class="telaCentral" tabindex="-1" aria-labelledby="tituloConfirmacao" hidden>
+    <div class="icone" aria-hidden="true">✅</div>
+    <h2 id="tituloConfirmacao">Pedido enviado com sucesso</h2>
+    <p>O Serviço de Graduação atenderá o seu pedido no prazo de até 10 dias úteis, e enviará mensagem de confirmação para o seu e-mail USP.</p>
+    <p id="textoProgramasEnviados" class="secundario"></p>
+    <p id="textoRecibo" class="secundario"></p>
+    <div class="ajudaContextualLinha">
+      <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece agora?</button>
+    </div>
+  </section>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main id="conteudo" class="conteudo" hidden>
+
+    <div id="avisos"></div>
+
+    <div class="cardResumo">
+      <h2>Pedido de Abertura de Habilitação</h2>
+      <p>Bacharelado e Licenciatura em Psicologia — Instituto de Psicologia da USP</p>
+      <div class="ajudaContextualLinha">
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-passo-a-passo">Como preencher?</button>
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-quando">Quando posso pedir?</button>
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece depois?</button>
+      </div>
+    </div>
+
+    <form id="formularioPedido" class="cartaoPrincipal" novalidate>
+
+      <div class="secao">
+        <h3>1. Sobre a solicitação</h3>
+        <div class="textoInformativo">
+          <p>Formulário exclusivo para alunos do IPUSP que desejam solicitar a abertura dos programas do Bacharelado em Psicologia e da Licenciatura em Psicologia.</p>
+          <p>A abertura da Licenciatura em Psicologia pode ser solicitada a partir do 2º semestre do curso, e a do Bacharelado, a partir do 7º semestre.</p>
+          <p><strong>IMPORTANTE:</strong> Verifique a grade curricular e as informações específicas para cada habilitação.</p>
+          <p>Grade Curricular do Bacharelado em Psicologia: <a href="https://uspdigital.usp.br/jupiterweb/listarGradeCurricular?codcg=47&codcur=47012&codhab=100&tipo=N" target="_blank" rel="noopener noreferrer">https://uspdigital.usp.br/jupiterweb/listarGradeCurricular?codcg=47&amp;codcur=47012&amp;codhab=100&amp;tipo=N</a></p>
+          <p>Grade Curricular da Licenciatura em Psicologia: <a href="https://uspdigital.usp.br/jupiterweb/listarGradeCurricular?codcg=47&codcur=47012&codhab=200&tipo=N" target="_blank" rel="noopener noreferrer">https://uspdigital.usp.br/jupiterweb/listarGradeCurricular?codcg=47&amp;codcur=47012&amp;codhab=200&amp;tipo=N</a></p>
+          <p>Todas as disciplinas do Bacharelado em Psicologia fazem parte da estrutura curricular da Formação de Psicólogo.</p>
+          <p>Prazo máximo para a conclusão da Formação de Psicólogo, do Bacharelado e da Licenciatura em Psicologia: 15 semestres. Portanto, após a conclusão da Formação de Psicólogo, não existe um prazo adicional para cursar o Bacharelado, e/ou a Licenciatura. O prazo máximo de 15 semestre é para a conclusão dos três cursos, contados a partir do ingresso na formação principal (Psicólogo).</p>
+          <p>A abertura poderá ser solicitada antes das interações de matrícula, de modo que as disciplinas específicas estejam disponíveis para matrícula durante as interações. O pedido de abertura deverá ocorrer antes da conclusão do curso e encerramento do(s) programa(s) da Formação de Psicólogo e/ou Bacharelado. A Licenciatura em Psicologia (habilitação complementar) só poderá ser concluída, juntamente, ou após a conclusão da Formação de Psicólogo e/ou Bacharelado em Psicologia.</p>
+          <p>O Serviço de Graduação atenderá o seu pedido no prazo de até 10 dias úteis, e enviará mensagem de confirmação para o seu e-mail USP.</p>
+          <p>Caso tenha alguma dúvida sobre o Bacharelado e/ou a Licenciatura em Psicologia, entre em contato com o Serviço de Graduação antes de solicitar a abertura do(s) programa(s).</p>
+        </div>
+      </div>
+
+      <div class="secao">
+        <h3>2. Declaração de Ciência</h3>
+        <fieldset class="campoEditavel" aria-describedby="erroDeclaracao">
+          <legend>Declaro ter lido as informações da página inicial do formulário, e estar ciente das normas e prazos para fazer a solicitação e atendimento do pedido. <span class="obrigatorio" aria-hidden="true">*</span><span class="sr-only"> (obrigatório)</span></legend>
+          <div class="caixaOpcoes" id="caixaDeclaracao">
+            <label class="itemOpcao"><input type="checkbox" id="campoDeclaracao"> Sim</label>
+          </div>
+          <div class="erroCampo" id="erroDeclaracao" hidden></div>
+        </fieldset>
+      </div>
+
+      <div class="secao">
+        <h3>3. Identificação</h3>
+        <div class="ajudaContextualLinha">
+          <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-dados">Meus dados vieram errados ou em branco</button>
+        </div>
+
+        <div class="campoEditavel">
+          <label for="campoNUsp">Nº USP <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <span class="ajudaCampo" id="ajudaNUsp">Informe o seu número USP</span>
+          <input type="text" id="campoNUsp" inputmode="numeric" autocomplete="off" maxlength="20" required aria-describedby="ajudaNUsp avisoNUsp erroNUsp">
+          <div class="avisoPreenchido" id="avisoNUsp" hidden>✓ Preenchido automaticamente</div>
+          <div class="erroCampo" id="erroNUsp" hidden></div>
+        </div>
+
+        <div class="campoEditavel">
+          <label for="campoNome">Nome <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <span class="ajudaCampo" id="ajudaNome">Informe o seu nome completo</span>
+          <input type="text" id="campoNome" autocomplete="name" maxlength="200" required aria-describedby="ajudaNome avisoNome erroNome">
+          <div class="avisoPreenchido" id="avisoNome" hidden>✓ Preenchido automaticamente</div>
+          <div class="erroCampo" id="erroNome" hidden></div>
+        </div>
+
+        <div class="campoEditavel">
+          <label for="campoEmail">E-mail USP</label>
+          <span class="ajudaCampo" id="ajudaEmail">O endereço do seu e-mail institucional USP</span>
+          <input type="email" id="campoEmail" class="campoSomenteLeitura" readonly aria-describedby="ajudaEmail avisoEmail">
+          <div class="avisoPreenchido" id="avisoEmail">✓ Este é o e-mail com o qual você está logado</div>
+        </div>
+
+        <div class="campoEditavel">
+          <label for="campoAnoIngresso">Ano de ingresso <span class="obrigatorio" aria-hidden="true">*</span></label>
+          <input type="text" id="campoAnoIngresso" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Ex: 2022" required aria-describedby="avisoAno erroAno">
+          <div class="avisoPreenchido" id="avisoAno" hidden>✓ Preenchido automaticamente — confira e corrija se necessário</div>
+          <div class="erroCampo" id="erroAno" hidden></div>
+        </div>
+
+        <fieldset class="campoEditavel" aria-describedby="erroTrancamento">
+          <legend>Realizou trancamento total de matrícula em algum semestre? <span class="obrigatorio" aria-hidden="true">*</span><span class="sr-only"> (obrigatório)</span></legend>
+          <div class="caixaOpcoes" id="caixaTrancamento">
+            <label class="itemOpcao"><input type="radio" name="trancamento" value="Não"> Não</label>
+            <label class="itemOpcao"><input type="radio" name="trancamento" value="Sim"> Sim</label>
+          </div>
+          <div class="erroCampo" id="erroTrancamento" hidden></div>
+        </fieldset>
+      </div>
+
+      <div class="secao">
+        <h3>4. Pedido de Abertura de Habilitação</h3>
+        <fieldset class="campoEditavel" aria-describedby="ajudaProgramas erroProgramas">
+          <legend>Deseja solicitar a abertura de qual programa? <span class="obrigatorio" aria-hidden="true">*</span><span class="sr-only"> (obrigatório)</span></legend>
+          <span class="ajudaCampo" id="ajudaProgramas">Você pode marcar os dois.</span>
+          <div class="caixaOpcoes" id="caixaProgramas">
+            <label class="itemOpcao"><input type="checkbox" id="campoProgBach" value="bach"> Bacharelado em Psicologia</label>
+            <label class="itemOpcao"><input type="checkbox" id="campoProgLic" value="lic"> Licenciatura em Psicologia</label>
+          </div>
+          <div class="erroCampo" id="erroProgramas" hidden></div>
+        </fieldset>
+      </div>
+
+      <div class="secao">
+        <h3>5. Considerações Finais</h3>
+        <div class="campoEditavel">
+          <label for="campoObservacoes">Observações <span class="opcional">(opcional)</span></label>
+          <span class="ajudaCampo" id="ajudaObservacoes">Comentários, sugestões, elogios ou críticas.</span>
+          <textarea id="campoObservacoes" maxlength="2000" aria-describedby="ajudaObservacoes contadorObservacoes erroObservacoes"></textarea>
+          <div class="contador" id="contadorObservacoes" aria-live="polite">0 de 2.000 caracteres</div>
+          <div class="erroCampo" id="erroObservacoes" hidden></div>
+        </div>
+      </div>
+
+      <div class="secao">
+        <!-- Pedido pendente do mesmo e-mail para o mesmo programa: o envio
+             precisa de confirmação (conferida também no servidor). -->
+        <div id="blocoPendente" class="alerta alerta--aviso" hidden>
+          <strong class="tituloAlerta"><span aria-hidden="true">⚠️ </span>Você já tem um pedido pendente para este programa</strong>
+          <span id="textoPendente">Seu pedido anterior ainda não foi atendido. Enviar outro não agiliza o atendimento.</span>
+          <div class="confirmacaoNovoPedido">
+            <label class="itemOpcao"><input type="checkbox" id="checkNovoPedido" aria-describedby="erroNovoPedido"> Sei que já tenho um pedido pendente e quero enviar um novo mesmo assim.</label>
+            <div class="erroCampo" id="erroNovoPedido" hidden></div>
+          </div>
+        </div>
+
+        <div id="resumoErros" class="alerta alerta--erro" role="alert" tabindex="-1" hidden></div>
+
+        <button type="submit" class="botaoPrimario" id="btnEnviar">Enviar pedido</button>
+      </div>
+
+    </form>
+
+  </main>
+
+  <div class="rodape">Serviço de Graduação — Instituto de Psicologia da USP</div>
+
+  <!-- CARREGANDO -->
+  <div id="loadingOverlay" role="status" aria-live="polite">
+    <div id="loadingBox">
+      <div id="loadingTitulo">Pedido de Abertura de Habilitação</div>
+      <div id="loadingTexto">Carregando<span id="loadingPontos" aria-hidden="true"></span></div>
+    </div>
+  </div>
+
+<?!= include_('HabilitacaoFormAjuda') ?>
+<?!= include_('HabilitacaoFormAjudaUI') ?>
+
+<script>
+const LIMITE_OBSERVACOES = 2000;
+const NOMES_PROGRAMA = { bach: "Bacharelado em Psicologia", lic: "Licenciatura em Psicologia" };
+
+let loadingTimer;
+let dadosIniciais = null;
+// Programas (bach/lic) com pedido pendente do próprio e-mail na aba atual.
+let programasPendentes = {};
+
+window.addEventListener("load", function () {
+    document.getElementById("formularioPedido").addEventListener("submit", function (evento) {
+        evento.preventDefault();
+        enviarSolicitacao();
+    });
+    document.getElementById("campoObservacoes").addEventListener("input", atualizarContador);
+    [["campoNome", "avisoNome"], ["campoNUsp", "avisoNUsp"], ["campoAnoIngresso", "avisoAno"]]
+        .forEach(([campo, aviso]) => document.getElementById(campo).addEventListener("input", () => {
+            document.getElementById(aviso).hidden = true;
+        }));
+    ["campoProgBach", "campoProgLic"].forEach(id =>
+        document.getElementById(id).addEventListener("change", atualizarBlocoPendente));
+    atualizarContador();
+
+    mostrarLoading("Carregando seus dados");
+    google.script.run
+        .withSuccessHandler(receberDadosIniciais)
+        .withFailureHandler(mostrarErroCarregamento)
+        .obterDadosIniciais();
+});
+
+function receberDadosIniciais(dados) {
+
+    esconderLoading();
+    dadosIniciais = dados || {};
+
+    if (!dadosIniciais.autenticado) {
+        mostrarBloqueio("🔒", "Login necessário",
+            "Não foi possível confirmar seu login institucional. Verifique se você está logado no navegador com o seu e-mail @usp.br e recarregue esta página.");
+        return;
+    }
+
+    if (!dadosIniciais.periodoOk) {
+        if (dadosIniciais.periodoErro) {
+            mostrarBloqueio("⚠️", "Não foi possível verificar o período de abertura",
+                "O formulário fica bloqueado até o período ser conferido. Tente de novo mais tarde; se continuar, avise o Serviço de Graduação.");
+            return;
+        }
+        mostrarBloqueio("⏳", "Formulário fora do período de abertura",
+            "Este formulário só fica disponível dentro do período abaixo:", dadosIniciais.janelas || [], "ajuda-quando");
+        return;
+    }
+
+    document.getElementById("campoEmail").value = dadosIniciais.email;
+    iniciarSaudacao(dadosIniciais.encontrado ? dadosIniciais.nome : "");
+
+    if (dadosIniciais.encontrado) {
+        document.getElementById("campoNUsp").value = dadosIniciais.nUsp;
+        document.getElementById("campoNome").value = dadosIniciais.nome;
+        document.getElementById("campoAnoIngresso").value = dadosIniciais.anoIngresso;
+        if (dadosIniciais.nUsp) document.getElementById("avisoNUsp").hidden = false;
+        if (dadosIniciais.nome) document.getElementById("avisoNome").hidden = false;
+        if (dadosIniciais.anoIngresso) document.getElementById("avisoAno").hidden = false;
+    } else {
+        adicionarAviso(montarAlerta("aviso",
+            "Não encontramos automaticamente o seu registro de aluno",
+            "Preencha os campos de identificação manualmente."));
+    }
+
+    if (dadosIniciais.historico && dadosIniciais.historico.length > 0) {
+        montarAvisoHistorico(dadosIniciais.historico);
+    }
+
+    document.getElementById("conteudo").hidden = false;
+
+}
+
+// "Bom dia, Maria": primeiro nome do cadastro de alunos (não o que o
+// aluno digitar no campo). Sem cadastro, só o período. Período pelo
+// relógio do navegador, conferido de minuto em minuto.
+let nomeSaudacao = "";
+let saudacaoTimer;
+
+function primeiroNomeSaudacao(nomeCompleto) {
+    const primeiro = String(nomeCompleto || "").trim().split(/\s+/)[0] || "";
+    if (!primeiro || primeiro !== primeiro.toUpperCase()) return primeiro;
+    return primeiro.charAt(0) + primeiro.slice(1).toLowerCase();
+}
+
+function atualizarSaudacao() {
+    const hora = new Date().getHours();
+    const periodo = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+    const el = document.getElementById("saudacaoUsuario");
+    el.textContent = nomeSaudacao ? periodo + ", " + nomeSaudacao : periodo;
+    el.title = el.textContent;
+}
+
+function iniciarSaudacao(nomeCompleto) {
+    nomeSaudacao = primeiroNomeSaudacao(nomeCompleto);
+    atualizarSaudacao();
+    if (saudacaoTimer) clearInterval(saudacaoTimer);
+    saudacaoTimer = setInterval(atualizarSaudacao, 60000);
+}
+
+// Monta via DOM (nunca innerHTML com dado da planilha): situação e
+// programa podem ter texto digitado pela equipe.
+function montarAlerta(tipo, titulo, texto) {
+    const caixa = document.createElement("div");
+    caixa.className = "alerta alerta--" + tipo;
+    const t = document.createElement("strong");
+    t.className = "tituloAlerta";
+    t.textContent = titulo;
+    caixa.appendChild(t);
+    if (texto) {
+        const p = document.createElement("span");
+        p.textContent = texto;
+        caixa.appendChild(p);
+    }
+    return caixa;
+}
+
+function adicionarAviso(elemento) {
+    document.getElementById("avisos").appendChild(elemento);
+}
+
+function semAcento(texto) {
+    return String(texto || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+function montarAvisoHistorico(historico) {
+
+    const caixa = montarAlerta("info", "Você já tem pedido(s) registrado(s) anteriormente:");
+    const lista = document.createElement("ul");
+
+    historico.forEach(item => {
+        const li = document.createElement("li");
+        const selo = document.createElement("span");
+        selo.className = "seloSituacao " + (item.pendente ? "pendente" : "concluido");
+        selo.textContent = item.pendente ? "Pendente" : "Concluído";
+        li.appendChild(selo);
+        const partes = [item.programa || "(programa não informado)"];
+        const situacao = String(item.situacao || "").trim();
+        if (situacao && semAcento(situacao) !== semAcento(selo.textContent)) partes.push(situacao);
+        if (item.carimbo) partes.push(`enviado em ${item.carimbo}`);
+        li.appendChild(document.createTextNode(partes.join(" — ")));
+        lista.appendChild(li);
+        if (item.pendente) (item.programas || []).forEach(c => {
+            programasPendentes[c] = item.carimbo || programasPendentes[c] || "";
+        });
+    });
+
+    caixa.appendChild(lista);
+    const rodape = document.createElement("p");
+    rodape.textContent = "Você ainda pode enviar um novo pedido normalmente, se for o caso.";
+    caixa.appendChild(rodape);
+    adicionarAviso(caixa);
+
+}
+
+function programasMarcados() {
+    const programas = [];
+    if (document.getElementById("campoProgBach").checked) programas.push("bach");
+    if (document.getElementById("campoProgLic").checked) programas.push("lic");
+    return programas;
+}
+
+// Bloco de confirmação aparece só quando um programa marcado já tem
+// pedido pendente; o servidor confere de novo dentro da trava.
+function atualizarBlocoPendente() {
+    const repetidos = programasMarcados().filter(c => programasPendentes.hasOwnProperty(c));
+    const bloco = document.getElementById("blocoPendente");
+    if (!repetidos.length) {
+        bloco.hidden = true;
+        document.getElementById("checkNovoPedido").checked = false;
+        return;
+    }
+    const nomes = repetidos.map(c => NOMES_PROGRAMA[c]).join(" e ");
+    const quando = repetidos.map(c => programasPendentes[c]).filter(Boolean).pop();
+    document.getElementById("textoPendente").textContent =
+        `Seu pedido de ${nomes}${quando ? `, enviado em ${quando},` : ""} ainda não foi atendido. Enviar outro não agiliza o atendimento.`;
+    bloco.hidden = false;
+}
+
+function mostrarErroCarregamento() {
+    esconderLoading();
+    mostrarBloqueio("⚠️", "Erro ao carregar", "Não foi possível carregar o formulário agora. Recarregue a página; se continuar, tente mais tarde.");
+}
+
+function mostrarBloqueio(icone, titulo, texto, janelas, secaoAjuda) {
+    document.getElementById("iconeBloqueio").textContent = icone;
+    document.getElementById("tituloBloqueio").textContent = titulo;
+    document.getElementById("textoBloqueio").textContent = texto;
+    document.getElementById("ajudaBloqueio").setAttribute("data-gradip-help-open", secaoAjuda || "ajuda-problemas");
+
+    const caixa = document.getElementById("janelasBloqueio");
+    caixa.textContent = "";
+    if (janelas && janelas.length) {
+        const rotulo = document.createElement("strong");
+        rotulo.textContent = janelas.length > 1 ? "Períodos de abertura" : "Período de abertura";
+        caixa.appendChild(rotulo);
+        const lista = document.createElement("ul");
+        janelas.forEach(j => {
+            const li = document.createElement("li");
+            li.textContent = `De ${j.inicioTexto} até ${j.fimTexto}`;
+            lista.appendChild(li);
+        });
+        caixa.appendChild(lista);
+        caixa.hidden = false;
+    } else {
+        caixa.hidden = true;
+    }
+
+    document.getElementById("conteudo").hidden = true;
+    const tela = document.getElementById("telaBloqueada");
+    tela.hidden = false;
+    tela.focus();
+}
+
+//-----------------------------------
+// Contador das observações
+//-----------------------------------
+
+function atualizarContador() {
+    const n = document.getElementById("campoObservacoes").value.length;
+    const contador = document.getElementById("contadorObservacoes");
+    contador.textContent = `${n.toLocaleString("pt-BR")} de ${LIMITE_OBSERVACOES.toLocaleString("pt-BR")} caracteres`;
+    contador.classList.toggle("perto", n >= LIMITE_OBSERVACOES * 0.9);
+}
+
+//-----------------------------------
+// Validação (a mesma do servidor, que confere tudo de novo)
+//-----------------------------------
+
+const CAMPOS = {
+    declaracao: { campo: "caixaDeclaracao", erro: "erroDeclaracao", foco: "#campoDeclaracao" },
+    nUsp: { campo: "campoNUsp", erro: "erroNUsp" },
+    nome: { campo: "campoNome", erro: "erroNome" },
+    anoIngresso: { campo: "campoAnoIngresso", erro: "erroAno" },
+    trancamento: { campo: "caixaTrancamento", erro: "erroTrancamento", foco: 'input[name="trancamento"]' },
+    programas: { campo: "caixaProgramas", erro: "erroProgramas", foco: "#campoProgBach" },
+    observacoes: { campo: "campoObservacoes", erro: "erroObservacoes" },
+    novoPedido: { campo: "checkNovoPedido", erro: "erroNovoPedido" }
+};
+
+function limparErros() {
+    Object.keys(CAMPOS).forEach(chave => {
+        const c = CAMPOS[chave];
+        document.getElementById(c.campo).removeAttribute("aria-invalid");
+        const erro = document.getElementById(c.erro);
+        erro.textContent = "";
+        erro.hidden = true;
+    });
+    const resumo = document.getElementById("resumoErros");
+    resumo.hidden = true;
+    resumo.textContent = "";
+}
+
+function validar(dados) {
+
+    const erros = [];
+    const anoAtual = new Date().getFullYear();
+
+    if (!dados.declaracao) erros.push(["declaracao", "É preciso declarar ciência das normas e prazos antes de enviar o pedido."]);
+
+    const digitos = dados.nUsp.replace(/\D/g, "");
+    if (!dados.nUsp) erros.push(["nUsp", "Informe o seu número USP."]);
+    else if (!digitos) erros.push(["nUsp", "Número USP inválido — use só números."]);
+    else if (digitos.length > 15) erros.push(["nUsp", "Número USP muito longo."]);
+
+    if (!dados.nome) erros.push(["nome", "Informe o seu nome completo."]);
+
+    if (!/^\d{4}$/.test(dados.anoIngresso)) {
+        erros.push(["anoIngresso", "Ano de ingresso inválido — use um ano com 4 dígitos, ex: 2022."]);
+    } else if (Number(dados.anoIngresso) < 2000 || Number(dados.anoIngresso) > anoAtual) {
+        erros.push(["anoIngresso", `Ano de ingresso inválido — use um valor entre 2000 e ${anoAtual}.`]);
+    }
+
+    if (!dados.trancamento) erros.push(["trancamento", "Responda se realizou trancamento total de matrícula em algum semestre."]);
+
+    if (!dados.programas.length) erros.push(["programas", "Selecione ao menos um programa (Bacharelado e/ou Licenciatura)."]);
+
+    if (dados.observacoes.length > LIMITE_OBSERVACOES) {
+        erros.push(["observacoes", `As observações passaram de ${LIMITE_OBSERVACOES.toLocaleString("pt-BR")} caracteres. Resuma o texto.`]);
+    }
+
+    if (!document.getElementById("blocoPendente").hidden && !dados.confirmarNovoPedido) {
+        erros.push(["novoPedido", "Marque a confirmação acima para enviar um novo pedido."]);
+    }
+
+    return erros;
+
+}
+
+function mostrarErros(erros) {
+
+    erros.forEach(([chave, mensagem]) => {
+        const c = CAMPOS[chave];
+        document.getElementById(c.campo).setAttribute("aria-invalid", "true");
+        const erro = document.getElementById(c.erro);
+        erro.textContent = mensagem;
+        erro.hidden = false;
+    });
+
+    const resumo = document.getElementById("resumoErros");
+    resumo.textContent = "";
+    const titulo = document.createElement("strong");
+    titulo.className = "tituloAlerta";
+    titulo.textContent = erros.length === 1 ? "Corrija 1 item antes de enviar." : `Corrija ${erros.length} itens antes de enviar.`;
+    resumo.appendChild(titulo);
+    const texto = document.createElement("span");
+    texto.textContent = "Os campos com problema estão marcados acima.";
+    resumo.appendChild(texto);
+    resumo.hidden = false;
+
+    const primeiro = CAMPOS[erros[0][0]];
+    const alvo = primeiro.foco ? document.querySelector(primeiro.foco) : document.getElementById(primeiro.campo);
+    alvo.focus();
+
+}
+
+function mostrarErroEnvio(mensagem) {
+    const resumo = document.getElementById("resumoErros");
+    resumo.textContent = "";
+    const titulo = document.createElement("strong");
+    titulo.className = "tituloAlerta";
+    titulo.textContent = "O pedido não foi enviado.";
+    resumo.appendChild(titulo);
+    const texto = document.createElement("span");
+    texto.textContent = mensagem;
+    resumo.appendChild(texto);
+    resumo.hidden = false;
+    resumo.focus();
+}
+
+//-----------------------------------
+// Envio
+//-----------------------------------
+
+function enviarSolicitacao() {
+
+    limparErros();
+
+    const trancamentoEl = document.querySelector('input[name="trancamento"]:checked');
+    const bloco = document.getElementById("blocoPendente");
+
+    const dados = {
+        declaracao: document.getElementById("campoDeclaracao").checked,
+        nUsp: document.getElementById("campoNUsp").value.trim(),
+        nome: document.getElementById("campoNome").value.trim(),
+        anoIngresso: document.getElementById("campoAnoIngresso").value.trim(),
+        trancamento: trancamentoEl ? trancamentoEl.value : "",
+        programas: programasMarcados(),
+        observacoes: document.getElementById("campoObservacoes").value.trim(),
+        confirmarNovoPedido: !bloco.hidden && document.getElementById("checkNovoPedido").checked
+    };
+
+    const erros = validar(dados);
+    if (erros.length) {
+        mostrarErros(erros);
+        return;
+    }
+
+    document.getElementById("btnEnviar").disabled = true;
+    mostrarLoading("Enviando seu pedido");
+
+    google.script.run
+        .withSuccessHandler(resultado => {
+            esconderLoading();
+            document.getElementById("conteudo").hidden = true;
+            document.getElementById("textoProgramasEnviados").textContent =
+                resultado && resultado.programas ? `Programa(s) solicitado(s): ${resultado.programas}.` : "";
+            document.getElementById("textoRecibo").textContent = resultado && resultado.reciboEnviado
+                ? `Um recibo com os dados enviados foi mandado para ${dadosIniciais.email}.`
+                : "Não foi possível enviar o recibo por e-mail, mas o seu pedido foi registrado normalmente.";
+            const tela = document.getElementById("telaConfirmacao");
+            tela.hidden = false;
+            window.scrollTo(0, 0);
+            tela.focus();
+        })
+        .withFailureHandler(erro => {
+            esconderLoading();
+            document.getElementById("btnEnviar").disabled = false;
+            tratarErroEnvio(String((erro && erro.message) || erro || ""));
+        })
+        .registrarSolicitacao(dados);
+
+}
+
+// Mensagens do servidor podem vir com "Error: " na frente, por isso
+// indexOf (contém), não "começa com".
+function tratarErroEnvio(mensagem) {
+
+    const marcadorPendente = "PEDIDO_PENDENTE:";
+    const i = mensagem.indexOf(marcadorPendente);
+    if (i !== -1) {
+        const bloco = document.getElementById("blocoPendente");
+        document.getElementById("textoPendente").textContent =
+            mensagem.slice(i + marcadorPendente.length).trim() + " Enviar outro não agiliza o atendimento.";
+        bloco.hidden = false;
+        mostrarErros([["novoPedido", "Marque a confirmação acima para enviar um novo pedido."]]);
+        return;
+    }
+
+    if (mensagem.indexOf("NAO_AUTENTICADO:") !== -1) {
+        mostrarErroEnvio("Seu login não foi confirmado. Recarregue a página com a sua conta @usp.br e envie de novo.");
+        return;
+    }
+
+    if (mensagem.indexOf("FORA_DO_PERIODO:") !== -1) {
+        mostrarErroEnvio("O período de abertura terminou enquanto a página estava aberta. Recarregue a página para ver os detalhes.");
+        return;
+    }
+
+    mostrarErroEnvio(mensagem.replace(/^Error:\s*/, "") || "Tente de novo em instantes.");
+
+}
+
+//-----------------------------------
+// Carregando
+//-----------------------------------
+
+function mostrarLoading(texto) {
+    if (loadingTimer) clearInterval(loadingTimer);
+    document.getElementById("loadingTexto").firstChild.textContent = texto || "Carregando";
+    document.getElementById("loadingOverlay").hidden = false;
+    let pontos = 0;
+    loadingTimer = setInterval(() => {
+        pontos = (pontos + 1) % 4;
+        document.getElementById("loadingPontos").textContent = ".".repeat(pontos);
+    }, 350);
+}
+
+function esconderLoading() {
+    if (loadingTimer) clearInterval(loadingTimer);
+    document.getElementById("loadingOverlay").hidden = true;
+}
+
+</script>
+
+</body>
+</html>

@@ -25,10 +25,10 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 
 | Chave | O que é | Quem usa | Onde está o formato |
 |---|---|---|---|
-| `PLANILHA_ALUNOS` | cadastro dos alunos (nº USP, nome, ingresso, e-mails) | Comunidade IPUSP (L/G ficha); formulários de Exclusão, Trancamento Parcial e Total (L); Estrutura Curricular, auditoria (L) | [Comunidade IPUSP](sistemas/busca-alunos/DADOS_E_SEGURANCA.md) |
+| `PLANILHA_ALUNOS` | cadastro dos alunos (nº USP, nome, ingresso, e-mails) | Comunidade IPUSP (L/G ficha); formulários de Exclusão, Trancamento Parcial e Total e Abertura de Habilitação 2.0 (L); Estrutura Curricular, auditoria (L) | [Comunidade IPUSP](sistemas/busca-alunos/DADOS_E_SEGURANCA.md) |
 | `PLANILHA_DOCENTES` | cadastro dos docentes | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
 | `SERVIDORES` | cadastro de servidores e setores | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
-| `PERIODOS` | abertura e fechamento de cada formulário | Painel de Solicitações (L); Exclusão e Trancamento Parcial (L); Painel dos servidores (L/G) | [Painel de Solicitações](sistemas/painel-solicitacoes/DADOS_E_SEGURANCA.md) |
+| `PERIODOS` | abertura e fechamento de cada formulário | Painel de Solicitações (L); Exclusão, Trancamento Parcial e Abertura de Habilitação 2.0 (L); Painel dos servidores (L/G) | [Painel de Solicitações](sistemas/painel-solicitacoes/DADOS_E_SEGURANCA.md) |
 | `REGRAS_CURRICULARES` | regras de cada currículo para a contagem de créditos (a aba `AUDITORIA_REGRAS_CURRICULARES` ganha `evento_id` na 1.3 do Painel dos servidores) | Painel de Solicitações (L); Painel dos servidores (L/G) | [Contagem de créditos](sistemas/painel-solicitacoes/CONTAGEM_DE_CREDITOS.md) |
 | `DISCIPLINAS` | cadastro de disciplinas (código, nome, créditos) | Exclusão e Trancamento Parcial (L) | [Exclusão](sistemas/exclusao-disciplinas/DADOS_E_SEGURANCA.md) |
 | `EXCLUSAO_DISCIPLINAS` | respostas do formulário de exclusão | formulário (G); Painel dos servidores (L); gerenciador (fora do repositório) | [Exclusão](sistemas/exclusao-disciplinas/README.md) |
@@ -50,7 +50,7 @@ O Painel dos servidores também lê, desde a 1.4 pelo `ID_INDEX`, as planilhas d
 | Chave | O que é | Quem usa |
 |---|---|---|
 | `EMISSAO_DIPLOMAS` | pedidos de emissão de diploma (aba `Diplomas`) | Painel dos servidores 1.4 (L, aviso do card) |
-| `ABERTURA_HABILITACOES` | pedidos de abertura de habilitação (abas `Respostas ao formulário 2` e `2021 - 2022`) | Painel dos servidores 1.4 (L); Gerenciador de Abertura de Habilitações 2.0 (L/G; a aba `2021 - 2022` só L) — [modelo de dados](sistemas/abertura-habilitacoes/MODELO_DE_DADOS.md) |
+| `ABERTURA_HABILITACOES` | pedidos de abertura de habilitação (abas `Respostas ao formulário 2` e `2021 - 2022`) | Formulário de Abertura de Habilitação 2.0 (G, só linha nova na aba atual; L nas duas abas); Painel dos servidores 1.4 (L); Gerenciador de Abertura de Habilitações 2.0 (L/G; a aba `2021 - 2022` só L) — [modelo de dados](sistemas/abertura-habilitacoes/MODELO_DE_DADOS.md) |
 | `SEGUNDA_VIA_BUSP` | pedidos de 2ª via do BUSP | Painel dos servidores 1.4 (L) |
 | `MATRICULA_INTERCAMBISTAS` | pedidos de inclusão e exclusão de intercambistas | Painel dos servidores 1.4 (L) |
 
@@ -59,7 +59,7 @@ O Painel dos servidores também lê, desde a 1.4 pelo `ID_INDEX`, as planilhas d
 | Propriedade | Projetos | Conteúdo |
 |---|---|---|
 | `ID_INDEX_SPREADSHEET_ID` | todos (no Painel dos servidores, desde a 1.1, para achar `PERMISSOES_DE_ACESSO`, na 1.2, os cadastros da saudação e, na 1.3, a planilha da auditoria) | ID da planilha mestre |
-| `AMBIENTE` | Exclusão, Trancamento Parcial e Total; Gerenciador de Abertura de Habilitações 2.0 (só nas cópias de teste) | `homologacao` |
+| `AMBIENTE` | Exclusão, Trancamento Parcial e Total; formulário de Abertura de Habilitação 2.0; Gerenciador de Abertura de Habilitações 2.0 (só nas cópias de teste) | `homologacao` |
 | `MIGRACAO_REGISTRO_ID_CONFIRMACAO` | Gerenciador de Abertura de Habilitações 2.0, só durante a migração controlada | código dado pelo diagnóstico |
 | `RECUPERACAO_REGISTRO` | Gerenciador de Abertura de Habilitações 2.0, só durante a recuperação de um pedido | número da linha, depois o código dado pelo diagnóstico |
 | `URLS_SISTEMAS_EQUIPE` | Painel dos servidores | JSON com as URLs `/exec` das ferramentas da equipe |
@@ -86,7 +86,8 @@ Passo a passo de cada projeto: [Como reaproveitar](COMO_REAPROVEITAR.md) e o man
 
 ## 6. Limites conhecidos
 
-- Os gerenciadores de Exclusão, Trancamento Parcial, 2ª via do BUSP, Intercambistas e Diplomas, e os formulários de Habilitação, BUSP, Colação e Intercambistas, **ainda não estão no repositório**.
+- O formulário de Abertura de Habilitação em uso (v1.0, Web App próprio que substituiu o Google Forms original) não está no repositório; a v2.0 está, ainda não implantada.
+- Os gerenciadores de Exclusão, Trancamento Parcial, 2ª via do BUSP, Intercambistas e Diplomas, e os formulários de BUSP, Colação e Intercambistas, **ainda não estão no repositório**.
 - O Painel dos servidores lê todas as planilhas pelo `ID_INDEX` desde a 1.4 (seção 2). A 1.3, que está no `/exec`, ainda tem IDs literais, mantidos fora do Git ([inventário](IMPLANTACAO.md#2-inventário-20102026)). O Gerenciador de Trancamento Total em uso (v1.0) também tem ID literal e não está no repositório; a v1.1 do Git usa o `ID_INDEX`. O Gerenciador de Abertura de Habilitações usa o `ID_INDEX` desde a v2.0, implantada em 21/10/2026 no lugar da v1.0 (que tinha ID literal).
 - A contagem de pendências do Painel dos servidores lê a situação por posição de coluna e com critério próprio, diferente do critério dos formulários ([contratos](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md#4-o-que-não-se-deve-modificar-inadvertidamente)). Em Habilitações, o painel conta só a situação `pendente`, enquanto o gerenciador trata como pendente tudo o que não contém "conclu" ([contrato](sistemas/abertura-habilitacoes/REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
 - Parte dos testes da Estrutura Curricular depende de exportações reais do Júpiter, que não vão para o Git. As outras suítes usam dados sintéticos.

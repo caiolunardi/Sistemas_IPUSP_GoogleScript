@@ -5,7 +5,8 @@ Projeto Apps Script **autônomo** (não vinculado à planilha), publicado como W
 ## 1. Visão geral
 
 ```text
-Google Forms (alunos) ──grava──► planilha ABERTURA_HABILITACOES
+Formulário dos alunos (Web App) ──grava──► planilha ABERTURA_HABILITACOES
+(substituiu o Google Forms original, origem histórica da aba)
                                    ├─ "Respostas ao formulário 2"  (lida e escrita)
                                    └─ "2021 - 2022"                (somente leitura)
                                           ▲
@@ -82,7 +83,7 @@ Nenhum dado da planilha entra na página por `innerHTML`: tudo por `textContent`
 - **Linha achada de novo pelo Registro ID** depois do envio: se a planilha foi reordenada no meio, a confirmação vai para a linha certa.
 - **Confirmação só sobre a própria reserva**: a data do envio só substitui a célula se ela ainda for igual à reserva daquele salvamento e a Versão for válida. Se mudou (edição manual, outra operação), nada é gravado e o resultado é `ENVIADO_SEM_REGISTRO`/`RESERVA_ALTERADA`; o e-mail não é reenviado.
 - **Versão**: um único critério (`versaoValida_`, inteiro ≥ 1) para ler, salvar, migrar e recuperar; versão ausente ou malformada deixa o pedido marcado e sem abrir, até a recuperação.
-- Limites: a trava é do script. Ela não segura edição manual na planilha nem gravações do Google Forms. Ver [MANUTENCAO_E_CONTINUIDADE.md](MANUTENCAO_E_CONTINUIDADE.md#riscos).
+- Limites: a trava é do script. Ela não segura edição manual na planilha, as gravações do formulário dos alunos (outro projeto, outra trava) nem um eventual vínculo do Google Forms original que ainda esteja ativo. Ver [MANUTENCAO_E_CONTINUIDADE.md](MANUTENCAO_E_CONTINUIDADE.md#riscos).
 
 ## 6. Configuração e falha fechada
 

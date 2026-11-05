@@ -61,7 +61,7 @@ Conferido no código da 1.0 (`testes/baseline/`) e pelo teste de equivalência "
 
 | Situação na planilha | O que a 1.0 faz na primeira visita |
 |---|---|
-| Pedido sem Registro ID (por exemplo, chegou pelo Forms depois da última migração) | Dá um ID novo. Esperado, mas sem registro de quem fez. |
+| Pedido sem Registro ID (por exemplo, gravado pela 1.0 do formulário dos alunos depois da última migração) | Dá um ID novo. Esperado, mas sem registro de quem fez. |
 | Registro ID repetido | Troca o ID das ocorrências seguintes; mantém a primeira. Não pergunta qual pedido fica com o ID. Grava o **nome do aluno** no registro de execução. |
 | Versão vazia, `0` ou texto (`abc`, `#NUM!`) | Troca por `1`, sem avisar. É o caso que a 2.0 deixou de corrigir sozinha. |
 | Versão negativa ou fracionária (`-2`, `1.5`) | Mantém e passa a usá-la como versão; os salvamentos seguintes continuam com valores sem sentido. |

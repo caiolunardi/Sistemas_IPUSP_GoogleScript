@@ -1,0 +1,60 @@
+# Homologação — formulário 2.0
+
+**Estado: HOMOLOGADO em 05/11/2026** (rodada 1, H1–H9 aprovados pelo responsável no projeto `· HOMOLOGAÇÃO`, commit `dc2b361`). Não implantado em produção.
+
+## 1. Antes de começar
+
+- [ ] Conferir, na planilha **real**, só a linha 1 da aba `Respostas ao formulário 2`: C tem o texto da declaração e K se chama `Situação` ([DECISOES.md](DECISOES.md), item 2). Não alterar nada.
+- [ ] Conferir se o Google Forms original ainda está ligado à planilha (na planilha: menu Formulários; no Forms: Respostas). Só anotar o estado: ligado, aceitando respostas ou não. Não desligar sem autorização específica.
+- [x] Projeto de homologação criado pelo responsável (05/11/2026).
+- [x] `ABERTURA_HABILITACOES` com ID na coluna `Homologação` do `ID_INDEX` (informado em 05/11/2026).
+- [x] A C1 da cópia de respostas tem o texto da declaração, e `PLANILHA_ALUNOS` e `PERIODOS` têm ID na coluna `Homologação` (confirmado pelo responsável em 05/11/2026; [INSTALACAO.md](INSTALACAO.md), seção 2).
+
+## 2. Testes locais (05/11/2026)
+
+| Suíte | Resultado | O que cobre |
+|---|---|---|
+| `node testar_backend.js` | 38 ok, 0 falha | login, período, alunos, histórico, validação, gravação A–O, esquema, compatibilidade com Gerenciador e Painel, pedido repetido, recibo, trava, logs, homologação, CSV fictício |
+| `node testar_navegador.js` | 174 ok, 0 falha | carga, saudação, bloqueios, validação, pendente por programa, envio, recibo, temas, contraste AA, alvos de 44 px, 360–1280 px, Central de Ajuda, faixa de homologação |
+
+As duas suítes também rodam na CI a cada push (desde 05/11/2026).
+
+Limites: os serviços do Google são simulados; o login real, a autorização do e-mail, o `appendRow` concorrente e a planilha real só a homologação mostra.
+
+## 3. Código no projeto de homologação
+
+- 05/11/2026 13:51 (horário de Brasília): `clasp push --force` feito pelo responsável no projeto `· HOMOLOGAÇÃO`, de `src/` em `ac25439` (o `src/` é idêntico ao de `dc2b361`). Antes, cópia de segurança do conteúdo padrão do projeto novo.
+- Conferência depois do push (`clasp pull` em pasta separada e `ferramentas/conferir_implantacao.js --commit dc2b361`): 10 de 10 arquivos idênticos, nenhum a mais nem a menos.
+- Não confere a versão implantada no `/exec`, as propriedades do script nem as permissões.
+
+## 4. Roteiro no Google
+
+| # | Passo | Esperado |
+|---|---|---|
+| H1 | `diagnosticarConfiguracao` | todas as linhas `OK`; "pedidos novos recebem Registro ID e Versão 1" |
+| H2 | Abrir o `/exec` de homologação com a conta de teste cadastrada na cópia de alunos | faixa de homologação; dados pré-preenchidos |
+| H3 | Enviar Bacharelado | linha nova com A–K, Registro ID e Versão 1; recibo `[HOMOLOGAÇÃO]` |
+| H4 | Enviar Bacharelado de novo | confirmação de pedido pendente; com a caixa marcada, grava |
+| H5 | Enviar Licenciatura | grava sem confirmação |
+| H6 | Abrir o pedido no Gerenciador de homologação | abre sem "Preparar pedido"; concluir funciona |
+| H7 | Renomear a K da **cópia** para `Status` e enviar | recusa; diagnóstico aponta a coluna K; nada gravado. Voltar o título |
+| H8 | Período da cópia como Sazonal fora das datas | tela de fora do período com as janelas |
+| H9 | Temas, celular e Central de Ajuda | como nas [capturas](../evidencias/formulario-2.0/README.md) |
+
+Resultados: registrar aqui, com data, commit homologado e quem testou.
+
+### Rodada 1 — 05/11/2026, commit `dc2b361` (código de `ac25439`), testada pelo responsável
+
+| # | Resultado |
+|---|---|
+| H1 | ok: as 10 linhas `OK`, inclusive o esquema A–K com Registro ID = L, Versão = M, E-mail Enviado = N e Data de Conclusão = O |
+| H2 | ok: faixa de homologação, saudação com o primeiro nome e dados pré-preenchidos |
+| H3 | ok: linha nova na cópia com C = `Sim` e o pedido de Bacharelado; recibo com `[HOMOLOGAÇÃO]` no assunto e o texto aprovado |
+| H6 | ok: o pedido aparece como Pendente no Gerenciador de homologação e abre sem "Preparar pedido" |
+| H4 | ok: com pedido pendente de Bacharelado, aviso no topo e confirmação no fim; sem a caixa marcada, recusa ("Marque a confirmação acima…"); com a caixa, grava a segunda linha, que aparece como Pendente no Gerenciador |
+| H5 | ok: pedido de Licenciatura gravado sem confirmação, com Bacharelado pendente |
+| H7 | ok: com a K da cópia renomeada, o envio é recusado com a mensagem genérica de configuração e nada é gravado; título restaurado depois |
+| H8 | ok: período Sazonal fora das datas mostra "Formulário fora do período de abertura" com a janela e o "Como resolver?" |
+| H9 | ok: temas Claro, Escuro e Sistema e tela no celular conferidos pelo responsável |
+
+Observação: na primeira tentativa a página não abriu porque foi usado o link da **Biblioteca** da implantação (criada como App da Web e Biblioteca). O link certo é o do App da Web, que termina em `/exec`.

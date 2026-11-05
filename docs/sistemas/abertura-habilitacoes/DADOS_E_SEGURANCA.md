@@ -14,7 +14,7 @@ Preenchido a partir do código da 2.0 (21/10/2026), revisto para a 2.1 (22/10/20
 
 | Categoria | Exemplo abstrato | Finalidade | Origem | Destino | Persistência | Classe |
 |---|---|---|---|---|---|---|
-| Pedido do aluno | nome, Nº USP, e-mail USP, e-mail do formulário, ano de ingresso, trancamento, habilitação pedida, data | atender o pedido | Google Forms | página da equipe (só quem tem perfil) | planilha de respostas | Pessoal |
+| Pedido do aluno | nome, Nº USP, e-mail USP, e-mail do formulário, ano de ingresso, trancamento, habilitação pedida, data | atender o pedido | formulário dos alunos (Web App); linhas antigas vieram do Google Forms original | página da equipe (só quem tem perfil) | planilha de respostas | Pessoal |
 | Andamento | observações da equipe, situação, data de conclusão, data do aviso | registrar o atendimento | equipe | planilha de respostas; página | grava | Pessoal (as observações podem conter qualquer texto) |
 | Identificação técnica | Registro ID (UUID), Versão | achar o pedido, concorrência | gerenciador | planilha; página | grava | Interna |
 | Histórico 2021–2022 | mesmos campos do pedido | consulta e relatórios | aba antiga | página (busca) e contagens | só leitura | Pessoal |
