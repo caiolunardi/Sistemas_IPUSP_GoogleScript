@@ -21,7 +21,7 @@ O vínculo pasta ↔ projeto fica só no `.clasp.json` do computador ([DEVELOPME
 
 ## 3. Arquivos
 
-Os 11 arquivos de `src/` (o `.claspignore` deixa de fora os testes). Na produção, os arquivos da 1.0 (`Backend.gs`, `SolicitacaoApp.html`) **saem** do projeto: com `clasp push`, só ficam os arquivos de `src/`. Antes, faça `clasp pull` numa pasta separada como cópia de segurança.
+Os 10 arquivos de código de `src/` (o `.claspignore` em si não vai ao Google, e os testes ficam fora da pasta). Na produção, os arquivos da 1.0 (`Backend.gs`, `SolicitacaoApp.html`) **saem** do projeto: com `clasp push`, só ficam os arquivos de `src/`. Antes, faça `clasp pull` numa pasta separada como cópia de segurança.
 
 ## 4. Implantação
 
