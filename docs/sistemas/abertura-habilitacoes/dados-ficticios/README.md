@@ -64,3 +64,19 @@ Colunas na ordem da aba real: A N. USP, B Nome, C e-mail, D Observação, E Perf
 | 6–7 | `dup.teste@` | mesmo e-mail duas vezes (caixa diferente) | vale o menor perfil (LEITOR); nome e observação da primeira linha preenchida |
 
 Na homologação real, as contas `@exemplo.invalid` não entram. Para testar, troque **na cópia** o e-mail das linhas 2 e 3 pelos das suas contas de teste, ou acrescente linhas com elas e o nome e observação que quiser ver. Se a homologação lê a planilha de permissões real (escolha de 21/10/2026), não importe este arquivo nela: só acrescente as contas de teste.
+
+## Formulário dos alunos (v2.0)
+
+Três arquivos para homologar o [formulário dos alunos](../formulario/README.md), conferidos pelo teste "CSV fictício" de [`testar_backend.js`](../../../../sistemas/abertura-habilitacoes/formulario/testes/testar_backend.js).
+
+**Atenção:** o formulário confere A–K pelo título exato e **recusa** gravar se a coluna C estiver vazia. Se a cópia de homologação da planilha de respostas for a mesma do Gerenciador, digite na C1 o texto da declaração (está no cabeçalho de `formulario-respostas-ao-formulario-2.csv`) ou importe esse arquivo.
+
+| Arquivo | Aba da cópia | Casos |
+|---|---|---|
+| `formulario-respostas-ao-formulario-2.csv` | `Respostas ao formulário 2` | linha 2: Licenciatura concluída (não pede confirmação); linha 3: Bacharelado `pendente` (pede confirmação para Bacharelado, não para Licenciatura); linha 4: as duas habilitações com K vazia e sem Registro ID (pendente pelo critério do Gerenciador); linha 5: Licenciatura `Em análise` (pendente) |
+| `formulario-alunos.csv` | primeira aba da cópia de alunos | 11, 12 e 15 pelo `eMail`; 13 só pelo `eMail Secundario`, com acento no nome |
+| `formulario-periodos.csv` | primeira aba da cópia de períodos | `Pedido de Abertura de Habilitação` como `Contínuo` (aberto); troque para `Sazonal` com datas passadas para ver a tela de fora do período |
+
+Os e-mails são `@exemplo.invalid` e não passam no login `@usp.br`. Para testar com a sua conta, acrescente **na cópia** uma linha de aluno com o seu e-mail de teste; para o histórico e a confirmação de pedido repetido, envie um primeiro pedido e depois outro do mesmo programa.
+
+Resultado esperado do `diagnosticarConfiguracao` com esses arquivos: todas as linhas `OK`; "Esquema … — A–K conferidas; Registro ID=L, Versão=M, E-mail Enviado=N, Data de Conclusão=O; pedidos novos recebem Registro ID e Versão 1"; período "ABERTO agora".

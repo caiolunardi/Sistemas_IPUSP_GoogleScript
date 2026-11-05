@@ -1,6 +1,6 @@
 # Ambiente de homologação dos formulários
 
-Vale para os formulários dos alunos que leem as planilhas pelo `ID_INDEX`: [Exclusão de Disciplinas](exclusao-disciplinas/README.md) (v1.2), [Trancamento Parcial](trancamento-parcial/README.md) (v1.2) e [Trancamento Total](trancamento-total/README.md) (v1.3).
+Vale para os formulários dos alunos que leem as planilhas pelo `ID_INDEX`: [Exclusão de Disciplinas](exclusao-disciplinas/README.md) (v1.2), [Trancamento Parcial](trancamento-parcial/README.md) (v1.2), [Trancamento Total](trancamento-total/README.md) (v1.3) e [Abertura de Habilitação](abertura-habilitacoes/formulario/README.md) (v2.0, ainda não implantada).
 
 > **Não vale para a Estrutura Curricular (Grade Horaria - Config).** Ela não lê `AMBIENTE`: usa sempre a coluna `ID de Produção` do `ID_INDEX` e nunca a coluna `Homologação` ([`Configuracao.gs`](../../sistemas/estrutura-curricular/src/Configuracao.gs)). Por isso, os passos abaixo não isolam a Estrutura. Um projeto de homologação dela com o `ID_INDEX` da produção leria e gravaria as planilhas reais. A homologação da Estrutura precisa de um projeto próprio, com `ID_INDEX_SPREADSHEET_ID` apontando para um `ID_INDEX` fictício ([PR #32](https://github.com/caiolunardi/Sistemas_IPUSP_GoogleScript/pull/32)).
 

@@ -6,18 +6,20 @@ Os títulos abaixo são os que o código procura. As posições da aba atual for
 
 ### Aba `Respostas ao formulário 2` (atual; lida e escrita)
 
+Na coluna "Quem grava", **formulário** é o Web App dos alunos (em uso desde que substituiu o Google Forms). As linhas mais antigas foram gravadas pelo próprio Forms, com os mesmos títulos. O contrato completo do lado do formulário está em [formulario/COMPATIBILIDADE.md](formulario/COMPATIBILIDADE.md).
+
 | Col. | Título procurado | Como é achada | Quem grava | Tipo / exemplo | Uso |
 |---|---|---|---|---|---|
-| A | `Carimbo de data/hora` | título exato (obrigatória) | Forms | `Date` (ou texto `dd/mm/aaaa hh:mm:ss`) | ordem, relatórios, referência de "Preparar pedido" |
-| B | `Endereço de e-mail` | título exato | Forms | texto | só exibido no detalhe |
-| C | (não conferido) | não usada | Forms | — | — |
-| D | `Nº USP` | título exato (obrigatória) | Forms | número ou texto, `9900001` | lista, busca, referência |
-| E | `Nome` | título exato (obrigatória) | Forms | texto | define se a linha é um pedido; ordem; primeiro nome do e-mail |
-| F | `E-mail USP` | título exato (obrigatória) | Forms | texto | destinatário do aviso, busca |
-| G | `Ano de ingresso` | título exato | Forms | texto/número | detalhe |
-| H | `Realizou trancamento total de matrícula em algum semestre?` | título exato | Forms | `Sim`/`Não` | detalhe |
-| I | `Deseja solicitar a abertura de qual programa?` | título exato (obrigatória) | Forms | texto; pode ter as duas habilitações separadas por vírgula | lista, e-mail, relatórios |
-| **J** | `Comentários, sugestões, elogios ou críticas.` (pergunta do formulário) | **posição 10** | Forms e gerenciador | texto até 2.000 caracteres | Observações: o comentário do aluno e a observação da equipe dividem a célula, como na 1.0 |
+| A | `Carimbo de data/hora` | título exato (obrigatória) | formulário | `Date` (ou texto `dd/mm/aaaa hh:mm:ss`) | ordem, relatórios, referência de "Preparar pedido" |
+| B | `Endereço de e-mail` | título exato | formulário | texto | só exibido no detalhe |
+| C | `Declaro ter lido as informações da página inicial do formulário, e estar ciente das normas e prazos para fazer a solicitação e atendimento do pedido.` (título que a 1.0 do formulário exige; não conferido na planilha) | não usada | formulário | `Sim` | — |
+| D | `Nº USP` | título exato (obrigatória) | formulário | número ou texto, `9900001` | lista, busca, referência |
+| E | `Nome` | título exato (obrigatória) | formulário | texto | define se a linha é um pedido; ordem; primeiro nome do e-mail |
+| F | `E-mail USP` | título exato (obrigatória) | formulário | texto | destinatário do aviso, busca |
+| G | `Ano de ingresso` | título exato | formulário | texto/número | detalhe |
+| H | `Realizou trancamento total de matrícula em algum semestre?` | título exato | formulário | `Sim`/`Não` | detalhe |
+| I | `Deseja solicitar a abertura de qual programa?` | título exato (obrigatória) | formulário | texto; pode ter as duas habilitações separadas por vírgula | lista, e-mail, relatórios |
+| **J** | `Comentários, sugestões, elogios ou críticas.` (pergunta do formulário) | **posição 10** | formulário e gerenciador | texto até 2.000 caracteres | Observações: o comentário do aluno e a observação da equipe dividem a célula, como na 1.0 |
 | **K** | (qualquer) | **posição 11** | gerenciador | `Concluído` / `pendente` / vazio / outros textos antigos | Situação (ver [regras](REGRAS_E_CONTRATOS.md#1-situação-do-pedido)) |
 | L+ | `Data de Conclusão` | título exato; criada se faltar | gerenciador | `Date` | concluídos, detalhe |
 | L+ | `Registro ID` | título exato; criada pela migração | gerenciador | UUID `xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx` | identifica o pedido |

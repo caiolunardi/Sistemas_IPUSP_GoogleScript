@@ -4,14 +4,14 @@
 
 ## Finalidade e escopo
 
-Os alunos pedem a abertura de uma habilitação (Bacharelado ou Licenciatura em Psicologia) num Google Forms, que grava na aba `Respostas ao formulário 2` da planilha `ABERTURA_HABILITACOES`. O gerenciador é o Web App em que a equipe do Serviço de Graduação:
+Os alunos pedem a abertura de uma habilitação (Bacharelado ou Licenciatura em Psicologia) num **Web App próprio** (o [formulário dos alunos](formulario/README.md)), que grava na aba `Respostas ao formulário 2` da planilha `ABERTURA_HABILITACOES`. Esse Web App substituiu o **Google Forms original**, que é a origem histórica da aba: os títulos das colunas A–J são as perguntas do Forms, e os registros antigos continuam nas mesmas abas, sem migração. O gerenciador é o Web App em que a equipe do Serviço de Graduação:
 
 - vê os **pedidos pendentes**, em ordem alfabética, com busca por nome ou Nº USP;
 - abre cada pedido, escreve **observações**, **conclui** ou **reabre** e **avisa o aluno por e-mail** (opções independentes);
 - consulta os **10 concluídos mais recentes** e faz a **busca no histórico**, que inclui a aba `2021 - 2022` (somente consulta);
 - vê **relatórios** por habilitação, ano e mês.
 
-O formulário dos alunos (Google Forms) não faz parte deste repositório. O Painel dos servidores conta as pendências desta planilha ([contrato](REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
+O formulário dos alunos em uso (v1.0) não está no repositório; a v2.0 está em [`sistemas/abertura-habilitacoes/formulario/`](../../../sistemas/abertura-habilitacoes/formulario/README.md), ainda não implantada. O Painel dos servidores conta as pendências desta planilha ([contrato](REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
 
 ## O que mudou da 1.0 para a 2.0, em resumo
 
@@ -38,6 +38,7 @@ Todas as diferenças, uma a uma, com a classificação e o teste: [INVENTARIO_LE
 | [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md) | Dados tratados, recursos, acesso, registros, pendências institucionais. |
 | [UX_E_NAVEGACAO.md](UX_E_NAVEGACAO.md) | Tela, estados, teclado, tema, responsividade. |
 | [AJUDA.md](AJUDA.md) | Texto-fonte da Central de Ajuda. |
+| [formulario/](formulario/README.md) | Formulário dos alunos (Web App): histórico, compatibilidade com este gerenciador, decisões, instalação e homologação da v2.0. |
 | [INSTALACAO_E_ATUALIZACAO.md](INSTALACAO_E_ATUALIZACAO.md) | Script Properties, `ID_INDEX`, lista de acesso, implantação (sem valores). |
 | [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md) | Uso diário, diagnósticos, migração controlada, recuperação de um pedido, cópia de segurança, como voltar atrás, problemas comuns. |
 | [HOMOLOGACAO.md](HOMOLOGACAO.md) | Plano de homologação e estado. |

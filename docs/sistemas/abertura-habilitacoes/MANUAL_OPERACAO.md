@@ -104,7 +104,7 @@ Desfazer: copiar de volta as duas células pelo histórico de versões ou pela c
 
 ## 5. Cópia de segurança e restauração
 
-- Antes de qualquer migração, implantação ou mudança de estrutura (Forms, colunas): Arquivo → Fazer uma cópia, numa pasta restrita (a cópia tem dados pessoais).
+- Antes de qualquer migração, implantação ou mudança de estrutura (formulário dos alunos, colunas): Arquivo → Fazer uma cópia, numa pasta restrita (a cópia tem dados pessoais).
 - O histórico de versões da planilha guarda as alterações; para restaurar uma célula ou uma linha, prefira copiar do histórico em vez de restaurar a planilha inteira (que desfaz também o que outras pessoas fizeram depois).
 - Apagar as cópias quando não forem mais necessárias. Prazo de guarda: A VALIDAR INSTITUCIONALMENTE.
 
@@ -116,8 +116,8 @@ Ver [INSTALACAO_E_ATUALIZACAO.md](INSTALACAO_E_ATUALIZACAO.md#5-voltar-atrás).
 
 | Sintoma | Causa provável | Correção |
 |---|---|---|
-| "A coluna J (Observações)/K (Situação) está ocupada por…" | Uma pergunta foi acrescentada ou movida no Forms e as colunas andaram. | Não usar o gerenciador. Restaurar as colunas para J e K (mover a coluna nova para o fim da planilha), conferir com `diagnosticarPlanilha`. |
-| "Não encontrei a coluna …" | Pergunta do Forms renomeada; título da linha 1 mudou. | Voltar o título ao texto exato (ver [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md)) ou mudar `CABECALHOS` em `Planilha.gs` num PR. |
+| "A coluna J (Observações)/K (Situação) está ocupada por…" | Uma coluna foi acrescentada ou movida (à mão ou por uma mudança no formulário dos alunos) e as colunas andaram. | Não usar o gerenciador. Restaurar as colunas para J e K (mover a coluna nova para o fim da planilha), conferir com `diagnosticarPlanilha`. |
+| "Não encontrei a coluna …" | Título da linha 1 mudou (à mão ou por mudança no formulário dos alunos). | Voltar o título ao texto exato (ver [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md)) ou mudar `CABECALHOS` em `Planilha.gs` num PR. |
 | "A aba … tem título repetido" | Duas colunas com o mesmo título. | Renomear ou remover a duplicada. |
 | Pendentes no gerenciador ≠ número do Painel dos servidores | Critérios diferentes: o painel só conta K = `pendente` ([contrato](REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)). | Esperado enquanto houver pedidos com K vazia. Decisão pendente. |
 | Pedidos novos sempre "Sem identificador" | Não há gatilho que atribua ID às respostas novas (a 1.0 atribuía ao abrir a página). | **Preparar pedido** um a um, ou a migração (seção 4). |

@@ -68,11 +68,13 @@ A 2.0 acrescenta, sem mudar as contagens: linhas **sem data** reconhecível e o 
 
 ## 6. Contratos com outros sistemas
 
-### Google Forms (alunos)
+### Formulário dos alunos (Web App)
 
-- Grava a aba `Respostas ao formulário 2`, colunas A–I. O gerenciador acha essas colunas pelo **título exato** da linha 1 (ver [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md)). Renomear uma pergunta no Forms muda o título e pode parar o gerenciador (`ESTRUTURA`).
-- Uma pergunta nova no Forms entra como coluna nova e pode empurrar Observações (J) e Situação (K). O gerenciador recusa trabalhar quando J ou K contêm um título conhecido; um título desconhecido nessas posições **não** é detectado. Antes de mexer no Forms, siga o [manual](MANUAL_OPERACAO.md#7-problemas-comuns).
-- O Forms grava por fora da trava do script.
+- **Histórico:** a aba nasceu de um Google Forms; os títulos de A–J são as perguntas dele. **Aplicação atual:** um Web App próprio, que substituiu o Forms e grava na mesma aba, com os mesmos títulos ([formulário](formulario/README.md)).
+- Grava a aba `Respostas ao formulário 2`, colunas A–K (K = `pendente`). O gerenciador acha A–I pelo **título exato** da linha 1 (ver [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md)). Renomear um título pode parar o gerenciador (`ESTRUTURA`).
+- A 1.0 do formulário (em uso) procura `Situação` pelo título e, se não achar, cria a coluna no fim da linha 1. A 2.0 (no repositório) confere A–K antes de gravar e recusa qualquer diferença, sem criar coluna; também preenche `Registro ID` e `Versão` = 1 na linha nova quando as colunas existem ([compatibilidade](formulario/COMPATIBILIDADE.md)).
+- Uma coluna nova antes de J/K empurraria Observações e Situação. O gerenciador recusa trabalhar quando J ou K contêm um título conhecido; a 2.0 do formulário recusa gravar.
+- O formulário grava por fora da trava do gerenciador (projetos diferentes). Se o Google Forms original ainda estiver ligado à planilha, ele também grava por fora; o estado desse vínculo não foi conferido.
 
 ### Painel dos servidores
 
@@ -81,7 +83,7 @@ Lê a mesma planilha pela chave `ABERTURA_HABILITACOES` para contar pendências 
 - aba atual: conta as linhas em que a coluna **11 (K)**, sem espaços nas pontas e em minúsculas, é exatamente `pendente`;
 - aba `2021 - 2022`: mesma regra na primeira coluna cujo título contém "situa".
 
-Consequência: um pedido novo do Forms (K vazia) **aparece como pendente no gerenciador, mas não é contado pelo painel** até alguém salvar o pedido sem concluir. Os dois critérios já eram diferentes na 1.0; nenhum dos dois sistemas foi mudado aqui. Unificar é decisão humana (ver [VERSOES_E_DECISOES.md](VERSOES_E_DECISOES.md)). Para não piorar a divergência, a 2.0 continua gravando `pendente` em minúsculas e mantém K na posição 11.
+Consequência: um pedido antigo do Forms com K vazia **aparece como pendente no gerenciador, mas não é contado pelo painel** até alguém salvar o pedido sem concluir. Os dois critérios já eram diferentes na 1.0; nenhum dos dois sistemas foi mudado aqui. Unificar é decisão humana (ver [VERSOES_E_DECISOES.md](VERSOES_E_DECISOES.md)). Para não piorar a divergência, a 2.0 continua gravando `pendente` em minúsculas e mantém K na posição 11.
 
 A URL do gerenciador aparece no Painel dos servidores pela chave `GERENCIADOR_HABILITACOES` da Script Property `URLS_SISTEMAS_EQUIPE` do painel. Uma nova implantação do gerenciador (nova URL) exige atualizar essa propriedade, o que é tarefa do responsável.
 

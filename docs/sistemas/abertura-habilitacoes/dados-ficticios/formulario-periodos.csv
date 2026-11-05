@@ -1,0 +1,3 @@
+Formulário,Link,Tipo,Abertura 1º sem.,Hora,Fechamento 1º sem.,Hora,Abertura 2º sem.,Hora,Fechamento 2º sem.,Hora
+Pedido de Abertura de Habilitação,https://exemplo.invalid/formulario,Contínuo,,,,,,,,
+Formulário Teste Sazonal,https://exemplo.invalid/outro,Sazonal,01/02/2026,08:00,10/02/2026,18:00,01/08/2026,08:00,10/08/2026,18:00
