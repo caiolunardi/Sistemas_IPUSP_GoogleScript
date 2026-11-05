@@ -671,6 +671,25 @@
     line-height:1.6;
     color:var(--gradip-text);
   }
+  /* Saudação de quem abriu: nome da planilha de alunos (obterDadosIniciais);
+     o período vem do relógio do navegador, como no Painel dos servidores. */
+  .saudacaoUsuario{
+    flex:1 1 auto;
+    min-width:0;
+    text-align:center;
+    font-size:16px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .saudacaoUsuario:empty{ display:none; }
+  @media (max-width:1023px){
+    .cabecalho{ flex-wrap:wrap; row-gap:4px; padding-top:8px; padding-bottom:8px; }
+    .saudacaoUsuario{ order:3; flex:1 1 100%; text-align:left; font-size:15px; }
+  }
+
   .sr-only{
     position:absolute;
     width:1px;
@@ -701,6 +720,7 @@
         <p>Bacharelado e Licenciatura em Psicologia — IPUSP</p>
       </div>
     </div>
+    <div id="saudacaoUsuario" class="saudacaoUsuario" aria-live="polite"></div>
     <div class="cabecalhoDireita">
       <?!= include_('GradipTemaControle') ?>
       <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
@@ -944,6 +964,7 @@ function receberDadosIniciais(dados) {
     }
 
     document.getElementById("campoEmail").value = dadosIniciais.email;
+    iniciarSaudacao(dadosIniciais.encontrado ? dadosIniciais.nome : "");
 
     if (dadosIniciais.encontrado) {
         document.getElementById("campoNUsp").value = dadosIniciais.nUsp;
@@ -964,6 +985,33 @@ function receberDadosIniciais(dados) {
 
     document.getElementById("conteudo").hidden = false;
 
+}
+
+// "Bom dia, Maria": primeiro nome do cadastro de alunos (não o que o
+// aluno digitar no campo). Sem cadastro, só o período. Período pelo
+// relógio do navegador, conferido de minuto em minuto.
+let nomeSaudacao = "";
+let saudacaoTimer;
+
+function primeiroNomeSaudacao(nomeCompleto) {
+    const primeiro = String(nomeCompleto || "").trim().split(/\s+/)[0] || "";
+    if (!primeiro || primeiro !== primeiro.toUpperCase()) return primeiro;
+    return primeiro.charAt(0) + primeiro.slice(1).toLowerCase();
+}
+
+function atualizarSaudacao() {
+    const hora = new Date().getHours();
+    const periodo = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+    const el = document.getElementById("saudacaoUsuario");
+    el.textContent = nomeSaudacao ? periodo + ", " + nomeSaudacao : periodo;
+    el.title = el.textContent;
+}
+
+function iniciarSaudacao(nomeCompleto) {
+    nomeSaudacao = primeiroNomeSaudacao(nomeCompleto);
+    atualizarSaudacao();
+    if (saudacaoTimer) clearInterval(saudacaoTimer);
+    saudacaoTimer = setInterval(atualizarSaudacao, 60000);
 }
 
 // Monta via DOM (nunca innerHTML com dado da planilha): situação e

@@ -28,10 +28,11 @@
 | Recibo | não havia | recibo "não responder" ao e-mail do login; falha no envio não desfaz o pedido |
 | Observações | cortava acima de 2.000 caracteres | recusa com mensagem acima de 2.000 (o mesmo limite do Gerenciador) |
 | Erros | mostrava o detalhe técnico do período ao aluno | mensagem genérica; o detalhe fica no registro de execução, sem dados pessoais |
-| Implantação | "Executar como: usuário que acessa" | "Executar como: eu", como os outros formulários (o aluno não precisa ter acesso às planilhas) |
+| Implantação | "Executar como: eu" (conta do Serviço de Graduação), acesso de qualquer pessoa da USP | igual; o manifesto passa a declarar isso (`USER_DEPLOYING`, `DOMAIN`) |
+| Saudação | não havia | "Bom dia/Boa tarde/Boa noite, <primeiro nome>" no topo, com o nome achado na planilha de alunos; some quando o aluno não está cadastrado ou a página está bloqueada |
 | Interface | estilo próprio | tema GRADIP (Sistema/Claro/Escuro), Central de Ajuda, validação no campo, teclado e leitores de tela |
 
-Os itens que eram decisão de lógica foram propostos ao responsável em 05/11/2026 e estão em [DECISOES.md](DECISOES.md).
+Os itens que eram decisão de lógica foram respondidos pelo responsável em 05/11/2026 e estão em [DECISOES.md](DECISOES.md).
 
 ## Documentos
 

@@ -33,4 +33,4 @@ Os 11 arquivos de `src/` (o `.claspignore` deixa de fora os testes). Na produç�
 
 ## 5. Voltar atrás
 
-Implantar → Gerenciar implantações → editar → escolher a versão anterior (a 1.0). Os pedidos gravados pela 2.0 continuam legíveis pela 1.0 e pelo Gerenciador: as colunas são as mesmas. A 1.0 volta a rodar como "usuário que acessa" só se a implantação for trocada de volta.
+Implantar → Gerenciar implantações → editar → escolher a versão anterior (a 1.0). Os pedidos gravados pela 2.0 continuam legíveis pela 1.0 e pelo Gerenciador: as colunas são as mesmas. A configuração de execução e acesso é a mesma nas duas versões.

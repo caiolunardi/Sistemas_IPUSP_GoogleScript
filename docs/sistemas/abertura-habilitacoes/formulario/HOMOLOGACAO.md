@@ -13,7 +13,7 @@
 | Suíte | Resultado | O que cobre |
 |---|---|---|
 | `node testar_backend.js` | 38 ok, 0 falha | login, período, alunos, histórico, validação, gravação A–O, esquema, compatibilidade com Gerenciador e Painel, pedido repetido, recibo, trava, logs, homologação, CSV fictício |
-| `node testar_navegador.js` | 166 ok, 0 falha | carga, bloqueios, validação, pendente por programa, envio, recibo, temas, contraste AA, alvos de 44 px, 360–1280 px, Central de Ajuda, faixa de homologação |
+| `node testar_navegador.js` | 174 ok, 0 falha | carga, saudação, bloqueios, validação, pendente por programa, envio, recibo, temas, contraste AA, alvos de 44 px, 360–1280 px, Central de Ajuda, faixa de homologação |
 
 Limites: os serviços do Google são simulados; o login real, a autorização do e-mail, o `appendRow` concorrente e a planilha real só a homologação mostra.
 

@@ -13,7 +13,7 @@
 | Categoria | Exemplo abstrato | Finalidade | Origem | Destino | Persistência | Classe |
 |---|---|---|---|---|---|---|
 | Identidade do login | e-mail `@usp.br` | identificar quem pede | `Session.getActiveUser()` | colunas B e F; recibo | planilha de respostas | Pessoal |
-| Pré-preenchimento | Nº USP, nome, ano de ingresso | facilitar o preenchimento | planilha de alunos | só a página de quem abriu | não grava, salvo o que o aluno enviar | Pessoal |
+| Pré-preenchimento e saudação | Nº USP, nome, ano de ingresso | facilitar o preenchimento; o primeiro nome aparece na saudação do topo | planilha de alunos | só a página de quem abriu | não grava, salvo o que o aluno enviar | Pessoal |
 | Pedido | declaração, Nº USP, nome, ano, trancamento, programa(s), observações | atender o pedido | página | planilha de respostas (A–K) | planilha | Pessoal |
 | Identificação técnica | Registro ID (UUID), Versão | o Gerenciador achar o pedido | servidor | colunas do Gerenciador | planilha | Interna |
 | Histórico do próprio aluno | programa, data, situação | mostrar os pedidos anteriores | as duas abas (só leitura) | só a página do próprio aluno | não grava | Pessoal |
@@ -32,7 +32,7 @@
 ## 4. Web App
 
 - Quem pode acessar: qualquer pessoa da USP (`DOMAIN`).
-- Executa como: `USER_DEPLOYING`. Os alunos não precisam de acesso às planilhas ([DECISOES.md](DECISOES.md), item 3).
+- Executa como: `USER_DEPLOYING` (a conta do Serviço de Graduação), como a 1.0 já faz. Os alunos não precisam de acesso às planilhas ([DECISOES.md](DECISOES.md), item 3).
 - Autorização no servidor: e-mail da sessão com domínio exatamente `usp.br`, conferido de novo em cada gravação; nunca o e-mail mandado pela página.
 - Dados enviados à página: só os do próprio login (pré-preenchimento e pedidos com o mesmo e-mail). Nenhum ID, nome de coluna ou detalhe técnico.
 - Operações privilegiadas: `diagnosticarConfiguracao`, só pelo editor; não grava.
@@ -52,7 +52,7 @@ PLANILHA_ALUNOS, PERIODOS, ABERTURA_HABILITACOES   (chaves do ID_INDEX)
 
 ## 7. Compartilhamento e acesso
 
-- Planilhas: só a equipe e a conta que implanta. Com "Executar como: eu", os alunos deixam de precisar de acesso.
+- Planilhas: só a equipe e a conta que implanta. Como o Web App executa como a conta que implanta, os alunos não precisam de acesso.
 
 ## 8. Pendências institucionais
 

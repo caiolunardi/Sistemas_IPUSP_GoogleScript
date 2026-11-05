@@ -10,7 +10,8 @@
 - Recibo por e-mail "não responder" (nova autorização do script).
 - Confirmação quando já há pedido pendente para o mesmo programa.
 - Observações acima de 2.000 caracteres recusadas (antes cortadas).
-- Manifesto com "Executar como: eu".
+- Manifesto declara a execução que a 1.0 já usa ("Executar como: eu", acesso de qualquer pessoa da USP).
+- Saudação no topo com o primeiro nome da planilha de alunos.
 - Tema GRADIP, Central de Ajuda e acessibilidade.
 
-Decisões em aberto: [DECISOES.md](../docs/sistemas/abertura-habilitacoes/formulario/DECISOES.md).
+Decisões: [DECISOES.md](../docs/sistemas/abertura-habilitacoes/formulario/DECISOES.md).

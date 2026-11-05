@@ -29,6 +29,7 @@ const CENARIOS = {
   pendente: { dados: Object.assign({}, BASE, { historico: [
     { carimbo: '01/08/2025 10:00', programa: 'Licenciatura em Psicologia', programas: ['lic'], situacao: 'Concluído', pendente: false },
     { carimbo: '02/03/2026 09:30', programa: 'Bacharelado em Psicologia', programas: ['bach'], situacao: 'Em análise', pendente: true }] }), envio: ENVIO },
+  maiusculas: { dados: Object.assign({}, BASE, { nome: 'MARIA TESTE FICTICIA' }), envio: ENVIO },
   naoEncontrado: { dados: Object.assign({}, BASE, { encontrado: false, nUsp: '', nome: '', anoIngresso: '' }), envio: { sucesso: true, reciboEnviado: false, programas: 'Licenciatura em Psicologia' } },
   servidorPendente: { dados: BASE, erroEnvio: 'Error: PEDIDO_PENDENTE: Você já tem um pedido pendente para Bacharelado em Psicologia, enviado em 15/10/2026 10:00.' },
   foraNoEnvio: { dados: BASE, erroEnvio: 'Error: FORA_DO_PERIODO: Este formulário não está mais dentro do período de abertura.', semConfirmacao: true },
@@ -69,6 +70,7 @@ async function preencherValido(p) {
     chk(`${T} seletor mostra Sistema`, await p.$eval('[data-gradip-theme-select]', e => e.value === 'system'));
     chk(`${T} marca certa`, await p.evaluate(s => { const l = document.querySelector('.marcaIpuspSvg.gradip-logo-light'), d = document.querySelector('.marcaIpuspSvg.gradip-logo-dark'); return s === 'dark' ? getComputedStyle(l).display === 'none' && getComputedStyle(d).display !== 'none' : getComputedStyle(d).display === 'none' && getComputedStyle(l).display !== 'none'; }, scheme));
     chk(`${T} pré-preenchido e e-mail só leitura`, await p.$eval('#campoNome', e => e.value) === 'Aluna Teste Ficticia' && await p.$eval('#campoEmail', e => e.value === 'ana@usp.br' && e.readOnly) && await visivel(p, '#avisoNome'));
+    chk(`${T} saudação com o primeiro nome do cadastro`, await p.evaluate(() => { const h = new Date().getHours(); const per = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; return document.getElementById('saudacaoUsuario').textContent === per + ', Aluna'; }));
     chk(`${T} texto da seção 1 preservado`, (await p.textContent('.textoInformativo')).includes('15 semestres') && (await p.$$eval('.textoInformativo a', a => a.length)) === 2);
     chk(`${T} rótulos dos campos ligados`, await p.evaluate(() => [...document.querySelectorAll('input:not([type=hidden]):not([type=radio]):not([type=checkbox]),textarea')].filter(e => !e.closest('[data-gradip-help-overlay]') && e.id !== 'gradip-help-search').every(e => document.querySelector(`label[for="${e.id}"]`))));
     const pares = await p.evaluate(() => {
@@ -137,14 +139,20 @@ async function preencherValido(p) {
 
     // não encontrado + recibo falhou
     p = await abrir(ctx, 'naoEncontrado');
+    chk(`${T} sem cadastro: saudação só com o período`, /^(Bom dia|Boa tarde|Boa noite)$/.test(await p.textContent('#saudacaoUsuario')));
     chk(`${T} aviso de não encontrado`, (await p.textContent('#avisos')).includes('Não encontramos'));
     await p.fill('#campoNome', 'Bruno Teste'); await p.fill('#campoNUsp', '9900002'); await p.fill('#campoAnoIngresso', '2024'); await preencherValido(p);
     await p.click('#btnEnviar'); await p.waitForSelector('#telaConfirmacao:not([hidden])');
     chk(`${T} recibo não enviado avisado`, (await p.textContent('#textoRecibo')).includes('foi registrado'));
     await p.close();
 
+    p = await abrir(ctx, 'maiusculas');
+    chk(`${T} nome em maiúsculas vira "Maria"`, (await p.textContent('#saudacaoUsuario')).endsWith(', Maria'));
+    await p.close();
+
     // bloqueios
     p = await abrir(ctx, 'semLogin');
+    chk(`${T} sem login: sem saudação`, (await p.textContent('#saudacaoUsuario')) === '' && !(await visivel(p, '#saudacaoUsuario')));
     chk(`${T} sem login bloqueia`, await visivel(p, '#telaBloqueada') && (await p.textContent('#tituloBloqueio')) === 'Login necessário' && !(await visivel(p, '#conteudo')));
     await p.close();
     p = await abrir(ctx, 'fechado');
