@@ -21,7 +21,13 @@ As duas suítes também rodam na CI a cada push (desde 05/11/2026).
 
 Limites: os serviços do Google são simulados; o login real, a autorização do e-mail, o `appendRow` concorrente e a planilha real só a homologação mostra.
 
-## 3. Roteiro no Google
+## 3. Código no projeto de homologação
+
+- 05/11/2026 13:51 (horário de Brasília): `clasp push --force` feito pelo responsável no projeto `· HOMOLOGAÇÃO`, de `src/` em `ac25439` (o `src/` é idêntico ao de `dc2b361`). Antes, cópia de segurança do conteúdo padrão do projeto novo.
+- Conferência depois do push (`clasp pull` em pasta separada e `ferramentas/conferir_implantacao.js --commit dc2b361`): 10 de 10 arquivos idênticos, nenhum a mais nem a menos.
+- Não confere a versão implantada no `/exec`, as propriedades do script nem as permissões.
+
+## 4. Roteiro no Google
 
 | # | Passo | Esperado |
 |---|---|---|
