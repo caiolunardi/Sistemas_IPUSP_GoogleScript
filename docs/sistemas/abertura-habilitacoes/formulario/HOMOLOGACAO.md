@@ -6,7 +6,9 @@
 
 - [ ] Conferir, na planilha **real**, só a linha 1 da aba `Respostas ao formulário 2`: C tem o texto da declaração e K se chama `Situação` ([DECISOES.md](DECISOES.md), item 2). Não alterar nada.
 - [ ] Conferir se o Google Forms original ainda está ligado à planilha (na planilha: menu Formulários; no Forms: Respostas). Só anotar o estado: ligado, aceitando respostas ou não. Não desligar sem autorização específica.
-- [ ] Criar o projeto de homologação e as três cópias de planilha com os CSVs fictícios ([INSTALACAO.md](INSTALACAO.md)).
+- [x] Projeto de homologação criado pelo responsável (05/11/2026).
+- [x] `ABERTURA_HABILITACOES` com ID na coluna `Homologação` do `ID_INDEX` (informado em 05/11/2026).
+- [ ] Conferir a C1 da cópia de respostas e as linhas `PLANILHA_ALUNOS` e `PERIODOS` na coluna `Homologação` ([INSTALACAO.md](INSTALACAO.md), seção 2).
 
 ## 2. Testes locais (05/11/2026)
 
@@ -14,6 +16,8 @@
 |---|---|---|
 | `node testar_backend.js` | 38 ok, 0 falha | login, período, alunos, histórico, validação, gravação A–O, esquema, compatibilidade com Gerenciador e Painel, pedido repetido, recibo, trava, logs, homologação, CSV fictício |
 | `node testar_navegador.js` | 174 ok, 0 falha | carga, saudação, bloqueios, validação, pendente por programa, envio, recibo, temas, contraste AA, alvos de 44 px, 360–1280 px, Central de Ajuda, faixa de homologação |
+
+As duas suítes também rodam na CI a cada push (desde 05/11/2026).
 
 Limites: os serviços do Google são simulados; o login real, a autorização do e-mail, o `appendRow` concorrente e a planilha real só a homologação mostra.
 

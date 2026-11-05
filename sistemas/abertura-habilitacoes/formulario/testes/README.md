@@ -12,4 +12,6 @@ node testar_backend.js
 node testar_navegador.js [pasta-para-capturas]   # requer Playwright com Chromium
 ```
 
+As duas suítes rodam na CI (`.github/workflows/ci.yml`, matrizes Servidor e Tela), autorizadas pelo responsável em 05/11/2026.
+
 Capturas versionadas: [docs/sistemas/abertura-habilitacoes/evidencias/formulario-2.0](../../../../docs/sistemas/abertura-habilitacoes/evidencias/formulario-2.0/README.md).
