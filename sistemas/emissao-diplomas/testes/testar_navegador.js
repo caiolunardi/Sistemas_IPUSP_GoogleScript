@@ -201,6 +201,7 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     await abrirAluno(pagina);
     assert(await pagina.isVisible('#btnAcaoDados'), 'salvar oculto');
     assert(await pagina.isVisible('.botaoExcluirAluno'), 'excluir oculto');
+    assert(await pagina.isVisible('#modalDetalhe .zonaClique'), 'área de upload oculta para admin');
     assert(!(await pagina.isVisible('#avisoSomenteLeitura')), 'aviso de consulta para admin');
     assert(!erros.length, erros.join('\n'));
     await captura(pagina, 'admin-detalhe-claro');
@@ -220,6 +221,8 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     assert(!r.visiveis.length, 'visíveis para LEITOR: ' + r.visiveis.join(' | '));
     assert(!r.editaveis.length, 'campos editáveis para LEITOR: ' + r.editaveis.join(', '));
     assert(await pagina.textContent('#linkPastaAluno') === 'Pasta ainda não criada no Drive', 'LEITOR vê "Criar pasta"');
+    const upload = await pagina.evaluate(() => ({ linhas: document.querySelectorAll('#modalDetalhe .linhaUpload').length, zonaVisivel: [...document.querySelectorAll('#modalDetalhe .zonaClique')].some(e => e.getClientRects().length > 0) }));
+    assert(!upload.linhas && !upload.zonaVisivel, 'LEITOR vê a área de upload: ' + JSON.stringify(upload));
     const chamadas = await pagina.evaluate(() => window.__chamadas);
     assert(!chamadas.some(c => /^(salvar|excluir|gerar|enviar|garantir|upload|confirmar|devolver|desmarcar|adicionar)/.test(c)), 'LEITOR chamou ' + chamadas.join(','));
     assert(!erros.length, erros.join('\n'));

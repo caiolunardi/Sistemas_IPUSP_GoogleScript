@@ -1252,7 +1252,7 @@ html[data-perfil="LEITOR"] [data-somente-admin]{ display:none !important; }
 
                 <ul class="listaArquivosExistentes" id="listaArquivosExistentes"></ul>
 
-                <div id="linhasUpload"></div>
+                <div data-somente-admin id="linhasUpload"></div>
 
                 <button data-somente-admin class="botaoAdicionarLinha" onclick="adicionarLinhaUpload()">+ Adicionar arquivo</button>
 
@@ -2734,6 +2734,9 @@ function removerArquivoExistente(idArquivo) {
 //-----------------------------------
 
 function adicionarLinhaUpload() {
+
+    // LEITOR não envia arquivos: nem cria a área de upload.
+    if (!ehAdministrador) return;
 
     contadorLinhasUpload++;
     const idLinha = "linhaUpload" + contadorLinhasUpload;

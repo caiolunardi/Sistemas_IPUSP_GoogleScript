@@ -31,6 +31,14 @@ Antes: código enviado da branch do PR, `AMBIENTE=homologacao`, aba `EMISSAO_DIP
 | H9 | Central de Ajuda: "Acesso e perfis" e busca | conteúdo confere com a tela |
 | H10 | Celular (largura de 390 px), claro e escuro | sem rolagem horizontal; topo legível |
 
+### Registro da homologação (06/11/2026, responsável)
+
+- Código enviado ao projeto HOMOLOGACAO pelo responsável (`clasp push`, commit `4f78198`); conferência por novo `clasp clone`: os 25 arquivos idênticos (SHA-256) aos de `src/`.
+- H1: ok (faixa de homologação, conta do setor com nome e observação no topo, colação da cópia, tema escuro).
+- H4: aba anônima sem conta → "Conta não identificada", sem dados. A implantação estava em "Qualquer pessoa" (sem login do Google); a lista de acesso barra do mesmo jeito.
+- H3 (lista de colações): ok. H3 (detalhe do aluno): **falhou** — a área "Faça upload de um arquivo" aparecia para LEITOR (o envio era recusado no servidor). Corrigido na tela (a área não é criada para LEITOR); o teste de navegador passou a conferir isso e falha sem a correção. Precisa de novo `clasp push` e de repetir H3.
+- Capturas desta rodada mostram contas reais e ficam fora do repositório.
+
 ### O que falta
 
 - Rodar H1–H10 (responsável).
