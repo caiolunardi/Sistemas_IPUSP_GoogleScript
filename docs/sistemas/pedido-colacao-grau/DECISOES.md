@@ -10,6 +10,7 @@
 | PCG-DEC-004 | Documentação antes da reforma | Primeiro inventariar os códigos atuais e registrar responsabilidades, sem modificar os arquivos Apps Script | **ESCOPO DESTA RODADA** |
 | PCG-DEC-005 | Segurança e privacidade | Não copiar código bruto com IDs/URLs operacionais ao Git público; publicar só documentação sanitizada até o preflight | **GATE DO REPOSITÓRIO** |
 | PCG-DEC-006 | Contexto local | Preparar continuidade do formulário de maneira independente da do Gerenciador; sem ativação do manifesto global nem declaração de adoção sem revisão | **PROPOSTA**, ainda não ADOTADO |
+| PCG-DEC-007 | Solicitação sem cadastro confirmado | **A aprovação do cadastro não pode impedir que o aluno protocole o pedido de colação dentro do prazo.** O formulário deverá registrar o pedido provisoriamente com identificador e data/hora originais, sem criar cadastro definitivo ou vincular anexos a pessoa não identificada; abrirá pendência para conferência humana no Gerenciador de Pessoas. Só após validação da titularidade o pedido será associado à pessoa e seguirá para o Gerenciador de Diplomas. **Recebimento não equivale a deferimento acadêmico.** | **REGRA FUNCIONAL APROVADA em 06/11/2026; implementação futura.** Fluxo, persistência provisória, notificação, comprovante e tratamento de prazo ainda dependem de desenho técnico/testes |
 
 ## Questões que exigem decisão posterior
 
