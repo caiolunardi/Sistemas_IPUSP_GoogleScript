@@ -83,7 +83,7 @@ function contexto(amb) {
       computeDigest: () => [], computeHmacSha256Signature: () => [], base64Encode: () => '', base64Decode: () => [], newBlob: (bytes, tipo, nome) => ({ getName: () => nome, getBytes: () => bytes || [], getContentType: () => tipo, setName(n) { nome = n; return this; } }),
       formatDate: d => String(d), DigestAlgorithm: {}, Charset: {}
     },
-    DriveApp: {}, MailApp: {}, GmailApp: {}, MimeType: { PDF: 'application/pdf' }, ScriptApp: {},
+    DriveApp: amb.drive || {}, MailApp: {}, GmailApp: {}, MimeType: { PDF: 'application/pdf' }, ScriptApp: {},
     DocumentApp: { HorizontalAlignment: { CENTER: 'CENTER', LEFT: 'LEFT', RIGHT: 'RIGHT', JUSTIFY: 'JUSTIFY' }, VerticalAlignment: { TOP: 'TOP', MIDDLE: 'MIDDLE', BOTTOM: 'BOTTOM' }, Attribute: new Proxy({}, { get: (_, k) => String(k) }), ParagraphHeading: new Proxy({}, { get: (_, k) => String(k) }), GlyphType: new Proxy({}, { get: (_, k) => String(k) }), TextAlignment: new Proxy({}, { get: (_, k) => String(k) }) },
     Date: Date, JSON: JSON, Math: Math
   };

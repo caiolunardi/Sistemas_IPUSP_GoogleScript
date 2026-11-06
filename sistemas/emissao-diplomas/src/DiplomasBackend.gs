@@ -361,6 +361,7 @@ function migrarParaRegistroId_() {
     const vistos = new Set();
     let alteradas = 0;
     let duplicatasCorrigidas = 0;
+    let versoesCorrigidas = 0;
 
     for (let i = 0; i < dados.length; i++) {
 
@@ -379,7 +380,8 @@ function migrarParaRegistroId_() {
         dados[i][colRegistroId - 1] = novoId;
         vistos.add(novoId);
         duplicatasCorrigidas++;
-        Logger.log(`Registro ID duplicado corrigido na linha ${i + 2} (nome: ${nome}). Novo ID: ${novoId}`);
+        // Sem nome nem ID no registro de execução (DADOS_E_SEGURANCA §6).
+        Logger.log(`Registro ID duplicado corrigido na linha ${i + 2}.`);
       } else {
         vistos.add(idAtual);
       }
@@ -387,15 +389,22 @@ function migrarParaRegistroId_() {
       const versaoAtual = dados[i][colVersao - 1];
       if (!versaoAtual || isNaN(Number(versaoAtual))) {
         dados[i][colVersao - 1] = 1;
+        versoesCorrigidas++;
       }
 
     }
 
+    // Grava só as colunas Registro ID e Versão: regravar a faixa inteira
+    // com setValues trocaria fórmulas das outras colunas pelo valor
+    // calculado (revisão independente do PR #42, B2 e C2).
     if (alteradas > 0 || duplicatasCorrigidas > 0) {
-      aba.getRange(2, 1, dados.length, numColunas).setValues(dados);
+      aba.getRange(2, colRegistroId, dados.length, 1).setValues(dados.map(l => [l[colRegistroId - 1]]));
+    }
+    if (alteradas > 0 || duplicatasCorrigidas > 0 || versoesCorrigidas > 0) {
+      aba.getRange(2, colVersao, dados.length, 1).setValues(dados.map(l => [l[colVersao - 1]]));
     }
 
-    return { alteradas: alteradas, duplicatasCorrigidas: duplicatasCorrigidas };
+    return { alteradas: alteradas, duplicatasCorrigidas: duplicatasCorrigidas, versoesCorrigidas: versoesCorrigidas };
 
   } finally {
     lock.releaseLock();
@@ -1070,7 +1079,7 @@ function limparIdPastaNaCentral_(nUsp) {
       abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_ID_PASTA).setValue("");
     }
   } catch (err) {
-    Logger.log(`Não consegui limpar o ID da Pasta na planilha central para NUSP ${nUsp}: ${err}`);
+    Logger.log(`Não consegui limpar o ID da Pasta na planilha central: ${String(err && err.message || err).slice(0, 200)}`);
   }
 }
 
@@ -1103,7 +1112,7 @@ function garantirPastaAlunoCentral_(nUsp, nome, email) {
       abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_NUSP).setValue(String(nUsp).trim());
       abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_NOME).setValue(nome || "");
       if (email) abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_EMAIL).setValue(email);
-      Logger.log(`Aluno NUSP ${nUsp} (${nome}) cadastrado automaticamente na planilha central de Alunos (linha ${linhaCentral}).`);
+      Logger.log(`Aluno cadastrado automaticamente na planilha central de Alunos (linha ${linhaCentral}).`);
     }
 
     const idPastaAtual = String(abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_ID_PASTA).getValue() || "").trim();
@@ -1172,6 +1181,30 @@ function garantirPastaInterno_(aba, mapa, linha) {
   }
 
   return pastaValidada;
+
+}
+
+// Versão só de leitura de garantirPastaInterno_, para o perfil LEITOR:
+// procura a pasta pela planilha central (fonte de verdade) e, na falta,
+// pelo cache local; nunca cria pasta, linha, coluna nem grava cache.
+// Devolve null quando o aluno ainda não tem pasta.
+function localizarPastaSemGravar_(aba, mapa, linha) {
+
+  const nUsp = String(aba.getRange(linha, obterColuna_(mapa, "nUsp")).getValue() || "").trim();
+  if (!nUsp) return null;
+
+  const abaCentral = obterAbaAlunosCentral_();
+  const linhaCentral = localizarLinhaAlunoCentral_(abaCentral, nUsp);
+  let idPasta = linhaCentral
+    ? String(abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_ID_PASTA).getValue() || "").trim()
+    : "";
+
+  if (!idPasta) {
+    const colIdPasta = obterColunaOpcional_(mapa, "idPasta");
+    if (colIdPasta) idPasta = String(aba.getRange(linha, colIdPasta).getValue() || "").trim();
+  }
+
+  return idPasta ? validarPastaGerenciada_(idPasta) : null;
 
 }
 
@@ -2139,8 +2172,15 @@ function desmarcarEmailEnviado(registroId, versaoEsperada, tipo) {
 function obterObservacoes(registroId) {
   exigirLeitorDiplomas_(); // DiplomasAcesso.gs
 
+  const usuario = usuarioAtualDiplomas_(); // já conferido acima, sem nova leitura
   const { aba, mapa, linha } = resolverRegistroPorId_(registroId);
-  const pastaValidada = garantirPastaInterno_(aba, mapa, linha);
+  // LEITOR só consulta: localizar a pasta sem criar pasta, cadastro na
+  // planilha central nem colunas (revisão independente do PR #42, B1).
+  // O ADMINISTRADOR mantém o comportamento da 3.x.
+  const pastaValidada = usuario.perfil === ACESSO_DIPLOMAS.ADMINISTRADOR
+    ? garantirPastaInterno_(aba, mapa, linha)
+    : localizarPastaSemGravar_(aba, mapa, linha);
+  if (!pastaValidada) return { texto: "", versaoArquivo: 0 };
 
   const nome = aba.getRange(linha, obterColuna_(mapa, "nome")).getValue();
   const colacao = aba.getRange(linha, obterColuna_(mapa, "colacao")).getValue();

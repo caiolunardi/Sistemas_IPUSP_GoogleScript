@@ -39,7 +39,7 @@ O Painel dos servidores também lê a aba `Diplomas` (coluna "Status — Dados P
 
 - Quem pode acessar a implantação: qualquer pessoa com conta Google; na prática, só quem está na aba `EMISSAO_DIPLOMAS`.
 - Executa como: `USER_DEPLOYING` (conta do Serviço).
-- Autorização no servidor (`DiplomasAcesso.gs`): identidade só por `Session.getActiveUser()`; toda função pública começa com `exigirLeitorDiplomas_()` ou `exigirAdministradorDiplomas_()` (a CI confere). Recusas: `SEM_IDENTIFICACAO`, `SEM_ACESSO`, `ACESSO_INDISPONIVEL` (falha fechada) e `SO_LEITURA`. Esconder botões na página é só conveniência.
+- Autorização no servidor (`DiplomasAcesso.gs`): identidade só por `Session.getActiveUser()`; toda função pública começa com `exigirLeitorDiplomas_()` ou `exigirAdministradorDiplomas_()` (o `testar_acesso.js` confere; as suítes novas ainda não estão na CI, ver o PR #42). Desde a revisão independente, o mesmo teste chama cada consulta como LEITOR e exige zero gravações em planilha e no Drive: o `obterObservacoes` do LEITOR localiza a pasta sem criá-la. Recusas: `SEM_IDENTIFICACAO`, `SEM_ACESSO`, `ACESSO_INDISPONIVEL` (falha fechada) e `SO_LEITURA`. Esconder botões na página é só conveniência.
 - Dados enviados ao cliente: os do aluno aberto e das listas; do usuário, só nome, observação (ou o e-mail, sem nome) e perfil.
 - Operações privilegiadas (ADMINISTRADOR): gravar e excluir na planilha, criar pastas e arquivos, upload e exclusão de anexos, documentos, ZIP, lista de formandos, análise e relatórios de histórico, e-mails, testes e migração do módulo de histórico.
 

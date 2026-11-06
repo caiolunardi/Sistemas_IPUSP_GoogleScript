@@ -45,8 +45,12 @@ function montar(opcoes = {}) {
   ];
   planilhas[IDS.DIPL_PROD] = { Diplomas: linhas, INFOS: [['Tipo de arquivo'], ['Histórico Escolar']] };
   planilhas[IDS.DIPL_HOMOLOG] = { Diplomas: [TITULOS_DIPLOMAS], INFOS: [['Tipo de arquivo'], ['Tipo só da homologação']] };
+  (opcoes.indiceExtra || []).forEach(l => planilhas[IDS.INDICE]['Página1'].push(l));
+  Object.assign(planilhas, opcoes.planilhasExtra || {});
   const propriedades = opcoes.propriedades || { ID_INDEX_SPREADSHEET_ID: IDS.INDICE };
-  return S.ambiente({ usuario: opcoes.usuario === undefined ? ADMIN : opcoes.usuario, propriedades, planilhas });
+  const amb = S.ambiente({ usuario: opcoes.usuario === undefined ? ADMIN : opcoes.usuario, propriedades, planilhas });
+  if (opcoes.drive) amb.drive = opcoes.drive;
+  return amb;
 }
 
 const recusa = codigo => e => {
@@ -207,6 +211,110 @@ t('AMBIENTE=homologacao: permissões e diplomas pela coluna Homologação, títu
 t('a conta da produção não entra na homologação', () => {
   const amb = montar({ usuario: ADMIN, propriedades: { ID_INDEX_SPREADSHEET_ID: IDS.INDICE, AMBIENTE: 'homologacao' } });
   assert.strictEqual(pagina(amb).template.nome, 'DiplomasSemAcesso');
+});
+
+
+/*==== Efeitos colaterais: consulta de LEITOR não grava (revisão independente, B1/C4) ====*/
+
+const CENTRAL = 'ALUNOS_CENTRAL_FICTICIA_00000001';
+const RAIZ = 'PASTA_RAIZ_FICTICIA_0000000000001';
+const ID_ALUNA = '00000000-0000-4000-8000-00000000aaaa';
+function driveFicticio(pastasExistentes) {
+  const d = { criacoes: [], arquivosCriados: [] };
+  const raiz = { getId: () => RAIZ, createFolder: n => { d.criacoes.push(n); return pasta('NOVA_' + d.criacoes.length); } };
+  function pasta(id) {
+    return { getId: () => id, getUrl: () => 'https://exemplo.invalid/pasta/' + id, getParents: () => { let ok = true; return { hasNext: () => ok, next: () => { ok = false; return raiz; } }; },
+      getFilesByName: n => { const lista = n.startsWith('Observações - Aluna Fictícia Um - ') ? [{ getBlob: () => ({ getDataAsString: () => 'Observação fictícia' }), getLastUpdated: () => new Date(5) }] : []; return { hasNext: () => lista.length > 0, next: () => lista.shift() }; },
+      getFiles: () => ({ hasNext: () => false }), createFile: (...a) => { d.arquivosCriados.push(a); return {}; } };
+  }
+  d.getFolderById = id => { if (id === RAIZ) return raiz; if (!(pastasExistentes || []).includes(id)) throw new Error('não existe'); return pasta(id); };
+  d.createFolder = n => { d.criacoes.push(n); return pasta('X'); };
+  return d;
+}
+function montarComCentral(usuario, comPasta) {
+  return montar({
+    usuario,
+    linhasDiplomas: [TITULOS_DIPLOMAS.concat(['Link da pasta no Drive']), [ID_ALUNA, 1, 'Aluna Fictícia Um', '9000001', 'aluna1@exemplo.invalid', '20261', 'OK', '']],
+    indiceExtra: [['PLANILHA_ALUNOS', 'spreadsheet', CENTRAL, CENTRAL], ['PASTA_RAIZ_ALUNOS', 'folder', RAIZ, RAIZ]],
+    planilhasExtra: { [CENTRAL]: { 'Página1': comPasta ? [['N USP', 'Nome', '', 'E-mail', 'ID da Pasta'], ['9000001', 'Aluna Fictícia Um', '', '', 'PASTA_DA_ALUNA']] : [['N USP', 'Nome', '', 'E-mail', 'ID da Pasta']] } },
+    drive: driveFicticio(comPasta ? ['PASTA_DA_ALUNA'] : [])
+  });
+}
+const totalGravacoes = amb => Object.values(amb.planilhas).reduce((n, p) => n + Object.values(p.abas).reduce((m, a) => m + a.gravacoes.length, 0), 0);
+
+t('LEITOR: obterObservacoes de aluno sem pasta não cria pasta, cadastro, coluna nem cache', () => {
+  const amb = montarComCentral(LEITOR, false);
+  const r = S.executar(amb, 'obterObservacoes', [ID_ALUNA]);
+  assert.strictEqual(JSON.stringify(r), JSON.stringify({ texto: '', versaoArquivo: 0 }));
+  assert.strictEqual(totalGravacoes(amb), 0, 'gravou: ' + JSON.stringify(Object.values(amb.planilhas).map(p => Object.values(p.abas).map(a => a.gravacoes))));
+  assert.strictEqual(amb.drive.criacoes.length, 0, 'criou pasta no Drive');
+});
+
+t('LEITOR: obterObservacoes de aluno com pasta lê o texto sem gravar', () => {
+  const amb = montarComCentral(LEITOR, true);
+  const r = S.executar(amb, 'obterObservacoes', [ID_ALUNA]);
+  assert.strictEqual(r.texto, 'Observação fictícia');
+  assert.strictEqual(totalGravacoes(amb), 0);
+  assert.strictEqual(amb.drive.criacoes.length, 0);
+});
+
+t('ADMINISTRADOR: obterObservacoes mantém o comportamento da 3.x (cria a pasta que faltava)', () => {
+  const amb = montarComCentral(ADMIN, false);
+  S.executar(amb, 'obterObservacoes', [ID_ALUNA]);
+  assert.strictEqual(amb.drive.criacoes.length, 1, 'ADMINISTRADOR deveria criar a pasta como antes');
+  assert(amb.planilhas[CENTRAL].abas['Página1'].gravacoes.length > 0, 'cadastro na planilha central como antes');
+});
+
+t('toda consulta de LEITOR termina sem nenhuma gravação em planilha nem criação no Drive', () => {
+  const consultas = [
+    ['obterColacoes', []], ['obterAlunos', ['20261']], ['obterDetalheAluno', [ID_ALUNA]], ['obterTiposDeArquivo', []],
+    ['obterObservacoes', [ID_ALUNA]], ['historicoListarSessoesAnalise', [ID_ALUNA]], ['historicoObterSessaoAnalise', [ID_ALUNA, 'x']],
+    ['historicoObterUltimaSessaoAnalise', [ID_ALUNA]]
+  ];
+  const listadas = new Set(consultas.map(c => c[0]));
+  // A lista acima tem de cobrir toda função pública cuja guarda é a de LEITOR.
+  fontes.forEach(([f, s]) => {
+    const re = /^function\s+([A-Za-z0-9]+)\s*\([^)]*\)\s*\{\s*\n\s*exigirLeitorDiplomas_\(\)/gm; let m;
+    while ((m = re.exec(s))) assert(listadas.has(m[1]), 'consulta de LEITOR sem teste de efeitos: ' + m[1] + ' (' + f + ')');
+  });
+  for (const comPasta of [false, true]) for (const [nome, args] of consultas) {
+    const amb = montarComCentral(LEITOR, comPasta);
+    try { S.executar(amb, nome, args); } catch (e) { if (e && e.codigoAcesso) throw e; /* erro de dado fictício incompleto é aceito; gravar não */ }
+    assert.strictEqual(totalGravacoes(amb), 0, nome + ' gravou com LEITOR');
+    assert.strictEqual(amb.drive.criacoes.length + amb.drive.arquivosCriados.length, 0, nome + ' criou no Drive com LEITOR');
+  }
+});
+
+/*==== Migração de Registro ID: só as colunas de Registro ID e Versão (B2/C2) ====*/
+
+t('migração grava só as colunas Registro ID e Versão, nunca a faixa inteira', () => {
+  const amb = montar({ linhasDiplomas: [TITULOS_DIPLOMAS,
+    [ID_ALUNA, 1, 'Aluna Fictícia Um', '9000001', 'a1@exemplo.invalid', '20261', 'OK'],
+    ['', '', 'Aluna Sem ID Fictícia', '9000002', 'a2@exemplo.invalid', '20261', '']] });
+  pagina(amb);
+  const g = amb.planilhas[IDS.DIPL_PROD].abas.Diplomas.gravacoes;
+  assert(g.length > 0, 'deveria corrigir');
+  g.forEach(([l, c, v]) => {
+    assert([1, 2].includes(c), 'gravou fora das colunas Registro ID/Versão: coluna ' + c);
+    if (Array.isArray(v)) assert(v.every(x => x.length === 1), 'faixa com mais de uma coluna');
+  });
+});
+
+t('migração persiste a Versão vazia mesmo quando todos os Registro ID estão certos', () => {
+  const amb = montar({ linhasDiplomas: [TITULOS_DIPLOMAS, [ID_ALUNA, '', 'Aluna Fictícia Um', '9000001', 'a1@exemplo.invalid', '20261', 'OK']] });
+  pagina(amb);
+  const aba = amb.planilhas[IDS.DIPL_PROD].abas.Diplomas;
+  assert.strictEqual(aba.valores[1][1], 1, 'Versão deveria ficar 1');
+  assert.strictEqual(aba.valores[1][0], ID_ALUNA, 'Registro ID não muda');
+});
+
+t('migração não registra nome nem ID no registro de execução', () => {
+  const amb = montar({ linhasDiplomas: [TITULOS_DIPLOMAS,
+    [ID_ALUNA, 1, 'Aluna Fictícia Um', '9000001', 'a1@exemplo.invalid', '20261', 'OK'],
+    [ID_ALUNA, 1, 'Aluna Duplicada Fictícia', '9000003', 'a3@exemplo.invalid', '20261', 'OK']] });
+  pagina(amb);
+  const log = amb.logs.join('\n');
+  assert(!/Fictícia|9000003|00000000-0000-4000/.test(log), 'log com dado pessoal ou ID: ' + log);
 });
 
 console.log(`\n${ok} ok, ${falhas} falha(s).`);
