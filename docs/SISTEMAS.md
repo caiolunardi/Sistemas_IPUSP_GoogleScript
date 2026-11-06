@@ -12,6 +12,7 @@ Este catálogo apresenta os sistemas incorporados ao repositório e separa **doc
 | Trancamento Parcial de Matrícula | pedido de trancamento de disciplinas específicas | [docs](sistemas/trancamento-parcial/README.md) | [formulário v1.2](../sistemas/trancamento-parcial/README.md) | verificado localmente; homologação pendente; gerenciador da equipe fora do repositório |
 | Trancamento Total de Matrícula | pedido de trancamento total | [docs](sistemas/trancamento-total/README.md) | [formulário v1.3](../sistemas/trancamento-total/README.md) | verificado localmente; homologação pendente |
 | Abertura de Habilitação | pedido de abertura do Bacharelado e/ou da Licenciatura em Psicologia | [docs](sistemas/abertura-habilitacoes/formulario/README.md) | [formulário v2.0](../sistemas/abertura-habilitacoes/formulario/README.md) | Web App próprio (substituiu o Google Forms original, cujos registros continuam na mesma planilha); v2.0 **implantada em 05/11/2026** no lugar da v1.0 (que estava fora do repositório) |
+| Pedido de Colação de Grau | entrada de solicitações de colação e documentos; mesmo nº USP pode ter colações distintas | [inventário do legado](sistemas/pedido-colacao-grau/README.md) | [entrada e contexto proposto](../sistemas/pedido-colacao-grau/README.md) — **sem código no Git** | Dois arquivos privados analisados em 06/11/2026; código com IDs/URL internos não publicado; versão no Google **NAO_VERIFICADA**; modernização e reutilização de anexos são requisitos futuros |
 
 ## Equipe do Serviço de Graduação
 
