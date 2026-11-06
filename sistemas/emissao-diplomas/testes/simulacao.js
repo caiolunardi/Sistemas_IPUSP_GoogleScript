@@ -25,10 +25,14 @@ class Aba {
       getValues: ler,
       getDisplayValues: () => ler().map(x => x.map(v => String(v))),
       getValue: () => ler()[0][0],
+      clearContent: () => { aba.gravacoes.push([l, c, 'clearContent']); for (let i = 0; i < nl; i++) for (let j = 0; j < nc; j++) { if (aba.valores[l - 1 + i] && aba.valores[l - 1 + i][c - 1 + j] !== undefined) aba.valores[l - 1 + i][c - 1 + j] = ''; } },
       setValue: v => { aba.gravacoes.push([l, c, v]); while (aba.valores.length < l) aba.valores.push([]); aba.valores[l - 1][c - 1] = v; },
       setValues: vs => { aba.gravacoes.push([l, c, vs]); vs.forEach((linha, i) => linha.forEach((v, j) => { while (aba.valores.length < l + i) aba.valores.push([]); aba.valores[l - 1 + i][c - 1 + j] = v; })); }
     };
   }
+  // appendRow: uma gravação só, numa linha nova depois da última (4.0.1).
+  appendRow(linha) { this.gravacoes.push([this.valores.length + 1, 1, [linha.slice()]]); this.valores.push(linha.slice()); return this; }
+  deleteRow(l) { this.gravacoes.push([l, 0, 'deleteRow']); this.valores.splice(l - 1, 1); return this; }
 }
 Aba.prototype.gravacoes = null;
 

@@ -1,5 +1,20 @@
 # Homologação — Gerenciador de Colação de Grau e Diplomas
 
+## 4.0.1 (06/11/2026) — em PR, não enviada ao Google
+
+Testes locais: `testar_integridade.js` 21 ok (novo), `testar_acesso.js` 39 ok, `testar_historico.js` 484 de 486 (as 2 de sempre), `testar_navegador.js` 21 ok. Revisão para auditoria: [REVISAO_4.0.1.md](REVISAO_4.0.1.md).
+
+Roteiro no projeto HOMOLOGACAO, com as linhas de [dados fictícios da 4.0.1](dados-ficticios/README.md#401--integridade-roteiro-i1i6-do-homologacaomd), depois de autorização para o `clasp push`:
+
+| # | Passo | Esperado |
+|---|---|---|
+| I1 | ADMINISTRADOR exclui o registro de 2026/2 de 9000101 | a pasta de teste continua no Drive com os arquivos; o "ID da Pasta" da central não muda; o registro de 2025/2 continua |
+| I2 | Exclusão em lote de um registro com pasta | nenhuma pasta vai para a lixeira |
+| I3 | "+ Adicionar Aluno" com 9000101 na colação 20262 | recusado; nenhuma linha nova |
+| I4 | "+ Adicionar Aluno" válido | uma linha completa, Registro ID e Versão 1, etapa Pendente |
+| I5 | Abrir/criar pasta de 9000102 (repetido na central) | mensagem de Nº USP repetido; nenhuma pasta; nada gravado |
+| I6 | Abrir/criar pasta de 9000103 (sem cadastro) | uma linha nova na central e uma pasta nova com o ID gravado |
+
 ## 4.0.0 (05/11/2026) — homologação parcial em 06/11/2026 (commit `a002876`); correções da revisão independente aguardam nova conferência
 
 ### Testes locais (sem Google)
@@ -66,4 +81,4 @@ Situação dos passos no Google:
 ### O que falta
 
 - Novo `clasp push` do commit com as correções da revisão para o projeto HOMOLOGACAO, conferência por hash e repetição de H3, H5 e H6.
-- Incluir as três suítes na CI (o ramo não altera `.github/workflows/`; ver o PR).
+- Incluir as três suítes na CI: feito no PR da 4.0.1, junto com `testar_integridade.js`.

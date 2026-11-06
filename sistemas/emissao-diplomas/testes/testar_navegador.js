@@ -22,7 +22,7 @@ function incluir(h) {
 const USUARIO = { nome: 'Pessoa Administradora Fictícia', descricao: 'Equipe Fictícia do Serviço de Graduação' };
 function montarPagina(perfil, homologacao, usuario) {
   let h = incluir(fs.readFileSync(SRC + 'DiplomasApp.html', 'utf8'));
-  const cfg = { perfil, versao: '4.0.0', homologacao, usuario: usuario || USUARIO };
+  const cfg = { perfil, versao: '4.0.1', homologacao, usuario: usuario || USUARIO };
   h = h.replace(/<\?!= JSON\.stringify\(\{ perfil: perfil[^?]*\?>/, JSON.stringify(cfg).replace(/</g, '\\u003c'));
   if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
   return h;

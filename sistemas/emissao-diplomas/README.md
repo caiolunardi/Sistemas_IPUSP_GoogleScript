@@ -1,8 +1,10 @@
-# Gerenciador de Colação de Grau e Diplomas — fonte 4.0.0
+# Gerenciador de Colação de Grau e Diplomas — fonte 4.0.1
 
 Web App interno do Serviço de Graduação que acompanha cada aluno da conferência dos dados pessoais até o encaminhamento do diploma (Dados Pessoais → Histórico Escolar → Colação de Grau → Emissão de Diploma), com pasta do aluno no Drive, análise automática do histórico escolar, relatórios, certificado, ofício, lista de formandos, e-mails e ações em lote.
 
 **Estado:** 4.0.0 de 05/11/2026, **homologação parcial em 06/11/2026 (identidade visual e permissões); correções da revisão independente aguardam nova conferência; não implantada**. Projeto **autônomo** (não vinculado a planilha). A versão em uso é a 3.x do projeto vinculado, importada sem mudanças no commit `35e621e` como linha de base. O GitHub não sincroniza com o Apps Script. Documentação: [`docs/sistemas/emissao-diplomas/`](../../docs/sistemas/emissao-diplomas/README.md).
+
+**4.0.1 (06/11/2026, em PR, não enviada ao Google):** correção de integridade. Excluir um registro não manda mais a pasta do aluno para a lixeira nem apaga o "ID da Pasta" da planilha central; a inclusão manual recusa um segundo registro do mesmo Nº USP na mesma colação, grava a linha numa chamada só e confere depois de gravar; a criação de pasta e o autocadastro temporário param quando o Nº USP está repetido na planilha central e não sobrescrevem a pasta gravada por outro sistema. Arquivos alterados: `DiplomasBackend.gs`, `DiplomasApp.html` (textos de exclusão), `DiplomasAjuda.html`; os demais idênticos à 4.0.0. Revisão: [REVISAO_4.0.1.md](../../docs/sistemas/emissao-diplomas/REVISAO_4.0.1.md).
 
 ## Arquivos de `src/` (vão para o Apps Script)
 

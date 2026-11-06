@@ -47,3 +47,4 @@ Nada muda nas regras de etapa, documentos, e-mails, análise de histórico nem n
 |---|---|---|
 | 3.x (até set/2026) | em uso, projeto vinculado, fora do repositório até 05/11/2026 | Endurecimento, análise de histórico, relatórios, Central de Ajuda 1.0. Importada sem mudanças no commit `35e621e` como linha de base. |
 | 4.0.0 (05/11/2026) | homologação parcial em 06/11/2026, não implantada | Projeto autônomo, acesso pela aba `EMISSAO_DIPLOMAS`, perfis LEITOR/ADMINISTRADOR, tema GRADIP, identificação no topo. [Notas](../../../notas-de-versao/emissao-diplomas-v4.0.md). |
+| 4.0.1 (06/11/2026) | em PR, não enviada ao Google | Exclusão preserva a pasta compartilhada do aluno; inclusão manual sem duplicidade e conferida depois de gravar; criação de pasta segura quando outro sistema grava a planilha central ao mesmo tempo. [Revisão](REVISAO_4.0.1.md), [notas](../../../notas-de-versao/emissao-diplomas-v4.0.1.md). |
