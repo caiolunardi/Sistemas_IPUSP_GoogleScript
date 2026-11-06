@@ -1,6 +1,6 @@
 # Homologação — Gerenciador de Colação de Grau e Diplomas
 
-## 4.0.0 (05/11/2026) — NÃO HOMOLOGADA
+## 4.0.0 (05/11/2026) — HOMOLOGADA em 06/11/2026 (identidade visual e permissões)
 
 ### Testes locais (sem Google)
 
@@ -38,6 +38,7 @@ Antes: código enviado da branch do PR, `AMBIENTE=homologacao`, aba `EMISSAO_DIP
 - H4: aba anônima sem conta → "Conta não identificada", sem dados. A implantação estava em "Qualquer pessoa" (sem login do Google); a lista de acesso barra do mesmo jeito.
 - H3 (lista de colações): ok. H3 (detalhe do aluno): **falhou** — a área "Faça upload de um arquivo" aparecia para LEITOR (o envio era recusado no servidor). Corrigido na tela (a área não é criada para LEITOR); o teste de navegador passou a conferir isso e falha sem a correção. Precisa de novo `clasp push` e de repetir H3.
 - Janela de espera ("Carregando aluno"): no tema escuro, a marca IPUSP ficava deslocada para a esquerda. Corrigido (marca centralizada); teste de navegador confere nos dois temas e falha sem a correção.
+- **Aprovação do responsável (06/11/2026 15:59 UTC):** identidade visual e permissões aprovadas no projeto HOMOLOGACAO; H5–H8 (fluxo de negócio) não rodados, por decisão dele, porque as regras de negócio não mudaram em relação à 3.x (só a primeira linha de cada função pública, a guarda de perfil, e a planilha aberta pelo `ID_INDEX`). A homologação vale para o commit que estava no projeto; se o ramo mudar, vale só para esse commit.
 - Capturas desta rodada mostram contas reais e ficam fora do repositório.
 
 ### O que falta

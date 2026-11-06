@@ -2,7 +2,7 @@
 
 Web App interno do Serviço de Graduação que acompanha cada aluno da conferência dos dados pessoais até o encaminhamento do diploma (Dados Pessoais → Histórico Escolar → Colação de Grau → Emissão de Diploma), com pasta do aluno no Drive, análise automática do histórico escolar, relatórios, certificado, ofício, lista de formandos, e-mails e ações em lote.
 
-**Estado:** 4.0.0 de 05/11/2026, **não homologada nem implantada**. Projeto **autônomo** (não vinculado a planilha). A versão em uso é a 3.x do projeto vinculado, importada sem mudanças no commit `35e621e` como linha de base. O GitHub não sincroniza com o Apps Script. Documentação: [`docs/sistemas/emissao-diplomas/`](../../docs/sistemas/emissao-diplomas/README.md).
+**Estado:** 4.0.0 de 05/11/2026, **homologada em 06/11/2026 (identidade visual e permissões), não implantada**. Projeto **autônomo** (não vinculado a planilha). A versão em uso é a 3.x do projeto vinculado, importada sem mudanças no commit `35e621e` como linha de base. O GitHub não sincroniza com o Apps Script. Documentação: [`docs/sistemas/emissao-diplomas/`](../../docs/sistemas/emissao-diplomas/README.md).
 
 ## Arquivos de `src/` (vão para o Apps Script)
 
@@ -35,4 +35,4 @@ Nenhum ID de planilha, script ou implantação fica no código ou nesta document
 | Versão | Alterações |
 |---|---|
 | 3.x (em uso, projeto vinculado) | Linha de base, commit `35e621e`. |
-| 4.0.0 (05/11/2026, não homologada) | Projeto autônomo, acesso no servidor, perfis, tema GRADIP, identificação no topo, Central de Ajuda 1.1. Nota: [`notas-de-versao/emissao-diplomas-v4.0.md`](../../notas-de-versao/emissao-diplomas-v4.0.md). |
+| 4.0.0 (05/11/2026, homologada em 06/11/2026) | Projeto autônomo, acesso no servidor, perfis, tema GRADIP, identificação no topo, Central de Ajuda 1.1. Nota: [`notas-de-versao/emissao-diplomas-v4.0.md`](../../notas-de-versao/emissao-diplomas-v4.0.md). |

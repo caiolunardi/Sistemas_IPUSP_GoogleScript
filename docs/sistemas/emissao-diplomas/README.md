@@ -1,6 +1,6 @@
 # Gerenciador de Colação de Grau e Diplomas
 
-**Versão:** **4.0.0** (05/11/2026), **NÃO HOMOLOGADA · NÃO IMPLANTADA**. O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). A versão em uso continua sendo a 3.x do projeto vinculado à planilha de diplomas, que o responsável vai desativar depois da troca. O GitHub não informa o que está implantado no Apps Script.
+**Versão:** **4.0.0** (05/11/2026), **HOMOLOGADA em 06/11/2026 (visual e acesso) · NÃO IMPLANTADA**. O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). A versão em uso continua sendo a 3.x do projeto vinculado à planilha de diplomas, que o responsável vai desativar depois da troca. O GitHub não informa o que está implantado no Apps Script.
 
 ## Finalidade
 
@@ -46,4 +46,4 @@ Nada muda nas regras de etapa, documentos, e-mails, análise de histórico nem n
 | Versão | Situação | O que mudou |
 |---|---|---|
 | 3.x (até set/2026) | em uso, projeto vinculado, fora do repositório até 05/11/2026 | Endurecimento, análise de histórico, relatórios, Central de Ajuda 1.0. Importada sem mudanças no commit `35e621e` como linha de base. |
-| 4.0.0 (05/11/2026) | não homologada, não implantada | Projeto autônomo, acesso pela aba `EMISSAO_DIPLOMAS`, perfis LEITOR/ADMINISTRADOR, tema GRADIP, identificação no topo. [Notas](../../../notas-de-versao/emissao-diplomas-v4.0.md). |
+| 4.0.0 (05/11/2026) | homologada em 06/11/2026, não implantada | Projeto autônomo, acesso pela aba `EMISSAO_DIPLOMAS`, perfis LEITOR/ADMINISTRADOR, tema GRADIP, identificação no topo. [Notas](../../../notas-de-versao/emissao-diplomas-v4.0.md). |
