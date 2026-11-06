@@ -72,5 +72,5 @@ Situação dos passos no Google:
 
 ### O que falta
 
-- Produção, cada passo com autorização do responsável. Feito: `clasp push` do `main` (`4792667`) para o projeto PRODUÇÃO autônomo em 06/11/2026, com a autorização dele, enviado por ele; conferência por novo `clasp clone`: 25/25 arquivos idênticos (SHA-256), sem arquivo sobrando. Falta: implantação, aba `EMISSAO_DIPLOMAS` da permissão de produção e troca do link no Painel dos servidores (feita por ele).
-- Incluir as três suítes na CI (o ramo não altera `.github/workflows/`; ver o PR).
+- Produção, cada passo com autorização do responsável. Feito e conferido: `clasp push` do `main` (`4792667`) para o projeto PRODUÇÃO autônomo em 06/11/2026, com a autorização dele, enviado por ele; conferência por novo `clasp clone`: 25/25 arquivos idênticos (SHA-256), sem arquivo sobrando. Feito, confirmado pelo responsável em 06/11/2026 e não conferido por este repositório: implantação em produção. Não registrados aqui: versão e identificador da implantação, aba `EMISSAO_DIPLOMAS` da permissão de produção e troca do link no Painel dos servidores (feita por ele); conferir na próxima atualização desta página, sem copiar IDs nem URLs.
+- Incluir as três suítes na CI (o ramo não altera `.github/workflows/`; proposto no PR #47).
