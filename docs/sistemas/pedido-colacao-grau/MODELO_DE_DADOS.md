@@ -23,7 +23,7 @@ Primeira aba, colunas A–M. A = identificador do formulário; C = tipo; D–G =
 
 ## C. Planilha `EMISSAO_DIPLOMAS` — aba `Diplomas`
 
-O formulário resolve pelo **texto exato da linha 1**, com possibilidade de criar colunas. A ordem física não é codificada, exceto pela procura por título. Contrato dos **25 campos** do objeto `CABECALHOS_DIPLOMAS`:
+O formulário resolve pelo **texto exato da linha 1**, com possibilidade de criar colunas. A ordem física não é codificada, exceto pela procura por título. Contrato dos **24 campos** do objeto `CABECALHOS_DIPLOMAS`:
 
 | Chave interna | Cabeçalho exato | Novo pedido | Correção do pedido |
 | --- | --- | --- | --- |
