@@ -14,5 +14,6 @@
 | PCG-08 | **ALTA** | Testes, fixtures e conformidade com runtime Google ainda não demonstrados | Suítes sintéticas, CI e homologação documentada |
 | PCG-09 | **PENDENTE** | Originais não confrontados com editor/implantação `/exec` | Baseline do Google por fluxo autorizado e sem publicar identificadores |
 | PCG-10 | **PENDENTE** | Contexto local está em proposta, não em `context.config.json` | Revisão independente, teste a frio e autorização de adoção |
+| PCG-11 | **ALTA** | Decisão PCG-DEC-007: protocolo não pode ser bloqueado por falta de cadastro confirmado; legado não implementa fluxo provisório com verificação humana no Gerenciador de Pessoas | Definir armazenamento isolado, identidade/titularidade, protocolo/data original, fila no Gerenciador de Pessoas, retomada após aprovação, rejeição e testes de isolamento e prazo |
 
 **Próxima decisão funcional:** confirmar como versionar/reutilizar documentos e como conferir que pertencem ao solicitante, sem alterar dados reais. Nenhuma pendência autoriza ações sobre recursos.
