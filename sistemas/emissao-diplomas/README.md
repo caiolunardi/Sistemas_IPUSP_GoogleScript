@@ -4,6 +4,14 @@ Web App interno do Serviço de Graduação que acompanha cada aluno da conferên
 
 **Estado:** 4.0.0 de 05/11/2026, **homologação parcial concluída em 06/11/2026 (identidade visual, permissões e correções da revisão independente; fluxo de negócio dispensado); em produção, com implantação confirmada pelo responsável em 06/11/2026** (versão e identificador da implantação não conferidos pelo repositório). Projeto **autônomo** (não vinculado a planilha). A 3.x do projeto vinculado, cujo desligamento fica com o responsável, foi importada sem mudanças no commit `35e621e` como linha de base. O GitHub não sincroniza com o Apps Script. Documentação: [`docs/sistemas/emissao-diplomas/`](../../docs/sistemas/emissao-diplomas/README.md).
 
+## Responsabilidade deste aplicativo
+
+Este projeto é o **Gerenciador interno**: trata registros de colação e diploma, confere dados e histórico, conduz etapas, administra documentos do aluno, gera relatórios e documentos e realiza comunicações autorizadas. Possui inclusão manual administrativa de aluno, mas **não substitui** o Formulário de Pedido de Colação de Grau voltado ao estudante.
+
+**Comportamento existente de anexos (4.0.0):** o gerenciador resolve a pasta institucional por nº USP na planilha central `PLANILHA_ALUNOS`; em upload administrativo usa nome gerado por tipo de documento + nome do aluno + colação + extensão, e substitui arquivos com nome completo idêntico **sem pedir confirmação**. Isso não comprova reutilização de anexos pelo formulário, cujo código ainda não foi incorporado e auditado.
+
+**Fronteira aprovada para documentação:** receber uma nova solicitação e oferecer ao aluno reutilização ou atualização de documentos anteriores pertencem ao **Formulário**, como **requisitos para a próxima reformulação**, ainda não implementados/verificados. O gerenciador permanece responsável pelo processamento administrativo, pela autorização de suas operações e pela proteção da pasta compartilhada entre diferentes colações. Ver os detalhes, limites e requisitos futuros em [Fronteira funcional com o Pedido de Colação de Grau](../../docs/sistemas/emissao-diplomas/README.md#fronteira-funcional-com-o-pedido-de-colação-de-grau).
+
 ## Arquivos de `src/` (vão para o Apps Script)
 
 | Arquivo | Papel | Na 4.0 |

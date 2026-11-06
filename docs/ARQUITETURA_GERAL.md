@@ -15,7 +15,7 @@ Primeira aba, uma linha por chave:
 
 | A — Chave | B — Tipo | C — ID de Produção | D — Homologação |
 |---|---|---|---|
-| `PERIODOS` | `spreadsheet` | ID da planilha de produção | ID da cópia de teste |
+| `PERIODOS` | `spreadsheet` |ID da planilha de produção; Formulário de Pedido de Colação de Grau (L no legado recebido) | ID da cópia de teste |
 
 Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Drive e em parte das chaves da grade o tipo não é conferido. Chave repetida ou sem ID é erro de configuração. A coluna D só é lida pelos projetos com `AMBIENTE = homologacao` ([ambiente de homologação](sistemas/AMBIENTE_DE_HOMOLOGACAO.md)).
 
@@ -25,12 +25,12 @@ Alguns sistemas conferem o tipo (`spreadsheet` para planilhas). Nas pastas do Dr
 
 | Chave | O que é | Quem usa | Onde está o formato |
 |---|---|---|---|
-| `PLANILHA_ALUNOS` | cadastro dos alunos (nº USP, nome, ingresso, e-mails) | Comunidade IPUSP (L/G ficha); formulários de Exclusão, Trancamento Parcial e Total e Abertura de Habilitação 2.0 (L); Estrutura Curricular, auditoria (L); Gerenciador de Colação de Grau e Diplomas (L) | [Comunidade IPUSP](sistemas/busca-alunos/DADOS_E_SEGURANCA.md) |
+| `PLANILHA_ALUNOS` | cadastro dos alunos (nº USP, nome, ingresso, e-mails) |Comunidade IPUSP (L/G ficha); formulários de Exclusão, Trancamento Parcial e Total e Abertura de Habilitação 2.0 (L); Estrutura Curricular, auditoria (L); Gerenciador de Colação de Grau e Diplomas (L); Formulário de Pedido de Colação de Grau (L/G no legado recebido; fonte não versionada) | [Comunidade IPUSP](sistemas/busca-alunos/DADOS_E_SEGURANCA.md) |
 | `PLANILHA_DOCENTES` | cadastro dos docentes | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
 | `SERVIDORES` | cadastro de servidores e setores | Comunidade IPUSP (L/G); Estrutura Curricular, auditoria (L); Painel dos servidores 1.2, saudação, e 1.3, auditoria (L) | idem |
 | `PERIODOS` | abertura e fechamento de cada formulário | Painel de Solicitações (L); Exclusão, Trancamento Parcial e Abertura de Habilitação 2.0 (L); Painel dos servidores (L/G) | [Painel de Solicitações](sistemas/painel-solicitacoes/DADOS_E_SEGURANCA.md) |
 | `REGRAS_CURRICULARES` | regras de cada currículo para a contagem de créditos (a aba `AUDITORIA_REGRAS_CURRICULARES` ganha `evento_id` na 1.3 do Painel dos servidores) | Painel de Solicitações (L); Painel dos servidores (L/G); Gerenciador de Colação de Grau e Diplomas (L; G só inserção na aba `ANALISE_HISTORICO`) | [Contagem de créditos](sistemas/painel-solicitacoes/CONTAGEM_DE_CREDITOS.md) |
-| `PASTA_RAIZ_ALUNOS` | pasta do Drive com uma pasta por aluno (anexos, certificados, relatórios) | Gerenciador de Colação de Grau e Diplomas (L/G) | [Diplomas](sistemas/emissao-diplomas/DADOS_E_SEGURANCA.md) |
+| `PASTA_RAIZ_ALUNOS` | pasta do Drive com uma pasta por aluno (anexos, certificados, relatórios) |Gerenciador de Colação de Grau e Diplomas (L/G); Formulário de Pedido de Colação de Grau (L/G; origem com referência literal, não incorporada) | [Diplomas](sistemas/emissao-diplomas/DADOS_E_SEGURANCA.md) |
 | `TEMPLATE_CERTIFICADO_ID`, `TEMPLATE_OFICIO_ID`, `TEMPLATE_FORMANDOS_ID` | modelos (Docs) do certificado de conclusão, do ofício de diploma e da lista de formandos/convite | Gerenciador de Colação de Grau e Diplomas (L, copiados a cada documento) | [Diplomas](sistemas/emissao-diplomas/DADOS_E_SEGURANCA.md) |
 | `DISCIPLINAS` | cadastro de disciplinas (código, nome, créditos) | Exclusão e Trancamento Parcial (L) | [Exclusão](sistemas/exclusao-disciplinas/DADOS_E_SEGURANCA.md) |
 | `EXCLUSAO_DISCIPLINAS` | respostas do formulário de exclusão | formulário (G); Painel dos servidores (L); gerenciador (fora do repositório) | [Exclusão](sistemas/exclusao-disciplinas/README.md) |
@@ -51,7 +51,7 @@ O Painel dos servidores também lê, desde a 1.4 pelo `ID_INDEX`, as planilhas d
 
 | Chave | O que é | Quem usa |
 |---|---|---|
-| `EMISSAO_DIPLOMAS` | alunos em processo de colação e diploma (abas `Diplomas` e `INFOS`) | Gerenciador de Colação de Grau e Diplomas 4.0.0 (L e G, coluna Homologação quando `AMBIENTE=homologacao`); Painel dos servidores 1.4 (L, aviso do card) |
+| `EMISSAO_DIPLOMAS` | alunos em processo de colação e diploma (abas `Diplomas` e `INFOS`) |Gerenciador de Colação de Grau e Diplomas 4.0.0 (L e G, coluna Homologação quando `AMBIENTE=homologacao`); Painel dos servidores 1.4 (L, aviso do card); Formulário de Pedido de Colação de Grau (L/G no legado, sem código no Git; [contrato](sistemas/pedido-colacao-grau/CONTRATO_INTEGRACAO.md)) |
 | `ABERTURA_HABILITACOES` | pedidos de abertura de habilitação (abas `Respostas ao formulário 2` e `2021 - 2022`) | Formulário de Abertura de Habilitação 2.0 (G, só linha nova na aba atual; L nas duas abas); Painel dos servidores 1.4 (L); Gerenciador de Abertura de Habilitações 2.0 (L/G; a aba `2021 - 2022` só L) — [modelo de dados](sistemas/abertura-habilitacoes/MODELO_DE_DADOS.md) |
 | `SEGUNDA_VIA_BUSP` | pedidos de 2ª via do BUSP | Painel dos servidores 1.4 (L) |
 | `MATRICULA_INTERCAMBISTAS` | pedidos de inclusão e exclusão de intercambistas | Painel dos servidores 1.4 (L) |
@@ -73,6 +73,7 @@ Os sistemas não chamam uns aos outros: **conversam pelas planilhas** e por link
 
 - **Pedidos dos alunos.** O aluno abre o Painel de Solicitações, que consulta `PERIODOS` para mostrar o que está aberto e leva ao formulário. O formulário confere o login `@usp.br`, lê `PLANILHA_ALUNOS` e `DISCIPLINAS`, grava na planilha de respostas e manda o recibo. A equipe vê a contagem no Painel dos servidores e trata o pedido no gerenciador, que grava a situação na mesma planilha.
 - **Grade horária, a cada semestre.** A Estrutura Curricular importa o Júpiter para `ESTRUTURA_CURRICULAR`, prepara a lista e envia a grade para `GRADE_HORARIA_PREENCHIMENTO`, guardando uma cópia do semestre anterior. As secretarias preenchem dia, horário e sala, com validação e proteção da própria planilha. A auditoria acompanha o preenchimento e a Grade Horária visual mostra o resultado aos alunos.
+- **Colação de grau (formulário legado documentado, código privado):** o formulário do aluno consulta `PERIODOS`, lê/grava `PLANILHA_ALUNOS` e `EMISSAO_DIPLOMAS`, e lê/grava a pasta compartilhada de `PASTA_RAIZ_ALUNOS`. Seus identificadores ainda são literais nos arquivos privados recebidos, não resolvidos pelo `ID_INDEX`. A fonte não foi publicada por segurança e a versão ativa do Google não foi conferida. Ele não gera recibo por e-mail no código enviado. [Inventário](sistemas/pedido-colacao-grau/README.md) e [fronteira com o Gerenciador](sistemas/pedido-colacao-grau/CONTRATO_INTEGRACAO.md).
 - **Contagem de créditos.** A equipe mantém as Regras Curriculares pelo Painel dos servidores, e o Painel de Solicitações as lê para o aluno simular quanto falta para se formar.
 
 ## 5. Ordem para montar em outra unidade
@@ -90,7 +91,7 @@ Passo a passo de cada projeto: [Como reaproveitar](COMO_REAPROVEITAR.md) e o man
 ## 6. Limites conhecidos
 
 - O formulário de Abertura de Habilitação (Web App próprio que substituiu o Google Forms original) está em uso na v2.0 desde 05/11/2026, com as planilhas pelo `ID_INDEX`; a v1.0, com IDs literais, ficou fora do repositório.
-- Os gerenciadores de Exclusão, Trancamento Parcial, 2ª via do BUSP e Intercambistas, e os formulários de BUSP, Colação e Intercambistas, **ainda não estão no repositório**.
+- Os gerenciadores de Exclusão, Trancamento Parcial, 2ª via do BUSP e Intercambistas, e os formulários de BUSP e Intercambistas, **ainda não têm código no repositório**. O **Formulário de Pedido de Colação de Grau** tem [inventário e documentação de legado](sistemas/pedido-colacao-grau/README.md), mas **seu código não foi versionado**: os arquivos recebidos contêm IDs/URLs operacionais literais e precisam de preflight antes da modernização.
 - O Painel dos servidores lê todas as planilhas pelo `ID_INDEX` desde a 1.4 (seção 2). A 1.3, que está no `/exec`, ainda tem IDs literais, mantidos fora do Git ([inventário](IMPLANTACAO.md#2-inventário-20102026)). O Gerenciador de Trancamento Total em uso (v1.0) também tem ID literal e não está no repositório; a v1.1 do Git usa o `ID_INDEX`. O Gerenciador de Abertura de Habilitações usa o `ID_INDEX` desde a v2.0, implantada em 21/10/2026 no lugar da v1.0 (que tinha ID literal).
 - A contagem de pendências do Painel dos servidores lê a situação por posição de coluna e com critério próprio, diferente do critério dos formulários ([contratos](arquitetura/GUIA_DE_CONTINUIDADE_E_LEGADO.md#4-o-que-não-se-deve-modificar-inadvertidamente)). Em Habilitações, o painel conta só a situação `pendente`, enquanto o gerenciador trata como pendente tudo o que não contém "conclu" ([contrato](sistemas/abertura-habilitacoes/REGRAS_E_CONTRATOS.md#6-contratos-com-outros-sistemas)).
 - Parte dos testes da Estrutura Curricular depende de exportações reais do Júpiter, que não vão para o Git. As outras suítes usam dados sintéticos.
