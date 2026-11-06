@@ -1,6 +1,6 @@
 # Gerenciador de Colação de Grau e Diplomas
 
-**Versão:** **4.0.0** (05/11/2026), **homologação parcial em 06/11/2026; correções da revisão independente aguardam nova conferência · NÃO IMPLANTADA**. O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). A versão em uso continua sendo a 3.x do projeto vinculado à planilha de diplomas, que o responsável vai desativar depois da troca. O GitHub não informa o que está implantado no Apps Script.
+**Versão:** **4.0.0** (05/11/2026), **homologação parcial concluída em 06/11/2026, com as correções da revisão independente · NÃO IMPLANTADA**. O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). A versão em uso continua sendo a 3.x do projeto vinculado à planilha de diplomas, que o responsável vai desativar depois da troca. O GitHub não informa o que está implantado no Apps Script.
 
 ## Finalidade
 
