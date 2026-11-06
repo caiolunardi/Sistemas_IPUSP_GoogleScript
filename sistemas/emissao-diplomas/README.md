@@ -1,4 +1,4 @@
-# Gerenciador de Colação de Grau e Diplomas — fonte 4.0.0
+# Gerenciador de Colação de Grau e Diplomas — fonte 4.0.1
 
 Web App interno do Serviço de Graduação que acompanha cada aluno da conferência dos dados pessoais até o encaminhamento do diploma (Dados Pessoais → Histórico Escolar → Colação de Grau → Emissão de Diploma), com pasta do aluno no Drive, análise automática do histórico escolar, relatórios, certificado, ofício, lista de formandos, e-mails e ações em lote.
 
@@ -11,6 +11,8 @@ Este projeto é o **Gerenciador interno**: trata registros de colação e diplom
 **Comportamento existente de anexos (4.0.0):** o gerenciador resolve a pasta institucional por nº USP na planilha central `PLANILHA_ALUNOS`; em upload administrativo usa nome gerado por tipo de documento + nome do aluno + colação + extensão, e substitui arquivos com nome completo idêntico **sem pedir confirmação**. Isso não comprova reutilização de anexos pelo formulário, cujo código ainda não foi incorporado e auditado.
 
 **Fronteira aprovada para documentação:** receber uma nova solicitação e oferecer ao aluno reutilização ou atualização de documentos anteriores pertencem ao **Formulário**, como **requisitos para a próxima reformulação**, ainda não implementados/verificados. O gerenciador permanece responsável pelo processamento administrativo, pela autorização de suas operações e pela proteção da pasta compartilhada entre diferentes colações. Ver os detalhes, limites e requisitos futuros em [Fronteira funcional com o Pedido de Colação de Grau](../../docs/sistemas/emissao-diplomas/README.md#fronteira-funcional-com-o-pedido-de-colação-de-grau).
+
+**4.0.1 (06/11/2026, em PR, não enviada ao Google):** correção de integridade. Excluir um registro não manda mais a pasta do aluno para a lixeira nem apaga o "ID da Pasta" da planilha central; a inclusão manual recusa um segundo registro do mesmo Nº USP na mesma colação, grava a linha numa chamada só e confere depois de gravar; a criação de pasta e o autocadastro temporário param quando o Nº USP está repetido na planilha central e não sobrescrevem a pasta gravada por outro sistema. Arquivos alterados: `DiplomasBackend.gs`, `DiplomasApp.html` (textos de exclusão), `DiplomasAjuda.html`; os demais idênticos à 4.0.0. Revisão: [REVISAO_4.0.1.md](../../docs/sistemas/emissao-diplomas/REVISAO_4.0.1.md).
 
 ## Arquivos de `src/` (vão para o Apps Script)
 
