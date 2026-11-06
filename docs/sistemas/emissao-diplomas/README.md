@@ -6,6 +6,40 @@
 
 Web App da equipe do Serviço de Graduação que acompanha cada aluno da conferência dos dados pessoais até o encaminhamento do diploma, em quatro etapas: Dados Pessoais → Histórico Escolar → Colação de Grau → Emissão de Diploma. Inclui pasta do aluno no Drive com anexos, análise automática do histórico escolar (PDF lido no navegador e avaliado no servidor pelas Regras Curriculares), relatórios de conferência, certificado de conclusão, ofício de diploma, lista de formandos, e-mails de convocação e de aviso de diploma, observações e ações em lote.
 
+## Fronteira funcional com o Pedido de Colação de Grau
+
+**Estado do contrato (06/11/2026):** esta seção registra a separação de responsabilidades e o comportamento verificado no código do **Gerenciador** 4.0.0, ainda em PR e não implantado. O código do **Formulário de Pedido de Colação de Grau** não está versionado neste repositório nesta data; seu comportamento atual, inclusive recebimento e tratamento de anexos, **não foi auditado**. Os itens destinados ao formulário são requisitos para sua futura análise/reformulação, não funcionalidades comprovadamente disponíveis.
+
+| Atividade | Responsabilidade primária |
+|---|---|
+| Receber do aluno uma nova solicitação de colação e os documentos exigidos | **Formulário de Pedido de Colação de Grau** — fluxo existente a documentar a partir do código que o responsável fornecer |
+| Conferir identidade e vínculo entre solicitante, nº USP, pedido e documentos; evitar acesso indevido aos anexos | **Formulário**, no ingresso dos dados, com validações obrigatórias no servidor — contrato a verificar/definir |
+| Detectar documentos de solicitações anteriores e oferecer reutilização ou envio de nova versão, sem substituição silenciosa | **Formulário**, como **requisito futuro não implementado/verificado** |
+| Tratar cada registro recebido, conferir dados pessoais e histórico, conduzir etapas, administrar anexos, produzir documentos e relatórios, comunicar e concluir a emissão | **Gerenciador de Colação de Grau e Diplomas** — responsabilidade existente |
+| Manter o vínculo correto com a pasta institucional do aluno, aplicar controle de acesso e preservar documentos de outras colações | **Gerenciador** em suas próprias operações; o **Formulário** deverá respeitar o mesmo contrato de armazenamento quando for reformulado |
+
+O Gerenciador também possui a função administrativa **`adicionarAluno`** para cadastrar manualmente registros. Isso não o transforma no formulário de solicitação nem transfere a ele a experiência de envio de documentos pelo aluno.
+
+### Comportamento já observado no Gerenciador
+
+- **Pasta compartilhada por aluno:** `garantirPastaAlunoCentral_` procura o nº USP na planilha central `PLANILHA_ALUNOS` e reutiliza o ID de pasta registrado. Se necessário, uma operação autorizada pode criar a pasta na raiz `PASTA_RAIZ_ALUNOS`. Registros de colações diferentes da mesma pessoa podem, portanto, apontar para a mesma pasta.
+- **Nomeação de upload administrativo:** `uploadArquivo` monta o nome `<tipo> - <nome do aluno> - <AAAAS>.<extensão>` com o tipo escolhido na interface, o nome do aluno e o código da colação. O nome original enviado não é usado para identificar substituições, exceto pela extensão.
+- **Substituição automática atual:** `substituirArquivoComSeguranca_` cria o novo arquivo e move para a lixeira arquivos da pasta cujo **nome completo gerado seja exatamente igual**. Não solicita confirmação. Uma colação diferente, ou uma extensão diferente, normalmente produz outro nome e mantém ambos os arquivos.
+- **Consulta de documentos:** a listagem é feita sobre a pasta compartilhada, não sobre uma pasta exclusiva de cada colação; a simples presença de um documento na pasta não comprova que ele foi apresentado/validado para um pedido específico.
+- **Exclusão de registros:** existe uma tentativa de preservar pasta usada por outra linha (`outrosRegistrosUsamPasta_`), mas a proteção depende dos vínculos locais registrados. **Não presumir preservação garantida** quando houver outra colação ainda sem ID de pasta sincronizado; esse cenário precisa de teste de integridade antes de se alterar ou eliminar uma pasta compartilhada.
+
+Exemplo fictício: um aluno concluiu Bacharelado em **2025/2** e apresenta novo pedido para Psicólogo em **2026/2**. O mesmo nº USP deve remeter à mesma pasta institucional, sem sobrescrever o processo anterior. Os anexos administrativos `RG - Aluno Fictício - 20252.pdf` e `RG - Aluno Fictício - 20262.pdf` têm nomes diferentes e coexistem; outro upload com o nome exato `RG - Aluno Fictício - 20262.pdf` substituiria o arquivo dessa colação sem pergunta.
+
+### Requisitos a verificar e especificar na reformulação do Formulário
+
+1. Localizar, **no servidor e após validar a identidade do solicitante**, documentos pré-existentes associados ao nº USP e sua proveniência, sem expor links ou dados de outra pessoa.
+2. Distinguir claramente **reutilizar documento já existente**, **enviar versão nova** e **enviar documento adicional**, deixando explícita a escolha do aluno e a conferência exigida pela equipe. Não usar apenas igualdade de nomes como evidência de equivalência documental.
+3. Preservar rastreabilidade entre cada solicitação (semestre e habilitação), os documentos efetivamente apresentados e as decisões posteriores da equipe; nenhuma reutilização deve alterar retroativamente uma colação já concluída.
+4. Não apagar ou substituir silenciosamente anexos necessários a outra colação. Definir versionamento/retenção e tratamento de conflitos com a equipe antes da implementação.
+5. Confirmar, ao receber o código atual do formulário, onde estão as entradas, as gravações, os anexos e os contratos com `ID_INDEX`, `PLANILHA_ALUNOS` e `EMISSAO_DIPLOMAS`. **Não pressupor que o formulário atual já reutilize pastas ou arquivos.**
+
+**Decisão de escopo:** a evolução da experiência de solicitação/reutilização de anexos pertence à próxima reformulação do **Formulário de Pedido de Colação de Grau**, em projeto e documentação próprios. Este registro **não autoriza** implementação, alteração de dados, `clasp push` ou deploy do Gerenciador.
+
 ## Projetos no Google
 
 | Projeto | Papel |
