@@ -16,7 +16,13 @@
 | Histórico, análise curricular, certificado, ofício, lista e e-mails administrativos | Fora do escopo | Responsabilidade da equipe |
 | Auditoria de decisões administrativas | Não cria decisões de conferência | Responsabilidade do Gerenciador; lacunas de auditoria continuam separadas |
 
-## 2. Contrato de dados do legado (verificado no código)
+## 2. Contrato de dados do legado (verificado no código)## 1.1. Regra para solicitante sem cadastro confirmado (decisão do responsável)
+
+**A ausência de cadastro aprovado não bloqueia o protocolo do pedido.** O formulário deverá aceitar a solicitação de quem conseguiu se autenticar e cumprir as validações aplicáveis, preservando identificador de protocolo e data/hora originais. Quando a correspondência entre conta, nº USP e pessoa não for confirmada, a solicitação fica **provisória/pendente de validação cadastral**, em armazenamento segregado e com acesso restrito; não se cria automaticamente uma linha definitiva em `PLANILHA_ALUNOS`, não se vincula a uma pasta de estudante ainda não autenticado como titular e não se lança pedido definitivo em `EMISSAO_DIPLOMAS` antes da conferência. O Gerenciador de Pessoas deverá oferecer à equipe uma fila de conferência e decisão; somente após confirmação da identidade/titularidade o vínculo definitivo e o encaminhamento ao Gerenciador de Diplomas poderão ocorrer. **Protocolado ≠ cadastro aprovado ≠ colação deferida.**
+
+**Status:** regra de negócio **aprovada em 06/11/2026**, ainda **não implementada**. A opção de persistência, comprovante, notificação interna, prazo de tratamento, privacidade, prevenção de duplicações e tratamento de reprovação é **desenho futuro**, não decisão técnica congelada. A versão do Gerenciador de Pessoas observada no Git apenas busca e edita fichas existentes; a fila de novos cadastros requer evolução própria e autorização separada.
+
+
 
 - **Solicitação:** identificada no formulário por `nº USP + AAAAS`, onde `AAAAS` é derivado de `PERIODOS.M`; se já existe, o formulário atualiza a primeira linha correspondente, mantém `Registro ID` e incrementa `Versão`. Cada nova colação deve ser uma solicitação independente.
 - **Pasta:** uma pasta por nº USP na planilha central `PLANILHA_ALUNOS` (coluna E), reutilizável por outros sistemas. Pasta não é sinônimo de pedido.
