@@ -8,7 +8,7 @@ Web App da equipe do Serviço de Graduação que acompanha cada aluno da confer�
 
 ## Fronteira funcional com o Pedido de Colação de Grau
 
-**Estado do contrato (06/11/2026):** esta seção registra a separação de responsabilidades e o comportamento verificado no código do **Gerenciador** 4.0.0, ainda em PR e não implantado. O código do **Formulário de Pedido de Colação de Grau** não está versionado neste repositório nesta data; seu comportamento atual, inclusive recebimento e tratamento de anexos, **não foi auditado**. Os itens destinados ao formulário são requisitos para sua futura análise/reformulação, não funcionalidades comprovadamente disponíveis.
+**Estado do contrato (06/11/2026):** esta seção registra a separação de responsabilidades e o comportamento verificado no código do **Gerenciador** 4.0.0 (no `main` desde o merge `4792667`; implantação em produção confirmada pelo responsável em 06/11/2026). O código do **Formulário de Pedido de Colação de Grau** não está versionado neste repositório nesta data; seu comportamento atual, inclusive recebimento e tratamento de anexos, **não foi auditado**. Os itens destinados ao formulário são requisitos para sua futura análise/reformulação, não funcionalidades comprovadamente disponíveis.
 
 | Atividade | Responsabilidade primária |
 |---|---|
