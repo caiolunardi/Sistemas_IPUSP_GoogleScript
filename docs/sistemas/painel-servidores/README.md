@@ -58,7 +58,7 @@ Se a planilha da auditoria não abrir, o painel **recusa a alteração** ("A aud
 | Categoria | Card | Aviso de pendência |
 |---|---|---|
 | Pessoas | **Pessoas do IPUSP** (hoje abre a Busca de Alunos) | não tem |
-| Diplomas e Colação de Grau | Emissão de Diplomas | conferência de dados pessoais diferente de OK |
+| Diplomas e Colação de Grau | Emissão de Diplomas (abre o [Gerenciador de Colação de Grau e Diplomas](../emissao-diplomas/README.md); a partir da 4.0.0, o projeto autônomo, ver [troca do endereço](MANUAL_OPERACAO.md)) | conferência de dados pessoais diferente de OK |
 | Habilitações e Matrícula | Abertura de Habilitações | situação “pendente” (aba atual e aba 2021–2022) |
 | Habilitações e Matrícula | Trancamento Total | situação diferente de “concluído” |
 | Habilitações e Matrícula | Trancamento Parcial | situação “pendente” |

@@ -22,7 +22,8 @@
 | Busca de pessoas, cadastro de alunos/docentes/servidores | [Gerenciador de Pessoas](docs/sistemas/busca-alunos/README.md) |
 | Habilitações | [Gerenciador de Habilitações](docs/sistemas/abertura-habilitacoes/README.md) (equipe); [formulário dos alunos](docs/sistemas/abertura-habilitacoes/formulario/README.md) (Web App que substituiu o Google Forms original) |
 | Validação e proteção da planilha das secretarias | [Planilha das secretarias](docs/sistemas/planilha-grade-secretarias/README.md) |
-| Diplomas, colação, BUSP ou módulos ainda não incorporados | [Limites do acervo](docs/ARQUITETURA_GERAL.md#6-limites-conhecidos); conferir PRs/documentos autorizados antes de assumir código na main |
+| Diplomas e colação (equipe) | [Gerenciador de Colação de Grau e Diplomas](docs/sistemas/emissao-diplomas/README.md) |
+| Formulário de colação, BUSP ou módulos ainda não incorporados | [Limites do acervo](docs/ARQUITETURA_GERAL.md#6-limites-conhecidos); conferir PRs/documentos autorizados antes de assumir código na main |
 
 **Desambiguação:** nomes de processos acadêmicos podem corresponder a formulário, gerenciador e/ou script vinculado a planilha, com implantações independentes. Não escolher o primeiro caminho encontrado sem identificar o componente.
 

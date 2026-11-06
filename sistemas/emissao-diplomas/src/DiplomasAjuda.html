@@ -1,0 +1,986 @@
+<!--=====================================================
+  CENTRAL DE AJUDA — Markup e conteúdo estático (RODADA D).
+
+  Incluído via include_('DiplomasAjuda') em DiplomasApp.html, junto dos
+  outros modais/painéis (ao lado de HistoricoAnaliseUI). Este arquivo
+  NÃO contém <script> — só markup e texto estático. A lógica (abrir,
+  fechar, navegar, pesquisar, FAQ, acessibilidade) está em
+  DiplomasAjudaUI.html. O visual está em DiplomasAjudaEstilos.html.
+
+  Todo o conteúdo é fictício quanto a alunos (nomes como "Fulano de
+  Tal"/"Beltrana Exemplo") — nenhum dado real de aluno aparece aqui.
+  Nenhum segredo, token, chave HMAC, ID de planilha/pasta/template ou
+  nome de arquivo .gs aparece no texto voltado ao usuário comum (ver
+  seção "Detalhes Técnicos" para o nível de abstração permitido).
+
+  Esta é a ÚNICA Central de Ajuda do sistema — todo gatilho contextual
+  em DiplomasApp.html abre este mesmo modal em uma seção específica,
+  nunca um modal paralelo.
+=====================================================-->
+
+<div class="ajudaModalFundo" id="ajudaModalFundo" role="dialog" aria-modal="true" aria-labelledby="ajudaTituloTopo">
+  <div class="ajudaModalCaixa" id="ajudaModalCaixa">
+
+    <!-- TOPO: título + busca + fechar -->
+    <div class="ajudaTopo">
+      <div class="ajudaTituloBloco">
+        <h2 class="ajudaTituloTopo" id="ajudaTituloTopo">❓ Central de Ajuda</h2>
+        <span class="ajudaSubtituloTopo">Gerenciador de Colação de Grau e Diplomas<span class="ajudaSubtituloTopoExtra"> · Guia de uso, perguntas frequentes e solução de problemas.</span></span>
+      </div>
+
+      <div class="ajudaBuscaContainer">
+        <span class="ajudaBuscaIcone">🔎</span>
+        <input type="text" id="ajudaBuscaCampo" placeholder="Buscar na ajuda..." aria-label="Buscar na ajuda" autocomplete="off">
+        <button type="button" class="ajudaBuscaLimpar" id="ajudaBuscaLimparBotao" style="display:none;" aria-label="Limpar busca">&times;</button>
+      </div>
+
+      <button type="button" class="ajudaFecharBotao" id="ajudaFecharBotao" aria-label="Fechar ajuda">&times;</button>
+    </div>
+
+    <!-- CORPO: nav lateral + conteúdo -->
+    <div class="ajudaCorpo">
+
+      <!-- NAV LATERAL -->
+      <nav class="ajudaNav" id="ajudaNav" aria-label="Assuntos da ajuda">
+
+        <div class="ajudaNavGrupoTitulo">Primeiros passos</div>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-comece-aqui">Comece aqui</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-guia-rapido">Guia rápido</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-acesso">Acesso e perfis</button>
+
+        <div class="ajudaNavGrupoTitulo">Telas do sistema</div>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-lista-alunos">Lista de alunos</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-modal-aluno">Modal do aluno</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-dados-pessoais">Dados pessoais</button>
+
+        <div class="ajudaNavGrupoTitulo">Histórico escolar</div>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-historico-arquivo">Qual arquivo usar</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-analise-automatica">Análise automática</button>
+        <button type="button" class="ajudaNavItem ajudaNavSubitem" data-alvo="ajuda-psi-bach">Psicólogo + Bacharelado</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-analises-registradas">Análises registradas</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-relatorios">Relatórios</button>
+
+        <div class="ajudaNavGrupoTitulo">Colação e diploma</div>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-acoes-lote">Ações em lote</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-colacao">Colação de grau</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-diploma">Emissão de diploma</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-documentos">Documentos</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-emails">E-mails</button>
+
+        <div class="ajudaNavGrupoTitulo">Dados e segurança</div>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-pastas-anexos">Pastas e anexos</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-devolver">Devolver para...</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-exclusao">Exclusão de aluno</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-regras-curriculares">Regras curriculares</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-seguranca">Segurança e integridade</button>
+
+        <div class="ajudaNavGrupoTitulo">Suporte</div>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-problemas">Problemas comuns</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-faq">FAQ</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-glossario">Glossário</button>
+        <button type="button" class="ajudaNavItem" data-alvo="ajuda-detalhes-tecnicos">Detalhes técnicos</button>
+
+      </nav>
+
+      <!-- CONTEÚDO -->
+      <div class="ajudaConteudo" id="ajudaConteudo">
+
+        <!-- RESULTADOS DE BUSCA (dinâmico, populado via DOM pelo JS) -->
+        <div class="ajudaSecao" id="ajuda-resultados-busca" data-ajuda-titulo="Resultados da busca">
+          <h2>Resultados da busca</h2>
+          <p class="ajudaResultadosTitulo" id="ajudaResultadosResumo"></p>
+          <div id="ajudaListaResultadosConteudo"></div>
+        </div>
+
+        <!-- ===================== COMECE AQUI ===================== -->
+        <div class="ajudaSecao ajudaSecaoAtiva" id="ajuda-comece-aqui" data-ajuda-titulo="Comece aqui">
+          <h2>Comece aqui</h2>
+          <p class="ajudaSubtituloSecao">Uma visão geral do Gerenciador de Colação de Grau e Diplomas.</p>
+
+          <p>O Gerenciador de Colação de Grau e Diplomas acompanha o aluno da conferência dos dados pessoais até o encaminhamento do diploma.</p>
+          <p>No topo aparecem o seu nome e, logo abaixo, a sua descrição na lista de acesso. Em <strong>Aparência</strong> você escolhe Sistema, Claro ou Escuro; a escolha fica guardada só neste navegador. O que você pode fazer depende do seu perfil: veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-acesso">Acesso e perfis</button>.</p>
+
+          <h3>Como o aluno avança</h3>
+          <div class="ajudaFluxoEtapas">
+            <span class="ajudaFluxoEtapa">1. Dados Pessoais</span>
+            <span class="ajudaFluxoSeta">→</span>
+            <span class="ajudaFluxoEtapa">2. Histórico Escolar</span>
+            <span class="ajudaFluxoSeta">→</span>
+            <span class="ajudaFluxoEtapa">3. Colação de Grau</span>
+            <span class="ajudaFluxoSeta">→</span>
+            <span class="ajudaFluxoEtapa">4. Emissão de Diploma</span>
+          </div>
+          <ul>
+            <li>A etapa atual do aluno é <strong>calculada pelo próprio sistema</strong> — não é escolhida livremente por quem está usando a tela.</li>
+            <li>Não é possível "pular" uma etapa.</li>
+            <li>Usar <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-devolver">"Devolver para..."</button> invalida a etapa escolhida e todas as etapas posteriores, que voltam a precisar de nova confirmação.</li>
+          </ul>
+
+          <h3>O que você quer fazer?</h3>
+          <div class="ajudaAtalhosGrid">
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-lista-alunos">📋 Cadastrar um aluno</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-dados-pessoais">🧾 Conferir dados pessoais</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-analise-automatica">🔍 Analisar histórico</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-analise-automatica">✅ Entender Apto / Não Apto / Conferir</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-relatorios">📄 Gerar relatório de histórico</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-documentos">📃 Emitir certificado</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-emails">📧 Enviar convocação de colação</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-documentos">📑 Emitir ofício de diploma</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-emails">📧 Enviar aviso de diploma</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-acoes-lote">👥 Trabalhar com vários alunos</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-devolver">↩️ Corrigir/voltar uma etapa</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-problemas">🛠️ Resolver um problema</button>
+          </div>
+        </div>
+
+        <div class="ajudaSecao" id="ajuda-acesso" data-ajuda-titulo="Acesso e perfis" data-ajuda-palavraschave="acesso perfil leitor administrador consulta permissão sem acesso conta">
+          <h2>Acesso e perfis</h2>
+          <p class="ajudaSubtituloSecao">Quem pode abrir o gerenciador e o que cada perfil pode fazer.</p>
+          <p>Só abre o gerenciador quem está na lista de acesso mantida pelo Serviço de Graduação. A conferência é feita pela conta institucional com que você entrou no navegador.</p>
+          <ul>
+            <li><strong>Leitor:</strong> vê as colações, a lista de alunos, os detalhes de cada aluno, os anexos e as análises de histórico já registradas. Aparece a faixa <em>Somente consulta</em> e os botões de alterar não são mostrados.</li>
+            <li><strong>Administrador:</strong> além de ver, salva dados, cria pastas, envia anexos, analisa históricos, gera certificados, ofícios, listas, arquivos ZIP e relatórios, envia e-mails, avança ou devolve etapas e exclui.</li>
+          </ul>
+          <p>Se aparecer <em>Sem acesso a este gerenciador</em>, a sua conta não está na lista. Se aparecer <em>Conta não identificada</em>, entre com a sua conta institucional @usp.br e abra o endereço de novo. Para pedir acesso ou outro perfil, fale com o responsável pelo Serviço de Graduação.</p>
+        </div>
+
+        <!-- ===================== GUIA RÁPIDO ===================== -->
+        <div class="ajudaSecao" id="ajuda-guia-rapido" data-ajuda-titulo="Guia rápido — do cadastro ao diploma">
+          <h2>Guia rápido — do cadastro ao diploma</h2>
+          <p class="ajudaSubtituloSecao">As 4 etapas da jornada do aluno, resumidas.</p>
+
+          <div class="ajudaGuiaCards">
+            <div class="ajudaGuiaCard">
+              <div class="ajudaGuiaCardNumero">1</div>
+              <h4>Dados Pessoais</h4>
+              <ul>
+                <li>Nome, Nº USP, e-mail, RG</li>
+                <li>Gênero (concordância)</li>
+                <li>Habilitações e ano de conclusão</li>
+                <li>💾 Salvar Alterações</li>
+                <li>✅ Confirmar Dados Pessoais</li>
+              </ul>
+              <p style="margin-top:8px;"><strong>Confirmar salva e avança numa única operação.</strong></p>
+            </div>
+            <div class="ajudaGuiaCard">
+              <div class="ajudaGuiaCardNumero">2</div>
+              <h4>Histórico Escolar</h4>
+              <ul>
+                <li>Anexar o Histórico Escolar Completo USP</li>
+                <li>Conferir habilitações</li>
+                <li>Rodar a análise automática</li>
+                <li>Decisão humana sobre o resultado</li>
+                <li>Marcar manualmente o que cumpre requisitos</li>
+                <li>Avançar</li>
+              </ul>
+            </div>
+            <div class="ajudaGuiaCard">
+              <div class="ajudaGuiaCardNumero">3</div>
+              <h4>Colação de Grau</h4>
+              <ul>
+                <li>Marcar colação realizada</li>
+                <li>Emitir certificado</li>
+                <li>E-mail individual</li>
+                <li>Ações em lote</li>
+                <li>Avançar para Diploma</li>
+              </ul>
+            </div>
+            <div class="ajudaGuiaCard">
+              <div class="ajudaGuiaCardNumero">4</div>
+              <h4>Emissão de Diploma</h4>
+              <ul>
+                <li>Emitir ofício de encaminhamento</li>
+                <li>Enviar e-mail avisando o despacho</li>
+                <li>Retorno para etapas anteriores, se necessário</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== LISTA DE ALUNOS ===================== -->
+        <div class="ajudaSecao" id="ajuda-lista-alunos" data-ajuda-titulo="Seleção de colação e lista de alunos" data-ajuda-palavraschave="colação selecionar todos filtro busca lote">
+          <h2>Seleção de colação e lista de alunos</h2>
+
+          <h3>Colações</h3>
+          <p>Cada colação de grau é identificada no formato <strong>AAAAS</strong> (ano + semestre) — por exemplo, <strong>20261</strong> para o 1º semestre de 2026. Use "+ Adicionar nova colação" para criar uma nova.</p>
+
+          <h3>A lista de alunos</h3>
+          <ul>
+            <li>As 4 abas correspondem às 4 etapas do <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-guia-rapido">Guia Rápido</button>.</li>
+            <li>O contador mostra quantos alunos existem na aba/filtro atual.</li>
+            <li>O campo de busca localiza por Nome ou Nº USP.</li>
+            <li>"+ Adicionar Aluno" cadastra um novo aluno na colação atual.</li>
+            <li>Clicar em um aluno da lista abre o <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-modal-aluno">Modal do Aluno</button>.</li>
+          </ul>
+
+          <div class="ajudaAviso">
+            <strong>"Selecionar todos" seleciona somente os alunos atualmente VISÍVEIS</strong>, respeitando a aba escolhida e a busca/filtro em uso no momento — nunca todos os alunos da colação.
+          </div>
+
+          <h3>Ações em lote disponíveis</h3>
+          <table class="ajudaTabela">
+            <tr><th>Ação</th><th>Aparece na aba</th></tr>
+            <tr><td>🗑️ Excluir selecionados</td><td>Qualquer aba</td></tr>
+            <tr><td>📧 Enviar E-mail de Colação de Grau</td><td>Colação de Grau</td></tr>
+            <tr><td>📄 Emitir Certificados (ZIP)</td><td>Colação de Grau</td></tr>
+            <tr><td>📑 Emitir Ofícios (ZIP)</td><td>Colação de Grau</td></tr>
+            <tr><td>📋 Gerar Lista de Formandos</td><td>Colação de Grau</td></tr>
+            <tr><td>🔍 Analisar Histórico em Lote</td><td>Histórico Escolar</td></tr>
+          </table>
+          <p>Veja o detalhe de cada uma em <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-acoes-lote">Ações em Lote</button>.</p>
+        </div>
+
+        <!-- ===================== MODAL DO ALUNO ===================== -->
+        <div class="ajudaSecao" id="ajuda-modal-aluno" data-ajuda-titulo="Modal do aluno">
+          <h2>Modal do aluno</h2>
+          <p>Abre ao clicar em qualquer aluno da lista e concentra tudo sobre aquele aluno específico. Fecha pelo × ou pela tecla ESC, sem afetar a lista por trás.</p>
+
+          <h3>Dados do Aluno</h3>
+          <p>Nome completo, Nº USP, Gênero (concordância), e-mail, Nº RG e as Habilitações com o respectivo ano de conclusão. Veja o detalhe em <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-dados-pessoais">Dados Pessoais</button>.</p>
+          <div class="ajudaAviso">Depois que a etapa Dados Pessoais é confirmada, esses campos ficam bloqueados. Para corrigir algo, é preciso <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-devolver">devolver o aluno para Dados Pessoais</button>.</div>
+
+          <h3>Habilitações</h3>
+          <p>Uma tabela reúne, por habilitação solicitada (Bacharelado / Formação de Psicólogo(a) / Licenciatura), uma marcação por etapa já alcançada: Histórico Escolar, Colação de Grau e Emissão de Diploma. Cada marcação só fica editável enquanto o aluno estiver naquela etapa — é assim que se registra, por exemplo, que uma habilitação cumpre os requisitos do Histórico Escolar, ou que já colou grau.</p>
+
+          <h3>Pasta do Aluno</h3>
+          <p>Link "Abrir/criar pasta no Drive". Veja detalhes em <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-pastas-anexos">Pastas e Anexos</button>.</p>
+
+          <h3>Análises Registradas</h3>
+          <p>"Ver Última Análise" e "Ver Histórico de Análises" ficam sempre disponíveis, em qualquer etapa. Veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-analises-registradas">Análises Registradas</button>.</p>
+
+          <h3>Anexos</h3>
+          <p>Lista de arquivos já anexados, com opção de adicionar novos. Veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-pastas-anexos">Pastas e Anexos</button>.</p>
+
+          <h3>Observações</h3>
+          <p>O botão "📝 Observações" abre um painel próprio com um campo de texto livre para recados sobre aquele aluno — útil para avisar quem for continuar o processo. É independente da etapa e não interfere na análise nem no fluxo.</p>
+
+          <h3>Ações da Etapa</h3>
+          <p>Os botões de ação mudam de acordo com a etapa atual do aluno — veja o <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-guia-rapido">Guia Rápido</button> e as seções de <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-colacao">Colação de Grau</button> e <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-diploma">Emissão de Diploma</button>. As opções de "Devolver para..." aparecem aqui também — veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-devolver">Devolver para...</button>.</p>
+
+          <h3>Exclusão</h3>
+          <div class="ajudaAviso ajudaAvisoPerigo">"🗑️ Excluir Aluno" é uma ação perigosa. Veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-exclusao">Exclusão de Aluno</button> antes de usá-la.</div>
+        </div>
+
+        <!-- ===================== DADOS PESSOAIS ===================== -->
+        <div class="ajudaSecao" id="ajuda-dados-pessoais" data-ajuda-titulo="Etapa 1 — Dados pessoais">
+          <h2>Etapa 1 — Dados pessoais</h2>
+
+          <h3>Campos</h3>
+          <ul>
+            <li><strong>Nome completo, Nº USP, e-mail, Nº RG</strong> — identificação do aluno.</li>
+            <li><strong>Gênero (concordância)</strong> — usado apenas para a concordância gramatical (por exemplo, "aluno"/"aluna", "formado"/"formada") nos textos dos documentos gerados pelo sistema (certificado, ofício, e-mails). Não tem outra finalidade no sistema.</li>
+            <li><strong>Habilitação(ões)</strong> — Formação de Psicólogo(a), Bacharelado e/ou Licenciatura, cada uma com seu próprio campo de ano de conclusão. Marcar aqui é o que faz o aluno passar a ser acompanhado nessa(s) habilitação(ões) pelo resto do fluxo.</li>
+          </ul>
+
+          <h3>Salvar x Confirmar</h3>
+          <ul>
+            <li><strong>💾 Salvar Alterações</strong> — grava os campos sem mudar de etapa.</li>
+            <li><strong>✅ Confirmar Dados Pessoais</strong> — salva e avança para a etapa Histórico Escolar numa única operação.</li>
+          </ul>
+
+          <div class="ajudaAviso">Depois de confirmados, os dados pessoais ficam bloqueados para edição direta. Para corrigir algo depois disso, é preciso <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-devolver">devolver o aluno para Dados Pessoais</button>.</div>
+        </div>
+
+        <!-- ===================== HISTÓRICO — QUAL ARQUIVO ===================== -->
+        <div class="ajudaSecao" id="ajuda-historico-arquivo" data-ajuda-titulo="Histórico escolar — qual arquivo usar" data-ajuda-palavraschave="pdf completo final histórico escolar arquivo certo anexo">
+          <h2>Histórico escolar — qual arquivo usar</h2>
+          <p class="ajudaSubtituloSecao">Isto precisa ficar muito claro: o arquivo certo importa tanto quanto os dados nele.</p>
+
+          <div class="ajudaAviso ajudaAvisoOk">
+            Para a análise automática, o documento correto é o <strong>"Histórico Escolar Completo USP"</strong> da habilitação correspondente:<br>
+            Histórico Escolar Completo USP (Psicólogo) · Histórico Escolar Completo USP (Bacharelado) · Histórico Escolar Completo USP (Licenciatura)
+          </div>
+
+          <div class="ajudaAviso ajudaAvisoPerigo">
+            Não confundir com o <strong>"Histórico Escolar Final USP"</strong>. O Final pode existir como documento administrativo, mas é um documento distinto — o analisador precisa do <strong>Completo</strong>, porque só nele estão as informações detalhadas (disciplinas, créditos) necessárias para a avaliação.
+          </div>
+
+          <h3>Outros cuidados</h3>
+          <ul>
+            <li>O PDF precisa ter <strong>texto real</strong> — um histórico escaneado como imagem pode não ser interpretado pelo leitor.</li>
+            <li>Se <strong>nenhum arquivo</strong> compatível for encontrado, o sistema avisa; ele nunca adivinha qual arquivo usar.</li>
+            <li>Se <strong>mais de um candidato</strong> for encontrado, o sistema também não adivinha — é preciso resolver a duplicidade (ver <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-pastas-anexos">Pastas e Anexos</button>).</li>
+          </ul>
+
+          <h3>Continue por aqui</h3>
+          <div class="ajudaAtalhosGrid">
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-analise-automatica">Como funciona a análise automática</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-psi-bach">Psicólogo + Bacharelado</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-analises-registradas">Análises registradas</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-relatorios">Relatórios</button>
+          </div>
+        </div>
+
+        <!-- ===================== ANÁLISE AUTOMÁTICA ===================== -->
+        <div class="ajudaSecao" id="ajuda-analise-automatica" data-ajuda-titulo="Análise automática de histórico escolar" data-ajuda-palavraschave="apto não apto conferir resultado motor regras">
+          <h2>Análise automática de histórico escolar</h2>
+
+          <p>Em linguagem simples, o que acontece ao clicar em "Analisar Histórico Escolar (automático)":</p>
+          <ol>
+            <li>O sistema localiza o PDF correto na pasta do aluno.</li>
+            <li>O texto do PDF é lido no próprio navegador.</li>
+            <li>Os dados relevantes são extraídos.</li>
+            <li>O servidor identifica o currículo do aluno.</li>
+            <li>As Regras Curriculares correspondentes a esse currículo são carregadas.</li>
+            <li>O motor de regras verifica cada habilitação separadamente.</li>
+            <li>O resultado fica registrado permanentemente na auditoria.</li>
+          </ol>
+
+          <div class="ajudaAviso">
+            <strong>A análise automática é um apoio.</strong> Ela NÃO marca sozinha que uma habilitação cumpre os requisitos — quem marca isso é sempre a pessoa responsável, na tabela de Habilitações do <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-modal-aluno">Modal do Aluno</button>. A decisão final é sempre humana.
+          </div>
+
+          <h3>O que significam os resultados</h3>
+          <p><span class="ajudaBadge apto">APTO</span> — todos os requisitos avaliados para aquela habilitação foram cumpridos.</p>
+          <p><span class="ajudaBadge naoApto">NÃO APTO</span> — existe pelo menos um requisito objetivamente não cumprido.</p>
+          <p><span class="ajudaBadge conferir">CONFERIR</span> — o sistema não tem segurança suficiente para concluir sozinho. Alguns exemplos: dado não reconhecido, arquivo não localizado ou ambíguo, ruleset não disponível para aquele currículo, regra em revisão/instável, ou informação necessária ausente no histórico.</p>
+
+          <div class="ajudaAviso">
+            A filosofia por trás disso é simples: <strong>"na dúvida, o sistema não decide."</strong> CONFERIR nunca deve ser tratado como sinônimo de reprovação — é um pedido de conferência humana.
+          </div>
+
+          <h3>Continue por aqui</h3>
+          <div class="ajudaAtalhosGrid">
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-psi-bach">Psicólogo + Bacharelado</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-analises-registradas">Análises registradas</button>
+            <button type="button" class="ajudaAtalhoCard" data-alvo="ajuda-relatorios">Relatórios</button>
+          </div>
+        </div>
+
+        <!-- ===================== PSICÓLOGO + BACHARELADO ===================== -->
+        <div class="ajudaSecao" id="ajuda-psi-bach" data-ajuda-titulo="Psicólogo + Bacharelado">
+          <h2>Psicólogo + Bacharelado</h2>
+
+          <p>Quando aplicável, o mesmo PDF anexado para Formação de Psicólogo(a) pode ser aproveitado para avaliar também o Bacharelado:</p>
+          <ul>
+            <li>O arquivo é lido <strong>uma única vez</strong>;</li>
+            <li>Mas os dois conjuntos de regras curriculares são avaliados <strong>separadamente</strong>;</li>
+            <li>Por isso um mesmo aluno pode receber, por exemplo, Psicólogo = <span class="ajudaBadge naoApto">Não Apto</span> e Bacharelado = <span class="ajudaBadge apto">Apto</span> — ou qualquer outra combinação. Isso não é um erro.</li>
+          </ul>
+
+          <div class="ajudaAviso">
+            As contagens de um lote são feitas <strong>por habilitação</strong>, não por aluno. Exemplo: 3 alunos com Psicólogo + Bacharelado podem gerar até <strong>6 resultados de habilitação</strong>. É por isso que a soma dos resultados pode não bater com o número de alunos selecionados — ver <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-faq">FAQ</button>.
+          </div>
+        </div>
+
+        <!-- ===================== ANÁLISES REGISTRADAS ===================== -->
+        <div class="ajudaSecao" id="ajuda-analises-registradas" data-ajuda-titulo="Análises registradas">
+          <h2>Análises registradas</h2>
+
+          <p>"📄 Ver Última Análise" e "🕘 Ver Histórico de Análises", disponíveis no Modal do Aluno, <strong>não leem o PDF de novo</strong> — eles apenas consultam o que já foi registrado na auditoria permanente de análises.</p>
+
+          <ul>
+            <li>Cada execução da análise automática cria uma nova sessão registrada.</li>
+            <li>Sessões (análises) anteriores nunca são apagadas.</li>
+            <li>Esse histórico continua acessível mesmo depois de o aluno avançar de etapa.</li>
+          </ul>
+
+          <div class="ajudaAviso">Se "Ver Última Análise" disser que não existe análise, é porque ainda não foi executada e registrada nenhuma análise automática para esse aluno — veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-analise-automatica">Análise Automática</button>.</div>
+        </div>
+
+        <!-- ===================== RELATÓRIOS ===================== -->
+        <div class="ajudaSecao" id="ajuda-relatorios" data-ajuda-titulo="Relatórios de histórico escolar" data-ajuda-palavraschave="individual consolidado versão substituir">
+          <h2>Relatórios de histórico escolar</h2>
+
+          <h3>Relatório individual</h3>
+          <ul>
+            <li>Um PDF por aluno/sessão de análise — pode reunir mais de uma habilitação;</li>
+            <li>Detalhado;</li>
+            <li>Salvo automaticamente na pasta do próprio aluno;</li>
+            <li>Possui versionamento.</li>
+          </ul>
+          <p>Ao gerar novamente, é preciso escolher:</p>
+          <table class="ajudaTabela">
+            <tr><th>Opção</th><th>O que acontece (exemplo com v1, v2, v3)</th></tr>
+            <tr><td>Substituir a última versão</td><td>Continua v1, v2, v3 — mas v3 é atualizado</td></tr>
+            <tr><td>Criar nova versão</td><td>Passa a existir v1, v2, v3, v4</td></tr>
+          </table>
+          <p>A análise em si (a sessão registrada) <strong>nunca é apagada</strong>, mesmo quando o PDF do relatório é substituído.</p>
+
+          <h3>Relatório consolidado</h3>
+          <ul>
+            <li>Resumo administrativo cobrindo vários alunos de uma vez;</li>
+            <li>Resultados organizados por habilitação;</li>
+            <li>Mostra as principais pendências;</li>
+            <li><strong>Efêmero</strong> — abre em uma nova aba e <strong>não é salvo automaticamente</strong>; para guardar, é preciso salvar/imprimir manualmente.</li>
+          </ul>
+
+          <h3>Individual x Consolidado</h3>
+          <table class="ajudaTabela">
+            <tr><th></th><th>Individual</th><th>Consolidado</th></tr>
+            <tr><td>Abrangência</td><td>1 aluno</td><td>Vários alunos</td></tr>
+            <tr><td>Nível de detalhe</td><td>Detalhado</td><td>Resumido</td></tr>
+            <tr><td>Onde fica</td><td>Salvo na pasta do aluno</td><td>Abre em nova aba</td></tr>
+            <tr><td>Persistência</td><td>Salvo automaticamente</td><td>Não salvo automaticamente</td></tr>
+            <tr><td>Versionamento</td><td>Sim</td><td>Não</td></tr>
+          </table>
+
+          <div class="ajudaAviso">Gerar um não elimina o outro: dá para gerar os relatórios individuais e, em seguida, sem reanalisar o lote, abrir também o consolidado — desde que o painel da execução do lote continue aberto. Veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-acoes-lote">Ações em Lote</button>.</div>
+        </div>
+
+        <!-- ===================== AÇÕES EM LOTE ===================== -->
+        <div class="ajudaSecao" id="ajuda-acoes-lote" data-ajuda-titulo="Ações em lote">
+          <h2>Ações em lote</h2>
+
+          <h3>Análise de histórico em lote</h3>
+          <p>Roda a análise automática aluno por aluno, em sequência. Uma falha em um aluno não apaga nem prejudica o resultado dos demais. As contagens finais são <strong>por habilitação</strong> — veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-psi-bach">Psicólogo + Bacharelado</button>.</p>
+
+          <p>Ao final, dois botões ficam disponíveis:</p>
+          <ul>
+            <li><strong>Salvar relatórios individuais nas pastas dos alunos</strong> — cria um PDF individual para cada aluno elegível e salva na respectiva pasta, tratando o versionamento normalmente.</li>
+            <li><strong>Abrir relatório consolidado do lote</strong> — gera um único PDF resumido cobrindo todos os alunos do lote, que abre em nova aba e não é salvo automaticamente.</li>
+          </ul>
+          <p>Veja a comparação completa em <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-relatorios">Relatórios</button>.</p>
+
+          <h3>Outras ações em lote (aba Colação de Grau)</h3>
+          <p>Excluir selecionados, enviar e-mail de colação em lote, emitir certificados/ofícios em ZIP e gerar lista de formandos. Todas respeitam a mesma regra de seleção: <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-lista-alunos">"Selecionar todos" pega só os alunos visíveis</button> na aba/filtro atual.</p>
+        </div>
+
+        <!-- ===================== COLAÇÃO DE GRAU ===================== -->
+        <div class="ajudaSecao" id="ajuda-colacao" data-ajuda-titulo="Etapa 3 — Colação de grau">
+          <h2>Etapa 3 — Colação de grau</h2>
+          <ul>
+            <li>Marcar a Colação de Grau realizada, por habilitação, na tabela de Habilitações do Modal do Aluno;</li>
+            <li>📄 Emitir Certificado de Conclusão de Curso;</li>
+            <li>📧 Enviar e-mail individual de Colação de Grau ao aluno;</li>
+            <li>Usar as <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-acoes-lote">ações em lote</button> quando fizer sentido trabalhar com vários alunos de uma vez;</li>
+            <li>➡️ Avançar para Emissão de Diploma;</li>
+            <li>↩️ Devolver para Dados Pessoais, se necessário.</li>
+          </ul>
+          <div class="ajudaAviso">O aluno só avança para Emissão de Diploma quando <strong>todas</strong> as habilitações ativas estiverem marcadas como coladas.</div>
+        </div>
+
+        <!-- ===================== EMISSÃO DE DIPLOMA ===================== -->
+        <div class="ajudaSecao" id="ajuda-diploma" data-ajuda-titulo="Etapa 4 — Emissão de diploma">
+          <h2>Etapa 4 — Emissão de diploma</h2>
+          <ul>
+            <li>📑 Emitir Ofício de Encaminhamento de Diploma (para a Secretaria Geral);</li>
+            <li>📧 Enviar e-mail ao aluno avisando do despacho do diploma;</li>
+            <li>↩️ Devolver para Dados Pessoais, Histórico Escolar ou Colação de Grau, quando necessário — veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-devolver">Devolver para...</button>.</li>
+          </ul>
+        </div>
+
+        <!-- ===================== DOCUMENTOS GERADOS ===================== -->
+        <div class="ajudaSecao" id="ajuda-documentos" data-ajuda-titulo="Documentos gerados">
+          <h2>Documentos gerados</h2>
+          <p>Para cada documento: quando é usado, se é salvo ou só baixado, e se pode ser gerado em lote.</p>
+
+          <h3>Certificado de Conclusão</h3>
+          <p>Gerado na etapa Colação de Grau. Salvo na pasta do aluno. Pode ser gerado individualmente ou em lote (ZIP).</p>
+
+          <h3>Ofício de Encaminhamento de Diploma</h3>
+          <p>Gerado na etapa Emissão de Diploma, para encaminhamento à Secretaria Geral. Salvo na pasta do aluno. Pode ser gerado individualmente ou em lote (ZIP).</p>
+
+          <h3>Lista de Formandos</h3>
+          <p>Gerada a partir dos alunos selecionados na aba Colação de Grau. Documento de apoio administrativo para a cerimônia/registro.</p>
+
+          <h3>Convocação / Lista do lote</h3>
+          <p>Acompanha o envio de e-mail de colação em lote, listando os destinatários da convocação.</p>
+
+          <h3>Relatório Individual de Histórico</h3>
+          <p>Ver <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-relatorios">Relatórios</button> — salvo na pasta do aluno, com versionamento.</p>
+
+          <h3>Relatório Consolidado</h3>
+          <p>Ver <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-relatorios">Relatórios</button> — abre em nova aba, não salvo automaticamente.</p>
+
+          <h3>ZIP de Certificados / ZIP de Ofícios</h3>
+          <p>Versões em lote dos respectivos documentos, para os alunos selecionados na lista. Baixados como um único arquivo ZIP.</p>
+        </div>
+
+        <!-- ===================== E-MAILS ===================== -->
+        <div class="ajudaSecao" id="ajuda-emails" data-ajuda-titulo="E-mails">
+          <h2>E-mails</h2>
+          <p>O sistema envia dois tipos de e-mail ao aluno: a <strong>Convocação de Colação</strong> e o <strong>Aviso de Diploma Despachado</strong>.</p>
+
+          <h3>Proteção contra duplicidade</h3>
+          <ul>
+            <li>O sistema registra quando um e-mail já foi enviado;</li>
+            <li>Um novo envio para o mesmo aluno exige confirmação;</li>
+            <li>Existe a opção "🔓 Desmarcar e-mail enviado (permitir reenvio)" quando o reenvio for realmente necessário;</li>
+            <li>No envio em lote, o sistema confere a cota disponível antes de disparar;</li>
+            <li>Os destinatários de um envio em lote recebem em cópia oculta (CCO), quando esse for o comportamento configurado.</li>
+          </ul>
+        </div>
+
+        <!-- ===================== PASTAS E ANEXOS ===================== -->
+        <div class="ajudaSecao" id="ajuda-pastas-anexos" data-ajuda-titulo="Pasta do aluno e anexos">
+          <h2>Pasta do aluno e anexos</h2>
+
+          <ul>
+            <li>Cada aluno tem uma <strong>pasta única por Nº USP</strong> no Google Drive — compartilhada conceitualmente com outros sistemas que usam o mesmo cadastro central de alunos;</li>
+            <li>"Abrir/criar pasta no Drive" abre a pasta se ela já existir, ou cria uma nova se ainda não existir;</li>
+            <li>Em Anexos: lista de arquivos já existentes, opção de excluir um anexo, "+ Adicionar arquivo" e "Salvar Anexos";</li>
+            <li>O tipo de cada arquivo vem de uma lista de tipos já configurada no sistema.</li>
+          </ul>
+
+          <h3>Padrão de nome salvo</h3>
+          <p style="font-family:monospace; background:#f5f5f5; padding:8px 10px; border-radius:6px; display:inline-block;">TIPO - NOME - COLAÇÃO.extensão</p>
+          <p>O nome e o tipo corretos importam porque são exatamente o que permite ao analisador localizar automaticamente o <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-historico-arquivo">Histórico Escolar Completo</button> certo. Nome ou tipo errado costuma levar à mensagem "Histórico não encontrado" — veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-problemas">Problemas Comuns</button>.</p>
+        </div>
+
+        <!-- ===================== DEVOLVER PARA... ===================== -->
+        <div class="ajudaSecao" id="ajuda-devolver" data-ajuda-titulo="Devolver para..." data-ajuda-palavraschave="voltar etapa retroceder invalidar">
+          <h2>Devolver para...</h2>
+          <div class="ajudaAviso">Esta é uma ação potencialmente disruptiva para o andamento do processo — precisa ser usada com clareza sobre o que ela invalida.</div>
+
+          <p>Exemplo: um aluno está na etapa Emissão de Diploma. Dependendo de para onde ele é devolvido:</p>
+          <table class="ajudaTabela">
+            <tr><th>Ação</th><th>O que fica invalidado (precisa ser reconfirmado)</th></tr>
+            <tr><td>Devolver para Dados Pessoais</td><td>Dados Pessoais + Histórico Escolar + Colação de Grau</td></tr>
+            <tr><td>Devolver para Histórico Escolar</td><td>Histórico Escolar + Colação de Grau</td></tr>
+            <tr><td>Devolver para Colação de Grau</td><td>Colação de Grau</td></tr>
+          </table>
+          <p>Cada etapa disponível para edição direta no <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-modal-aluno">Modal do Aluno</button> só mostra as opções de "Devolver para..." que fazem sentido a partir da etapa atual daquele aluno.</p>
+
+          <div class="ajudaAviso ajudaAvisoOk">Devolver <strong>não apaga</strong> anexos, não apaga o histórico de análises já registradas, não apaga a pasta do aluno e não apaga PDFs já gerados. A ação apenas limpa as marcações de confirmação daquelas etapas, fazendo o sistema recalcular a etapa atual do aluno para trás — o trabalho já feito continua guardado e acessível.</div>
+        </div>
+
+        <!-- ===================== EXCLUSÃO DE ALUNO ===================== -->
+        <div class="ajudaSecao" id="ajuda-exclusao" data-ajuda-titulo="Exclusão de aluno" data-ajuda-palavraschave="excluir deletar remover apagar">
+          <h2>Exclusão de aluno</h2>
+          <div class="ajudaAviso ajudaAvisoPerigo">
+            <strong>Esta é uma ação perigosa.</strong> Ela remove o registro do aluno e pode enviar a pasta correspondente do Google Drive para a lixeira.
+          </div>
+          <ul>
+            <li>Antes de enviar a pasta para a lixeira, o sistema confere se nenhum outro registro ainda utiliza aquela mesma pasta (lembrando que a pasta é organizada por Nº USP e pode ser compartilhada entre sistemas);</li>
+            <li>Só é permitido mexer em pastas dentro do escopo que o sistema efetivamente gerencia.</li>
+          </ul>
+          <p>Confira sempre o Nº USP do aluno antes de confirmar a exclusão.</p>
+        </div>
+
+        <!-- ===================== REGRAS CURRICULARES ===================== -->
+        <div class="ajudaSecao" id="ajuda-regras-curriculares" data-ajuda-titulo="Regras curriculares">
+          <h2>Regras curriculares</h2>
+          <ul>
+            <li>Os requisitos avaliados pela análise automática <strong>não estão fixos dentro do sistema</strong> — eles vêm de uma planilha própria de Regras Curriculares;</li>
+            <li>Existem conjuntos de regras (rulesets) diferentes para cada currículo/habilitação;</li>
+            <li>O currículo do aluno é identificado a partir do próprio histórico escolar dele;</li>
+            <li>Uma revisão feita hoje nas Regras Curriculares <strong>não altera retroativamente</strong> análises que já foram registradas antes dessa revisão.</li>
+          </ul>
+          <p>As Regras Curriculares são administradas no painel específico de Configuração de Regras Curriculares.</p>
+          <div class="ajudaAviso">Se o ruleset de um currículo/habilitação ainda não existir, a análise tende a retornar <span class="ajudaBadge conferir">CONFERIR</span> até que a regra seja cadastrada — ver <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-analise-automatica">Análise Automática</button>.</div>
+        </div>
+
+        <!-- ===================== SEGURANÇA E INTEGRIDADE ===================== -->
+        <div class="ajudaSecao" id="ajuda-seguranca" data-ajuda-titulo="Segurança e integridade">
+          <h2>Por que o sistema às vezes recusa uma ação?</h2>
+          <p>Algumas recusas não são erro — são o sistema se protegendo contra situações arriscadas. Em linguagem simples:</p>
+          <ul>
+            <li><strong>Lista de acesso:</strong> a cada ação o servidor confere se a sua conta está na lista e se o seu perfil permite aquilo. Esconder ou mostrar um botão é só conveniência; quem decide é o servidor.</li>
+            <li><strong>Registro e versão:</strong> cada aluno tem um identificador interno e um número de versão que aumenta a cada salvamento. Se alguém mais salvou uma alteração nesse meio-tempo, o sistema avisa em vez de sobrescrever silenciosamente.</li>
+            <li><strong>Travas (locks):</strong> em operações sensíveis, o sistema evita que duas ações conflitantes aconteçam ao mesmo tempo sobre o mesmo aluno.</li>
+            <li><strong>Validação da etapa no servidor:</strong> mesmo que a tela pareça permitir uma ação, o servidor confere de novo se aquilo realmente é permitido para a etapa atual — a tela nunca é a única linha de defesa.</li>
+            <li><strong>Validação de pasta:</strong> o sistema só age sobre pastas que ele reconhece como gerenciadas por ele.</li>
+            <li><strong>Substituição segura de arquivos:</strong> ao atualizar um documento, o sistema só remove o antigo depois de confirmar que o novo foi gerado com sucesso.</li>
+            <li><strong>Fail-closed:</strong> na dúvida, o sistema prefere recusar a ação a arriscar um resultado incorreto.</li>
+            <li><strong>Auditoria de análises:</strong> toda análise de histórico escolar fica registrada de forma permanente (nunca é editada ou apagada), o que ajuda a entender o que foi avaliado e quando.</li>
+          </ul>
+          <p>Uma versão mais técnica desses mecanismos está disponível em <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-detalhes-tecnicos">Detalhes Técnicos</button>.</p>
+        </div>
+
+        <!-- ===================== PROBLEMAS COMUNS ===================== -->
+        <div class="ajudaSecao" id="ajuda-problemas" data-ajuda-titulo="Problemas comuns">
+          <h2>Problemas comuns</h2>
+          <p class="ajudaSubtituloSecao">Orientação prática para uma situação concreta. Para dúvidas de conceito, veja o <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-faq">FAQ</button>.</p>
+
+          <div id="ajudaListaProblemas">
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="O botão que eu esperava não aparece.">
+              <div class="ajudaProblemaTitulo">"O botão que eu esperava não aparece."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">Alguns botões só existem em determinada aba/etapa do aluno.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Confira em qual aba/etapa o aluno está e veja o Guia Rápido daquela etapa.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="O aluno não avança.">
+              <div class="ajudaProblemaTitulo">"O aluno não avança."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">Falta algum requisito, habilitação ou status pendente de confirmação.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Reveja a tabela de Habilitações e confirme se todas as marcações necessárias daquela etapa foram feitas.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Histórico não encontrado.">
+              <div class="ajudaProblemaTitulo">"Histórico não encontrado."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">O analisador não localizou, na pasta do aluno, um Histórico Escolar Completo com nome/tipo reconhecível.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Confira se o arquivo certo (Histórico Escolar Completo USP) está anexado, com nome e tipo corretos — veja Pasta do Aluno.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Foram encontrados vários históricos.">
+              <div class="ajudaProblemaTitulo">"Foram encontrados vários históricos."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">Há mais de um arquivo candidato, e o sistema nunca escolhe por conta própria.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Remova ou renomeie o(s) arquivo(s) duplicado(s) até restar apenas um candidato válido.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="A análise retornou CONFERIR.">
+              <div class="ajudaProblemaTitulo">"A análise retornou CONFERIR."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">O sistema não teve segurança suficiente para concluir sozinho.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Leia o motivo indicado e decida manualmente. Nunca marque como cumprido automaticamente só por causa do CONFERIR.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="PDF escaneado não foi lido.">
+              <div class="ajudaProblemaTitulo">"PDF escaneado não foi lido."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">O leitor só reconhece texto real dentro do arquivo; uma imagem escaneada sem texto não é interpretável.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Use o histórico oficial em formato com texto real, não uma foto ou digitalização de imagem.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Ver Última Análise diz que não existe análise.">
+              <div class="ajudaProblemaTitulo">"Ver Última Análise diz que não existe análise."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">Ainda não há nenhuma sessão de análise persistida e válida para esse aluno.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Execute "Analisar Histórico Escolar (automático)" para gerar e registrar uma análise.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Relatório individual não foi gerado.">
+              <div class="ajudaProblemaTitulo">"Relatório individual não foi gerado."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">A geração do PDF depende de uma análise persistida (a sessão de análise já registrada para aquele aluno). A análise é a fonte canônica do resultado — o PDF é apenas um artefato derivado dela.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Verifique a mensagem exibida e tente gerar o relatório novamente. Se a análise estiver registrada, o resultado continua válido e consultável mesmo que a geração do PDF tenha falhado. Se a análise não tiver sido registrada, será necessário executar uma nova análise antes de gerar o relatório.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Relatório consolidado não abriu.">
+              <div class="ajudaProblemaTitulo">"Relatório consolidado não abriu."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">O relatório consolidado abre em uma nova aba do navegador.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Verifique se o navegador bloqueou a abertura (bloqueio de pop-up) e libere para este site.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Já existe relatório deste aluno.">
+              <div class="ajudaProblemaTitulo">"Já existe relatório deste aluno."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">O aluno já possui ao menos uma versão de relatório individual salva.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Escolha entre substituir a última versão ou criar uma nova versão — veja Relatórios.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="O sistema disse que o registro foi alterado por outra sessão.">
+              <div class="ajudaProblemaTitulo">"O sistema disse que o registro foi alterado por outra sessão."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">Outra pessoa salvou uma alteração nesse aluno depois que você abriu a tela.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Feche e reabra (ou recarregue) o Modal do Aluno, reveja os dados atuais e só então salve novamente.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="O e-mail já foi enviado.">
+              <div class="ajudaProblemaTitulo">"O e-mail já foi enviado."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">O sistema evita reenvios acidentais registrando que aquele e-mail já saiu.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Não reenvie sem intenção. Se o reenvio for realmente necessário, use "Desmarcar e-mail enviado (permitir reenvio)".</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Selecionar todos não pegou todos os alunos da colação.">
+              <div class="ajudaProblemaTitulo">"Selecionar todos não pegou todos os alunos da colação."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">"Selecionar todos" seleciona apenas os alunos visíveis na aba e no filtro/busca atuais.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Limpe a busca e confira se está na aba certa antes de selecionar todos.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Alterei o código mas nada mudou no Web App.">
+              <div class="ajudaProblemaTitulo">"Alterei o código mas nada mudou no Web App."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">O Web App publicado (endereço /exec) é uma implantação separada do código-fonte.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">É necessário atualizar/publicar a implantação para que a alteração passe a valer para quem usa o sistema.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="A Licenciatura ficou em Conferir.">
+              <div class="ajudaProblemaTitulo">"A Licenciatura ficou em Conferir."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">Pode não existir ainda um ruleset compatível para aquele currículo de Licenciatura.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Siga o motivo exibido pela análise; nunca marque como cumprido só para contornar o Conferir. Se for o caso, acione quem administra as Regras Curriculares.</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ===================== FAQ ===================== -->
+        <div class="ajudaSecao" id="ajuda-faq" data-ajuda-titulo="Perguntas frequentes">
+          <h2>Perguntas frequentes</h2>
+          <p class="ajudaSubtituloSecao">Dúvidas de conceito e recorrentes. Para uma situação concreta, veja <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-problemas">Problemas Comuns</button>.</p>
+
+          <div id="ajudaListaFaq">
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqRespAcesso1" data-titulo="Por que aparece Somente consulta?">Por que aparece "Somente consulta"?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqRespAcesso1">O seu perfil na lista de acesso é Leitor: você pode ver tudo, mas não alterar, gerar documentos, enviar e-mails nem excluir. Para isso, peça o perfil de administrador ao responsável pelo Serviço de Graduação.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqRespAcesso2" data-titulo="Como mudo entre tema claro e escuro?">Como mudo entre tema claro e escuro?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqRespAcesso2">No topo, em Aparência, escolha Claro ou Escuro. Em Sistema, o gerenciador acompanha o tema do seu computador ou celular. A escolha fica guardada só neste navegador.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp1" data-titulo="O sistema decide sozinho se o aluno pode colar grau?">O sistema decide sozinho se o aluno pode colar grau?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp1">Não. A análise automática é um apoio; quem marca que uma habilitação cumpre os requisitos é sempre uma pessoa responsável.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp2" data-titulo="O que significa APTO?">O que significa APTO?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp2">Todos os requisitos avaliados para aquela habilitação foram cumpridos, segundo os dados lidos do histórico.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp3" data-titulo="O que significa NÃO APTO?">O que significa NÃO APTO?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp3">Existe pelo menos um requisito objetivamente não cumprido.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp4" data-titulo="O que significa CONFERIR?">O que significa CONFERIR?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp4">O sistema não tem segurança suficiente para concluir automaticamente (arquivo ambíguo, dado não reconhecido, regra indisponível/instável etc.) — em vez de arriscar, ele pede conferência humana.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp5" data-titulo="Qual histórico escolar devo anexar?">Qual histórico escolar devo anexar?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp5">O "Histórico Escolar Completo USP" da habilitação correspondente (Psicólogo, Bacharelado ou Licenciatura).</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp6" data-titulo="Posso usar o Histórico Escolar Final na análise automática?">Posso usar o Histórico Escolar Final na análise automática?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp6">Não é o documento esperado pelo analisador. É um documento administrativo distinto, sem os detalhes que o motor de regras precisa.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp7" data-titulo="Psicólogo + Bacharelado precisam de dois PDFs?">Psicólogo + Bacharelado precisam de dois PDFs?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp7">Não necessariamente — o mesmo PDF de Psicólogo pode ser usado para avaliar as duas habilitações, cada uma com seu próprio resultado.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp8" data-titulo="A análise automática marca a habilitação como aprovada sozinha?">A análise automática marca a habilitação como aprovada sozinha?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp8">Não. Ela só sugere um resultado; quem marca é sempre a pessoa responsável, na tabela de Habilitações.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp9" data-titulo='"Ver Última Análise" roda tudo novamente?'>"Ver Última Análise" roda tudo novamente?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp9">Não. Apenas consulta o que já foi registrado; não lê o PDF de novo.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp10" data-titulo="Posso gerar o relatório individual novamente?">Posso gerar o relatório individual novamente?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp10">Sim — escolhendo substituir a última versão ou criar uma nova versão.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp11" data-titulo="Qual a diferença entre substituir e criar nova versão?">Qual a diferença entre substituir e criar nova versão?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp11">Substituir atualiza o arquivo mais recente sem criar um novo. Nova versão mantém as anteriores e acrescenta mais uma na sequência.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp12" data-titulo="Onde fica salvo o relatório individual?">Onde fica salvo o relatório individual?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp12">Na pasta do próprio aluno, no Google Drive.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp13" data-titulo="O relatório consolidado fica salvo?">O relatório consolidado fica salvo?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp13">Não automaticamente. Ele abre em nova aba e pode ser salvo/impresso manualmente, se desejado.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp14" data-titulo="Posso gerar individual e consolidado no mesmo lote?">Posso gerar individual e consolidado no mesmo lote?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp14">Sim, sem precisar reanalisar, enquanto o painel da execução do lote continuar aberto.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp15" data-titulo="Por que 3 alunos podem gerar 6 resultados?">Por que 3 alunos podem gerar 6 resultados?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp15">Porque a contagem é feita por habilitação, não por aluno — alunos com Psicólogo + Bacharelado contam duas vezes.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp16" data-titulo="O que acontece ao devolver um aluno para uma etapa anterior?">O que acontece ao devolver um aluno para uma etapa anterior?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp16">As etapas devolvidas e todas as posteriores voltam a ficar pendentes de confirmação. Nada é apagado: anexos, análises registradas, pasta e documentos permanecem.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp17" data-titulo="Posso corrigir os dados do aluno depois da etapa 1?">Posso corrigir os dados do aluno depois da etapa 1?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp17">Só devolvendo o aluno para Dados Pessoais. Depois de confirmada, a etapa fica bloqueada para edição direta.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp18" data-titulo="O que acontece se duas pessoas editarem o mesmo aluno?">O que acontece se duas pessoas editarem o mesmo aluno?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp18">Quem salvar por último com uma versão desatualizada recebe um aviso de conflito e precisa recarregar os dados antes de salvar de novo.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp19" data-titulo='O que "Selecionar todos" realmente seleciona?'>O que "Selecionar todos" realmente seleciona?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp19">Só os alunos visíveis na aba e no filtro/busca atuais — nunca todos os alunos da colação.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp20" data-titulo="O que acontece se eu excluir um aluno?">O que acontece se eu excluir um aluno?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp20">O registro é removido e a pasta pode ir para a lixeira do Drive, se nenhum outro registro ainda estiver usando essa mesma pasta.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp21" data-titulo="Como sei se um e-mail já foi enviado?">Como sei se um e-mail já foi enviado?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp21">O sistema mostra um aviso de envio junto da ação; para reenviar é preciso confirmar ou usar "Desmarcar e-mail enviado".</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp22" data-titulo="Posso reenviar um e-mail?">Posso reenviar um e-mail?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp22">Sim, usando "Desmarcar e-mail enviado (permitir reenvio)" e enviando novamente.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp23" data-titulo="Onde ficam os documentos do aluno?">Onde ficam os documentos do aluno?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp23">Na pasta do aluno no Google Drive, organizada por Nº USP.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp24" data-titulo="Quem define os requisitos curriculares?">Quem define os requisitos curriculares?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp24">São administrados na Configuração de Regras Curriculares, numa planilha própria, fora desta tela.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp25" data-titulo="O que fazer se a regra curricular daquele currículo não existir?">O que fazer se a regra curricular daquele currículo não existir?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp25">A análise tende a retornar CONFERIR; é preciso conferência manual até que a regra seja cadastrada.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp26" data-titulo="Por que uma alteração no código ainda não apareceu no sistema?">Por que uma alteração no código ainda não apareceu no sistema?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp26">Porque o Web App publicado (/exec) precisa ser atualizado/implantado de novo depois de qualquer mudança no código.</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ===================== GLOSSÁRIO ===================== -->
+        <div class="ajudaSecao" id="ajuda-glossario" data-ajuda-titulo="Glossário">
+          <h2>Glossário</h2>
+          <dl class="ajudaGlossarioLista">
+            <dt>ANÁLISE DE HISTÓRICO</dt>
+            <dd>Processo (automático ou consulta manual) de conferir se um aluno cumpre os requisitos curriculares de uma habilitação, a partir do Histórico Escolar Completo.</dd>
+
+            <dt>APTO</dt>
+            <dd>Resultado que indica que todos os requisitos avaliados para aquela habilitação foram cumpridos.</dd>
+
+            <dt>CONFERIR</dt>
+            <dd>Resultado que indica que o sistema não teve segurança suficiente para concluir sozinho e pede conferência humana. Nunca é sinônimo de reprovação.</dd>
+
+            <dt>COLAÇÃO</dt>
+            <dd>A colação de grau; também o nome dado ao lote de trabalho (por exemplo, 20261) que reúne os alunos formandos de um mesmo período.</dd>
+
+            <dt>ETAPA</dt>
+            <dd>Uma das 4 fases do fluxo do aluno: Dados Pessoais, Histórico Escolar, Colação de Grau, Emissão de Diploma. É calculada pelo sistema, não escolhida livremente.</dd>
+
+            <dt>HABILITAÇÃO</dt>
+            <dd>Uma das formações possíveis (Formação de Psicólogo(a), Bacharelado, Licenciatura); um aluno pode ter mais de uma.</dd>
+
+            <dt>HISTÓRICO ESCOLAR COMPLETO</dt>
+            <dd>O documento oficial usado pela análise automática, distinto do Histórico Escolar Final. Precisa ter texto real (não escaneado).</dd>
+
+            <dt>MOTOR DE REGRAS</dt>
+            <dd>A parte do sistema que compara os dados extraídos do histórico com as Regras Curriculares e decide entre Apto, Não Apto e Conferir.</dd>
+
+            <dt>Nº USP</dt>
+            <dd>Número USP; identifica o aluno e a pasta dele no Drive.</dd>
+
+            <dt>PARSER</dt>
+            <dd>A parte do sistema que lê o PDF do histórico escolar no navegador e extrai os dados relevantes, antes da avaliação.</dd>
+
+            <dt>REGISTRO ID</dt>
+            <dd>Identificador interno de cada aluno cadastrado, usado pelo sistema para saber exatamente qual registro está sendo salvo.</dd>
+
+            <dt>RELATÓRIO CONSOLIDADO</dt>
+            <dd>Resumo administrativo de uma análise em lote, cobrindo vários alunos; não é salvo automaticamente.</dd>
+
+            <dt>RELATÓRIO INDIVIDUAL</dt>
+            <dd>Relatório detalhado de um único aluno/sessão de análise; salvo automaticamente na pasta do aluno, com versionamento.</dd>
+
+            <dt>REVISÃO DO RULESET</dt>
+            <dd>Uma atualização feita nas Regras Curriculares; não altera retroativamente análises já registradas antes da revisão.</dd>
+
+            <dt>RULESET</dt>
+            <dd>Conjunto de regras curriculares aplicável a um currículo/habilitação específico.</dd>
+
+            <dt>SESSÃO DE ANÁLISE</dt>
+            <dd>O registro de uma execução da análise automática, gravado de forma permanente na auditoria.</dd>
+
+            <dt>VERSÃO DO REGISTRO</dt>
+            <dd>Contador interno que aumenta a cada salvamento de um aluno; usado para perceber quando duas pessoas tentam salvar o mesmo registro ao mesmo tempo.</dd>
+
+            <dt>WEB APP</dt>
+            <dd>O aplicativo publicado (endereço /exec) usado no navegador; precisa ser atualizado/implantado de novo após mudanças no código.</dd>
+          </dl>
+        </div>
+
+        <!-- ===================== DETALHES TÉCNICOS ===================== -->
+        <div class="ajudaSecao" id="ajuda-detalhes-tecnicos" data-ajuda-titulo="Detalhes técnicos — para manutenção">
+          <h2>Detalhes técnicos — para manutenção</h2>
+          <p class="ajudaSubtituloSecao">Seção destinada a quem for manter ou evoluir o sistema no futuro — não é necessária para o uso diário.</p>
+
+          <div class="ajudaDetalhesTecnicos">
+            <button type="button" class="ajudaDetalhesTecnicosTitulo" aria-expanded="false" aria-controls="ajudaDetTec1">▸ Arquitetura geral<span>+</span></button>
+            <div class="ajudaDetalhesTecnicosCorpo" id="ajudaDetTec1">
+              <p>O sistema é um Web App em Google Apps Script. O HTML é servido a partir de um arquivo principal que inclui outros arquivos HTML/CSS/JS por meio de uma função utilitária genérica de inclusão — é assim, por exemplo, que este próprio módulo de ajuda é carregado. A comunicação entre a tela (frontend) e o servidor (backend) acontece por chamadas assíncronas do tipo cliente-servidor próprias do Apps Script — nunca por requisições HTTP manuais.</p>
+            </div>
+          </div>
+
+          <div class="ajudaDetalhesTecnicos">
+            <button type="button" class="ajudaDetalhesTecnicosTitulo" aria-expanded="false" aria-controls="ajudaDetTec2">▸ Planilhas e armazenamento<span>+</span></button>
+            <div class="ajudaDetalhesTecnicosCorpo" id="ajudaDetTec2">
+              <p>Os dados dos alunos ficam em uma planilha própria do sistema de Diplomas, com uma aba auxiliar de configuração (tipos de arquivo, parâmetros gerais). Existe também um cadastro central de alunos, compartilhado conceitualmente com outros sistemas, que é a referência de qual pasta do Drive pertence a cada Nº USP. As Regras Curriculares vivem em uma planilha própria, separada, mantida por quem administra o currículo.</p>
+            </div>
+          </div>
+
+          <div class="ajudaDetalhesTecnicos">
+            <button type="button" class="ajudaDetalhesTecnicosTitulo" aria-expanded="false" aria-controls="ajudaDetTec3">▸ Módulo de histórico escolar<span>+</span></button>
+            <div class="ajudaDetalhesTecnicosCorpo" id="ajudaDetTec3">
+              <p>A leitura do PDF (parser) acontece inteiramente no navegador, nunca no servidor. Os dados extraídos são então avaliados no servidor por um motor de regras, que consulta o ruleset vigente para o currículo identificado. Cada execução gera uma sessão de análise, registrada de forma permanente (somente inserção, nunca edição ou exclusão) numa tabela de auditoria dedicada. Um hash do arquivo analisado é guardado como referência de integridade, sem expor o conteúdo do arquivo em si.</p>
+            </div>
+          </div>
+
+          <div class="ajudaDetalhesTecnicos">
+            <button type="button" class="ajudaDetalhesTecnicosTitulo" aria-expanded="false" aria-controls="ajudaDetTec4">▸ Segurança e auditoria<span>+</span></button>
+            <div class="ajudaDetalhesTecnicosCorpo" id="ajudaDetTec4">
+              <p>Sessões de análise são assinadas no servidor para impedir que uma tela alterada manualmente engane o sistema sobre qual foi o resultado real. O sistema segue o princípio de "fail-closed": diante de qualquer inconsistência, ele recusa a ação em vez de seguir em frente.</p>
+              <p>As garantias efetivas de registro e integridade, hoje, são estas — não existe um log geral e único de "toda ação do sistema":</p>
+              <ul>
+                <li>análises de histórico escolar têm auditoria permanente, somente inserção (nunca edição ou exclusão);</li>
+                <li>cada registro de aluno tem identidade e número de versão, usados para controle de concorrência;</li>
+                <li>o envio de e-mails fica marcado, para evitar reenvio não intencional;</li>
+                <li>operações sensíveis contam com validações e travas (locks) apropriadas;</li>
+                <li>mudanças nas Regras Curriculares têm auditoria própria, no sistema responsável por elas.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="ajudaDetalhesTecnicos">
+            <button type="button" class="ajudaDetalhesTecnicosTitulo" aria-expanded="false" aria-controls="ajudaDetTec5">▸ Documentos e templates<span>+</span></button>
+            <div class="ajudaDetalhesTecnicosCorpo" id="ajudaDetTec5">
+              <p>Certificado, Ofício de Encaminhamento e Lista de Formandos/Convocação usam modelos (templates) do Google Docs, com marcadores de texto substituídos pelos dados do aluno, e então exportados para PDF. Os identificadores desses modelos não são expostos nesta ajuda.</p>
+              <p>Os relatórios de conferência de histórico escolar (individual e consolidado) são diferentes: <strong>não usam modelo fixo</strong>. Eles são construídos programaticamente (via DocumentApp), montando o documento inteiramente em código a partir do resultado da análise, e então exportados para PDF.</p>
+            </div>
+          </div>
+
+          <div class="ajudaDetalhesTecnicos">
+            <button type="button" class="ajudaDetalhesTecnicosTitulo" aria-expanded="false" aria-controls="ajudaDetTec6">▸ Manutenção e implantação<span>+</span></button>
+            <div class="ajudaDetalhesTecnicosCorpo" id="ajudaDetTec6">
+              <p>Qualquer alteração no código-fonte só passa a valer para quem usa o sistema depois que a implantação do Web App (/exec) é atualizada/publicada de novo — salvar o arquivo no editor não é suficiente.</p>
+              <p>Esta Central de Ajuda é conteúdo estático versionado junto do código (arquivos DiplomasAjuda.html, DiplomasAjudaEstilos.html e DiplomasAjudaUI.html). <strong>Regra de manutenção:</strong> sempre que uma funcionalidade relevante do sistema mudar, esta ajuda deve ser revisada e atualizada junto — ela não se atualiza sozinha.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <div class="ajudaRodape" id="ajudaRodape">Central de Ajuda — versão <span id="ajudaRodapeVersao"></span></div>
+
+  </div>
+</div>

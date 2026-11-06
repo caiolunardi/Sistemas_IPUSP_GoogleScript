@@ -98,5 +98,5 @@ Quando a planilha real ganhar coluna, aba ou formato novo, o CSV e o `README.md`
 ## Limites
 
 - A Estrutura Curricular não lê `AMBIENTE` (ver o aviso no início desta página).
-- O Painel dos servidores e os gerenciadores ainda leem só a produção (exceção: o [Gerenciador de Abertura de Habilitações](abertura-habilitacoes/INSTALACAO_E_ATUALIZACAO.md#3-montar-a-homologação-recomendado-antes-de-tudo) 2.0, ainda não implantado, já aceita `AMBIENTE=homologacao`). Para ver um pedido de homologação no Painel, eles também precisariam de uma cópia com `AMBIENTE`.
+- O Painel dos servidores e os gerenciadores ainda leem só a produção (exceção: o [Gerenciador de Abertura de Habilitações](abertura-habilitacoes/INSTALACAO_E_ATUALIZACAO.md#3-montar-a-homologação-recomendado-antes-de-tudo) 2.0 e o [Gerenciador de Colação de Grau e Diplomas](emissao-diplomas/MANUAL_OPERACAO.md) 4.0.0, ainda não implantado, aceitam `AMBIENTE=homologacao`). Para ver um pedido de homologação no Painel, eles também precisariam de uma cópia com `AMBIENTE`.
 - Os caches são separados por ambiente, mas valem por projeto: depois de trocar um ID na coluna `Homologação`, rode `diagnosticarConfiguracao` (que limpa o cache) ou espere 10 minutos.

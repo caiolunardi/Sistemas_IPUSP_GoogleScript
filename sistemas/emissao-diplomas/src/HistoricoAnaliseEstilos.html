@@ -1,0 +1,277 @@
+<!--=====================================================
+  ANÁLISE DE HISTÓRICO ESCOLAR — Estilos.
+
+  Bloco de CSS AUTOCONTIDO (própria tag <style>) — pode ser incluído
+  em qualquer ponto do <head>/corpo do DiplomasApp.html, do jeito que
+  include_() já é usado no resto do projeto. Reaproveita a MESMA
+  paleta de cores já usada no resto do sistema (azul #005AA9, verde
+  #2e7d32, vermelho #b71c1c, laranja #e5893a) — não introduz cor nova
+  nenhuma, só variações claras/escuras da mesma paleta pros novos
+  estados (Apto/Não apto/Conferir/Não verificado/Erro).
+=====================================================-->
+<style>
+
+/*=================================
+    MODAL DE ANÁLISE DE HISTÓRICO
+==================================*/
+
+#modalAnaliseHistorico .modalConteudo{
+    width:720px;
+}
+
+#modalAnaliseHistorico .modalHeader{
+    background:var(--gradip-primary-hover);
+}
+
+.historicoAvisoAuditoria{
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    color:var(--gradip-warning);
+    border-radius:6px;
+    padding:10px 12px;
+    font-size:12px;
+    margin-bottom:16px;
+}
+
+.historicoSubtitulo{
+    font-size:12px;
+    color:var(--gradip-text-muted);
+    margin:-8px 0 18px 0;
+}
+
+/*=================================
+    MODO INDIVIDUAL — um bloco por
+    habilitação ativa
+==================================*/
+
+.historicoBlocoHabilitacao{
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:14px;
+}
+
+.historicoCabecalhoHabilitacao{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.historicoCabecalhoHabilitacao strong{
+    font-size:14px;
+    color:var(--gradip-text);
+}
+
+.historicoFase{
+    font-size:12px;
+    color:var(--gradip-text-muted);
+    font-style:italic;
+}
+
+.historicoBadge{
+    font-size:11px;
+    font-weight:bold;
+    padding:5px 12px;
+    border-radius:14px;
+    white-space:nowrap;
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text-muted);
+}
+
+.historicoBadge.apto{ background:var(--gradip-success-bg); color:var(--gradip-success); }
+.historicoBadge.naoApto{ background:var(--gradip-danger-bg); color:var(--gradip-danger); }
+.historicoBadge.conferir{ background:var(--gradip-warning-bg); color:var(--gradip-warning); }
+.historicoBadge.indisponivel{ background:var(--gradip-surface-2); color:var(--gradip-text-muted); }
+.historicoBadge.erro{ background:var(--diplomas-erro-tecnico-bg); color:var(--diplomas-erro-tecnico); border:1px solid var(--diplomas-erro-tecnico-borda); }
+
+.historicoParecer{
+    font-size:13px;
+    font-weight:bold;
+    margin-top:10px;
+    color:var(--gradip-text);
+}
+
+.historicoMotivoIndisponivel{
+    font-size:12px;
+    color:var(--gradip-text-muted);
+    margin-top:8px;
+}
+
+.historicoMotivosLista{
+    list-style:none;
+    padding:0;
+    margin:10px 0 0 0;
+}
+
+.historicoMotivosLista li{
+    font-size:12px;
+    color:var(--gradip-text);
+    padding:6px 10px;
+    border-left:3px solid var(--gradip-warning-border);
+    background:var(--gradip-surface-2);
+    margin-bottom:6px;
+    border-radius:0 4px 4px 0;
+}
+
+.historicoMotivosLista li.bloqueio{
+    border-left-color:var(--diplomas-erro-tecnico);
+}
+
+/*=================================
+    Grade de detalhes ("relatório")
+==================================*/
+
+.historicoDetalheGrid{
+    margin-top:12px;
+    border-top:1px dashed var(--gradip-border);
+    padding-top:10px;
+}
+
+.historicoLinhaDetalhe{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+    padding:5px 0;
+    font-size:12.5px;
+    border-bottom:1px solid var(--gradip-border);
+}
+
+.historicoLinhaDetalhe .historicoRotuloDetalhe{
+    color:var(--gradip-text);
+}
+
+.historicoLinhaDetalhe .historicoValorDetalhe{
+    color:var(--gradip-text);
+    text-align:right;
+    white-space:nowrap;
+}
+
+.historicoIconeSituacao{
+    display:inline-block;
+    width:16px;
+    text-align:center;
+}
+
+.historicoCompensacaoNota{
+    font-size:11px;
+    color:var(--gradip-link-hover);
+    background:var(--gradip-info-bg);
+    border-radius:4px;
+    padding:6px 8px;
+    margin-top:4px;
+}
+
+.historicoSubgrupo{
+    margin-top:8px;
+    padding-left:10px;
+    border-left:2px solid var(--gradip-border);
+}
+
+.historicoTogglezinho{
+    font-size:11px;
+    color:var(--gradip-link);
+    cursor:pointer;
+    text-decoration:underline;
+    margin-top:10px;
+    display:inline-block;
+}
+
+.historicoAvisosTecnicos{
+    margin-top:10px;
+    font-size:11px;
+    color:var(--gradip-text-muted);
+}
+
+.historicoAvisosTecnicos ul{
+    margin:4px 0 0 18px;
+    padding:0;
+}
+
+/*=================================
+    MODO LOTE
+==================================*/
+
+.historicoResumoLote{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+}
+
+.historicoContadorLote{
+    background:var(--gradip-surface-2);
+    border-radius:6px;
+    padding:8px 14px;
+    font-size:12px;
+    color:var(--gradip-text);
+    text-align:center;
+    flex:1;
+    min-width:90px;
+}
+
+.historicoContadorLote strong{
+    display:block;
+    font-size:18px;
+    color:var(--gradip-text);
+}
+
+.historicoBarraProgressoLote{
+    height:6px;
+    background:var(--gradip-surface-2);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:16px;
+}
+
+.historicoBarraProgressoLoteInterna{
+    height:100%;
+    background:var(--gradip-primary);
+    transition:width .2s;
+}
+
+.historicoLoteLinha{
+    border:1px solid var(--gradip-border);
+    border-radius:6px;
+    padding:10px 14px;
+    margin-bottom:8px;
+}
+
+.historicoLoteCabecalho{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    cursor:pointer;
+}
+
+.historicoLoteCabecalho strong{
+    font-size:13px;
+    color:var(--gradip-text);
+}
+
+.historicoLoteBadges{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+
+.historicoLoteDetalheOculto{
+    display:none;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed var(--gradip-border);
+}
+
+.historicoLoteDetalheOculto.aberto{
+    display:block;
+}
+
+.historicoSpinnerPontinhos::after{
+    content:"⏳";
+}
+
+</style>

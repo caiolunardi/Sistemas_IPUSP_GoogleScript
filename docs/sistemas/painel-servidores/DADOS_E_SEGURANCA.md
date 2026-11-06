@@ -44,7 +44,7 @@ Base legal e retenção: A VALIDAR INSTITUCIONALMENTE.
 | Cadastros de servidores e de docentes | Sheets | chaves `SERVIDORES` e `PLANILHA_DOCENTES` no `ID_INDEX` (primeira aba) | Não | leitura pela conta que executa (1.2, só para a saudação) |
 | Planilha de permissões | Sheets | chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`; aba `PAINEL_SERVIDORES` | Não | leitura pela conta que executa |
 | Planilha da auditoria (1.3) | Sheets | chave `AUDITORIA_PAINEL_SERVIDORES` no `ID_INDEX` | Não | escrita pela conta que executa; **só ela abre** (decisão de 20/10/2026) |
-| Sistemas da equipe | Web Apps `/exec` | Script Property `URLS_SISTEMAS_EQUIPE` (JSON lido por `UrlsSistemas.gs`) | Não | cada sistema controla o próprio acesso |
+| Sistemas da equipe | Web Apps `/exec` | Script Property `URLS_SISTEMAS_EQUIPE` (JSON lido por `UrlsSistemas.gs`) | Não | cada sistema controla o próprio acesso (o de Diplomas, desde a 4.0.0, pela aba `EMISSAO_DIPLOMAS`; a chave passa a apontar para o projeto autônomo) |
 
 Desde a 1.4 nenhum ID de planilha fica no código, nem no Git nem no projeto Apps Script: o painel lê a chave no `ID_INDEX` (`idNoIndicePainel_`, em `AcessoPainel.gs`). O índice é lido uma vez por execução e o mapa chave → ID fica no cache do script por 10 minutos (servidor, nunca vai à página); uma chave que não está no mapa guardado força uma leitura nova. `diagnosticarPlanilhasPainel` (só administrador, no editor) confere as 13 chaves e mostra o nome de cada planilha, nunca o ID. Até a 1.3, os nove IDs ficavam em constantes do código, trocados no Git por marcadores `CONFIGURAR_ID_PLANILHA_<NOME>`.
 
