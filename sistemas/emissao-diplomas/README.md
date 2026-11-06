@@ -2,7 +2,7 @@
 
 Web App interno do Serviço de Graduação que acompanha cada aluno da conferência dos dados pessoais até o encaminhamento do diploma (Dados Pessoais → Histórico Escolar → Colação de Grau → Emissão de Diploma), com pasta do aluno no Drive, análise automática do histórico escolar, relatórios, certificado, ofício, lista de formandos, e-mails e ações em lote.
 
-**Estado:** 4.0.0 de 05/11/2026, **homologação parcial em 06/11/2026 (identidade visual e permissões); correções da revisão independente aguardam nova conferência; não implantada**. Projeto **autônomo** (não vinculado a planilha). A versão em uso é a 3.x do projeto vinculado, importada sem mudanças no commit `35e621e` como linha de base. O GitHub não sincroniza com o Apps Script. Documentação: [`docs/sistemas/emissao-diplomas/`](../../docs/sistemas/emissao-diplomas/README.md).
+**Estado:** 4.0.0 de 05/11/2026, **homologação parcial concluída em 06/11/2026 (identidade visual, permissões e correções da revisão independente; fluxo de negócio dispensado); em produção, com implantação confirmada pelo responsável em 06/11/2026** (versão e identificador da implantação não conferidos pelo repositório). Projeto **autônomo** (não vinculado a planilha). A 3.x do projeto vinculado, cujo desligamento fica com o responsável, foi importada sem mudanças no commit `35e621e` como linha de base. O GitHub não sincroniza com o Apps Script. Documentação: [`docs/sistemas/emissao-diplomas/`](../../docs/sistemas/emissao-diplomas/README.md).
 
 ## Responsabilidade deste aplicativo
 

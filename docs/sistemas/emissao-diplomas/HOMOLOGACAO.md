@@ -1,6 +1,6 @@
 # Homologação — Gerenciador de Colação de Grau e Diplomas
 
-## 4.0.0 (05/11/2026) — homologação parcial em 06/11/2026 (commit `a002876`); correções da revisão independente aguardam nova conferência
+## 4.0.0 (05/11/2026) — homologação parcial concluída em 06/11/2026 (commit `4792667`, com as correções da revisão independente); H7 e H8 dispensados
 
 ### Testes locais (sem Google)
 
@@ -42,6 +42,13 @@ Antes: código enviado da branch do PR, `AMBIENTE=homologacao`, aba `EMISSAO_DIP
 - As correções `c65a03f` e `a002876` (só `DiplomasApp.html`) foram enviadas pelo responsável, que confirmou o envio de `a002876`; não houve nova conferência por hash depois delas.
 - Capturas desta rodada mostram contas reais e ficam fora do repositório.
 
+### Segunda rodada (06/11/2026, depois das correções da revisão)
+
+- PR #42 no `main` (merge commit `4792667`; `src/` idêntico ao do commit `30cd51d`). Envio ao projeto HOMOLOGACAO pelo responsável (`clasp push --force` a partir do `main`); conferência por novo `clasp clone`: os 25 arquivos idênticos (SHA-256) aos de `src/`, sem diferença de fim de linha nem arquivo sobrando no projeto.
+- H3: ok. Como LEITOR, o detalhe do aluno abre sem a área de upload, com os campos travados, e o botão Observações abre a janela sem salvar.
+- H5: ok. Na aba `Diplomas` da cópia de homologação, o responsável apagou Registro ID e Versão de todas as linhas e abriu a página como ADMINISTRADOR; todas voltaram preenchidas (Versão = 1).
+- H6: ok. Com as células vazias, a página aberta como LEITOR não preencheu nada; só a abertura seguinte como ADMINISTRADOR completou as células.
+
 ### Revisão técnica independente (06/11/2026) e correções
 
 Parecer no PR #42 (revisor: ChatGPT, a pedido do responsável, commit `115efa1`). Correções no commit seguinte, com teste que falha sem elas:
@@ -59,11 +66,11 @@ Situação dos passos no Google:
 |---|---|
 | H1, H4 | feitos em 06/11 |
 | H2, H9, H10 | visual aprovado pelo responsável em 06/11, sem registro passo a passo |
-| H3 | lista de colações e detalhe ok depois de `a002876`; **repetir** depois das correções da revisão (detalhe do aluno e botão Observações) |
-| H5, H6 | **fazer** depois das correções da revisão: a gravação de Registro ID mudou (B2/C2) |
+| H3 | ok em 06/11 depois das correções da revisão (`4792667`) |
+| H5, H6 | ok em 06/11 com o código das correções (`4792667`) |
 | H7, H8 | dispensados pelo responsável (regras de negócio sem mudança); limitação de cobertura, não aprovação funcional |
 
 ### O que falta
 
-- Novo `clasp push` do commit com as correções da revisão para o projeto HOMOLOGACAO, conferência por hash e repetição de H3, H5 e H6.
-- Incluir as três suítes na CI (o ramo não altera `.github/workflows/`; ver o PR).
+- Produção, cada passo com autorização do responsável. Feito e conferido: `clasp push` do `main` (`4792667`) para o projeto PRODUÇÃO autônomo em 06/11/2026, com a autorização dele, enviado por ele; conferência por novo `clasp clone`: 25/25 arquivos idênticos (SHA-256), sem arquivo sobrando. Feito, confirmado pelo responsável em 06/11/2026 e não conferido por este repositório: implantação em produção. Não registrados aqui: versão e identificador da implantação, aba `EMISSAO_DIPLOMAS` da permissão de produção e troca do link no Painel dos servidores (feita por ele); conferir na próxima atualização desta página, sem copiar IDs nem URLs.
+- Incluir as três suítes na CI (o ramo não altera `.github/workflows/`; proposto no PR #47).
