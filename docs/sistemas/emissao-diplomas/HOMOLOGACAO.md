@@ -37,6 +37,7 @@ Antes: código enviado da branch do PR, `AMBIENTE=homologacao`, aba `EMISSAO_DIP
 - H1: ok (faixa de homologação, conta do setor com nome e observação no topo, colação da cópia, tema escuro).
 - H4: aba anônima sem conta → "Conta não identificada", sem dados. A implantação estava em "Qualquer pessoa" (sem login do Google); a lista de acesso barra do mesmo jeito.
 - H3 (lista de colações): ok. H3 (detalhe do aluno): **falhou** — a área "Faça upload de um arquivo" aparecia para LEITOR (o envio era recusado no servidor). Corrigido na tela (a área não é criada para LEITOR); o teste de navegador passou a conferir isso e falha sem a correção. Precisa de novo `clasp push` e de repetir H3.
+- Janela de espera ("Carregando aluno"): no tema escuro, a marca IPUSP ficava deslocada para a esquerda. Corrigido (marca centralizada); teste de navegador confere nos dois temas e falha sem a correção.
 - Capturas desta rodada mostram contas reais e ficam fora do repositório.
 
 ### O que falta

@@ -195,6 +195,22 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     await pagina.waitForFunction(() => document.getElementById('modalDetalhe').style.display === 'block');
   }
 
+  await t('janela de espera: marca IPUSP centralizada (claro e escuro)', async () => {
+    for (const esquema of ['light', 'dark']) {
+      const { contexto, pagina } = await abrir({ esquema });
+      const r = await pagina.evaluate(() => {
+        mostrarLoading('Carregando aluno');
+        const caixa = document.getElementById('loadingBox').getBoundingClientRect();
+        const marca = [...document.querySelectorAll('#loadingLogo .marcaIpuspSvg')].find(e => e.getClientRects().length > 0).getBoundingClientRect();
+        const titulo = document.getElementById('loadingTitulo').getBoundingClientRect();
+        esconderLoading();
+        return { caixa: (caixa.left + caixa.right) / 2, marca: (marca.left + marca.right) / 2, titulo: (titulo.left + titulo.right) / 2, largura: marca.width };
+      });
+      assert(Math.abs(r.marca - r.caixa) < 2 && Math.abs(r.titulo - r.caixa) < 2 && r.largura < 80, esquema + ' ' + JSON.stringify(r));
+      await contexto.close();
+    }
+  });
+
   await t('ADMINISTRADOR: botões que gravam aparecem', async () => {
     const { contexto, pagina, erros } = await abrir();
     assert(await pagina.isVisible('.botaoAdicionarColacao'), 'adicionar colação oculto');

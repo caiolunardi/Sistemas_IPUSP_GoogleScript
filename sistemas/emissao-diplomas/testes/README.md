@@ -15,4 +15,4 @@ node testar_navegador.js      # requer Playwright com Chromium
 EVIDENCIAS=../../../docs/sistemas/emissao-diplomas/evidencias/4.0.0 node testar_navegador.js   # grava as capturas
 ```
 
-Resultados de 05/11/2026 (versão 4.0.0): 32 ok (acesso), 484 de 486 verificações da suíte de histórico (as 2 aceitas acima), 20 ok (navegador). A biblioteca pdf.js, que vem de CDN, é substituída por um esboço no teste de navegador.
+Resultados de 05/11/2026 (versão 4.0.0): 32 ok (acesso), 484 de 486 verificações da suíte de histórico (as 2 aceitas acima), 21 ok (navegador; 06/11: área de upload do LEITOR e marca centralizada na janela de espera). A biblioteca pdf.js, que vem de CDN, é substituída por um esboço no teste de navegador.
