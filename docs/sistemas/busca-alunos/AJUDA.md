@@ -1,4 +1,4 @@
-# Ajuda — Comunidade IPUSP (texto-fonte da Central de Ajuda, v1.3)
+# Ajuda — Comunidade IPUSP (texto-fonte da Central de Ajuda, v1.4)
 
 > **Nota editorial.** Este é o texto-fonte da Central de Ajuda do app (`src/BuscaAlunosAjuda.html`), na mesma ordem, com os mesmos títulos e identificadores (`{#ajuda-…}`) usados pelos gatilhos contextuais. O padrão segue [docs/ajuda](../../ajuda/README.md) e o [modelo de conteúdo](../../ajuda/HELP_CONTENT_MODEL.md).
 >
@@ -6,7 +6,7 @@
 > - **Linguagem:** efeito para quem usa a página. Planilhas, IDs, propriedades do script e funções ficam no [manual](MANUAL_OPERACAO.md) e no [README do código](../../../sistemas/busca-alunos/README.md), não aqui.
 > - **Mecanismo:** `BuscaAlunosAjudaEstilos.html` e `BuscaAlunosAjudaUI.html` são byte-idênticos a `shared/ajuda/`. Abrir, buscar, navegar e expandir a FAQ não chamam o servidor.
 > - **Manutenção:** ao mudar um texto, mude-o nos dois lugares (aqui e em `BuscaAlunosAjuda.html`). Os "termos extras" são o `data-search` de cada item: a busca da Central procura neles **e** no texto visível.
-> - **Fonte dos fatos:** script de busca de `BuscaAlunosApp.html` (preservado do original) e `Codigo.gs`. Informações mutáveis citadas: limite de **60** resultados na tela (`MAX_RESULTADOS`), coluna somente leitura **ID da Pasta** (`COLUNAS_SOMENTE_LEITURA`), formato de ingresso **AAAA/S**, regra "só editores da planilha salvam", os quatro selos (`VINCULOS`), o que é **Setor** (campo TIPO), a mensagem de cópia do número USP (3 s), os formatos de `M / F` e `TIPO` e o tratamento Prof./Profª. Não há contato nominal; a ajuda encaminha ao "responsável pelo sistema" e ao "responsável pelo cadastro", sem inventar canal.
+> - **Fonte dos fatos:** script de busca de `BuscaAlunosApp.html` (preservado do original) e `Codigo.gs`. Informações mutáveis citadas: limite de **60** resultados na tela (`MAX_RESULTADOS`), coluna somente leitura **ID da Pasta** (`COLUNAS_SOMENTE_LEITURA`), formato de ingresso **AAAA/S**, regra "só ADMINISTRADOR que também é editor da planilha salva" (v1.4), os quatro selos (`VINCULOS`), o que é **Setor** (campo TIPO), a mensagem de cópia do número USP (3 s), os formatos de `M / F` e `TIPO` e o tratamento Prof./Profª. Não há contato nominal; a ajuda encaminha ao "responsável pelo sistema" e ao "responsável pelo cadastro", sem inventar canal.
 
 ## Gatilhos contextuais
 
@@ -145,9 +145,9 @@ Clique no nome ou no e-mail do resultado (ou use Tab até ele e aperte Enter). F
 
 ### Quem pode editar
 
-Só quem é editor do cadastro daquela pessoa (de alunos, de docentes ou de servidores, que inclui os setores). Para as demais contas a ficha abre só para consulta, com um aviso no topo. Se precisar editar, peça acesso de editor ao responsável pelo cadastro.
+É preciso ter as duas coisas: o perfil de **administrador** nesta página e ser editor do cadastro daquela pessoa (de alunos, de docentes ou de servidores, que inclui os setores). Quem tem o perfil de consulta, ou não é editor do cadastro, vê a ficha só para consulta, com um aviso no topo. Para editar, peça ao responsável pelo sistema o perfil de administrador e ao responsável pelo cadastro o acesso de editor.
 
-<sub>Termos extras da busca: quem pode editar permissao editor somente consulta nao consigo salvar campos bloqueados</sub>
+<sub>Termos extras da busca: quem pode editar permissao editor somente consulta nao consigo salvar campos bloqueados perfil administrador leitor</sub>
 
 ### Campos "somente leitura"
 
@@ -255,6 +255,12 @@ Um dos cadastros (alunos, docentes ou servidores) não pôde ser lido; as pessoa
 
 <sub>Termos extras da busca: atencao nao consegui ler o cadastro de docentes servidores alunos aviso amarelo faltando</sub>
 
+### "Sem acesso a esta página" ou "Conta não identificada"
+
+A página só abre para as contas cadastradas pelo responsável pelo sistema. "Conta não identificada" costuma ser outra conta Google conectada no navegador: entre com a sua conta institucional @usp.br e abra o endereço de novo. "Sem acesso a esta página" quer dizer que a sua conta não está na lista; peça acesso ao responsável pelo sistema. Se aparecer "Não foi possível abrir a página", tente de novo em alguns minutos.
+
+<sub>Termos extras da busca: sem acesso a esta pagina conta nao identificada nao tem acesso pedir acesso liberar perfil</sub>
+
 ### "Não foi possível abrir o arquivo" ou acesso negado
 
 Uma causa comum é estar conectado no navegador com outra conta Google. Entre com a sua conta institucional @usp.br (ou abra a página numa janela anônima e faça login só com ela) e abra o endereço de novo. Se o acesso continuar negado, peça liberação ao responsável pelo sistema.
@@ -335,7 +341,7 @@ Para o número USP, basta clicar nele: ele é copiado e aparece a mensagem "Núm
 
 ### Encontrei um dado errado. Posso corrigir por aqui? {#busca-faq-corrigir}
 
-Sim, se a sua conta for editora daquele cadastro (alunos, docentes ou servidores): abra a ficha, altere o campo e clique em **Salvar alterações**. Se a ficha abrir só para consulta, informe a correção ao responsável pelo cadastro.
+Sim, se você tiver o perfil de administrador nesta página e a sua conta for editora daquele cadastro (alunos, docentes ou servidores): abra a ficha, altere o campo e clique em **Salvar alterações**. Se a ficha abrir só para consulta, informe a correção ao responsável pelo cadastro.
 
 <sub>Termos extras da busca: dado errado corrigir atualizar email nome errado desatualizado quem editar</sub>
 

@@ -1,6 +1,9 @@
 // Testes do backend da Comunidade IPUSP, antiga Busca de Alunos (Codigo.gs) com SpreadsheetApp,
 // PropertiesService, HtmlService, Session, LockService e Utilities
 // simulados. Dados 100% sintéticos. Uso: node testar_backend.js
+// v1.4: esta suíte cobre a regra de negócio; a conferência de perfil
+// (PessoasAcesso.gs) é substituída por um ADMINISTRADOR fixo, salvo com
+// {acessoReal:true}. A autorização é testada em testar_acesso.js.
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const SRC=require('path').join(__dirname,'..','src')+'/';
 
@@ -26,12 +29,15 @@ function run(props,files,opts={}){
         getOwner:()=>opts.dono?{getEmail:()=>opts.dono}:null};
       f.forEach(s=>s.parent=ss);return ss;}},
     Session:{getActiveUser:()=>({getEmail:()=>opts.usuario||''})},
+    CacheService:{getScriptCache:()=>({get:()=>null,put(){}})},
     LockService:{getScriptLock:()=>({tryLock:()=>opts.travaOcupada?false:true,releaseLock(){}})},
     Utilities:{formatDate:()=>'13/10/2026 às 10:00',base64Encode:b=>Buffer.from(b).toString('base64'),
       newBlob:(html)=>({getAs:()=>({getBytes:()=>Buffer.from('%PDF'+html)})})},
     HtmlService:{createTemplateFromFile:n=>({evaluate:()=>({setTitle(){return this},addMetaTag(){return this},n})}),
       createHtmlOutputFromFile:n=>({getContent:()=>fs.readFileSync(SRC+n+'.html','utf8')})}};
-  vm.createContext(ctx);vm.runInContext(fs.readFileSync(SRC+'Codigo.gs','utf8'),ctx);ctx.logs=logs;return ctx;
+  vm.createContext(ctx);['Codigo.gs','PessoasAcesso.gs'].forEach(f=>vm.runInContext(fs.readFileSync(SRC+f,'utf8'),ctx));
+  if(!opts.acessoReal)ctx.usuarioAtualPessoas_=()=>({email:opts.usuario||'',perfil:'ADMINISTRADOR',nome:'',observacao:''});
+  ctx.logs=logs;return ctx;
 }
 const indice=()=>sheet('Página1',[['Chave','Tipo','ID de Produção','Homologação'],['OUTRA','spreadsheet','x',''],['PLANILHA_ALUNOS','spreadsheet','ALU','HOM'],['SERVIDORES','spreadsheet','SRV',''],['PLANILHA_DOCENTES','spreadsheet','DOC','']]);
 // v1.3: servidores e docentes pelo título (esquema de 14/10/2026). TIPO vazio → regra antiga pelo nome.

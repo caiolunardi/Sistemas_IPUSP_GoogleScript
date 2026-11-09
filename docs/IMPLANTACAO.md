@@ -73,7 +73,7 @@ Projetos registrados em 26/10/2026, com o nome exatamente como está no Google. 
 |---|---|---|
 | `GRADIP · Painel Alunos · PRODUÇÃO` | [Painel de Solicitações](sistemas/painel-solicitacoes/README.md) | (público aos alunos) |
 | `GRADIP · Painel Servidores · PRODUÇÃO` | [Painel de Sistemas](sistemas/painel-servidores/README.md) | `PAINEL_SERVIDORES` |
-| `GRADIP · Gerenciador de Pessoas · PRODUÇÃO` | [Gerenciador de Pessoas](sistemas/busca-alunos/README.md) (antes Comunidade IPUSP) | `PESSOAS_IPUSP` (o código atual não confere a aba) |
+| `GRADIP · Gerenciador de Pessoas · PRODUÇÃO` | [Gerenciador de Pessoas](sistemas/busca-alunos/README.md) (antes Comunidade IPUSP) | `PESSOAS_IPUSP` (a v1.3 não confere a aba; a v1.4, em PR, confere) |
 | `GRADIP · Grade Horaria - Config · PRODUÇÃO` | [Grade Horaria - Config](sistemas/estrutura-curricular/README.md) (Estrutura Curricular e Grade Horária) | `ESTRUTURA_CURRICULAR` |
 | `GRADIP · Gerenciador de Abertura de Habilitações · PRODUÇÃO` | [Gerenciador de Abertura de Habilitações](sistemas/abertura-habilitacoes/README.md) | `GERENCIADOR_HABILITACOES` |
 | `GRADIP · Gerenciador de Abertura de Habilitações · HOMOLOGAÇÃO` | idem | `GERENCIADOR_HABILITACOES`, na planilha da coluna Homologação |

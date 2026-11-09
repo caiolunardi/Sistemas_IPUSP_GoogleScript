@@ -257,4 +257,18 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   await p.click('#fichaCancelar');await p.selectOption('#filtroAno','');
   if(w===390){await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`m390-ajuda-${scheme}.png`});await p.keyboard.press('Escape');await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`m390-${scheme}.png`,fullPage:false});}
   await ctx.close();}}
+ // v1.4: página de quem não tem acesso (PessoasSemAcesso.html), três temas e quatro larguras
+ {let h=fs.readFileSync(SRC+'PessoasSemAcesso.html','utf8');for(let k=0;k<3;k++)h=h.replace(/<\?!= include_\('(\w+)'\);? \?>/g,(_,n)=>fs.readFileSync(SRC+n+'.html','utf8'));
+  h=h.replace('<?= titulo ?>','Sem acesso a esta página').replace('<?= mensagem ?>','A sua conta não tem acesso à Comunidade IPUSP.');
+  chk('sem acesso: sem scriptlet sobrando e sem google.script.run',!/<\?/.test(h)&&!/google\.script\.run/.test(h));
+  for(const pref of ['system','light','dark'])for(const w of [360,390,480,768,1280]){const ctx=await b.newContext({colorScheme:'dark',viewport:{width:w,height:800}});const p=await ctx.newPage();
+   if(pref!=='system')await p.addInitScript(v=>localStorage.setItem('gradip-theme',v),pref);
+   await p.route('https://semacesso.teste/**',r=>r.fulfill({contentType:'text/html; charset=utf-8',body:h}));await p.route('https://datagrad.sistemas.ip.usp.br/**',r=>r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg"/>'}));
+   await p.goto('https://semacesso.teste/');
+   const r=await p.evaluate(()=>{const c=document.querySelector('.cartaoSemAcesso');const cs=getComputedStyle(c);return {tema:document.documentElement.dataset.theme,ov:document.documentElement.scrollWidth-document.documentElement.clientWidth,cor:getComputedStyle(c.querySelector('p')).color,fundo:cs.backgroundColor,txt:document.body.innerText}});
+   const esperado=pref==='light'?'light':'dark';
+   chk(`[sem acesso ${pref} ${w}] tema, contraste e sem overflow`,r.tema===esperado&&r.ov<=0&&cr(r.cor,r.fundo)>=4.5,`${r.tema} ${cr(r.cor,r.fundo).toFixed(2)} ov=${r.ov}`);
+   chk(`[sem acesso ${pref} ${w}] nenhum dado de pessoa`,!/@exemplo|9000|Ana /.test(r.txt));
+   if(w===390&&pref!=='system')await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`sem-acesso-${pref}.png`});
+   await ctx.close();}}
  await b.close();console.log(`${ok}/${ok+fail}`);process.exit(fail?1:0);})();
