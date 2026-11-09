@@ -1,6 +1,6 @@
 # Gerenciador de Colação de Grau e Diplomas
 
-**Versão:** **4.0.0** (05/11/2026), **homologação parcial concluída em 06/11/2026, com as correções da revisão independente · EM PRODUÇÃO** (implantação confirmada pelo responsável em 06/11/2026). O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). O código enviado ao projeto PRODUÇÃO foi conferido por hash (commit `4792667`); a versão e o identificador da implantação não foram conferidos por este repositório, e o GitHub não informa o que está implantado no Apps Script. O desligamento da 3.x do projeto vinculado à planilha de diplomas fica com o responsável.
+**Versão:** **4.0.0** (05/11/2026), **homologação parcial concluída em 06/11/2026, com as correções da revisão independente · EM PRODUÇÃO** (implantação confirmada pelo responsável em 06/11/2026). O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). O código enviado ao projeto PRODUÇÃO foi conferido por hash (commit `4792667`); versão 4 da implantação ativa, de 09/11/2026 15:04 (horário de Brasília), informada pelo responsável; três implantações anteriores arquivadas (o identificador da implantação fica fora do repositório), e o GitHub não informa o que está implantado no Apps Script. O desligamento da 3.x do projeto vinculado à planilha de diplomas fica com o responsável.
 
 ## Finalidade
 
