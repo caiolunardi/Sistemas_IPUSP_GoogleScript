@@ -57,3 +57,22 @@ Não inclui gestão de perfis administrativos, criação de certificados, emiss�
 ## 6. Logs e testes
 
 Não encontrei `Logger.log` explícito no backend fornecido. Isso não demonstra ausência de logs automáticos de execução/erros na plataforma. Não incluir payloads inteiros, nº USP, nome, RG, documentos ou e-mails pessoais em logs. Nenhuma suíte foi executada nesta rodada. Testes necessários estão em [HOMOLOGACAO.md](HOMOLOGACAO.md).
+
+## 7. Versão 2.0 (em PR, não implantada)
+
+Fonte em `sistemas/pedido-colacao-grau/src/`; fluxo em [RECEBIMENTO_2_0.md](RECEBIMENTO_2_0.md). Situação dos riscos da seção 4 **no código da 2.0** (a homologação no Google ainda vai confirmar):
+
+| ID | Medida na 2.0 | Teste automático |
+| --- | --- | --- |
+| SEG-01 | "Executar como: eu", acesso de domínio; aluno não precisa de acesso a planilha nem pasta. Só fecha de fato quando a edição dos alunos for retirada das planilhas, na virada | simulação sem compartilhamento; T-AUT-06 fica para a homologação (H) |
+| SEG-02 | sessão conferida em toda função pública; nome e nº USP do cadastro quando confirmado; inconsistência vira PENDENTE sem revelar o motivo; protocolo, chave de envio e "Meus pedidos" só da própria conta | T-AUT-01 a 05 |
+| SEG-03 | correção é versão nova; documento antigo nunca vai para a lixeira nem é renomeado | T-DUP-02, T-DUP-03, T-DOC-03 |
+| SEG-04 | um escritor por recurso: o formulário só grava em `PEDIDOS_COLACAO` e na entrada; ordem de gravação com retomada pela chave | T-CON-01, T-REC-01, escritor único |
+| SEG-05 | lista positiva pelo conteúdo (PDF, JPEG, PNG), 10 MB, 5 arquivos, SHA-256 | T-DOC-06 |
+| SEG-06 | não cria coluna; título faltando é falha fechada; correção só com D3 | T-REC-02, D3 |
+| SEG-07 | aba `EVENTOS` (sem valores) e diagnóstico de pedidos parados; registros de execução sem nome, nº USP, e-mail, RG ou IDs | T-REC-01, T-REC-03 |
+| SEG-08 | manifesto, `.claspignore`, testes e `AMBIENTE` versionados | CI |
+
+**Dados novos tratados:** "Motivo do cadastro" (interno, nunca mostrado ao aluno), chave de envio, hash SHA-256 dos arquivos e o JSON de cada versão, todos em `PEDIDOS_COLACAO` (acesso restrito). O recibo vai só para o e-mail da sessão, sem RG nem anexos. Retenção dos pedidos rejeitados e dos documentos da entrada: sem exclusão automática (D12); prazo **A VALIDAR INSTITUCIONALMENTE**.
+
+**Limite conhecido:** funções do responsável (`diagnosticarConfiguracao`, `prepararPlanilhaPedidosColacao`) recusam quando o e-mail da sessão difere do usuário efetivo. Pela página, com "Executar como: eu", só a própria conta institucional passa nessa conferência.

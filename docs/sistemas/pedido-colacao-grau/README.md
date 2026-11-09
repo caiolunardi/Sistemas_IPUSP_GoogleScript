@@ -1,6 +1,8 @@
-# Formulário de Pedido de Colação de Grau — documentação do legado
+# Formulário de Pedido de Colação de Grau
 
-**Situação da documentação (06/11/2026):** inventário técnico inicial baseado exclusivamente nos arquivos `Codigo(1).gs` (841 linhas) e `ColacaoApp.html` (870 linhas) entregues pelo responsável. **O código bruto não foi incorporado ao Git público**: contém identificadores operacionais reais e exige preflight de segurança/sanitização. Não há `src/`, `appsscript.json`, testes versionados, projeto de homologação verificado nem versão declarada nesses anexos. A versão efetivamente servida pelo Google está **NAO_VERIFICADA** por esta análise.
+**Versão 2.0.0 em PR (09/11/2026):** fonte reescrita a partir do legado, sem IDs, em [`sistemas/pedido-colacao-grau/src/`](../../../sistemas/pedido-colacao-grau/src/). Recebimento com protocolo persistido antes de ser mostrado, idempotência pela chave de envio, `PEDIDOS_COLACAO`, entrada de documentos, "Meus pedidos", recibo, caminho provisório e diagnóstico. **Não homologada nem implantada**; ver [RECEBIMENTO_2_0.md](RECEBIMENTO_2_0.md). O legado continua em uso até a virada única (D13).
+
+**Legado (06/11/2026):** inventário técnico baseado nos arquivos `Codigo(1).gs` (841 linhas) e `ColacaoApp.html` (870 linhas) entregues pelo responsável. **O código bruto não foi incorporado ao Git público**: contém identificadores operacionais reais. As seções abaixo sobre finalidade, fronteira e tabela de estado descrevem o **legado**.
 
 **Natureza:** projeto Apps Script independente destinado aos alunos; **não** é o [Gerenciador de Colação de Grau e Diplomas](../emissao-diplomas/README.md), que pertence à equipe. A implantação de um não implanta o outro. O [Painel dos Servidores](../painel-servidores/README.md) apenas configura o período e o semestre do formulário.
 
@@ -35,6 +37,8 @@ No legado, o formulário também busca/cria a pasta institucional por nº USP, g
 
 | Arquivo | Conteúdo |
 | --- | --- |
+| [RECEBIMENTO_2_0.md](RECEBIMENTO_2_0.md) | Versão 2.0: o que muda, fluxo do envio, identidade, estados, funções e o que fica para os próximos PRs |
+| [dados-ficticios/](dados-ficticios/README.md) | CSVs fictícios para a homologação da 2.0 |
 | [INVENTARIO_LEGADO.md](INVENTARIO_LEGADO.md) | Proveniência, funções servidor/cliente e limites do acervo recebido |
 | [FLUXOS_E_REGRAS.md](FLUXOS_E_REGRAS.md) | Abertura, pré-preenchimento, validação, envio, correção e estados |
 | [MODELO_DE_DADOS.md](MODELO_DE_DADOS.md) | Abas, colunas e campos; efeitos nas planilhas/Drive |
@@ -49,4 +53,4 @@ No legado, o formulário também busca/cria a pasta institucional por nº USP, g
 
 ## Próximo marco
 
-Auditar o vínculo entre conta e nº USP, o modelo de permissões de execução e acesso a recursos, a segurança dos anexos e a integridade de atualização de um pedido. Somente depois criar **código sanitizado**, testes com dados fictícios e projeto separado de homologação. Esta rodada é **somente documental**: nenhuma planilha, pasta, Script Property, código do editor ou deployment foi alterado.
+PR 3 (esta 2.0.0): CI verde, revisão independente (classe crítica) e ok do responsável no PR. Depois, homologação no Google com ordem específica ([roteiro](HOMOLOGACAO.md#versão-200-pr-3-do-plano--testes-locais-e-roteiro-no-google)). A produção depende dos PRs 4 e 5 homologados juntos e do PR 7.

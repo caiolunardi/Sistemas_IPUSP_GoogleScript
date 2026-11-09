@@ -83,6 +83,7 @@ Projetos registrados em 26/10/2026, com o nome exatamente como está no Google. 
 | `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO` | [Gerenciador de Colação de Grau e Diplomas](sistemas/emissao-diplomas/README.md) (projeto autônomo; recebe a 4.0.0) | `EMISSAO_DIPLOMAS` |
 | `GRADIP · Gerenciador de Colação de Grau e Diplomas · HOMOLOGACAO` | idem (`AMBIENTE=homologacao`) | `EMISSAO_DIPLOMAS`, na planilha da coluna Homologação |
 | `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO - Vinculado` e `· HOMOLOGACAO - vinculado` | 3.x, ligados à planilha de diplomas; saem de uso depois da troca do link no Painel dos servidores | (a 3.x não confere lista) |
+| `GRADIP · Pedido de Colação de Grau · PRODUÇÃO` e `· HOMOLOGAÇÃO` | [Formulário de Pedido de Colação de Grau 2.0](sistemas/pedido-colacao-grau/README.md) (em PR; projetos novos, **a criar pelo responsável**, decisão D14; o legado continua no projeto atual até a virada) | nenhuma: formulário dos alunos, a identidade é o e-mail `@usp.br` da sessão |
 | `GRADIP · Gerenciador BUSP · PRODUÇÃO` | fora do repositório | `GERENCIADOR_BUSP` |
 | `GRADIP · Gerenciador de Matrícula dos Intercambistas · PRODUÇÃO` | fora do repositório | `GERENCIADOR_INTERCAMBISTAS` |
 
