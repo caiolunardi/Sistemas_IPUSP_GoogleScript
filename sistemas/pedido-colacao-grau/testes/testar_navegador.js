@@ -92,7 +92,31 @@ async function preencher(p) {
   chk('homologação: faixa visível', await visivel(p, '#faixaHomologacao'));
   await p.click('#botaoEnviar');
   chk('validação: nada enviado sem documentos', (await envios(p)).length === 0 && /CIN\/RG/.test(await p.textContent('#caixaErro')));
+  chk('validação: zona do RG destacada', await p.$eval('#linhaUploadRg', e => e.classList.contains('campoInvalido') && e.getAttribute('aria-invalid') === 'true'));
+  chk('validação: foco na zona do RG', await p.evaluate(() => document.activeElement === document.querySelector('#linhaUploadRg .zonaClique')));
+  chk('validação: mensagem ao lado do campo', /CIN\/RG/.test(await p.textContent('#erroCampo')));
   await preencher(p);
+  chk('validação: destaque some ao anexar', await p.$eval('#linhaUploadRg', e => !e.classList.contains('campoInvalido')) && !(await p.$('#erroCampo')));
+  // Só falta o e-mail alternativo: borda, foco e texto no próprio campo.
+  await p.fill('#campoEmailAlternativo', '');
+  await p.click('#botaoEnviar');
+  chk('validação: nada enviado sem e-mail alternativo', (await envios(p)).length === 0);
+  chk('validação: e-mail alternativo destacado e focado', await p.evaluate(() => {
+    const c = document.getElementById('campoEmailAlternativo');
+    return c.classList.contains('campoInvalido') && c.getAttribute('aria-invalid') === 'true' &&
+      c.getAttribute('aria-describedby') === 'erroCampo' && document.activeElement === c;
+  }));
+  chk('validação: aviso no topo e no campo', /e-mail alternativo/.test(await p.textContent('#caixaErro')) && /e-mail alternativo/.test(await p.textContent('#erroCampo')));
+  chk('validação: borda vermelha', (await p.$eval('#campoEmailAlternativo', e => getComputedStyle(e).borderTopColor)) === 'rgb(198, 40, 40)');
+  if (CAPTURAS) await p.screenshot({ path: path.join(CAPTURAS, 'campo-invalido.png') });
+  await p.fill('#campoEmailAlternativo', 'um@exemplo.invalid');
+  chk('validação: destaque some ao digitar', await p.$eval('#campoEmailAlternativo', e => !e.classList.contains('campoInvalido') && !e.hasAttribute('aria-invalid')) && !(await p.$('#erroCampo')));
+  // Grupo Sim/Não (rádios escondidos): o grupo recebe o foco.
+  await p.evaluate(() => { document.querySelectorAll('#grupoAntecipada input').forEach(i => { i.checked = false; }); document.querySelectorAll('#grupoAntecipada .opcaoSimNao').forEach(l => l.classList.remove('selecionada')); });
+  await p.click('#botaoEnviar');
+  chk('validação: grupo Sim/Não destacado e focado', await p.evaluate(() => { const g = document.getElementById('grupoAntecipada'); return g.classList.contains('campoInvalido') && document.activeElement === g; }));
+  await p.click('#grupoAntecipada label:has-text("Não")');
+  chk('validação: destaque do grupo some ao escolher', await p.$eval('#grupoAntecipada', e => !e.classList.contains('campoInvalido')));
   await p.click('#botaoEnviar');
   await p.waitForSelector('#telaConfirmacao:not([hidden])');
   const [e1] = await envios(p);

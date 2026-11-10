@@ -70,5 +70,5 @@ O motivo fica só na coluna "Motivo do cadastro" de `PROTOCOLOS`, para a fila do
 - Levar o pedido à aba `Diplomas` e os documentos à pasta do aluno: encaminhador do Gerenciador de Diplomas (PR 4). Até lá, um pedido recebido pela 2.0 **não aparece para a equipe**; por isso a 2.0 não vai para a produção sozinha.
 - Fila de cadastro e decisões: Gerenciador de Pessoas (PR 5).
 - Reutilizar documentos de outra colação e documento legado conferido: PR 6. Aqui, "manter" vale só dentro do mesmo protocolo.
-- Interface GRADIP, tema, Central de Ajuda: PR 7. A tela é a legada, com os ajustes funcionais (aviso inline em vez de `alert`, tela de pedido existente em vez de `confirm`, faixa de homologação, "Meus pedidos").
+- Interface GRADIP, tema, Central de Ajuda: PR 7. A tela é a legada, com os ajustes funcionais (aviso inline em vez de `alert`, com o campo do problema destacado em vermelho, focado e com a mensagem logo abaixo, tela de pedido existente em vez de `confirm`, faixa de homologação, "Meus pedidos").
 - A ligação para a Portaria GR nº 8066 saiu da tela (o endereço tem um identificador longo); o texto continua. Volta no PR 7 com o endereço registrado em `ferramentas/publicos.json`.

@@ -346,6 +346,31 @@ fieldset.secao{
     padding:6px 10px;
 }
 
+/* Campo com problema: borda vermelha e texto logo abaixo (nunca só a cor). */
+.campoInvalido{
+    border-color:#c62828 !important;
+    box-shadow:0 0 0 2px rgba(198,40,40,.18);
+}
+input.campoInvalido:focus,
+textarea.campoInvalido:focus,
+.campoInvalido:focus-visible{
+    border-color:#c62828 !important;
+    outline:2px solid #c62828 !important;
+    outline-offset:1px;
+    box-shadow:0 0 0 3px rgba(198,40,40,.22) !important;
+}
+.campo.campoInvalido{
+    border:1.5px solid #c62828;
+    border-radius:8px;
+    padding:8px;
+}
+.erroCampo{
+    color:#8a1c1c;
+    font-size:13px;
+    font-weight:bold;
+    margin:6px 0 0 0;
+}
+
 .avisoErro{
     background:#fdecea;
     border:1px solid #f5c2c0;
@@ -681,13 +706,47 @@ function mostrarTela(id) {
     window.scrollTo(0, 0);
 }
 
-function mostrarErro(mensagem) {
+function mostrarErro(mensagem, semRolar) {
     const caixa = el("caixaErro");
     caixa.textContent = mensagem || "Não foi possível concluir. Tente de novo.";
     caixa.hidden = false;
-    caixa.scrollIntoView({ block: "center" });
+    if (!semRolar) caixa.scrollIntoView({ block: "center" });
 }
-function esconderErro() { el("caixaErro").hidden = true; }
+function esconderErro() { el("caixaErro").hidden = true; limparCampoInvalido(); }
+
+// Destaca o campo do problema: borda vermelha, mensagem logo abaixo,
+// aria-invalid e foco. Some quando a pessoa mexe no campo.
+function marcarCampoInvalido(alvo, mensagem) {
+    limparCampoInvalido();
+    if (!alvo) return;
+    alvo.classList.add("campoInvalido");
+    alvo.setAttribute("aria-invalid", "true");
+    const aviso = document.createElement("p");
+    aviso.className = "erroCampo";
+    aviso.id = "erroCampo";
+    aviso.textContent = mensagem;
+    alvo.insertAdjacentElement("afterend", aviso);
+    alvo.setAttribute("aria-describedby", "erroCampo");
+    let foco = alvo.matches("input, textarea, select") ? alvo
+        : alvo.querySelector(".zonaClique, input:not([type=hidden]):not([hidden]), textarea");
+    if (!foco || foco.offsetParent === null) {
+        if (!alvo.hasAttribute("tabindex")) alvo.setAttribute("tabindex", "-1");
+        foco = alvo;
+    }
+    alvo.scrollIntoView({ block: "center" });
+    try { foco.focus({ preventScroll: true }); } catch (e) { foco.focus(); }
+    const limpar = () => { if (alvo.classList.contains("campoInvalido")) limparCampoInvalido(); };
+    ["input", "change", "click"].forEach(t => alvo.addEventListener(t, limpar, { once: true }));
+}
+function limparCampoInvalido() {
+    const aviso = el("erroCampo");
+    if (aviso) aviso.remove();
+    document.querySelectorAll(".campoInvalido").forEach(c => {
+        c.classList.remove("campoInvalido");
+        c.removeAttribute("aria-invalid");
+        if (c.getAttribute("aria-describedby") === "erroCampo") c.removeAttribute("aria-describedby");
+    });
+}
 function mensagemDe(erro) { return (erro && erro.message) || String(erro || ""); }
 
 /*---------------- chave de envio ----------------*/
@@ -945,23 +1004,26 @@ function coletar() {
     };
 }
 
+// Devolve o primeiro problema: { mensagem, campo } (campo = elemento a destacar).
 function conferirNaPagina(d) {
     const manterRg = !el("manterRg").hidden;
     const manterCertidao = !el("manterCertidao").hidden;
-    if (!d.nome) return "Informe o nome completo.";
-    if (!/^\d+$/.test(d.nUsp)) return "Informe o Nº USP (só números).";
-    if (!/^\d{4}$/.test(d.anoIngresso)) return "Informe o ano de ingresso (4 dígitos).";
-    if (!arquivos.RG && !manterRg) return "Anexe o documento de CIN/RG.";
-    if (!d.rg) return "Informe o Nº RG/CIN.";
-    if (!arquivos.CERTIDAO && !manterCertidao) return "Anexe a Certidão de Nascimento.";
-    if (!d.bachConcluiu && !d.licConcluiu && !d.psiConcluiu) return 'Selecione ao menos uma habilitação em "Curso Concluído".';
-    if (!d.permaneceMatriculado) return "Responda se permanecerá matriculado no próximo semestre.";
-    if (!d.telefone) return "Informe o telefone celular.";
-    if (!d.emailAlternativo) return "Informe o e-mail alternativo.";
-    if (!d.procuracao) return "Responda se a colação será por procuração.";
-    if (d.procuracao === "SIM" && (!d.procuradorNome || !d.procuradorRg)) return "Informe nome e RG/CIN do(a) procurador(a).";
-    if (!d.colacaoAntecipada) return "Responda sobre colação antecipada.";
-    return "";
+    const p = (mensagem, campo) => ({ mensagem: mensagem, campo: campo });
+    if (!d.nome) return p("Informe o nome completo.", el("campoNome"));
+    if (!/^\d+$/.test(d.nUsp)) return p("Informe o Nº USP (só números).", el("campoNUsp"));
+    if (!/^\d{4}$/.test(d.anoIngresso)) return p("Informe o ano de ingresso (4 dígitos).", el("campoAnoIngresso"));
+    if (!arquivos.RG && !manterRg) return p("Anexe o documento de CIN/RG.", el("linhaUploadRg"));
+    if (!d.rg) return p("Informe o Nº RG/CIN.", el("campoRg"));
+    if (!arquivos.CERTIDAO && !manterCertidao) return p("Anexe a Certidão de Nascimento.", el("linhaUploadCertidao"));
+    if (!d.bachConcluiu && !d.licConcluiu && !d.psiConcluiu) return p('Selecione ao menos uma habilitação em "Curso Concluído".', el("ccPsi").closest(".campo"));
+    if (!d.permaneceMatriculado) return p("Responda se permanecerá matriculado no próximo semestre.", el("grupoPermanece"));
+    if (!d.telefone) return p("Informe o telefone celular.", el("campoTelefone"));
+    if (!d.emailAlternativo) return p("Informe o e-mail alternativo.", el("campoEmailAlternativo"));
+    if (!d.procuracao) return p("Responda se a colação será por procuração.", el("grupoProcuracao"));
+    if (d.procuracao === "SIM" && !d.procuradorNome) return p("Informe nome e RG/CIN do(a) procurador(a).", el("campoProcuradorNome"));
+    if (d.procuracao === "SIM" && !d.procuradorRg) return p("Informe nome e RG/CIN do(a) procurador(a).", el("campoProcuradorRg"));
+    if (!d.colacaoAntecipada) return p("Responda sobre colação antecipada.", el("grupoAntecipada"));
+    return null;
 }
 
 function validarEEnviar() {
@@ -969,7 +1031,10 @@ function validarEEnviar() {
     esconderErro();
     const dados = coletar();
     const problema = conferirNaPagina(dados);
-    if (problema) return mostrarErro(problema);
+    if (problema) {
+        mostrarErro(problema.mensagem, true);
+        return marcarCampoInvalido(problema.campo, problema.mensagem);
+    }
     enviando = true;
     el("botaoEnviar").disabled = true;
     mostrarLoading("Enviando pedido");
