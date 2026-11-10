@@ -25,7 +25,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E8 | Incluir à mão 9000202 na colação e depois o pedido dele | `BLOQUEADO` `DUPLICIDADE_DIPLOMAS`; a linha manual não muda |
 | E9 | Conta LEITOR abre | nenhuma faixa; nada encaminhado |
 | E10 | "Abrir/criar pasta" de um registro sem cadastro na central | mensagem pedindo o cadastro pelo Gerenciador de Pessoas; nada criado |
-| E11 | Só com a autorização do D15: `instalarGatilhoEncaminhadorColacao`, um pedido novo e esperar 5 minutos sem abrir a página | entra com origem `GATILHO`; rodar de novo a instalação não duplica o gatilho |
+| E11 | Fora do roteiro: na D15 (10/11/2026) o responsável escolheu só ao abrir a página, sem gatilho | — |
 
 ### Registro da homologação da 4.1.0 (10/11/2026, responsável)
 

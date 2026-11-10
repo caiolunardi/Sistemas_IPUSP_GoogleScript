@@ -25,7 +25,7 @@ Antes do primeiro uso, em cada projeto, com a ordem do responsável:
 1. No `ID_INDEX`, as chaves `PEDIDOS_COLACAO` (planilha) e `PASTA_PROVISORIOS_COLACAO` (pasta) já existem para o formulário 2.x; o Gerenciador passa a lê-las (coluna Homologação na cópia de teste). A conta que executa o Gerenciador precisa de edição na planilha `PEDIDOS_COLACAO` e na pasta de entrada.
 2. No editor, rodar `prepararEncaminhamentosColacao`: cria a aba `ENCAMINHAMENTOS` (títulos na linha 1) se faltar. A primeira execução pede autorização nova, por causa dos gatilhos.
 3. `diagnosticarEncaminhamentosColacao` mostra as contagens, sem nomes.
-4. Gatilho de 5 minutos (D15, só com autorização): `instalarGatilhoEncaminhadorColacao`; para tirar, `removerGatilhoEncaminhadorColacao`. Sem gatilho, os pedidos entram quando um ADMINISTRADOR abre a página.
+4. Sem gatilho (Decisão do responsável (D15, 10/11/2026): só ao abrir a página, sem gatilho de tempo): os pedidos entram quando um ADMINISTRADOR abre a página. `instalarGatilhoEncaminhadorColacao` não deve ser rodado sem nova decisão; se algum dia for instalado, `removerGatilhoEncaminhadorColacao` tira.
 
 Pendências aparecem numa faixa no topo, só para ADMINISTRADOR. Motivos e como resolver: [ENCAMINHADOR_COLACAO.md](ENCAMINHADOR_COLACAO.md#5-motivos-de-bloqueio). Desde a 4.1.0, "Abrir/criar pasta" não cria mais cadastro na planilha central (D6): o aluno é cadastrado pelo Gerenciador de Pessoas.
 
@@ -66,6 +66,6 @@ Enquanto o código do projeto vinculado existir, voltar é trocar de novo o ende
 | "Sem acesso a este gerenciador" | e-mail fora da aba ou perfil diferente de `LEITOR`/`ADMINISTRADOR`. |
 | "Conta não identificada" | navegador com conta de fora do domínio institucional. |
 | Lista de alunos não abre | chave `EMISSAO_DIPLOMAS` sem ID (ou sem ID de homologação) ou sem a aba `Diplomas`. |
-| Faixa "pedidos do formulário com pendência" | ver o motivo de cada linha em [ENCAMINHADOR_COLACAO.md](ENCAMINHADOR_COLACAO.md#5-motivos-de-bloqueio); resolvida a causa, o pedido entra na próxima abertura (ou no gatilho). |
+| Faixa "pedidos do formulário com pendência" | ver o motivo de cada linha em [ENCAMINHADOR_COLACAO.md](ENCAMINHADOR_COLACAO.md#5-motivos-de-bloqueio); resolvida a causa, o pedido entra na próxima abertura |
 | Pedidos do formulário não entram e não há faixa | aba `ENCAMINHAMENTOS` ausente ou sem uma coluna, chave `PEDIDOS_COLACAO`/`PASTA_PROVISORIOS_COLACAO` sem ID, ou cadastro ainda `PENDENTE` sem decisão do Gerenciador de Pessoas; rodar `diagnosticarEncaminhamentosColacao`. |
 | "Somente consulta" para quem deveria administrar | perfil `LEITOR` na coluna E, ou e-mail repetido com uma linha `LEITOR`. |

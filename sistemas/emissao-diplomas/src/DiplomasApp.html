@@ -1527,7 +1527,7 @@ window.onload = function () {
 };
 
 // 4.1: ao abrir, um ADMINISTRADOR também roda o encaminhador dos pedidos
-// do Formulário de Colação (além do gatilho de 5 minutos). Falha aqui
+// do Formulário de Colação (D15: é o único caminho; sem gatilho). Falha aqui
 // não atrapalha a página: o próximo ciclo tenta de novo.
 function encaminharPedidosDoFormulario() {
     google.script.run

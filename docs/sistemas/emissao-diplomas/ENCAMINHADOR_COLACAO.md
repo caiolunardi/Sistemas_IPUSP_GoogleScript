@@ -19,7 +19,7 @@ Como o encaminhador roda dentro do projeto do Gerenciador de Diplomas, ele usa a
 ## 2. Quando roda (D15)
 
 - **Ao abrir a página**, para quem é ADMINISTRADOR (`executarEncaminhadorColacao`). Os pendentes aparecem numa faixa no topo, só para administradores. LEITOR não dispara nada.
-- **Gatilho de tempo de 5 minutos** (`encaminharPedidosColacaoPorGatilho`), se o responsável escolher e instalar pelo editor (`instalarGatilhoEncaminhadorColacao`). A decisão entre "gatilho e ao abrir" e "só ao abrir" está com o responsável; o código funciona nos dois modos.
+- **Gatilho de tempo** (`encaminharPedidosColacaoPorGatilho`): não instalado. Decisão do responsável (D15, 10/11/2026): **só ao abrir a página**, sem gatilho de tempo: a equipe abre o Gerenciador para trabalhar, os pedidos esperam em segurança na planilha intermediária e o gatilho gastaria cota diária da conta que executa (cada ciclo levou cerca de 20 s na homologação). O código do gatilho fica, testado, para o caso de a decisão mudar (por exemplo, de hora em hora).
 
 Cada execução trata até 25 pedidos e para depois de 4 minutos; o resto fica para a próxima. Se a trava estiver ocupada (outra execução, ou uma ação da equipe), a execução termina sem tocar em nada. Se faltar uma aba ou uma coluna da `PEDIDOS_COLACAO`, nada é gravado (falha fechada).
 
@@ -100,7 +100,7 @@ Só rodam no contexto do dono do projeto (editor ou gatilho); quem abre a págin
 |---|---|
 | `prepararEncaminhamentosColacao` | cria a aba `ENCAMINHAMENTOS` se faltar; se existir, diz quais colunas faltam |
 | `diagnosticarEncaminhamentosColacao` | contagens (recebidos, encaminhamentos, pendências por motivo), sem nomes nem IDs |
-| `instalarGatilhoEncaminhadorColacao` | cria o gatilho de 5 minutos, sem duplicar (**só com a autorização do responsável**) |
+| `instalarGatilhoEncaminhadorColacao` | cria o gatilho de 5 minutos, sem duplicar (**não usar**: D15 = só ao abrir; mudar exige nova decisão do responsável) |
 | `removerGatilhoEncaminhadorColacao` | remove o gatilho; a página continua encaminhando ao abrir |
 | `encaminharPedidosColacaoPorGatilho` | a função do gatilho; pode ser rodada à mão para um ciclo |
 
