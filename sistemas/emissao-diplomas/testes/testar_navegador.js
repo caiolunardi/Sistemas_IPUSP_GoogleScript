@@ -329,8 +329,10 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     assert(/1 correção do aluno foi aplicada/.test(tc) && !/pedido novo/.test(tc), tc);
     await c.contexto.close();
     const b = await abrir({ dados: semNovos });
+    // A lista desenhada e o encaminhador chamado; depois, folga para uma releitura indevida aparecer.
+    await b.pagina.waitForSelector('.botaoColacao');
     await b.pagina.waitForFunction(() => window.__chamadas.includes('executarEncaminhadorColacao'));
-    await b.pagina.waitForTimeout(100);
+    await b.pagina.waitForTimeout(300);
     const n = await b.pagina.evaluate(() => window.__chamadas.filter(c => c === 'obterColacoes').length);
     const botoes = await b.pagina.$$eval('.botaoColacao', e => e.length);
     assert(n === 1 && botoes === 2, JSON.stringify({ n, botoes }));

@@ -86,6 +86,7 @@ const MOTIVOS_ENCAMINHAMENTO_COLACAO = {
   DADOS_ILEGIVEIS: "Os dados da versão do pedido não puderam ser lidos.",
   FALHA_CONFERENCIA: "A linha gravada não confere com o pedido.",
   STATUS_PREENCHIDO: "A equipe já começou a conferência (\"Status — Dados Pessoais\" preenchido).",
+  DIVERGENCIA_APONTADA: "Na correção, o aluno apontou divergência nos dados do cadastro. Confira e, se for o caso, corrija pelo Gerenciador de Pessoas",
   FALHA: "Erro inesperado ao encaminhar."
 };
 
@@ -247,6 +248,25 @@ function ultimaDecisaoColacao_(fontes, protocoloId) {
   return ultima;
 }
 
+// Divergência da última versão que chegou à aba Diplomas ("" se nenhuma).
+function divergenciaJaEncaminhadaColacao_(fontes, protocoloId) {
+  const encaminhadas = registrosDoProtocoloColacao_(fontes, protocoloId)
+    .filter(e => textoCelulaColacao_(e, "Resultado").toUpperCase() === "ENCAMINHADO");
+  if (!encaminhadas.length) return "";
+  return divergenciaDaVersaoColacao_(fontes, protocoloId, Number(encaminhadas[encaminhadas.length - 1]["Versão"]));
+}
+
+function divergenciaDaVersaoColacao_(fontes, protocoloId, versao) {
+  const v = fontes.versoes.filter(x => textoCelulaColacao_(x, "Protocolo ID") === protocoloId && Number(x["Versão"]) === versao)[0];
+  if (!v) return "";
+  try {
+    const dados = JSON.parse(textoCelulaColacao_(v, "Dados do pedido") || "{}");
+    return String((dados && dados.divergenciaApontada) || "").trim();
+  } catch (erro) {
+    return "";
+  }
+}
+
 function registrosDoProtocoloColacao_(fontes, protocoloId, versao) {
   return fontes.encaminhamentos.filter(e => textoCelulaColacao_(e, "Protocolo ID") === protocoloId &&
     (versao === undefined || Number(e["Versão"]) === versao));
@@ -387,6 +407,12 @@ function encaminharUmColacao_(fontes, c) {
     if (ler(l, "nUsp") !== c.nUsp || ler(l, "colacao") !== colacao) return bloqueioColacao_("REGISTRO_DIVERGENTE");
     // D3: com a conferência começada, a correção fica retida (nada muda).
     if (ler(l, "status") !== "") return { resultado: "CORRECAO RETIDA", motivo: "STATUS_PREENCHIDO" };
+    // Decisão do responsável (10/11/2026): divergência nova numa correção
+    // não é aplicada; fica retida e o texto aparece no aviso da equipe.
+    const divergencia = String(dados.divergenciaApontada || "").trim();
+    if (divergencia && divergencia !== divergenciaJaEncaminhadaColacao_(fontes, c.protocoloId)) {
+      return { resultado: "CORRECAO RETIDA", motivo: "DIVERGENCIA_APONTADA" };
+    }
   }
 
   // Pasta do aluno (pela planilha central) e documentos desta versão.
@@ -551,7 +577,12 @@ function listarPendenciasEncaminhamento_(fontesJaAbertas) {
     const motivoBruto = textoCelulaColacao_(e, "Motivo");
     const codigo = motivoBruto.split(":")[0].trim();
     const detalhe = motivoBruto.indexOf(":") !== -1 ? motivoBruto.slice(motivoBruto.indexOf(":") + 1).trim() : "";
-    const texto = (MOTIVOS_ENCAMINHAMENTO_COLACAO[codigo] || MOTIVOS_ENCAMINHAMENTO_COLACAO.FALHA) + (detalhe ? ": " + detalhe : "");
+    let texto = (MOTIVOS_ENCAMINHAMENTO_COLACAO[codigo] || MOTIVOS_ENCAMINHAMENTO_COLACAO.FALHA) + (detalhe ? ": " + detalhe : "");
+    // O texto do aluno não vai para ENCAMINHAMENTOS; é lido da versão, só para o aviso.
+    if (codigo === "DIVERGENCIA_APONTADA") {
+      const escrito = divergenciaDaVersaoColacao_(fontes, id, Number(e["Versão"]) || 1).slice(0, 300);
+      texto += escrito ? ". O aluno escreveu: \u201C" + escrito + "\u201D" : ".";
+    }
     pendencias.push({
       protocolo: textoCelulaColacao_(p, "Protocolo"),
       nome: textoCelulaColacao_(p, "Nome informado"),

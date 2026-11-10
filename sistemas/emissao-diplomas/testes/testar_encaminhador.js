@@ -339,6 +339,36 @@ t('correção com a conferência começada: CORRECAO RETIDA, nada muda e nada é
   assert.strictEqual(enc(amb).length, 2, 'retida é final: não repete');
 });
 
+t('correção com divergência nova: CORRECAO RETIDA, nada muda; o aviso traz o texto do aluno, que não vai para ENCAMINHAMENTOS', () => {
+  const amb = montar();
+  rodar(amb);
+  const antes = JSON.stringify(dipl(amb).valores), movimentos = amb.drive.movimentos.length;
+  comCorrecao(amb, 1, { nome: 'Aluna Fictícia Um', divergenciaApontada: 'Meu nome tem acento <b>x</b>' }, [['RG', 'ARQUIVO_FICTICIO_1_RG_V2', true]]);
+  const r = rodar(amb);
+  assert.strictEqual(r.retidos, 1); assert.strictEqual(r.encaminhados, 0);
+  assert.strictEqual(JSON.stringify(dipl(amb).valores), antes);
+  assert.strictEqual(amb.drive.movimentos.length, movimentos);
+  const e = enc(amb);
+  assert.strictEqual(e[1].Resultado, 'CORRECAO RETIDA'); assert.strictEqual(e[1].Motivo, 'DIVERGENCIA_APONTADA');
+  assert(!JSON.stringify(e).includes('acento'), 'texto do aluno não vai para ENCAMINHAMENTOS');
+  assert.strictEqual(r.pendencias.length, 1);
+  assert(/Gerenciador de Pessoas/.test(r.pendencias[0].motivo) && r.pendencias[0].motivo.includes('Meu nome tem acento <b>x</b>'), r.pendencias[0].motivo);
+});
+
+t('correção que mantém a divergência já encaminhada é aplicada', () => {
+  const amb = montar();
+  const ab = amb.planilhas[IDS.PEDIDOS].abas;
+  rodar(amb);
+  // a versão 1 (já encaminhada) passa a ter a divergência; a 2 repete o mesmo texto
+  const v1 = ab.VERSOES.valores.find(l => l.includes(PID(1)));
+  const iDados = ab.VERSOES.valores[0].indexOf('Dados do pedido');
+  const d1 = JSON.parse(v1[iDados]); d1.divergenciaApontada = 'Texto fictício'; v1[iDados] = JSON.stringify(d1);
+  comCorrecao(amb, 1, { nome: 'Aluna Fictícia Um', telefone: '11922222222', divergenciaApontada: 'Texto fictício' }, []);
+  const r = rodar(amb);
+  assert.strictEqual(r.encaminhados, 1); assert.strictEqual(r.retidos, 0);
+  assert.strictEqual(enc(amb)[1].Motivo, 'CORRECAO_APLICADA');
+});
+
 /*==================== EQUIPE E ACESSO ====================*/
 
 t('ADMINISTRADOR recebe as pendências (bloqueado e retida) com o motivo em texto', () => {

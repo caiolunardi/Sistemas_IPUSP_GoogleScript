@@ -18,6 +18,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E2 | Abrir de novo | nada muda; nenhuma linha nova em `ENCAMINHAMENTOS` |
 | E3 | O aluno corrige o pedido; abrir | dados corrigidos na mesma linha, Versão +1, `ENCAMINHADO` com `CORRECAO_APLICADA` |
 | E4 | Preencher o "Status — Dados Pessoais"; o aluno corrige de novo; abrir | linha sem mudança; `CORRECAO RETIDA`; faixa com o pedido; o formulário mostra "Correção em conferência" |
+| E4b | Com o "Status — Dados Pessoais" vazio, o aluno corrige apontando uma divergência nova ("Algum dado do seu cadastro está errado?"); abrir | linha sem mudança; `CORRECAO RETIDA` com `DIVERGENCIA_APONTADA`; o aviso mostra o texto do aluno |
 | E5 | Pedido de 9000201 (conta sem cadastro: o formulário protocola como `PENDENTE`); abrir | nada na aba `Diplomas`, nada em `ENCAMINHAMENTOS`, nenhuma faixa: espera a decisão do cadastro |
 | E6 | Digitar `APROVADO` para esse protocolo em `DECISOES_CADASTRO`, ainda sem linha na central; abrir | `BLOQUEADO` `SEM_CADASTRO_CENTRAL`; nada na aba `Diplomas`; faixa com o motivo |
 | E7 | Cadastrar 9000201 na central; abrir | entra como em E1; a faixa some |
@@ -36,6 +37,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E2 | ok: depois de várias aberturas, `ENCAMINHAMENTOS` tem uma linha por resultado, sem repetição |
 | E3 | ok: correção pelo formulário (campo de divergência), Versão 2 na mesma linha, `ENCAMINHADO` com `CORRECAO_APLICADA`, sem linha repetida. Achado: o aviso dizia "1 pedido novo do formulário entrou"; agora as correções aplicadas são contadas à parte (`corrigidos`) |
 | E4 | pendente (depende do E3) |
+| — | Achado do E3 (responsável): a divergência apontada numa correção de pedido já confirmado não chegava a lugar nenhum. Decisão do responsável: reter a correção e mostrar o texto no aviso (E4b, `testar_encaminhador.js` 24) |
 | E5 | ok: o pedido com cadastro `PENDENTE` não entrou nem gerou aviso |
 | E6 | ok: `APROVADO` digitado à mão em `DECISOES_CADASTRO` (o Pessoas 1.5 ainda não está na homologação) com Nº USP fictício sem cadastro; nada entrou; aviso "Bloqueado" com o motivo |
 | E7 | ok: depois do cadastro fictício na central, o pedido entrou sozinho e o aviso sumiu |

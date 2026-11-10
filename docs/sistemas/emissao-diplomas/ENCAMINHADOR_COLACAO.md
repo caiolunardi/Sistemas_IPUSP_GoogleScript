@@ -86,7 +86,7 @@ O encaminhador lê, por título: `Protocolo ID`, `Decisão` (`APROVADO`, `REJEIT
 | `FALHA_CONFERENCIA` | a linha gravada não confere com o pedido | conferir a aba `Diplomas` |
 | `FALHA` | erro inesperado | ver o registro de execução (sem dados pessoais) |
 
-`STATUS_PREENCHIDO` acompanha o `CORRECAO RETIDA`.
+`CORRECAO RETIDA` vem com um de dois motivos: `STATUS_PREENCHIDO` (a equipe já começou a conferência) ou `DIVERGENCIA_APONTADA` (decisão do responsável de 10/11/2026: uma correção que traz divergência nova nos dados do cadastro, diferente da última versão encaminhada, não é aplicada). No segundo caso o aviso da equipe mostra o texto do aluno, lido da versão em `VERSOES` (até 300 caracteres, como texto); o texto não é copiado para `ENCAMINHAMENTOS`. A equipe confere e, se for o caso, corrige o cadastro pelo Gerenciador de Pessoas e o registro pela própria tela.
 
 ## 6. Mudança de comportamento junto (D6)
 
