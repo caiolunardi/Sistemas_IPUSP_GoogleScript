@@ -80,4 +80,25 @@ Fora do alcance local (só no Google): T-AUT-06 e H1 (e-mail da sessão com "Exe
 | H11 | fechar o período em `PERIODOS` de teste e abrir a página | tela de formulário fechado com "Meus pedidos" |
 | H12 | ver o registro de execução do projeto | sem nome, nº USP, e-mail, RG ou IDs |
 
+### Rodada 1 (10/11/2026, código `ece028c`)
+
+Projeto `GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO`, recursos da coluna Homologação, implantação de teste com "Executar como: eu" e acesso restrito à USP. Conferência pelo responsável com cópias da `PEDIDOS_COLACAO`, prints e o registro de execuções.
+
+| ID | Resultado |
+| --- | --- |
+| H1 | ok: e-mail da sessão chega com "Executar como: eu"; cadastro confirmado só leitura; faixa de homologação |
+| H2 | ok nas duas camadas: com acesso USP o Google barra; com "qualquer pessoa" o servidor recebe e-mail vazio e mostra só o aviso |
+| H3 | ok: protocolo CONFIRMADO, quatro abas e subpasta corretas, recibo `[HOMOLOGAÇÃO]` sem RG; caso com divergência apontada deu `DIVERGENCIA_APONTADA` |
+| H4 | ok: um envio, uma versão. Achado: correção idêntica virava versão nova (corrigido em `ca5472f`) |
+| H5 | ok: `SEM_CADASTRO`, mesma tela de cadastro em conferência |
+| H6 | ok: `CONFLITO_NUSP`, mesma tela; pedido não bloqueado (requisito 4) |
+| H7 | ok: versão 2, certidão `REUTILIZADO` com o mesmo arquivo, RG antigo mantido na subpasta |
+| H8 | ok: com "Status — Dados Pessoais" preenchido, sem botão de correção |
+| H9 | ok: `.txt` renomeado, arquivo de 11 MB e HTML recusados. Achado: prefixo "Error:" no aviso (corrigido em `a4b2163`) |
+| H10 | ok no servidor (um reenvio a cada 2 minutos). Achado: aviso de espera só no topo da página (corrigido em `d0dd822`) |
+| H11 | ok: tela de período fechado com "Meus pedidos" |
+| H12 | ok: registro sem dados pessoais nem IDs |
+
+Pedido do responsável na rodada: destacar o campo do problema na validação (`3d4898a`). Observação sem correção: `obterDadosIniciais` levou cerca de 10 s. Pendente: push dos ajustes e nova conferência de H10 e da validação.
+
 **Retorno:** a 2.0 não substitui nada em uso; desfazer a homologação é arquivar a implantação de teste. Nenhum dado de produção é tocado: o projeto de homologação lê só a coluna Homologação.
