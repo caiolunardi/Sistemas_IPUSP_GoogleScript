@@ -26,7 +26,7 @@ Antes de substituir a versão usada pelos alunos, registrar versão atual no edi
 
 ## Versão 2.0 (em PR)
 
-Fonte em `sistemas/pedido-colacao-grau/src/` (`Codigo.gs`, `ColacaoConfig.gs`, `ColacaoIdentidade.gs`, `ColacaoPlanilha.gs`, `ColacaoPedidos.gs`, `ColacaoDocumentos.gs`, `ColacaoRecibo.gs`, `ColacaoApp.html`, `appsscript.json` e o `.claspignore` padrão). Projetos novos, criados pelo responsável (D14): `GRADIP · Pedido de Colação de Grau · PRODUÇÃO` e `· HOMOLOGAÇÃO`. O projeto do legado não recebe este código.
+Fonte em `sistemas/pedido-colacao-grau/src/` (`Codigo.gs`, `ColacaoConfig.gs`, `ColacaoIdentidade.gs`, `ColacaoPlanilha.gs`, `ColacaoPedidos.gs`, `ColacaoDocumentos.gs`, `ColacaoRecibo.gs`, `ColacaoApp.html`, `appsscript.json` e o `.claspignore` padrão). Projetos novos (D14): `GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO`, criado pelo responsável em 06/11/2026, e o de produção, ainda a criar com o mesmo padrão. O projeto do legado não recebe este código.
 
 | Configuração | Valor |
 | --- | --- |

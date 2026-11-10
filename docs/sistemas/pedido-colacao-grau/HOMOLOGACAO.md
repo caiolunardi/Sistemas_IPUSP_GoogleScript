@@ -57,7 +57,7 @@ Fora do alcance local (só no Google): T-AUT-06 e H1 (e-mail da sessão com "Exe
 
 ### Montar a homologação (com ordem do responsável)
 
-1. O responsável cria o projeto `GRADIP · Pedido de Colação de Grau · HOMOLOGAÇÃO` (D14) e, nele, as Script Properties `ID_INDEX_SPREADSHEET_ID` e `AMBIENTE = homologacao`.
+1. Projeto `GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO` (D14, já criado pelo responsável). Nele, o responsável configura as Script Properties `ID_INDEX_SPREADSHEET_ID` e `AMBIENTE = homologacao`.
 2. Criar, numa pasta de testes, as cópias **fictícias**: `PEDIDOS_COLACAO` (rodar `prepararPlanilhaPedidosColacao` pelo editor, que cria as quatro abas), uma pasta vazia para `PASTA_PROVISORIOS_COLACAO`, `PLANILHA_ALUNOS`, `PERIODOS` e a aba `Diplomas` a partir de [dados-ficticios/](dados-ficticios/README.md). Na `PLANILHA_ALUNOS` de teste, trocar os e-mails `exemplo.usp.br` pelas contas de teste reais **só na cópia**.
 3. Preencher a coluna **Homologação** do `ID_INDEX` para `PEDIDOS_COLACAO`, `PASTA_PROVISORIOS_COLACAO`, `PLANILHA_ALUNOS`, `PERIODOS` e `EMISSAO_DIPLOMAS`.
 4. `clasp status` e `clasp push` deste ramo **só para o projeto de homologação**, com ordem específica. Rodar `diagnosticarConfiguracao` pelo editor: todas as chaves "ok", período aberto, nenhuma aba com erro.

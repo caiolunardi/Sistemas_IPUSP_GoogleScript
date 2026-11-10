@@ -4,7 +4,7 @@ Núcleo do novo formulário (PR 3 do plano). O pedido passa a ser gravado numa p
 
 O formulário não grava mais na aba `Diplomas` nem na planilha central de alunos: o projeto roda como a conta institucional e os alunos não precisam de acesso às planilhas. Quem levará o pedido ao Gerenciador de Colação de Grau e Diplomas é o encaminhador do PR 4.
 
-O que copiar para o Apps Script: tudo de `sistemas/pedido-colacao-grau/src/`, num projeto **novo** (`GRADIP · Pedido de Colação de Grau · HOMOLOGAÇÃO`), com as chaves `PEDIDOS_COLACAO` e `PASTA_PROVISORIOS_COLACAO` no `ID_INDEX`.
+O que copiar para o Apps Script: tudo de `sistemas/pedido-colacao-grau/src/`, num projeto **novo** (`GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO`), com as chaves `PEDIDOS_COLACAO` e `PASTA_PROVISORIOS_COLACAO` no `ID_INDEX`.
 
 **Implantação:** não homologada nem implantada. Não vai para a produção sozinha: depende dos PRs 4 e 5 e da interface do PR 7. Esta nota não cria tag nem Release.
 
