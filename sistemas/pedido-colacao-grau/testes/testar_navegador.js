@@ -37,11 +37,11 @@ const CENARIOS = {
   erroCarga: { erroCarga: 'Não foi possível concluir agora. Tente de novo em alguns minutos.' }
 };
 
-const stub = c => `(function(){var C=${JSON.stringify(c)};window.__chamadas=[];var envios=0;
+const stub = c => `(function(){var C=${JSON.stringify(c)};window.__chamadas=[];var envios=0,reenvios=0;
 var API={obterDadosIniciais:function(){if(C.erroCarga)throw new Error(C.erroCarga);return C.dados},
  enviarPedidoColacao:function(d){var r=(C.envio||[])[Math.min(envios,(C.envio||[]).length-1)];envios++;if(typeof r==='string')throw new Error(r);return r},
  listarMeusPedidos:function(){return C.lista||[]},
- reenviarComprovanteColacao:function(){return {enviado:true}}};
+ reenviarComprovanteColacao:function(){if(++reenvios>1)throw new Error('Error: O comprovante acabou de ser enviado. Tente de novo em alguns minutos.');return {enviado:true}}};
 function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:function(x){s=x;return o},withFailureHandler:function(x){f=x;return o}};
  Object.keys(API).forEach(function(n){o[n]=function(arg){window.__chamadas.push([n,arg===undefined?null:JSON.parse(JSON.stringify(arg))]);setTimeout(function(){try{s(API[n](arg))}catch(e){f(e)}},30)}});return o}
 window.google={script:{get run(){return runner()}}};})();`;
@@ -206,6 +206,16 @@ async function preencher(p) {
   await p.click('#listaMeusPedidos button');
   await p.waitForFunction(() => /reenviado/.test(document.querySelector('#listaMeusPedidos button').textContent));
   chk('meus pedidos: reenviar comprovante', true);
+  chk('meus pedidos: confirmação ao lado do botão', /enviado para o seu e-mail USP/.test(await p.textContent('#listaMeusPedidos .statusReenvio')) &&
+    await p.$eval('#listaMeusPedidos button', b => b.disabled));
+  // Segundo pedido logo depois (lista desenhada de novo): o aviso de espera aparece ao lado do botão.
+  await p.click('#botaoVoltarInicio');
+  await p.click('#botaoMeusPedidosFechado');
+  await p.waitForSelector('#telaMeusPedidos:not([hidden])');
+  await p.click('#listaMeusPedidos button');
+  await p.waitForFunction(() => { const s = document.querySelector('#listaMeusPedidos .statusReenvio'); return s && s.classList.contains('statusReenvioErro'); });
+  chk('meus pedidos: aviso de espera visível ao lado do botão', (await p.textContent('#listaMeusPedidos .statusReenvio')) === 'O comprovante acabou de ser enviado. Tente de novo em alguns minutos.');
+  chk('meus pedidos: botão liberado depois do aviso', await p.$eval('#listaMeusPedidos button', b => !b.disabled));
   await p.close();
 
   p = await abrir(ctx, 'erroCarga');

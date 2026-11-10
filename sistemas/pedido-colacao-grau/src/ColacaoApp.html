@@ -371,6 +371,16 @@ textarea.campoInvalido:focus,
     margin:6px 0 0 0;
 }
 
+.statusReenvio{
+    font-size:13px;
+    margin:8px 0 0 0;
+    color:#1b5e20;
+}
+.statusReenvio.statusReenvioErro{
+    color:#8a1c1c;
+    font-weight:bold;
+}
+
 .avisoErro{
     background:#fdecea;
     border:1px solid #f5c2c0;
@@ -1123,11 +1133,30 @@ function desenharMeusPedidos(lista) {
     mostrarTela("telaMeusPedidos");
 }
 
+// O retorno aparece logo abaixo do botão (role="status"), não só no topo
+// da página, para a pessoa ver o resultado de cada clique.
 function reenviarComprovante(protocolo, botao) {
+    let status = botao.nextElementSibling;
+    if (!status || !status.classList.contains("statusReenvio")) {
+        status = document.createElement("p");
+        status.className = "statusReenvio";
+        status.setAttribute("role", "status");
+        botao.insertAdjacentElement("afterend", status);
+    }
     botao.disabled = true;
+    status.classList.remove("statusReenvioErro");
+    status.textContent = "Enviando o comprovante…";
     google.script.run
-        .withSuccessHandler(() => { botao.textContent = "Comprovante reenviado"; })
-        .withFailureHandler(erro => { botao.disabled = false; mostrarErro(mensagemDe(erro)); })
+        .withSuccessHandler(() => {
+            botao.textContent = "Comprovante reenviado";
+            status.textContent = "Comprovante enviado para o seu e-mail USP. Confira também o spam. Um novo reenvio fica disponível em 2 minutos.";
+            setTimeout(() => { botao.disabled = false; botao.textContent = "Reenviar comprovante"; }, 120000);
+        })
+        .withFailureHandler(erro => {
+            botao.disabled = false;
+            status.classList.add("statusReenvioErro");
+            status.textContent = mensagemDe(erro) || "Não foi possível reenviar agora. Tente de novo mais tarde.";
+        })
         .reenviarComprovanteColacao(protocolo);
 }
 
