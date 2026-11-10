@@ -40,6 +40,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E7 | ok: depois do cadastro fictício na central, o pedido entrou sozinho e o aviso sumiu |
 | E8 | não feito: o encaminhador incluiu o pedido antes da linha manual; fica para a homologação do Gerenciador de Pessoas 1.5, com pedido novo (coberto por `testar_encaminhador.js`) |
 | E9 | ok: conta LEITOR vê "Somente consulta" e nenhum aviso de pedidos |
+| E10 | ok: "Criar pasta no Drive" num registro sem cadastro na central recusou com a mensagem para cadastrar pelo Gerenciador de Pessoas; nada criado. Achado: o aviso dizia "Erro: Error: …"; o prefixo do Apps Script sai agora (teste de navegador novo) |
 
 
 ## 4.0.1 (06/11/2026) — em PR, não enviada ao Google

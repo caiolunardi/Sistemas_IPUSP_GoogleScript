@@ -68,7 +68,7 @@ const simulacao = dados => `
         if (nome === 'withSuccessHandler') return f => { ok = f; return p; };
         if (nome === 'withFailureHandler') return f => { falha = f; return p; };
         if (nome === 'withUserObject') return () => p;
-        return (...args) => { window.__chamadas.push(nome); setTimeout(() => (nome in dados) ? ok(JSON.parse(JSON.stringify(dados[nome]))) : falha(new Error('sem dado simulado: ' + nome)), 5); };
+        return (...args) => { window.__chamadas.push(nome); setTimeout(() => (dados[nome] && dados[nome].__erro) ? falha(new Error(dados[nome].__erro)) : (nome in dados) ? ok(JSON.parse(JSON.stringify(dados[nome]))) : falha(new Error('sem dado simulado: ' + nome)), 5); };
       } });
       return p;
     }
@@ -329,6 +329,18 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     const botoes = await b.pagina.$$eval('.botaoColacao', e => e.length);
     assert(n === 1 && botoes === 2, JSON.stringify({ n, botoes }));
     await b.contexto.close();
+  });
+
+  await t('erro do servidor aparece sem o prefixo "Error:"', async () => {
+    const comErro = Object.assign({}, DADOS, { obterAlunos: { __erro: 'Error: Este Nº USP não tem cadastro na planilha central de alunos.' } });
+    const { contexto, pagina } = await abrir({ dados: comErro });
+    const espera = pagina.waitForEvent('dialog');
+    await pagina.click('.botaoColacao');
+    const aviso = await espera;
+    const texto = aviso.message();
+    await aviso.accept();
+    assert(texto === '❌ Erro: Este Nº USP não tem cadastro na planilha central de alunos.', texto);
+    await contexto.close();
   });
 
   await t('4.1: LEITOR não dispara o encaminhador nem vê a faixa', async () => {

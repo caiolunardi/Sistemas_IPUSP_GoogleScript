@@ -3130,9 +3130,15 @@ function esconderLoading() {
     document.getElementById("loadingOverlay").style.display = "none";
 }
 
+// O Apps Script entrega a mensagem do servidor com "Error: " na frente;
+// o aviso já diz "Erro:", então o prefixo sai.
+function textoDoErro(erro) {
+    return String((erro && erro.message) || erro || "").replace(/^\s*(?:\w*Error|Exception):\s*/, "");
+}
+
 function mostrarErro(erro) {
     esconderLoading();
-    alert("❌ Erro: " + ((erro && erro.message) || erro));
+    alert("❌ Erro: " + textoDoErro(erro));
 }
 
 </script>
