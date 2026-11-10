@@ -130,6 +130,7 @@ t('pedido confirmado: uma linha completa na aba Diplomas, documentos movidos e E
   const amb = montar();
   const r = rodar(amb);
   assert.strictEqual(r.encaminhados, 1);
+  assert.strictEqual(r.corrigidos, 0);
   const a = dipl(amb);
   assert.strictEqual(a.valores.length, 2);
   assert.strictEqual(a.gravacoes.filter(g => Array.isArray(g[2])).length, 1, 'linha deveria entrar numa gravação só');
@@ -308,6 +309,7 @@ t('correção com "Status — Dados Pessoais" vazio: só as colunas do aluno mud
     [['RG', 'ARQUIVO_FICTICIO_1_RG_V2', true], ['CERTIDAO', ARQ(1, 'CERT'), false]]);
   const r = rodar(amb);
   assert.strictEqual(r.encaminhados, 1);
+  assert.strictEqual(r.corrigidos, 1, 'a página distingue correção de pedido novo');
   assert.strictEqual(dipl(amb).valores.length, 2, 'correção não cria linha');
   assert.strictEqual(celula(amb, 1, 'Nome completo'), 'Aluna Fictícia Um Corrigida');
   assert.strictEqual(celula(amb, 1, 'Formação de Psicólogo(a) — concluiu?'), 'NÃO');

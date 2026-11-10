@@ -258,7 +258,7 @@ function registrosDoProtocoloColacao_(fontes, protocoloId, versao) {
 
 function encaminharPedidosColacao_(origem) {
   const inicio = Date.now();
-  const resumo = { encaminhados: 0, retidos: 0, bloqueados: 0, aguardando: 0, ocupado: false, indisponivel: false };
+  const resumo = { encaminhados: 0, corrigidos: 0, retidos: 0, bloqueados: 0, aguardando: 0, ocupado: false, indisponivel: false };
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(ENCAMINHADOR_COLACAO.ESPERA_TRAVA_MS)) { resumo.ocupado = true; return resumo; }
   try {
@@ -282,7 +282,10 @@ function encaminharPedidosColacao_(origem) {
         resultado = { resultado: "BLOQUEADO", motivo: "FALHA" };
       }
       registrarEncaminhamentoColacao_(fontes, c, resultado, origem);
-      if (resultado.resultado === "ENCAMINHADO") resumo.encaminhados++;
+      if (resultado.resultado === "ENCAMINHADO") {
+        resumo.encaminhados++;
+        if (resultado.motivo === "CORRECAO_APLICADA") resumo.corrigidos++;
+      }
       else if (resultado.resultado === "CORRECAO RETIDA") resumo.retidos++;
       else resumo.bloqueados++;
     }

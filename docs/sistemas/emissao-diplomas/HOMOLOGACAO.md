@@ -34,7 +34,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 |---|---|
 | E1 | ok: o pedido com cadastro confirmado entrou na colação com status Pendente; `ENCAMINHADO`, origem `ADMINISTRADOR`. O outro pedido da cópia (cadastro `PENDENTE`, conflito de Nº USP) ficou fora, como manda o E5. Achado: a colação nova só apareceu depois, porque a lista de colações é lida em paralelo com o encaminhador e não era relida. Corrigido: com pedidos novos, a página relê a lista de colações e a lista aberta (teste de navegador novo). |
 | E2 | ok: depois de várias aberturas, `ENCAMINHAMENTOS` tem uma linha por resultado, sem repetição |
-| E3 | pendente: a planilha de pedidos não tem correção depois do E1 |
+| E3 | ok: correção pelo formulário (campo de divergência), Versão 2 na mesma linha, `ENCAMINHADO` com `CORRECAO_APLICADA`, sem linha repetida. Achado: o aviso dizia "1 pedido novo do formulário entrou"; agora as correções aplicadas são contadas à parte (`corrigidos`) |
 | E4 | pendente (depende do E3) |
 | E5 | ok: o pedido com cadastro `PENDENTE` não entrou nem gerou aviso |
 | E6 | ok: `APROVADO` digitado à mão em `DECISOES_CADASTRO` (o Pessoas 1.5 ainda não está na homologação) com Nº USP fictício sem cadastro; nada entrou; aviso "Bloqueado" com o motivo |

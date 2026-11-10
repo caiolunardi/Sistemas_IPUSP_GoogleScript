@@ -314,7 +314,7 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     }
   });
 
-  await t('4.1: com pedidos novos, a lista de colações é relida; sem pedidos novos, não', async () => {
+  await t('4.1: com pedidos novos, a lista de colações é relida; correção não vira "pedido novo"; sem nada, não relê', async () => {
     const { contexto, pagina, erros } = await abrir();
     await pagina.waitForFunction(() => window.__chamadas.filter(c => c === 'obterColacoes').length === 2);
     await pagina.click('.botaoColacao');
@@ -322,6 +322,12 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     assert(!erros.length, erros.join('\n'));
     await contexto.close();
     const semNovos = Object.assign({}, DADOS, { executarEncaminhadorColacao: { encaminhados: 0, retidos: 0, bloqueados: 0, pendencias: [] } });
+    const soCorrecao = Object.assign({}, DADOS, { executarEncaminhadorColacao: { encaminhados: 1, corrigidos: 1, retidos: 0, bloqueados: 0, pendencias: [] } });
+    const c = await abrir({ dados: soCorrecao });
+    await c.pagina.waitForSelector('#avisoEncaminhamentos:not([hidden])');
+    const tc = await c.pagina.textContent('#avisoEncaminhamentos');
+    assert(/1 correção do aluno foi aplicada/.test(tc) && !/pedido novo/.test(tc), tc);
+    await c.contexto.close();
     const b = await abrir({ dados: semNovos });
     await b.pagina.waitForFunction(() => window.__chamadas.includes('executarEncaminhadorColacao'));
     await b.pagina.waitForTimeout(100);
