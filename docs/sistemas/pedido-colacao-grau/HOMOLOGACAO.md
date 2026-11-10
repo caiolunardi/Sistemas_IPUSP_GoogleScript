@@ -102,3 +102,26 @@ Projeto `GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO`, r
 Pedido do responsável na rodada: destacar o campo do problema na validação (`3d4898a`). Observação sem correção: `obterDadosIniciais` levou cerca de 10 s. Pendente: push dos ajustes e nova conferência de H10 e da validação.
 
 **Retorno:** a 2.0 não substitui nada em uso; desfazer a homologação é arquivar a implantação de teste. Nenhum dado de produção é tocado: o projeto de homologação lê só a coluna Homologação.
+
+## Versão 2.1.0 (PR 7 do plano) — tema GRADIP e Central de Ajuda
+
+**Estado:** testes automáticos executados localmente; **homologação no Google NAO_EXECUTADA**. Mudança de apresentação: o servidor só ganhou `include_` (em `Codigo.gs`), que junta os arquivos de tema, marcas e ajuda à página.
+
+| Suíte | Resultado local |
+| --- | --- |
+| `testar_backend.js` | 79 ok (sem mudança) |
+| `testar_navegador.js` | 198 ok: os 66 da 2.0 (com o teste do grupo Sim/Não ajustado para o rádio, que agora recebe o foco) e mais tema nos três modos, persistência, mudança do sistema com a página aberta, contraste medido de 20 pares por tema (texto ≥ 4,5:1, borda ≥ 3:1), marcas por tema sem filtro, Central de Ajuda (abrir, foco preso, ESC com retorno de foco e scroll, busca sem acento, FAQ, gatilhos), seta no grupo Sim/Não e 360/390/480/768/1280 px nos dois temas (sem rolagem lateral, alvos ≥ 44 px) |
+
+### Roteiro G (no projeto de homologação, depois do push com ordem do responsável)
+
+| ID | Passo | Esperado |
+| --- | --- | --- |
+| G1 | abrir no computador com o sistema em Claro e depois em Escuro | cabeçalho com as marcas IPUSP e USP certas para o tema; seletor "Aparência" em **Sistema** |
+| G2 | escolher Escuro no seletor e recarregar | continua Escuro; voltar para Sistema acompanha o computador |
+| G3 | abrir no celular (largura real) | sem rolagem para os lados; botão de ajuda redondo; campos e botões fáceis de tocar |
+| G4 | clicar em **Ajuda**, buscar "certidao" e "procuração", abrir uma pergunta frequente, fechar com ESC | resultados com e sem acento; pergunta abre e fecha; foco volta ao botão |
+| G5 | clicar nos links "Como preencher?", "Quais documentos enviar?" e "Por que isso aparece?" (conta sem cadastro) | a ajuda abre na seção certa; nada é enviado |
+| G6 | repetir um envio completo (H3) e uma validação com campo vazio | protocolo e recibo como na 2.0; campo do problema destacado nos dois temas |
+| G7 | tela de formulário fechado (H11) e "Meus pedidos" com reenvio (H10) | textos e botões legíveis nos dois temas; link "Quando posso pedir?" |
+| G8 | navegar só com o teclado: Tab pelos campos, setas nos grupos Sim/Não, Enter na área de anexo | todas as escolhas feitas sem mouse; contorno de foco visível |
+

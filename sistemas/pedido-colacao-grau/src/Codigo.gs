@@ -36,6 +36,12 @@ function doGet() {
     .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
+// Inclui um arquivo .html do projeto na página (tema, marcas e Central
+// de Ajuda, 2.1). Só nomes fixos, escritos em ColacaoApp.html.
+function include_(nomeArquivo) {
+  return HtmlService.createHtmlOutputFromFile(nomeArquivo).getContent();
+}
+
 function escaparHtmlColacao_(texto) {
   return String(texto).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
