@@ -33,6 +33,9 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | # | Resultado |
 |---|---|
 | E1 | ok: o pedido com cadastro confirmado entrou na colação com status Pendente; `ENCAMINHADO`, origem `ADMINISTRADOR`. O outro pedido da cópia (cadastro `PENDENTE`, conflito de Nº USP) ficou fora, como manda o E5. Achado: a colação nova só apareceu depois, porque a lista de colações é lida em paralelo com o encaminhador e não era relida. Corrigido: com pedidos novos, a página relê a lista de colações e a lista aberta (teste de navegador novo). |
+| E3 | ok (responsável) |
+| E4 | ok (responsável) |
+| E5 | ok: o pedido com cadastro `PENDENTE` não entrou nem gerou aviso |
 
 
 ## 4.0.1 (06/11/2026) — em PR, não enviada ao Google
