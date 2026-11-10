@@ -1539,6 +1539,9 @@ function encaminharPedidosDoFormulario() {
 function mostrarPendenciasEncaminhamento(resumo) {
     const faixa = document.getElementById("avisoEncaminhamentos");
     if (!faixa || !resumo) return;
+    // O encaminhador roda em paralelo com obterColacoes: se ele trouxe pedidos
+    // novos, a lista de colações (e a lista aberta) pode ter sido lida antes.
+    if (resumo.encaminhados) recarregarDepoisDoEncaminhador();
     const pendencias = Array.isArray(resumo.pendencias) ? resumo.pendencias : [];
     faixa.textContent = "";
     if (!pendencias.length && !resumo.encaminhados) { faixa.hidden = true; return; }
@@ -1562,9 +1565,22 @@ function mostrarPendenciasEncaminhamento(resumo) {
     faixa.hidden = false;
 }
 
+function recarregarDepoisDoEncaminhador() {
+    google.script.run
+        .withSuccessHandler(desenharColacoes)
+        .withFailureHandler(() => {})
+        .obterColacoes();
+    if (colacaoAtual) carregarLista();
+}
+
 function receberColacoes(colacoes) {
 
     esconderLoading();
+    desenharColacoes(colacoes);
+
+}
+
+function desenharColacoes(colacoes) {
 
     const lista = document.getElementById("listaColacoes");
     lista.innerHTML = "";

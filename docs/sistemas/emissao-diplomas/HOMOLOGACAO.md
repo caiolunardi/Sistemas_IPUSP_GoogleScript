@@ -26,6 +26,15 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E10 | "Abrir/criar pasta" de um registro sem cadastro na central | mensagem pedindo o cadastro pelo Gerenciador de Pessoas; nada criado |
 | E11 | Só com a autorização do D15: `instalarGatilhoEncaminhadorColacao`, um pedido novo e esperar 5 minutos sem abrir a página | entra com origem `GATILHO`; rodar de novo a instalação não duplica o gatilho |
 
+### Registro da homologação da 4.1.0 (10/11/2026, responsável)
+
+`clasp push` de `cf8bed0` só no projeto HOMOLOGACAO, com o ok do responsável. O primeiro envio foi sobrescrito pelo editor, que estava aberto com a versão anterior; o segundo, com o editor fechado, conferido por clone: 26/26 arquivos iguais ao commit, `VERSAO_DIPLOMAS` 4.1.0. Sem implantação nova, sem gatilho. `prepararEncaminhamentosColacao` rodado pelo responsável: aba `ENCAMINHAMENTOS` criada.
+
+| # | Resultado |
+|---|---|
+| E1 | ok: o pedido com cadastro confirmado entrou na colação com status Pendente; `ENCAMINHADO`, origem `ADMINISTRADOR`. O outro pedido da cópia (cadastro `PENDENTE`, conflito de Nº USP) ficou fora, como manda o E5. Achado: a colação nova só apareceu depois, porque a lista de colações é lida em paralelo com o encaminhador e não era relida. Corrigido: com pedidos novos, a página relê a lista de colações e a lista aberta (teste de navegador novo). |
+
+
 ## 4.0.1 (06/11/2026) — em PR, não enviada ao Google
 
 Testes locais: `testar_integridade.js` 21 ok (novo), `testar_acesso.js` 39 ok, `testar_historico.js` 484 de 486 (as 2 de sempre), `testar_navegador.js` 21 ok. Revisão para auditoria: [REVISAO_4.0.1.md](REVISAO_4.0.1.md).

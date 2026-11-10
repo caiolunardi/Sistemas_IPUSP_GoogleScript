@@ -91,12 +91,12 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
 (async () => {
   const navegador = await chromium.launch();
 
-  async function abrir({ perfil = 'ADMINISTRADOR', homologacao = false, usuario, tema, esquema = 'light', largura = 1280 } = {}) {
+  async function abrir({ perfil = 'ADMINISTRADOR', homologacao = false, usuario, tema, esquema = 'light', largura = 1280, dados = DADOS } = {}) {
     const contexto = await navegador.newContext({ viewport: { width: largura, height: 900 }, colorScheme: esquema });
     const pagina = await contexto.newPage();
     const erros = [];
     pagina.on('pageerror', e => erros.push(String(e)));
-    await pagina.addInitScript(simulacao(DADOS));
+    await pagina.addInitScript(simulacao(dados));
     // pdf.js vem de CDN no Google; aqui a rede fica fechada.
     await pagina.addInitScript(() => { Object.defineProperty(window, 'pdfjsLib', { value: { GlobalWorkerOptions: {} }, writable: true }); });
     if (tema) await pagina.addInitScript(t => { try { localStorage.setItem('gradip-theme', t); } catch (e) {} }, tema);
@@ -312,6 +312,23 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
       await captura(pagina, 'pendencias-encaminhamento-' + esquema);
       await contexto.close();
     }
+  });
+
+  await t('4.1: com pedidos novos, a lista de colações é relida; sem pedidos novos, não', async () => {
+    const { contexto, pagina, erros } = await abrir();
+    await pagina.waitForFunction(() => window.__chamadas.filter(c => c === 'obterColacoes').length === 2);
+    await pagina.click('.botaoColacao');
+    await pagina.waitForFunction(() => window.__chamadas.includes('obterAlunos'));
+    assert(!erros.length, erros.join('\n'));
+    await contexto.close();
+    const semNovos = Object.assign({}, DADOS, { executarEncaminhadorColacao: { encaminhados: 0, retidos: 0, bloqueados: 0, pendencias: [] } });
+    const b = await abrir({ dados: semNovos });
+    await b.pagina.waitForFunction(() => window.__chamadas.includes('executarEncaminhadorColacao'));
+    await b.pagina.waitForTimeout(100);
+    const n = await b.pagina.evaluate(() => window.__chamadas.filter(c => c === 'obterColacoes').length);
+    const botoes = await b.pagina.$$eval('.botaoColacao', e => e.length);
+    assert(n === 1 && botoes === 2, JSON.stringify({ n, botoes }));
+    await b.contexto.close();
   });
 
   await t('4.1: LEITOR não dispara o encaminhador nem vê a faixa', async () => {
