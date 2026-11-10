@@ -284,6 +284,17 @@ caso('T-DUP-02 outra chave na mesma colação vira correção (versão 2), sem p
   verdade(ev['Campos alterados'].indexOf('telefone') !== -1 && ev['Campos alterados'].indexOf('11911111111') === -1, 'campos sem valores');
 });
 
+caso('T-DUP-07 correção sem nenhuma mudança é recusada e não grava versão', () => {
+  const amb = cenario();
+  enviar(amb, pedido());
+  amb.agora += 3600000;
+  const antes = amb.escritas.length;
+  erroCom(() => enviar(amb, pedido({ documentos: [] })), 'SEM_ALTERACAO');
+  igual(versoes(amb).length, 1);
+  igual(amb.arquivos.length, 2);
+  igual(amb.escritas.length, antes, 'nada gravado');
+});
+
 caso('T-DUP-03 mesmo nº USP em outra colação: pedido novo; anteriores intactos', () => {
   const amb = cenario();
   enviar(amb, pedido());
@@ -655,7 +666,7 @@ caso('AMBIENTE inválido falha fechado', () => {
 caso('Escritor único: só PEDIDOS_COLACAO (4 abas) e a pasta de entrada recebem gravação', () => {
   const amb = cenario();
   enviar(amb, pedido());
-  enviar(amb, pedido({ documentos: [] }));
+  enviar(amb, pedido({ telefone: '11922222222', documentos: [] }));
   executar(amb, 'listarMeusPedidos', []);
   executar(amb, 'obterDadosIniciais', []);
   const destinos = Array.from(new Set(amb.escritas)).sort();

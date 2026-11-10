@@ -15,7 +15,7 @@ O plano aprovado está no documento "Plano — novo Formulário de Pedido de Col
 | Onde grava | aba `Diplomas`, planilha central, pasta do aluno | só `PEDIDOS_COLACAO` (4 abas) e a subpasta do protocolo em `PASTA_PROVISORIOS_COLACAO` |
 | Protocolo | não existe | `PCG-AAAAS-NNNNN`, mostrado só depois de gravado e relido |
 | Envio repetido | procura nº USP + colação na aba `Diplomas` | chave de envio (UUID) da página: a mesma chave devolve o mesmo protocolo e retoma o que faltou |
-| Correção | regrava a linha da aba `Diplomas` e exige os dois anexos | versão nova em `VERSOES`; documento não trocado é mantido (linha REUTILIZADO apontando para o mesmo arquivo); só com prazo aberto e "Status — Dados Pessoais" vazio (D3) |
+| Correção | regrava a linha da aba `Diplomas` e exige os dois anexos | versão nova em `VERSOES`; documento não trocado é mantido (linha REUTILIZADO apontando para o mesmo arquivo); só com prazo aberto e "Status — Dados Pessoais" vazio (D3); correção sem nenhuma mudança é recusada |
 | Arquivos | lista de extensões proibidas, MIME do navegador, 15 MB, substitui por nome e manda o antigo para a lixeira | PDF/JPEG/PNG pelo conteúdo, 10 MB cada, 5 por envio, SHA-256 registrado; nunca lixeira, nunca renomeia arquivo antigo |
 | Recibo | não existe | e-mail ao endereço da sessão, sem RG nem anexos; falha não cancela o protocolo; "Meus pedidos" reenvia |
 

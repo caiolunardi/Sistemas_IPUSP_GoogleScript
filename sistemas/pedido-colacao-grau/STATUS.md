@@ -10,7 +10,7 @@
 | Autorização e proteção de dados | **2.0: IMPLEMENTADA EM PR, revisão independente pendente** | [segurança](../../docs/sistemas/pedido-colacao-grau/DADOS_E_SEGURANCA.md) |
 | Integração com Gerenciador 4.0 | **CONTRATO DOCUMENTADO** | [contrato](../../docs/sistemas/pedido-colacao-grau/CONTRATO_INTEGRACAO.md); funcionamento real Google não testado |
 | Reutilização/atualização de anexos | **REQUISITO FUTURO** | Decisão do responsável; legado substitui arquivos por nome |
-| Testes locais e no Google | **2.0: locais 78 + 66 ok; Google EM_ANDAMENTO (H1, H2, H5, H7, H9, H10 ok em 10/11/2026)** | [roteiro](../../docs/sistemas/pedido-colacao-grau/HOMOLOGACAO.md) |
+| Testes locais e no Google | **2.0: locais 79 + 66 ok; Google EM_ANDAMENTO (H1, H2, H4, H5, H7–H12 ok em 10/11/2026)** | [roteiro](../../docs/sistemas/pedido-colacao-grau/HOMOLOGACAO.md) |
 | Implantação atual `/exec` | **NAO_VERIFICADA** | O responsável chamou os arquivos de atuais, mas editor/manifesto/deployment não foram conferidos |
 | Contexto local | **PROPOSTA, NÃO ADOTADO** | [CONTEXT_SYSTEM](contexto/CONTEXT_SYSTEM.md); `context.config.json` não alterado |
 | Próximo ato permitido | Revisão independente e ok do responsável no PR da 2.0 | Homologação, `clasp`, planilhas e Drive dependem de ordem específica |

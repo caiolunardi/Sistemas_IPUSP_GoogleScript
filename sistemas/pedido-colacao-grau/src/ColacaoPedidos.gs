@@ -334,6 +334,11 @@ function iniciarCorrecaoColacao_(tabelas, email, chave, documentos, recebidoEm, 
     alterados = Object.keys(dadosPedido).filter(k => JSON.stringify(antes[k]) !== JSON.stringify(dadosPedido[k]));
   } catch (erro) { alterados = ["(versão anterior ilegível)"]; }
   documentos.forEach(d => alterados.push("documento " + TIPOS_DOCUMENTO_COLACAO[d.tipo].rotulo));
+  // Correção sem nenhuma mudança não vira versão nova (visto no H4 de 10/11/2026).
+  if (!alterados.length) {
+    throw erroColacao_("SEM_ALTERACAO", "Nada mudou em relação ao pedido " + textoColacao_(ativo, "Protocolo") +
+      " já enviado. Altere o que precisa corrigir e envie de novo.");
+  }
 
   acrescentarLinhaColacao_(tabelas.VERSOES, {
     "Protocolo ID": protocoloId, "Versão": versao, "Chave de envio": chave, "E-mail da sessão": email,
