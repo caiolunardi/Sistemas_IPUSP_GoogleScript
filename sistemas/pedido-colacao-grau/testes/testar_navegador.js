@@ -136,6 +136,7 @@ async function preencher(p) {
   await p.click('#botaoEnviar');
   await p.waitForSelector('#caixaErro:not([hidden])');
   chk('falha: sem protocolo na tela', !(await visivel(p, '#telaConfirmacao')));
+  chk('falha: mensagem sem o prefixo "Error:"', (await p.textContent('#caixaErro')) === 'O envio não terminou. Envie de novo pelo mesmo botão.');
   chk('falha: botão liberado', await p.$eval('#botaoEnviar', e => !e.disabled));
   await p.click('#botaoEnviar');
   await p.waitForSelector('#telaConfirmacao:not([hidden])');

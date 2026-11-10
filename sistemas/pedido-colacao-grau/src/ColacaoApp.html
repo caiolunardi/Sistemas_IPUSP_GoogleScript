@@ -747,7 +747,11 @@ function limparCampoInvalido() {
         if (c.getAttribute("aria-describedby") === "erroCampo") c.removeAttribute("aria-describedby");
     });
 }
-function mensagemDe(erro) { return (erro && erro.message) || String(erro || ""); }
+// O Apps Script entrega a mensagem do servidor com "Error: " ou
+// "Exception: " na frente; a pessoa vê só o texto.
+function mensagemDe(erro) {
+    return String((erro && erro.message) || erro || "").replace(/^\s*(?:\w*Error|Exception):\s*/, "");
+}
 
 /*---------------- chave de envio ----------------*/
 
