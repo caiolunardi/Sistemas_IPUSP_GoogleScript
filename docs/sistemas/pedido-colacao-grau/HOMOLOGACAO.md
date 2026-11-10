@@ -105,7 +105,7 @@ Pedido do responsável na rodada: destacar o campo do problema na validação (`
 
 ## Versão 2.1.0 (PR 7 do plano) — tema GRADIP e Central de Ajuda
 
-**Estado:** testes automáticos executados localmente; **homologação no Google NAO_EXECUTADA**. Mudança de apresentação: o servidor só ganhou `include_` (em `Codigo.gs`), que junta os arquivos de tema, marcas e ajuda à página.
+**Estado:** testes automáticos executados localmente e na CI (30/30); **homologação no Google: G1–G8 ok em 10/11/2026** (código `296d415`, enviado ao projeto de homologação às 14:44 com os 16 arquivos conferidos por hash). Mudança de apresentação: o servidor só ganhou `include_` (em `Codigo.gs`), que junta os arquivos de tema, marcas e ajuda à página.
 
 | Suíte | Resultado local |
 | --- | --- |
@@ -124,4 +124,8 @@ Pedido do responsável na rodada: destacar o campo do problema na validação (`
 | G6 | repetir um envio completo (H3) e uma validação com campo vazio | protocolo e recibo como na 2.0; campo do problema destacado nos dois temas |
 | G7 | tela de formulário fechado (H11) e "Meus pedidos" com reenvio (H10) | textos e botões legíveis nos dois temas; link "Quando posso pedir?" |
 | G8 | navegar só com o teclado: Tab pelos campos, setas nos grupos Sim/Não, Enter na área de anexo | todas as escolhas feitas sem mouse; contorno de foco visível |
+
+### Rodada G (10/11/2026, código `296d415`)
+
+O responsável executou G1–G8 na implantação de teste atualizada e informou que os oito passaram. Não implantado em produção: a virada depende do merge do #51 (revisão independente e ok no PR) e dos PRs 4 e 5 (D13).
 
