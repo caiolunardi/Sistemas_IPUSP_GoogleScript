@@ -18,7 +18,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E2 | Abrir de novo | nada muda; nenhuma linha nova em `ENCAMINHAMENTOS` |
 | E3 | O aluno corrige o pedido; abrir | dados corrigidos na mesma linha, Versão +1, `ENCAMINHADO` com `CORRECAO_APLICADA` |
 | E4 | Preencher o "Status — Dados Pessoais"; o aluno corrige de novo; abrir | linha sem mudança; `CORRECAO RETIDA`; faixa com o pedido; o formulário mostra "Correção em conferência" |
-| E4b | Com o "Status — Dados Pessoais" vazio, o aluno corrige apontando uma divergência nova ("Algum dado do seu cadastro está errado?"); abrir | linha sem mudança; `CORRECAO RETIDA` com `DIVERGENCIA_APONTADA`; o aviso mostra o texto do aluno |
+| E4b | Com o "Status — Dados Pessoais" vazio, o aluno corrige apontando uma divergência nova (campo "O seu nome ou nº USP está errado?", que só aparece com o cadastro confirmado); abrir | linha sem mudança; `CORRECAO RETIDA` com `DIVERGENCIA_APONTADA`; o aviso mostra o texto do aluno |
 | E5 | Pedido de 9000201 (conta sem cadastro: o formulário protocola como `PENDENTE`); abrir | nada na aba `Diplomas`, nada em `ENCAMINHAMENTOS`, nenhuma faixa: espera a decisão do cadastro |
 | E6 | Digitar `APROVADO` para esse protocolo em `DECISOES_CADASTRO`, ainda sem linha na central; abrir | `BLOQUEADO` `SEM_CADASTRO_CENTRAL`; nada na aba `Diplomas`; faixa com o motivo |
 | E7 | Cadastrar 9000201 na central; abrir | entra como em E1; a faixa some |
