@@ -36,6 +36,10 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E3 | ok (responsável) |
 | E4 | ok (responsável) |
 | E5 | ok: o pedido com cadastro `PENDENTE` não entrou nem gerou aviso |
+| E6 | ok: `APROVADO` digitado à mão em `DECISOES_CADASTRO` (o Pessoas 1.5 ainda não está na homologação) com Nº USP fictício sem cadastro; nada entrou; aviso "Bloqueado" com o motivo |
+| E7 | ok: depois do cadastro fictício na central, o pedido entrou sozinho e o aviso sumiu |
+| E8 | não feito: o encaminhador incluiu o pedido antes da linha manual; fica para a homologação do Gerenciador de Pessoas 1.5, com pedido novo (coberto por `testar_encaminhador.js`) |
+| E9 | ok: conta LEITOR vê "Somente consulta" e nenhum aviso de pedidos |
 
 
 ## 4.0.1 (06/11/2026) — em PR, não enviada ao Google
