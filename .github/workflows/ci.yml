@@ -74,6 +74,7 @@ jobs:
           - sistemas/emissao-diplomas/testes/testar_acesso.js
           - sistemas/emissao-diplomas/testes/testar_historico.js
           - sistemas/emissao-diplomas/testes/testar_integridade.js
+          - sistemas/emissao-diplomas/testes/testar_encaminhador.js
           - ferramentas/testes/testar_conferir_implantacao.js
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4

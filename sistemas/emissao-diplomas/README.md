@@ -1,4 +1,4 @@
-# Gerenciador de Colação de Grau e Diplomas — fonte 4.0.1
+# Gerenciador de Colação de Grau e Diplomas — fonte 4.1.0
 
 Web App interno do Serviço de Graduação que acompanha cada aluno da conferência dos dados pessoais até o encaminhamento do diploma (Dados Pessoais → Histórico Escolar → Colação de Grau → Emissão de Diploma), com pasta do aluno no Drive, análise automática do histórico escolar, relatórios, certificado, ofício, lista de formandos, e-mails e ações em lote.
 
@@ -14,6 +14,8 @@ Este projeto é o **Gerenciador interno**: trata registros de colação e diplom
 
 **4.0.1 (06/11/2026, em PR, não enviada ao Google):** correção de integridade. Excluir um registro não manda mais a pasta do aluno para a lixeira nem apaga o "ID da Pasta" da planilha central; a inclusão manual recusa um segundo registro do mesmo Nº USP na mesma colação, grava a linha numa chamada só e confere depois de gravar; a criação de pasta e o autocadastro temporário param quando o Nº USP está repetido na planilha central e não sobrescrevem a pasta gravada por outro sistema. Arquivos alterados: `DiplomasBackend.gs`, `DiplomasApp.html` (textos de exclusão), `DiplomasAjuda.html`; os demais idênticos à 4.0.0. Revisão: [REVISAO_4.0.1.md](../../docs/sistemas/emissao-diplomas/REVISAO_4.0.1.md).
 
+**4.1.0 (10/11/2026, em PR sobre a 4.0.1, não enviada ao Google):** encaminhador dos pedidos do novo Formulário de Pedido de Colação de Grau. O formulário grava só na planilha `PEDIDOS_COLACAO` e na pasta de entrada; este gerenciador confere cada pedido recebido e com cadastro confirmado, move os documentos para a pasta do aluno, grava a linha na aba `Diplomas` (ou aplica a correção enquanto a conferência não começou) e registra o resultado na aba `ENCAMINHAMENTOS`. Roda ao abrir a página (ADMINISTRADOR) e, se o responsável instalar, num gatilho de 5 minutos. A pasta não cria mais cadastro na planilha central (D6). Arquivos: `DiplomasEncaminhador.gs` (novo), `DiplomasBackend.gs`, `DiplomasApp.html` (faixa de pendências), `DiplomasAjuda.html` e `DiplomasAjudaUI.html` (Central de Ajuda 1.3). Contrato e motivos: [ENCAMINHADOR_COLACAO.md](../../docs/sistemas/emissao-diplomas/ENCAMINHADOR_COLACAO.md).
+
 ## Arquivos de `src/` (vão para o Apps Script)
 
 | Arquivo | Papel | Na 4.0 |
@@ -21,6 +23,7 @@ Este projeto é o **Gerenciador interno**: trata registros de colação e diplom
 | `DiplomasBackend.gs` | `doGet`, colações, alunos, etapas, pasta no Drive, documentos, e-mails, lote. | alterado: planilha pelo `ID_INDEX` (`EMISSAO_DIPLOMAS`), `doGet` com conferência de acesso, guardas de perfil, `VERSAO_DIPLOMAS` |
 | `DiplomasAcesso.gs` | Lista de acesso (aba `EMISSAO_DIPLOMAS` de `PERMISSOES_DE_ACESSO`), perfis LEITOR e ADMINISTRADOR, página sem acesso. | **novo** |
 | `DiplomasIdIndex.gs` | Leitura do `ID_INDEX` e de `AMBIENTE`. | idêntico |
+| `DiplomasEncaminhador.gs` | Encaminhador dos pedidos do formulário de colação (`PEDIDOS_COLACAO` → aba `Diplomas`), aba `ENCAMINHAMENTOS`, gatilho e diagnóstico pelo editor. | **novo na 4.1.0** |
 | `DiplomasApp.html` | Página principal. | alterado: tema GRADIP, marcas, identificação no topo, faixas de homologação e de somente consulta, botões de gravação só para ADMINISTRADOR |
 | `DiplomasSemAcesso.html` | Página de quem não tem acesso (sem dados). | **novo** |
 | `DiplomasAjuda.html`, `DiplomasAjudaUI.html`, `DiplomasAjudaEstilos.html` | Central de Ajuda (1.1). | alterados: seção "Acesso e perfis", tokens GRADIP. São próprios do sistema (`proprios` em `ferramentas/copias_shared.json`) |

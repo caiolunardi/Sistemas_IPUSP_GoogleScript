@@ -71,8 +71,9 @@ Nada muda nas regras de etapa, documentos, e-mails, análise de histórico nem n
 | [MANUAL_OPERACAO.md](MANUAL_OPERACAO.md) | Configuração dos projetos autônomos, envio do código, troca do link no painel e volta atrás. |
 | [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md) | Dados, recursos, acesso, auditoria existente e pendências. |
 | [HOMOLOGACAO.md](HOMOLOGACAO.md) | O que foi testado, roteiro da homologação e o que falta. |
+| [ENCAMINHADOR_COLACAO.md](ENCAMINHADOR_COLACAO.md) | 4.1.0: como os pedidos do formulário chegam à aba `Diplomas`, aba `ENCAMINHAMENTOS`, motivos de bloqueio e funções pelo editor. |
 | [AJUDA.md](AJUDA.md) | O que mudou no texto da Central de Ajuda. |
-| [dados-ficticios/](dados-ficticios/README.md) | Lista de acesso fictícia para a homologação. |
+| [dados-ficticios/](dados-ficticios/README.md) | Lista de acesso, casos de integridade (4.0.1) e pedidos do formulário (4.1.0), fictícios, para a homologação. |
 | [evidencias/4.0.0/](evidencias/4.0.0/README.md) | Capturas com dados fictícios. |
 
 ## Versões
@@ -82,3 +83,4 @@ Nada muda nas regras de etapa, documentos, e-mails, análise de histórico nem n
 | 3.x (até set/2026) | em uso, projeto vinculado, fora do repositório até 05/11/2026 | Endurecimento, análise de histórico, relatórios, Central de Ajuda 1.0. Importada sem mudanças no commit `35e621e` como linha de base. |
 | 4.0.0 (05/11/2026) | homologação parcial e implantação em produção confirmada pelo responsável em 06/11/2026 | Projeto autônomo, acesso pela aba `EMISSAO_DIPLOMAS`, perfis LEITOR/ADMINISTRADOR, tema GRADIP, identificação no topo. [Notas](../../../notas-de-versao/emissao-diplomas-v4.0.md). |
 | 4.0.1 (06/11/2026) | em PR, não enviada ao Google | Exclusão preserva a pasta compartilhada do aluno; inclusão manual sem duplicidade e conferida depois de gravar; criação de pasta segura quando outro sistema grava a planilha central ao mesmo tempo. [Revisão](REVISAO_4.0.1.md), [notas](../../../notas-de-versao/emissao-diplomas-v4.0.1.md). |
+| 4.1.0 (10/11/2026) | em PR sobre a 4.0.1, não enviada ao Google | Encaminhador dos pedidos do Formulário de Pedido de Colação de Grau 2.x para a aba `Diplomas`, aba `ENCAMINHAMENTOS`, faixa de pendências para ADMINISTRADOR, fim do autocadastro na planilha central (D6). [Encaminhador](ENCAMINHADOR_COLACAO.md), [notas](../../../notas-de-versao/emissao-diplomas-v4.1.0.md). |

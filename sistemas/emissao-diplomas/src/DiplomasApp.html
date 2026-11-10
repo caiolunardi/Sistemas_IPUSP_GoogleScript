@@ -159,6 +159,13 @@ body{
 
 .faixaAviso[hidden]{ display:none; }
 
+.faixaAviso--pendencias{
+    background:var(--gradip-warning-bg);
+    border-bottom-color:var(--gradip-warning-border);
+}
+.faixaAviso--pendencias ul{ margin:6px 0 0 0; padding-left:20px; }
+.faixaAviso--pendencias li{ margin:2px 0; overflow-wrap:anywhere; }
+
 .faixaAviso--homologacao{
     background:var(--gradip-warning-bg);
     border-bottom-color:var(--gradip-warning-border);
@@ -1091,6 +1098,8 @@ html[data-perfil="LEITOR"] [data-somente-admin]{ display:none !important; }
 <div id="avisoSomenteLeitura" class="faixaAviso" role="note" hidden>
     <strong>Somente consulta.</strong> Você pode ver colações, alunos, detalhes, anexos e análises já registradas, mas não pode alterar dados, gerar documentos, enviar e-mails nem excluir.
 </div>
+<!-- 4.1: pedidos do formulário de colação que o encaminhador não levou à aba Diplomas (só ADMINISTRADOR). -->
+<div id="avisoEncaminhamentos" class="faixaAviso faixaAviso--pendencias" role="status" data-somente-admin hidden></div>
 
 <!-- TELA 1: SELEÇÃO DE COLAÇÃO -->
 
@@ -1514,7 +1523,44 @@ window.onload = function () {
         .withSuccessHandler(receberColacoes)
         .withFailureHandler(mostrarErro)
         .obterColacoes();
+    if (ehAdministrador) encaminharPedidosDoFormulario();
 };
+
+// 4.1: ao abrir, um ADMINISTRADOR também roda o encaminhador dos pedidos
+// do Formulário de Colação (além do gatilho de 5 minutos). Falha aqui
+// não atrapalha a página: o próximo ciclo tenta de novo.
+function encaminharPedidosDoFormulario() {
+    google.script.run
+        .withSuccessHandler(mostrarPendenciasEncaminhamento)
+        .withFailureHandler(() => {})
+        .executarEncaminhadorColacao();
+}
+
+function mostrarPendenciasEncaminhamento(resumo) {
+    const faixa = document.getElementById("avisoEncaminhamentos");
+    if (!faixa || !resumo) return;
+    const pendencias = Array.isArray(resumo.pendencias) ? resumo.pendencias : [];
+    faixa.textContent = "";
+    if (!pendencias.length && !resumo.encaminhados) { faixa.hidden = true; return; }
+    const titulo = document.createElement("strong");
+    const partes = [];
+    if (resumo.encaminhados) partes.push(resumo.encaminhados + (resumo.encaminhados === 1 ? " pedido novo do formulário entrou" : " pedidos novos do formulário entraram") + " na lista.");
+    if (pendencias.length) partes.push(pendencias.length + (pendencias.length === 1 ? " pedido precisa" : " pedidos precisam") + " da equipe:");
+    titulo.textContent = "Pedidos do formulário de colação. ";
+    faixa.appendChild(titulo);
+    faixa.appendChild(document.createTextNode(partes.join(" ")));
+    if (pendencias.length) {
+        const lista = document.createElement("ul");
+        pendencias.forEach(p => {
+            const item = document.createElement("li");
+            const rotulo = p.resultado === "CORRECAO RETIDA" ? "Correção retida" : "Bloqueado";
+            item.textContent = p.protocolo + " — " + (p.nome || "sem nome") + " (" + formatarRotuloColacaoJS(String(p.colacao || "")) + "): " + rotulo + ". " + p.motivo;
+            lista.appendChild(item);
+        });
+        faixa.appendChild(lista);
+    }
+    faixa.hidden = false;
+}
 
 function receberColacoes(colacoes) {
 

@@ -52,7 +52,10 @@ const DADOS = {
     emailDiplomaEnviado: '', emailColacaoEnviado: '',
     arquivos: [{ id: 'ARQ1', nome: 'Histórico Escolar - Aluna Fictícia Um - 20261.pdf', link: 'https://exemplo.invalid/arq1' }]
   },
-  obterObservacoes: { texto: 'Observação fictícia.', versaoArquivo: 1 }
+  obterObservacoes: { texto: 'Observação fictícia.', versaoArquivo: 1 },
+  executarEncaminhadorColacao: { encaminhados: 2, retidos: 0, bloqueados: 1, pendencias: [
+    { protocolo: 'PCG-20262-00003', nome: '<img src=x onerror="window.__xss=1">Aluna Fictícia Três', colacao: '20262', versao: 1, resultado: 'BLOQUEADO',
+      motivoCodigo: 'SEM_CADASTRO_CENTRAL', motivo: 'O Nº USP não tem cadastro na planilha central de alunos. Cadastre pelo Gerenciador de Pessoas.' }] }
 };
 
 const simulacao = dados => `
@@ -289,6 +292,33 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     assert(!/255, 255, 255/.test(fundo), 'ajuda com fundo branco no tema escuro: ' + fundo);
     assert(!erros.length, erros.join('\n'));
     await captura(pagina, 'ajuda-escuro');
+    await contexto.close();
+  });
+
+  await t('4.1: ADMINISTRADOR roda o encaminhador ao abrir e vê as pendências como texto, com contraste', async () => {
+    for (const esquema of ['light', 'dark']) {
+      const { contexto, pagina, erros } = await abrir({ esquema });
+      await pagina.waitForSelector('#avisoEncaminhamentos:not([hidden])');
+      const r = await pagina.evaluate(() => {
+        const f = document.getElementById('avisoEncaminhamentos'), cs = getComputedStyle(f);
+        return { texto: f.innerText, img: !!f.querySelector('img'), xss: !!window.__xss, chamadas: window.__chamadas.filter(c => c === 'executarEncaminhadorColacao').length,
+          cor: cs.color.match(/\d+/g).slice(0, 3).map(Number), fundo: cs.backgroundColor.match(/\d+/g).slice(0, 3).map(Number) };
+      });
+      assert(r.chamadas === 1, 'encaminhador deveria rodar uma vez');
+      assert(/2 pedidos novos do formulário entraram/.test(r.texto) && /PCG-20262-00003/.test(r.texto) && /Bloqueado/.test(r.texto) && /Gerenciador de Pessoas/.test(r.texto) && /2026 — 2º semestre/.test(r.texto), r.texto);
+      assert(!r.img && !r.xss, 'nome entrou como HTML');
+      assert(contraste(r.cor, r.fundo) >= 4.5, esquema + ' contraste ' + contraste(r.cor, r.fundo).toFixed(2));
+      assert(!erros.length, erros.join('\n'));
+      await captura(pagina, 'pendencias-encaminhamento-' + esquema);
+      await contexto.close();
+    }
+  });
+
+  await t('4.1: LEITOR não dispara o encaminhador nem vê a faixa', async () => {
+    const { contexto, pagina } = await abrir({ perfil: 'LEITOR' });
+    await pagina.waitForTimeout(100);
+    const r = await pagina.evaluate(() => ({ chamadas: window.__chamadas.filter(c => c === 'executarEncaminhadorColacao').length, oculta: document.getElementById('avisoEncaminhamentos').offsetParent === null }));
+    assert(r.chamadas === 0 && r.oculta, JSON.stringify(r));
     await contexto.close();
   });
 

@@ -1,5 +1,31 @@
 # Homologação — Gerenciador de Colação de Grau e Diplomas
 
+## 4.1.0 (10/11/2026) — em PR sobre a 4.0.1, não enviada ao Google
+
+Testes locais: `testar_encaminhador.js` 22 ok (novo), `testar_acesso.js` 40 ok, `testar_integridade.js` 20 ok, `testar_navegador.js` 23 ok, `testar_historico.js` ok (as 2 de sempre aceitas pelo nome). Na integridade, o teste do autocadastro virou o teste do D6 (sem cadastro na central, nada é criado) e o do autocadastro simultâneo saiu, porque o autocadastro não existe mais. Contrato e motivos: [ENCAMINHADOR_COLACAO.md](ENCAMINHADOR_COLACAO.md).
+
+| Suíte | O que confere na 4.1.0 |
+|---|---|
+| `testar_encaminhador.js` | inclusão com a linha inteira e os documentos movidos (mesmo ID); segunda execução sem nada novo; retomada depois de um bloqueio resolvido; `RECEBENDO` não entra; `PENDENTE` espera, `APROVADO` entra com o Nº USP decidido, `REJEITADO` não entra; cada bloqueio (sem cadastro, Nº USP repetido na central, Registro ID repetido ou divergente, duplicidade na colação, coluna ausente, documento fora da entrada, dados ilegíveis), sem gravar na aba `Diplomas`; correção aplicada só nas colunas do aluno e retida com o status preenchido; `BLOQUEADO` repetido sem linha nova; pendências sem IDs; LEITOR recusado; origem `GATILHO` só no contexto do dono; trava ocupada; vários pedidos numa execução; nenhum dado pessoal no registro de execução |
+| `testar_acesso.js` | as funções do editor e do gatilho recusam quem abre a página, mesmo ADMINISTRADOR |
+| `testar_navegador.js` | faixa de pendências do ADMINISTRADOR (nome como texto, contraste nos dois temas); LEITOR não dispara o encaminhador |
+
+Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e com o formulário 2.x de homologação gravando na cópia de `PEDIDOS_COLACAO`. Preparação: chaves `PEDIDOS_COLACAO` e `PASTA_PROVISORIOS_COLACAO` com o ID de homologação no `ID_INDEX` (as mesmas do formulário); rodar `prepararEncaminhamentosColacao` pelo editor (pede a autorização nova do Drive e dos gatilhos); linhas de [dados fictícios da 4.1.0](dados-ficticios/README.md#410--encaminhador-roteiro-e1e11-do-homologacaomd).
+
+| # | Passo | Esperado |
+|---|---|---|
+| E1 | Aluno fictício com cadastro envia um pedido pelo formulário; ADMINISTRADOR abre o Gerenciador | linha nova na colação com os dados do pedido e o "Status — Dados Pessoais" vazio; documentos na pasta do aluno; `ENCAMINHADO` em `ENCAMINHAMENTOS`; o formulário mostra "Em análise pela equipe" |
+| E2 | Abrir de novo | nada muda; nenhuma linha nova em `ENCAMINHAMENTOS` |
+| E3 | O aluno corrige o pedido; abrir | dados corrigidos na mesma linha, Versão +1, `ENCAMINHADO` com `CORRECAO_APLICADA` |
+| E4 | Preencher o "Status — Dados Pessoais"; o aluno corrige de novo; abrir | linha sem mudança; `CORRECAO RETIDA`; faixa com o pedido; o formulário mostra "Correção em conferência" |
+| E5 | Pedido de 9000201 (conta sem cadastro: o formulário protocola como `PENDENTE`); abrir | nada na aba `Diplomas`, nada em `ENCAMINHAMENTOS`, nenhuma faixa: espera a decisão do cadastro |
+| E6 | Digitar `APROVADO` para esse protocolo em `DECISOES_CADASTRO`, ainda sem linha na central; abrir | `BLOQUEADO` `SEM_CADASTRO_CENTRAL`; nada na aba `Diplomas`; faixa com o motivo |
+| E7 | Cadastrar 9000201 na central; abrir | entra como em E1; a faixa some |
+| E8 | Incluir à mão 9000202 na colação e depois o pedido dele | `BLOQUEADO` `DUPLICIDADE_DIPLOMAS`; a linha manual não muda |
+| E9 | Conta LEITOR abre | nenhuma faixa; nada encaminhado |
+| E10 | "Abrir/criar pasta" de um registro sem cadastro na central | mensagem pedindo o cadastro pelo Gerenciador de Pessoas; nada criado |
+| E11 | Só com a autorização do D15: `instalarGatilhoEncaminhadorColacao`, um pedido novo e esperar 5 minutos sem abrir a página | entra com origem `GATILHO`; rodar de novo a instalação não duplica o gatilho |
+
 ## 4.0.1 (06/11/2026) — em PR, não enviada ao Google
 
 Testes locais: `testar_integridade.js` 21 ok (novo), `testar_acesso.js` 39 ok, `testar_historico.js` 484 de 486 (as 2 de sempre), `testar_navegador.js` 21 ok. Revisão para auditoria: [REVISAO_4.0.1.md](REVISAO_4.0.1.md).
