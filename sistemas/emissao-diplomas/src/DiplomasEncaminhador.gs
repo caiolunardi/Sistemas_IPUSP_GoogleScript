@@ -98,6 +98,7 @@ const MOTIVOS_ENCAMINHAMENTO_COLACAO = {
 function executarEncaminhadorColacao() {
   exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
   const resumo = encaminharPedidosColacao_("ADMINISTRADOR");
+  registrarResumoEncaminhador_(resumo);
   return Object.assign(resumo, { pendencias: listarPendenciasEncaminhamento_() });
 }
 
@@ -105,9 +106,14 @@ function executarEncaminhadorColacao() {
 function encaminharPedidosColacaoPorGatilho() {
   exigirContextoDoDonoDiplomas_();
   const resumo = encaminharPedidosColacao_("GATILHO");
-  console.log("Encaminhador: " + JSON.stringify({ encaminhados: resumo.encaminhados, retidos: resumo.retidos,
-    bloqueados: resumo.bloqueados, ocupado: !!resumo.ocupado, indisponivel: !!resumo.indisponivel }));
+  registrarResumoEncaminhador_(resumo);
   return resumo;
+}
+
+// Só contagens, nunca dados pessoais (aparece em Execuções do editor).
+function registrarResumoEncaminhador_(resumo) {
+  console.log("Encaminhador: " + JSON.stringify({ encaminhados: resumo.encaminhados, corrigidos: resumo.corrigidos, retidos: resumo.retidos,
+    bloqueados: resumo.bloqueados, aguardando: resumo.aguardando, ocupado: !!resumo.ocupado, indisponivel: !!resumo.indisponivel }));
 }
 
 /** Só pelo editor: cria a aba ENCAMINHAMENTOS, se faltar (nunca apaga nada). */

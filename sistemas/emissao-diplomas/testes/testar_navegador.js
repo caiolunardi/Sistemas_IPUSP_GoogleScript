@@ -328,6 +328,11 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     const tc = await c.pagina.textContent('#avisoEncaminhamentos');
     assert(/1 correção do aluno foi aplicada/.test(tc) && !/pedido novo/.test(tc), tc);
     await c.contexto.close();
+    const ocupado = Object.assign({}, DADOS, { executarEncaminhadorColacao: { encaminhados: 0, corrigidos: 0, retidos: 0, bloqueados: 0, ocupado: true, pendencias: [] } });
+    const o = await abrir({ dados: ocupado });
+    await o.pagina.waitForSelector('#avisoEncaminhamentos:not([hidden])');
+    assert(/Outra execução/.test(await o.pagina.textContent('#avisoEncaminhamentos')));
+    await o.contexto.close();
     const b = await abrir({ dados: semNovos });
     // A lista desenhada e o encaminhador chamado; depois, folga para uma releitura indevida aparecer.
     await b.pagina.waitForSelector('.botaoColacao');

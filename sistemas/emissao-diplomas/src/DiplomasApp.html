@@ -1544,7 +1544,7 @@ function mostrarPendenciasEncaminhamento(resumo) {
     if (resumo.encaminhados) recarregarDepoisDoEncaminhador();
     const pendencias = Array.isArray(resumo.pendencias) ? resumo.pendencias : [];
     faixa.textContent = "";
-    if (!pendencias.length && !resumo.encaminhados) { faixa.hidden = true; return; }
+    if (!pendencias.length && !resumo.encaminhados && !resumo.ocupado && !resumo.indisponivel) { faixa.hidden = true; return; }
     const titulo = document.createElement("strong");
     const partes = [];
     // "encaminhados" conta também as correções aplicadas a uma linha que já existia.
@@ -1552,6 +1552,8 @@ function mostrarPendenciasEncaminhamento(resumo) {
     const novos = resumo.encaminhados - corrigidos;
     if (novos > 0) partes.push(novos + (novos === 1 ? " pedido novo do formulário entrou" : " pedidos novos do formulário entraram") + " na lista.");
     if (corrigidos > 0) partes.push(corrigidos + (corrigidos === 1 ? " correção do aluno foi aplicada" : " correções dos alunos foram aplicadas") + " na lista.");
+    if (resumo.ocupado) partes.push("Outra execução estava levando os pedidos neste momento; recarregue a página em um minuto para ver o resultado.");
+    if (resumo.indisponivel) partes.push("Não foi possível ler a planilha de pedidos agora; tente de novo em alguns minutos.");
     if (pendencias.length) partes.push(pendencias.length + (pendencias.length === 1 ? " pedido precisa" : " pedidos precisam") + " da equipe:");
     titulo.textContent = "Pedidos do formulário de colação. ";
     faixa.appendChild(titulo);
