@@ -23,6 +23,10 @@ Roteiro no Google, cada passo com autorização, depois do formulário 2.x de ho
 | F7 | Duas abas do navegador decidem o mesmo pedido | a segunda recebe "mudou ou já foi decidido"; uma decisão só |
 | F8 | ADMINISTRADOR que não é editor da planilha de alunos | vê a fila com o aviso; sem botões de decisão |
 
+### Registro (10/11/2026)
+
+Projeto `GRADIP · Gerenciador de Pessoas · HOMOLOGACAO` criado pelo responsável, com `ID_INDEX_SPREADSHEET_ID` e `AMBIENTE=homologacao`. Com a ordem dele, `clasp push` de `a52bd8a` só nesse projeto (backup do conteúdo anterior, 10 arquivos, fora do repositório); conferência por clone: 13/13 arquivos iguais ao commit. Sem implantação. A aba `DECISOES_CADASTRO` da cópia de homologação já existia (criada à mão no roteiro E6 do Gerenciador de Diplomas, com os mesmos títulos).
+
 ## v1.4 — autorização no servidor
 
 **Estado:** em PR (09/11/2026), verificada localmente, **não enviada ao Google**. Classe de risco **crítica** (autorização e dados pessoais): exige parecer de revisão independente e autorização do responsável escrita no PR antes do merge e, separadamente, antes de cada `clasp push` e de cada implantação.
