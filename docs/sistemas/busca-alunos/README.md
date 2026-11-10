@@ -2,7 +2,9 @@
 
 **Nome no Google:** `GRADIP · Gerenciador de Pessoas · PRODUÇÃO` ([nomes dos projetos](../../IMPLANTACAO.md#nome-dos-projetos-no-google)). A página e a Central de Ajuda ainda mostram "Comunidade IPUSP"; esse texto muda na próxima versão do sistema.
 
-**Versão em PR:** v1.4 (09/11/2026), autorização no servidor: só entra quem está na aba `PESSOAS_IPUSP` da planilha de permissões, com perfil LEITOR (consulta e exporta) ou ADMINISTRADOR (também salva a ficha, se for editor da planilha). Não enviada ao Google; ver [HOMOLOGACAO.md](HOMOLOGACAO.md#v14--autorização-no-servidor).
+**Versão em PR:** v1.5 (10/11/2026), sobre a v1.4: fila de cadastro dos pedidos de colação de grau, só para ADMINISTRADOR ([FILA_CADASTRO.md](FILA_CADASTRO.md)). Não enviada ao Google.
+
+**Versão em PR (base da v1.5):** v1.4 (09/11/2026), autorização no servidor: só entra quem está na aba `PESSOAS_IPUSP` da planilha de permissões, com perfil LEITOR (consulta e exporta) ou ADMINISTRADOR (também salva a ficha, se for editor da planilha). Não enviada ao Google; ver [HOMOLOGACAO.md](HOMOLOGACAO.md#v14--autorização-no-servidor).
 
 **Versão:** v1.3 (14/10/2026), sobre a v1.2 (Comunidade IPUSP), a v1.1 (ficha, ingresso e exportação) e a v1.0 (tema GRADIP e Central de Ajuda), que partiu do código em uso recebido em 13/10/2026. O [código Apps Script](../../../sistemas/busca-alunos/README.md) está versionado e foi verificado localmente; **ainda não foi homologado no `/exec`**. O GitHub não informa qual versão está implantada no Apps Script.
 
@@ -13,6 +15,7 @@ Ferramenta interna do Serviço de Graduação para localizar, numa única caixa 
 ## Funcionamento
 
 - **Acesso (v1.4):** o `doGet` e cada função pública conferem, antes de abrir qualquer cadastro, o e-mail da sessão (`Session.getActiveUser`) na aba `PESSOAS_IPUSP` de `PERMISSOES_DE_ACESSO` (`PessoasAcesso.gs`). Sem conta, fora da lista ou lista indisponível: a página mostra só um aviso (`PessoasSemAcesso.html`) e as funções recusam. LEITOR consulta e exporta; ADMINISTRADOR também salva, desde que seja editor da planilha do cadastro. Detalhes em [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md#4-web-app).
+- **Fila de cadastro (v1.5):** pedidos de colação com cadastro não confirmado pelo formulário, lidos da planilha `PEDIDOS_COLACAO`; só ADMINISTRADOR vê; decidir exige também ser editor da planilha de alunos. Cada decisão é uma linha em `DECISOES_CADASTRO`. Ver [FILA_CADASTRO.md](FILA_CADASTRO.md).
 - **Carga:** ao abrir, a página chama `google.script.run.listarComunidadeParaBusca()` uma única vez. O servidor resolve três cadastros pelo índice mestre `ID_INDEX` e devolve `{pessoas, indisponiveis}`. Cada pessoa tem `tipo`:
   - `aluno` — chave `PLANILHA_ALUNOS`, colunas pelo título: `linha`, `numeroUsp`, `nome`, `ingresso`, `email`, `emailSecundario`;
   - `docente` — chave `PLANILHA_DOCENTES`, colunas pelo título (v1.3): `linha`, `numeroUsp`, `nome`, `email`, `emailSecundario` (o gênero não vai na lista);

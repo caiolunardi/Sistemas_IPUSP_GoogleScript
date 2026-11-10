@@ -1,4 +1,4 @@
-# Gerenciador de Pessoas (antes Comunidade IPUSP e Busca de Alunos) — fonte v1.4
+# Gerenciador de Pessoas (antes Comunidade IPUSP e Busca de Alunos) — fonte v1.5
 
 No Google: `GRADIP · Gerenciador de Pessoas · PRODUÇÃO`.
 
@@ -18,12 +18,15 @@ A busca por texto continua igual: uma única carga da lista, filtragem no navega
 
 O GitHub é a referência de código, mas **não sincroniza automaticamente** com a implantação no Google Apps Script. Consulte a [documentação funcional](../../docs/sistemas/busca-alunos/README.md), o [manual de operação](../../docs/sistemas/busca-alunos/MANUAL_OPERACAO.md), a [homologação e a diferença exata](../../docs/sistemas/busca-alunos/HOMOLOGACAO.md) e o [inventário de segurança](../../docs/sistemas/busca-alunos/DADOS_E_SEGURANCA.md).
 
+A **v1.5** (10/11/2026, em PR sobre a v1.4, não enviada ao Google) traz a **fila de cadastro** dos pedidos de colação de grau (PR 5 do plano): os pedidos que o Formulário de Pedido de Colação de Grau 2.x protocolou sem conseguir confirmar o cadastro aparecem, só para ADMINISTRADOR, em "Solicitações de cadastro". A equipe vincula a um cadastro existente (podendo trocar o e-mail principal, nunca de forma automática), cria um cadastro novo ou rejeita com motivo; cada decisão vira uma linha na aba `DECISOES_CADASTRO` da planilha `PEDIDOS_COLACAO`, que o Gerenciador de Diplomas lê para levar o pedido aprovado à lista da colação. Arquivos: `PessoasFilaCadastro.gs` (novo), `BuscaAlunosApp.html`, `BuscaAlunosAjuda.html`; `Codigo.gs` só no comentário. Detalhes: [FILA_CADASTRO.md](../../docs/sistemas/busca-alunos/FILA_CADASTRO.md).
+
 ## Arquivos
 
 | Arquivo | Papel | Origem |
 |---|---|---|
 | `PessoasAcesso.gs` | Quem pode usar e com que perfil: lê a aba `PESSOAS_IPUSP`, `exigirLeitorPessoas_`/`exigirAdministradorPessoas_`, página de quem não tem acesso. | v1.4 |
 | `PessoasSemAcesso.html` | Aviso para quem não tem acesso (tema GRADIP, marcas, nenhum dado e nenhuma chamada ao servidor). | v1.4 |
+| `PessoasFilaCadastro.gs` | Fila de cadastro dos pedidos de colação: `obterFilaCadastro` (ADMINISTRADOR; LEITOR recebe só `visivel: false`), `decidirCadastro` (vincular, criar, rejeitar; ADMINISTRADOR editor da planilha de alunos) e `prepararDecisoesCadastro` (só pelo editor). | v1.5 |
 | `appsscript.json` | Manifesto: executa como quem implanta, **Quem pode acessar: somente eu** (o que o responsável informou em 20/10/2026). Abrir o acesso é uma mudança separada, depois da homologação. | v1.4 (antes não versionado) |
 | `Codigo.gs` | `doGet` (template), `include_`, `ID_INDEX`, lista da comunidade (`listarComunidadeParaBusca`: alunos, docentes, servidores e setores), ficha dos três cadastros (`obterFicha`/`salvarFicha`; `obterFichaAluno`/`salvarFichaAluno` como atalhos), PDF (`gerarPdfListaAlunos`) e diagnóstico (`diagnosticarComunidadeIPUSP`). v1.4: conferência de perfil em toda função pública e `AMBIENTE`. | original + v1.0 a v1.4 |
 | `BuscaAlunosApp.html` | Cabeçalho GRADIP, busca, selos de vínculo, nº USP copiável, filtros de ingresso, exportação, resultados e ficha. | original + v1.0 a v1.3 |

@@ -72,6 +72,12 @@ Vale para alunos, docentes, servidores e setores; cada um é gravado na sua pró
 | Linha mudou | Se a planilha foi ordenada ou teve linhas inseridas/apagadas depois que a página abriu, a ficha não abre ou não salva; recarregue a página. |
 | Tipo da célula | Número USP guardado como número continua número; o resto é gravado como texto, como digitado. |
 
+### Solicitações de cadastro (v1.5)
+
+Só para ADMINISTRADOR. Os pedidos de colação de grau cujo cadastro o formulário não confirmou aparecem em **Solicitações de cadastro: N**, acima dos resultados. Para cada um: conferir os documentos, então **Vincular ao cadastro marcado** (com a opção de trocar o e-mail principal pelo do pedido), **Criar cadastro novo** ou **Rejeitar** com motivo. Decidir exige ser editor da planilha de alunos. O pedido aprovado vai sozinho para o Gerenciador de Diplomas. Regras e mensagens: [FILA_CADASTRO.md](FILA_CADASTRO.md).
+
+Preparação (uma vez por ambiente, com autorização): a chave `PEDIDOS_COLACAO` no `ID_INDEX` (a mesma do formulário), edição nessa planilha para a conta que executa o projeto e, pelo editor, `prepararDecisoesCadastro` (cria a aba `DECISOES_CADASTRO`, se faltar).
+
 ### Aparência e ajuda
 
 **Aparência** oferece Sistema, Claro e Escuro. Sistema acompanha o sistema operacional, inclusive com a página aberta; Claro/Escuro ficam guardados só no navegador (`localStorage["gradip-theme"]`). O botão **Ajuda** abre a Central; "Como buscar?", "Filtrar e exportar por ingresso" e "Não encontrou a pessoa?" abrem direto na seção correspondente.
@@ -84,6 +90,8 @@ Vale para alunos, docentes, servidores e setores; cada um é gravado na sua pró
 | Página "Sem acesso a esta página" (v1.4) | O e-mail não está na aba `PESSOAS_IPUSP` com perfil LEITOR ou ADMINISTRADOR (coringa, grupo e perfil diferente não valem). | Incluir a linha na aba (ver [Configuração](#configuração)); o cache leva até 60 s. |
 | Página "Não foi possível abrir a página" (v1.4) | A lista de acesso não abriu: chave `PERMISSOES_DE_ACESSO` ausente no `ID_INDEX`, aba `PESSOAS_IPUSP` inexistente, títulos de C/E errados, `AMBIENTE` inválido ou, em homologação, coluna `Homologação` vazia. Ninguém entra (falha fechada). | Rodar o diagnóstico; o motivo vai para os registros de execução, sem e-mail. |
 | "O seu acesso é somente de consulta..." (v1.4) | LEITOR tentou salvar. | Pedir o perfil ADMINISTRADOR, se for o caso. |
+| "Não consegui ler as solicitações de cadastro" (v1.5) | Chave `PEDIDOS_COLACAO` ausente, aba `PROTOCOLOS`, `VERSOES`, `DOCUMENTOS` ou `DECISOES_CADASTRO` inexistente, coluna faltando em `DECISOES_CADASTRO`, ou a conta que executa sem acesso à planilha. | Rodar `prepararDecisoesCadastro` pelo editor e conferir a chave e o compartilhamento. |
+| "Este pedido mudou ou já foi decidido por outra sessão" (v1.5) | Outra pessoa decidiu ou o aluno enviou uma correção. | Recarregar a página e conferir de novo. |
 | "Carregando a lista de pessoas..." persistente | A chamada ao servidor não terminou. | Recarregar; conferir a conexão. |
 | "...Configuração obrigatória ausente: ID_INDEX_SPREADSHEET_ID." | Falta a propriedade do script. | Cadastrar a propriedade ([Configuração](#configuração)). |
 | "...Configuração obrigatória ausente: 1AbC..." (um ID no lugar do nome) | O ID foi colado em `PROPRIEDADE_ID_INDICE` no código. | Voltar a constante para `"ID_INDEX_SPREADSHEET_ID"` e pôr o ID só no **Valor** da propriedade. |

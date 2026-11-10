@@ -2,6 +2,27 @@
 
 **Estado:** v1.3 verificada localmente em 14/10/2026; **homologação no `/exec` pendente** (v1.1 a v1.3). A v1.0 foi colada no Apps Script pelo responsável funcional em 13/10/2026 (primeiro erro de configuração resolvido: ID no lugar do nome da propriedade) e revelou que o título real da coluna é `eMail`, não `Tr eMail`; isso motivou a v1.1. Esta página registra as diferenças, os hashes e os testes. Ela não atesta a configuração da implantação.
 
+## v1.5 — fila de cadastro dos pedidos de colação (10/11/2026, em PR, não enviada ao Google)
+
+Testes locais: `testar_fila_cadastro.js` 28 ok (novo), `testar_acesso.js` 91 ok (inclui as duas funções novas na conferência de toda função pública e a guarda de `prepararDecisoesCadastro`), `testar_backend.js` 51/51, `testar_navegador.js` 343/343 (inclui a fila nos dois temas, nome com HTML como texto, contraste, 360 e 390 px, LEITOR sem a fila e erro de leitura). Contrato: [FILA_CADASTRO.md](FILA_CADASTRO.md).
+
+| Suíte | O que confere na v1.5 |
+|---|---|
+| `testar_fila_cadastro.js` | só pedidos `RECEBIDO` + `PENDENTE` sem decisão (ou com `DUPLICIDADE`); última versão concluída; RG fora da página; candidatos por nº USP e e-mail; LEITOR sem abrir nada; ADMINISTRADOR não editor só vê; criar (linha nova, tipo da coluna, recusa de nº USP ou e-mail existentes, formatos, `DUPLICIDADE` quando outro escritor repete o nº USP); vincular (sem mexer na central, troca de e-mail registrada, recusa de e-mail em outra linha, linha que mudou, nº USP repetido); rejeitar com motivo; segunda decisão e versão nova recusadas; trava ocupada; aba ausente; nada pessoal no registro de execução |
+
+Roteiro no Google, cada passo com autorização, depois do formulário 2.x de homologação gravando na cópia de `PEDIDOS_COLACAO` e da v1.4 homologada. Preparação: chave `PEDIDOS_COLACAO` com o ID de homologação (a mesma do formulário); a conta que executa o projeto com edição nessa planilha; rodar `prepararDecisoesCadastro` pelo editor; linhas de [dados fictícios da v1.5](dados-ficticios/README.md#v15--fila-de-cadastro-roteiro-f1f8).
+
+| # | Passo | Esperado |
+|---|---|---|
+| F1 | Conta de teste sem cadastro envia um pedido pelo formulário; ADMINISTRADOR abre o Gerenciador de Pessoas | "Solicitações de cadastro: 1"; o pedido com o motivo e o link do documento |
+| F2 | Conta LEITOR abre | nenhuma fila, nenhum contador |
+| F3 | Criar cadastro com o nº USP de um aluno já cadastrado | recusado; nada gravado |
+| F4 | Criar cadastro com dados novos | linha nova na planilha de alunos; `APROVADO`/`CRIADO` em `DECISOES_CADASTRO`; o pedido sai da fila; o Gerenciador de Diplomas encaminha no ciclo seguinte (roteiro E1 dele) |
+| F5 | Pedido de quem tem cadastro com outro e-mail: vincular marcando "trocar o e-mail" | só a coluna eMail muda; decisão com e-mail anterior e novo; no formulário, a mesma conta passa a ser reconhecida |
+| F6 | Rejeitar um pedido sem motivo e depois com motivo | sem motivo é barrado; com motivo, `REJEITADO`; o formulário mostra a situação |
+| F7 | Duas abas do navegador decidem o mesmo pedido | a segunda recebe "mudou ou já foi decidido"; uma decisão só |
+| F8 | ADMINISTRADOR que não é editor da planilha de alunos | vê a fila com o aviso; sem botões de decisão |
+
 ## v1.4 — autorização no servidor
 
 **Estado:** em PR (09/11/2026), verificada localmente, **não enviada ao Google**. Classe de risco **crítica** (autorização e dados pessoais): exige parecer de revisão independente e autorização do responsável escrita no PR antes do merge e, separadamente, antes de cada `clasp push` e de cada implantação.

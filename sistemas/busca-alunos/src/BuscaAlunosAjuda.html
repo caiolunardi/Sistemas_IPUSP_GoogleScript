@@ -2,6 +2,7 @@
   COMUNIDADE IPUSP (antiga Busca de Alunos) — Central de Ajuda
   (conteúdo estático). v1.2: docentes, servidores e setores.
   v1.3: ficha de todos os vínculos, cópia do nº USP, Prof./Profª.
+  v1.5: seção "Solicitações de cadastro" (fila dos pedidos de colação).
 
   Estrutura copiada de shared/ajuda/GradipAjudaTemplate.html do
   repositório central, com o conteúdo de exemplo substituído pelo
@@ -38,6 +39,7 @@
         <button type="button" data-gradip-help-target="ajuda-resultados">Resultados</button>
         <button type="button" data-gradip-help-target="ajuda-ficha">Ficha e edição</button>
         <button type="button" data-gradip-help-target="ajuda-ingresso">Filtrar e exportar</button>
+        <button type="button" data-gradip-help-target="ajuda-fila-cadastro">Solicitações de cadastro</button>
         <button type="button" data-gradip-help-target="ajuda-nao-encontrei">Não encontrei a pessoa</button>
         <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
         <button type="button" data-gradip-help-target="ajuda-privacidade">Uso dos dados</button>
@@ -151,6 +153,39 @@
           <article class="gradip-help-card" data-gradip-help-search-item data-search="prof profa professora professor tratamento titulo docente genero masculino feminino">
             <h4>Prof. ou Profª. no título da ficha do docente</h4>
             <p>O título da ficha do docente já vem com <strong>Prof.</strong> ou <strong>Profª.</strong>, conforme o campo M / F. Para corrigir o tratamento, corrija o M / F e salve.</p>
+          </article>
+        </section>
+
+        <!-- ================= SOLICITAÇÕES DE CADASTRO (v1.5) ================= -->
+        <section id="ajuda-fila-cadastro" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Solicitações de cadastro</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="solicitacoes de cadastro fila pedido colacao grau pendente o que e por que aparece administrador">
+            <h4>O que é</h4>
+            <p>Quando um aluno pede a colação de grau pelo formulário e o sistema não consegue confirmar quem ele é pela planilha de alunos (por exemplo, o e-mail não está cadastrado, está em duas linhas ou o aluno apontou dados errados), o pedido é protocolado do mesmo jeito e aparece aqui, em <strong>Solicitações de cadastro</strong>. Só quem tem o perfil de administrador vê esta parte.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="como decidir conferir documentos rg vincular cadastro existente marcado trocar email principal">
+            <h4>Vincular a um cadastro que já existe</h4>
+            <p>1. Abra os documentos do pedido e confira se são da pessoa.<br>2. Em <strong>Cadastros parecidos</strong>, marque o cadastro certo (aparecem os que têm o mesmo nº USP ou o mesmo e-mail).<br>3. Se o e-mail do pedido for o certo, marque <strong>trocar o e-mail principal</strong>; a troca só é feita se esse e-mail não estiver em outra linha.<br>4. Clique em <strong>Vincular ao cadastro marcado</strong> e confirme.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="criar cadastro novo aluno sem cadastro numero usp ingresso semestre">
+            <h4>Criar um cadastro novo</h4>
+            <p>Use quando a pessoa não tem linha na planilha de alunos. Confira o número USP, o nome e o ingresso (ano e semestre, como 2021/1: o formulário só pergunta o ano) e clique em <strong>Criar cadastro e aprovar</strong>. Se o número USP ou o e-mail já estiverem na planilha, o sistema recusa e pede que você vincule.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="rejeitar motivo recusar pedido nao e da pessoa">
+            <h4>Rejeitar</h4>
+            <p>Se o pedido não puder ser aceito, clique em <strong>Rejeitar</strong>, escreva o motivo e confirme. Nada é apagado: o protocolo e os documentos continuam guardados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="depois de aprovar o que acontece diplomas lista colacao encaminhado">
+            <h4>Depois da decisão</h4>
+            <p>O pedido aprovado sai da fila e segue sozinho para o Gerenciador de Colação de Grau e Diplomas, que o coloca na colação escolhida com a data original do pedido. Esta página não mexe na lista de diplomas nem nos documentos.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao consigo decidir botoes nao aparecem editor planilha alunos permissao">
+            <h4>Não aparecem os botões de decisão</h4>
+            <p>Para decidir é preciso, além do perfil de administrador, ser editor da planilha de alunos. Sem isso, a fila aparece só para consulta, com um aviso em cada pedido.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="numero usp repetido duplicidade voltou para a fila mudou outra sessao">
+            <h4>"Nº USP repetido" ou "mudou ou já foi decidido"</h4>
+            <p>Se o número USP aparece em mais de uma linha da planilha de alunos, corrija a ficha (deixe uma linha só) e decida de novo: o pedido continua na fila. Se outra pessoa decidiu o mesmo pedido, ou o aluno enviou uma correção, recarregue a página e confira de novo.</p>
           </article>
         </section>
 
