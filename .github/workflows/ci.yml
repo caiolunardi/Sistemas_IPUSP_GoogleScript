@@ -59,6 +59,7 @@ jobs:
         suite:
           - ferramentas/testes/testar_publicar_release.js
           - sistemas/busca-alunos/testes/testar_backend.js
+          - sistemas/busca-alunos/testes/testar_acesso.js
           - sistemas/grade-horaria-visual/testes/testar_backend.js
           - sistemas/exclusao-disciplinas/formulario/testes/testar_backend.js
           - sistemas/trancamento-parcial/formulario/testes/testar_backend.js
