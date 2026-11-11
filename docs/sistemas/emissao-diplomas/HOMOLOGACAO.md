@@ -46,6 +46,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E8 | ok (10/11, na homologação do Gerenciador de Pessoas 1.5): pedido novo com nº USP já presente na colação, vinculado pelo Gerenciador de Pessoas, apareceu como "Bloqueado. Já existe outro registro deste Nº USP nesta colação na aba Diplomas" |
 | E9 | ok: conta LEITOR vê "Somente consulta" e nenhum aviso de pedidos |
 | E10 | ok: "Criar pasta no Drive" num registro sem cadastro na central recusou com a mensagem para cadastrar pelo Gerenciador de Pessoas; nada criado. Achado: o aviso dizia "Erro: Error: …"; o prefixo do Apps Script sai agora (teste de navegador novo) |
+| E12 | ok (11/11, push de `3969cac` rodado pelo responsável, com backup antes): pedido em conferência (`PENDENTE`, nome digitado diferente do cadastro) vinculado no Gerenciador de Pessoas a um cadastro da cópia; ao abrir, "1 pedido novo do formulário entrou na lista"; a linha da aba Diplomas e a lista "Dados Pessoais" usam o nome da planilha central, e os documentos foram para a pasta do aluno (nome da central + nº USP) |
 
 
 ## 4.0.1 (06/11/2026) — em PR, não enviada ao Google
