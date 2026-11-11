@@ -1,142 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
 <base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedido de Colação de Grau — IPUSP</title>
+
+<!-- GRADIP UI — tema (Sistema/Claro/Escuro), antes de qualquer <style>
+     e da carga de dados: o tema é só do navegador. -->
+<?!= include_('GradipTema') ?>
 
 <style>
+/*=====================================================
+  PEDIDO DE COLAÇÃO DE GRAU — 2.1 (tema GRADIP + Central de
+  Ajuda). Todas as cores vêm dos tokens de GradipTema.html;
+  Claro e Escuro saem do mesmo CSS. IDs, textos, campos,
+  telas e chamadas ao servidor são os da 2.0.
+=====================================================*/
+
+*{ box-sizing:border-box; }
+
 body{
     margin:0;
     font-family:Arial, Helvetica, sans-serif;
-    background:#f5f5f5;
-    color:#333;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
 }
 
+[hidden]{ display:none !important; }
+
+/*---------------- CABEÇALHO (padrão GRADIP) ----------------*/
+
 #headerSistema{
-    background:white;
-    height:72px;
+    background:var(--gradip-header-bg);
+    min-height:72px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     padding:0 22px;
-    border-bottom:1px solid #ddd;
+    border-bottom:1px solid var(--gradip-border);
+    gap:12px;
 }
 
 .logoEsquerda{
     display:flex;
     align-items:center;
     gap:15px;
+    min-width:0;
 }
 
-.logoEsquerda img{
+.logoEsquerda .marcaIpuspSvg{
     height:52px;
+    flex:0 0 auto;
 }
 
-.logoUSP{
-    height:44px;
-}
+.textoCabecalho{ min-width:0; }
 
 .tituloSistema{
+    margin:0;
     font-size:17px;
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
 }
 
 .subtituloSistema{
     font-size:13px;
-    color:#666;
+    color:var(--gradip-text-muted);
     margin-top:2px;
+}
+
+.cabecalhoDireita{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+}
+
+.logoUSP{
+    height:44px;
+    width:auto;
+    flex:0 0 auto;
+}
+
+.logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+    padding:4px 6px;
+}
+
+.botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+}
+
+.botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+}
+
+.botaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
 }
 
 .barraAzul{
     height:6px;
-    background:#005AA9;
+    background:var(--gradip-header-accent);
 }
 
+/* Faixa do ambiente de homologação (a página liga só quando o servidor
+   informa homologação). */
+.faixaHomologacao{
+    background:var(--gradip-warning-bg);
+    border-bottom:2px solid var(--gradip-warning-border);
+    color:var(--gradip-text);
+    padding:10px 16px;
+    text-align:center;
+    font-size:14px;
+}
+.faixaHomologacao strong{ color:var(--gradip-warning); }
+
+/*---------------- CONTEÚDO ----------------*/
+
 #conteudo{
-    max-width:720px;
-    margin:28px auto;
-    padding:0 20px 60px 20px;
+    max-width:760px;
+    margin:24px auto;
+    padding:0 20px 40px 20px;
 }
 
 .cardMensagem{
-    background:white;
-    border:1px solid #d9d9d9;
-    border-radius:8px;
-    padding:40px 30px;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:32px 28px;
     text-align:center;
-    color:#555;
+    color:var(--gradip-text);
+    line-height:1.6;
 }
 
 .cardMensagem h2{
-    color:#222;
+    color:var(--gradip-text);
+    font-size:19px;
     margin-top:0;
 }
 
 .secao{
-    background:white;
-    border:1px solid #d9d9d9;
-    border-radius:8px;
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
     padding:20px 24px;
     margin-bottom:16px;
+    color:var(--gradip-text);
+}
+
+fieldset.secao{
+    margin:0 0 16px 0;
+    min-width:0;
 }
 
 .secao h3{
-    font-size:14px;
+    font-size:13px;
     text-transform:uppercase;
     letter-spacing:.03em;
-    color:#005AA9;
+    color:var(--gradip-link);
     margin:0 0 14px 0;
-    border-bottom:2px solid #eaf2fa;
+    border-bottom:2px solid var(--gradip-border);
     padding-bottom:8px;
 }
 
-.campo{
-    margin-bottom:16px;
+/* Gatilhos de ajuda contextual (abrem a Central na seção certa). */
+.ajudaContextualLinha{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:16px 18px;
+    margin:16px 0 8px 0;
 }
 
-.campo:last-child{
-    margin-bottom:0;
+.secao .ajudaContextualLinha{ margin:0 0 14px 0; }
+
+.secao .ajudaContextualLinha,
+#telaFormulario > .ajudaContextualLinha{
+    justify-content:flex-start;
 }
+
+#telaFormulario > .ajudaContextualLinha{ margin:8px 0 18px 2px; }
+
+.linkAjudaContextual{
+    display:inline-block;
+    background:none;
+    border:none;
+    padding:15px 4px;
+    margin:-15px -4px;
+    font:inherit;
+    font-size:12.5px;
+    font-weight:bold;
+    text-decoration:underline;
+    cursor:pointer;
+    color:var(--gradip-link);
+}
+
+.linkAjudaContextual:hover{ color:var(--gradip-link-hover); }
+
+.linkAjudaContextual:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:-10px;
+}
+
+/*---------------- CAMPOS ----------------*/
+
+.campo{ margin-bottom:16px; }
+.campo:last-child{ margin-bottom:0; }
 
 .campo label{
     display:block;
     font-size:14px;
     font-weight:bold;
-    color:#222;
+    color:var(--gradip-text);
     margin-bottom:5px;
 }
 
-.campo .obrigatorio{
-    color:#b71c1c;
-}
+.obrigatorio{ color:var(--gradip-danger); }
 
-.campo .ajuda{
+.ajuda{
     font-size:12.5px;
-    color:#777;
+    color:var(--gradip-text-muted);
     margin:0 0 8px 0;
     line-height:1.5;
 }
 
-.campo .ajuda a{
-    color:#005AA9;
+.ajuda a,
+.cardMensagem a{
+    color:var(--gradip-link);
+    overflow-wrap:anywhere;
+}
+.ajuda a:hover{ color:var(--gradip-link-hover); }
+.ajuda a:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
 }
 
 .campo input[type=text],
 .campo textarea{
     width:100%;
+    min-height:44px;
     padding:10px 12px;
-    border:1px solid #ccc;
-    border-radius:5px;
-    font-size:14px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    font-size:15px;
     font-family:inherit;
-    box-sizing:border-box;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
 }
 
-.campo input[readonly]{
-    background:#f2f2f2;
-    color:#777;
+.campo input::placeholder,
+.campo textarea::placeholder{
+    /* --gradip-input-placeholder fica abaixo de 4,5:1 no Claro;
+       --gradip-text-muted passa nos dois temas (mesmo ajuste dos
+       outros sistemas). */
+    color:var(--gradip-text-muted);
 }
+
+.campo input[type=text]:hover,
+.campo textarea:hover{ border-color:var(--gradip-link); }
+
+.campo input[readonly]{
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text);
+    border-color:var(--gradip-border);
+}
+.campo input[readonly]:hover{ border-color:var(--gradip-border); }
 
 .campo textarea{
     resize:vertical;
     min-height:90px;
+    line-height:1.5;
 }
 
 .linhaDupla{
@@ -149,18 +304,31 @@ body{
     min-width:0;
 }
 
-.itemCheckbox{
+.itemCheckbox,
+.campo label.itemCheckbox{
     display:flex;
     align-items:center;
     gap:10px;
-    padding:7px 0;
-    font-size:14px;
+    min-height:44px;
+    margin:0;
+    padding:4px 0;
+    font-size:15px;
+    font-weight:normal;
+    color:var(--gradip-text);
+    cursor:pointer;
 }
 
 .itemCheckbox input{
-    width:17px;
-    height:17px;
+    width:18px;
+    height:18px;
+    margin:0;
     flex-shrink:0;
+    accent-color:var(--gradip-primary);
+}
+
+.itemCheckbox input:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
 }
 
 .grupoSimNao{
@@ -168,123 +336,174 @@ body{
     gap:10px;
 }
 
+.campo label.opcaoSimNao,
 .opcaoSimNao{
     flex:1;
-    text-align:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    margin:0;
     padding:10px;
-    border:1.5px solid #ccc;
-    border-radius:6px;
+    border:1.5px solid var(--gradip-border-strong);
+    border-radius:8px;
+    background:var(--gradip-input-bg);
     cursor:pointer;
     font-size:14px;
     font-weight:bold;
-    color:#555;
+    color:var(--gradip-text);
     transition:.15s;
     user-select:none;
-}
-
-.opcaoSimNao:hover{
-    border-color:#005AA9;
-}
-
-.opcaoSimNao.selecionada{
-    border-color:#005AA9;
-    background:#eaf2fa;
-    color:#005AA9;
-}
-
-.opcaoSimNao input{
-    display:none;
-}
-
-.linhaUpload{
-    border:1.5px dashed #bbb;
-    border-radius:8px;
-    padding:16px;
     position:relative;
 }
 
+.opcaoSimNao:hover{ border-color:var(--gradip-link); }
+
+/* Selecionada: borda, fundo e marca ✓ (não só a cor). */
+.opcaoSimNao.selecionada{
+    border-color:var(--gradip-primary);
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
+}
+.opcaoSimNao.selecionada::before{
+    content:"✓";
+    margin-right:6px;
+}
+
+/* O rádio fica fora da vista mas continua focável: Tab entra no grupo e
+   as setas trocam a opção. */
+.opcaoSimNao input{
+    position:absolute;
+    opacity:0;
+    width:1px;
+    height:1px;
+    margin:0;
+    pointer-events:none;
+}
+
+.linhaUpload{
+    border:1.5px dashed var(--gradip-border-strong);
+    border-radius:8px;
+    padding:16px;
+    position:relative;
+    background:var(--gradip-input-bg);
+}
+
 .linhaUpload.arrastando{
-    border-color:#005AA9;
-    background:#f2f8fd;
+    border-color:var(--gradip-link);
+    background:var(--gradip-info-bg);
 }
 
 .linhaUpload.comArquivo{
     border-style:solid;
-    border-color:#2e7d32;
-    background:#f4faf5;
+    border-color:var(--gradip-success-border);
+    background:var(--gradip-success-bg);
 }
 
 .linhaUpload .zonaClique{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
     text-align:center;
-    color:#777;
+    color:var(--gradip-text-muted);
     font-size:13px;
     cursor:pointer;
+    border-radius:6px;
 }
 
 .linhaUpload .nomeArquivoEscolhido{
-    text-align:center;
-    font-size:13px;
     font-weight:bold;
-    color:#2e7d32;
+    color:var(--gradip-success);
+    overflow-wrap:anywhere;
 }
 
 #blocoProcurador{
     display:none;
     margin-top:14px;
     padding-top:14px;
-    border-top:1px solid #eee;
+    border-top:1px solid var(--gradip-border);
 }
 
-#blocoHabilitacoesPendentes .itemCheckbox{
-    display:none;
+#blocoHabilitacoesPendentes .itemCheckbox{ display:none; }
+#blocoHabilitacoesPendentes .itemCheckbox.disponivel{ display:flex; }
+
+.manterDocumento{
+    font-size:13px;
+    color:var(--gradip-success);
+    margin:0 0 8px 0;
 }
 
-#blocoHabilitacoesPendentes .itemCheckbox.disponivel{
-    display:flex;
-}
+/*---------------- BOTÕES ----------------*/
 
 .botaoPrimario{
     width:100%;
-    padding:14px;
-    background:#005AA9;
-    color:white;
-    border:none;
-    border-radius:6px;
+    min-height:48px;
+    padding:12px 16px;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+    border:1px solid transparent;
+    border-radius:8px;
+    font:inherit;
     font-size:15px;
     font-weight:bold;
     cursor:pointer;
     transition:.15s;
 }
 
-.botaoPrimario:hover{
-    background:#00468a;
-}
+.botaoPrimario:hover{ background:var(--gradip-primary-hover); }
 
 .botaoPrimario:disabled{
-    background:#9fb8cc;
-    cursor:default;
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+    cursor:not-allowed;
 }
 
 .botaoSecundario{
     width:100%;
+    min-height:44px;
     padding:12px;
-    background:white;
-    border:1.5px solid #005AA9;
-    color:#005AA9;
-    border-radius:6px;
+    background:var(--gradip-surface);
+    border:1.5px solid var(--gradip-link);
+    color:var(--gradip-link);
+    border-radius:8px;
+    font:inherit;
     font-size:14px;
     font-weight:bold;
     cursor:pointer;
     margin-top:10px;
 }
 
+.botaoSecundario:hover{ background:var(--gradip-surface-2); }
+
+.botaoSecundario:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+    cursor:not-allowed;
+}
+
+.campo input[type=text]:focus-visible,
+.campo textarea:focus-visible,
+.botaoPrimario:focus-visible,
+.botaoSecundario:focus-visible,
+.zonaClique:focus-visible,
+.opcaoSimNao:focus-within{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+/*---------------- AVISOS (padrão de alerta GRADIP) ----------------*/
+
 .avisoInfo{
-    background:#fff8e1;
-    border:1px solid #ffe08a;
-    color:#8a6d1a;
-    border-radius:6px;
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    border-left-width:4px;
+    color:var(--gradip-text);
+    border-radius:8px;
     padding:12px 14px;
-    font-size:13px;
+    font-size:13.5px;
     margin-bottom:16px;
     line-height:1.5;
 }
@@ -292,83 +511,42 @@ body{
 #avisoRejeitado p{ margin:0 0 6px; }
 #avisoRejeitado p:last-child{ margin:0; }
 
-#loadingOverlay{
-    display:none;
-    position:fixed;
-    z-index:10000;
-    left:0;
-    top:0;
-    width:100%;
-    height:100%;
-    background:rgba(255,255,255,0.8);
-    align-items:center;
-    justify-content:center;
-}
-
-#loadingBox{
-    background:white;
-    border-radius:10px;
-    box-shadow:0 4px 20px rgba(0,0,0,.15);
-    padding:30px 40px;
-    text-align:center;
-}
-
-#loadingLogo{
-    height:46px;
-    margin-bottom:12px;
-}
-
-#loadingTitulo{
-    font-weight:bold;
-    color:#222;
-    font-size:15px;
-}
-
-#loadingTexto{
-    color:#777;
-    font-size:12px;
-    margin-top:4px;
-}
-
-[hidden]{
-    display:none !important;
-}
-
-fieldset.secao{
+.avisoErro{
+    background:var(--gradip-danger-bg);
+    border:1px solid var(--gradip-danger-border);
+    border-left-width:4px;
+    color:var(--gradip-text);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:14px;
     margin:0 0 16px 0;
-    min-width:0;
+    line-height:1.5;
 }
-
-/* ---- 2.0: acréscimos à tela legada (a interface GRADIP vem no PR 7) ---- */
-.faixaHomologacao{
-    background:#5c2d91;
-    color:white;
-    text-align:center;
-    font-size:13px;
+.avisoErro::before{
+    content:"⚠ ";
+    color:var(--gradip-danger);
     font-weight:bold;
-    padding:6px 10px;
 }
 
 /* Campo com problema: borda vermelha e texto logo abaixo (nunca só a cor). */
 .campoInvalido{
-    border-color:#c62828 !important;
-    box-shadow:0 0 0 2px rgba(198,40,40,.18);
+    border-color:var(--gradip-danger) !important;
+    box-shadow:inset 4px 0 0 var(--gradip-danger);
 }
 input.campoInvalido:focus,
 textarea.campoInvalido:focus,
 .campoInvalido:focus-visible{
-    border-color:#c62828 !important;
-    outline:2px solid #c62828 !important;
+    border-color:var(--gradip-danger) !important;
+    outline:2px solid var(--gradip-danger) !important;
     outline-offset:1px;
-    box-shadow:0 0 0 3px rgba(198,40,40,.22) !important;
 }
 .campo.campoInvalido{
-    border:1.5px solid #c62828;
+    border:1.5px solid var(--gradip-danger);
     border-radius:8px;
     padding:8px;
 }
 .erroCampo{
-    color:#8a1c1c;
+    color:var(--gradip-danger);
     font-size:13px;
     font-weight:bold;
     margin:6px 0 0 0;
@@ -377,30 +555,22 @@ textarea.campoInvalido:focus,
 .statusReenvio{
     font-size:13px;
     margin:8px 0 0 0;
-    color:#1b5e20;
+    color:var(--gradip-success);
 }
 .statusReenvio.statusReenvioErro{
-    color:#8a1c1c;
+    color:var(--gradip-danger);
     font-weight:bold;
 }
 
-.avisoErro{
-    background:#fdecea;
-    border:1px solid #f5c2c0;
-    color:#8a1c1c;
-    border-radius:6px;
-    padding:12px 14px;
-    font-size:14px;
-    margin:0 0 16px 0;
-    line-height:1.5;
-}
+/*---------------- PROTOCOLO E MEUS PEDIDOS ----------------*/
 
 .protocoloDestaque{
     font-size:22px;
     font-weight:bold;
-    color:#005AA9;
+    color:var(--gradip-link);
     letter-spacing:.02em;
     margin:8px 0;
+    overflow-wrap:anywhere;
 }
 
 .listaPedidos{
@@ -411,61 +581,139 @@ textarea.campoInvalido:focus,
 }
 
 .listaPedidos li{
-    border:1px solid #d9d9d9;
+    border:1px solid var(--gradip-border);
     border-radius:8px;
     padding:14px 16px;
     margin-bottom:12px;
-    background:white;
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text);
     font-size:14px;
     line-height:1.6;
+    overflow-wrap:anywhere;
 }
 
 .listaPedidos .botaoSecundario{
     width:auto;
     padding:8px 14px;
-    min-height:44px;
 }
 
-.botaoPrimario, .botaoSecundario{
-    min-height:44px;
+#meusPedidosVazio{ color:var(--gradip-text-muted); }
+
+.rodape{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:12px;
+    padding:0 0 30px 0;
 }
 
-.campo input[type=text]:focus-visible,
-.campo textarea:focus-visible,
-.botaoPrimario:focus-visible,
-.botaoSecundario:focus-visible,
-.zonaClique:focus-visible,
-.opcaoSimNao:focus-within{
-    outline:3px solid #005AA9;
-    outline-offset:2px;
+/*---------------- CARREGANDO ----------------*/
+
+#loadingOverlay{
+    display:none;
+    position:fixed;
+    z-index:9000;
+    inset:0;
+    background:var(--gradip-overlay);
+    align-items:center;
+    justify-content:center;
+    padding:16px;
 }
 
-.manterDocumento{
+#loadingBox{
+    background:var(--gradip-surface-elevated);
+    color:var(--gradip-text);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:26px 36px;
+    text-align:center;
+    max-width:100%;
+}
+
+#loadingTitulo{
+    font-weight:bold;
+    font-size:15px;
+}
+
+#loadingTexto{
+    color:var(--gradip-text-muted);
     font-size:13px;
-    color:#2e7d32;
-    margin:0 0 8px 0;
+    margin-top:6px;
+}
+
+/*---------------- RESPONSIVO ----------------*/
+
+@media (max-width:640px){
+    #headerSistema{
+        flex-wrap:wrap;
+        padding:10px 12px;
+        row-gap:8px;
+    }
+    .logoEsquerda{
+        gap:8px;
+        flex:1 1 100%;
+    }
+    .logoEsquerda .marcaIpuspSvg{ height:38px; }
+    .logoUSP{ height:32px; }
+    .logoUSPWrap{ padding:2px 3px; margin-left:auto; }
+    .tituloSistema{ font-size:14px; }
+    .subtituloSistema{ font-size:11.5px; }
+    .cabecalhoDireita{
+        gap:8px;
+        flex:1 1 100%;
+    }
 }
 
 @media (max-width:480px){
+    .botaoAjuda .textoAjuda{ display:none; }
+    .botaoAjuda{
+        padding:8px;
+        border-radius:50%;
+    }
+    .gradip-theme-control{ gap:0; }
+    .gradip-theme-control__select{
+        padding:0 26px 0 8px;
+        font-size:12px;
+    }
     .linhaDupla{ flex-direction:column; gap:0; }
-    #headerSistema{ height:auto; padding:10px 14px; }
-    .logoEsquerda img{ height:40px; }
-    .logoUSP{ height:32px; }
+    .linhaDupla > div{ margin-bottom:16px; }
+    #conteudo{
+        margin-top:16px;
+        padding:0 12px 30px 12px;
+    }
+    .secao{ padding:16px 14px; }
+    .cardMensagem{ padding:24px 16px; }
 }
 </style>
 
-<div id="faixaHomologacao" class="faixaHomologacao" hidden>HOMOLOGAÇÃO: ambiente de teste, com dados fictícios. Nada aqui é um pedido real.</div>
+<?!= include_('ColacaoAjudaEstilos') ?>
+
+</head>
+<body>
 
 <header id="headerSistema">
     <div class="logoEsquerda">
-        <div>
-            <div class="tituloSistema">Pedido de Colação de Grau</div>
+        <?!= include_('GradipMarcaIPUSP') ?>
+        <div class="textoCabecalho">
+            <h1 class="tituloSistema">Pedido de Colação de Grau</h1>
             <div class="subtituloSistema" id="subtitulo">Instituto de Psicologia da USP · Serviço de Graduação</div>
         </div>
+    </div>
+    <div class="cabecalhoDireita">
+        <?!= include_('GradipTemaControle') ?>
+        <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
+            <span aria-hidden="true">❓</span>
+            <span class="textoAjuda">Ajuda</span>
+        </button>
+        <span class="logoUSPWrap">
+            <?!= include_('GradipMarcaUSP') ?>
+        </span>
     </div>
 </header>
 
 <div class="barraAzul"></div>
+
+<div id="faixaHomologacao" class="faixaHomologacao" role="note" hidden><strong>HOMOLOGAÇÃO:</strong> ambiente de teste, com dados fictícios. Nada aqui é um pedido real.</div>
 
 <main id="conteudo">
 
@@ -478,12 +726,14 @@ textarea.campoInvalido:focus,
     <div id="telaErro" class="cardMensagem" hidden>
         <h2>Não foi possível abrir o formulário</h2>
         <p id="textoErro"></p>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-problemas">Como resolver?</button></div>
     </div>
 
     <div id="telaFechado" class="cardMensagem" hidden>
         <h2>Formulário fechado no momento</h2>
         <p>O período de solicitação de colação de grau não está aberto agora. Consulte o Serviço de Graduação para saber quando reabre.</p>
         <button type="button" class="botaoSecundario" id="botaoMeusPedidosFechado" hidden>Meus pedidos</button>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-prazo">Quando posso pedir?</button></div>
     </div>
 
     <div id="telaPedidoExistente" class="cardMensagem" hidden>
@@ -494,9 +744,16 @@ textarea.campoInvalido:focus,
         <button type="button" class="botaoPrimario" id="botaoCorrigir">Corrigir o pedido</button>
         <button type="button" class="botaoSecundario" id="botaoMeusPedidosExistente">Meus pedidos</button>
         <button type="button" class="botaoSecundario" id="botaoVoltarPainel" hidden>Voltar ao Painel de Solicitações</button>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-correcao">Como funciona a correção?</button></div>
     </div>
 
     <form id="telaFormulario" hidden novalidate>
+
+        <div class="ajudaContextualLinha">
+            <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-preencher">Como preencher?</button>
+            <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-documentos">Quais documentos enviar?</button>
+            <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece depois?</button>
+        </div>
 
         <div class="avisoInfo" id="avisoModoCorrecao" hidden>
             Você está corrigindo o pedido <strong id="correcaoProtocolo"></strong>. A data e a hora do pedido continuam as originais. Os documentos que você não trocar continuam os já enviados.
@@ -505,7 +762,8 @@ textarea.campoInvalido:focus,
         <div class="avisoInfo" id="avisoRejeitado" hidden>
             <p><strong>O seu pedido <span id="rejeitadoProtocolo"></span> não foi aprovado pelo Serviço de Graduação.</strong></p>
             <p id="rejeitadoMotivoLinha" hidden>Motivo: <span id="rejeitadoMotivo"></span></p>
-            <p>Você pode enviar um novo pedido abaixo, corrigindo o que foi apontado. Em caso de dúvida, fale com o Serviço de Graduação.</p>
+            <p>Você pode enviar um novo pedido abaixo, corrigindo o que foi apontado. Em caso de dúvida, fale com o Serviço de Graduação.
+                <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-cadastro">O que fazer?</button></p>
         </div>
 
         <div class="avisoInfo" id="avisoRetomada" hidden>
@@ -517,6 +775,7 @@ textarea.campoInvalido:focus,
 
             <div class="avisoInfo" id="avisoProvisorio" hidden>
                 Não conseguimos confirmar o seu cadastro automaticamente. Preencha os seus dados: o pedido será recebido normalmente, com protocolo, e a equipe vai conferir o cadastro.
+                <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-cadastro">Por que isso aparece?</button>
             </div>
 
             <div class="campo">
@@ -551,6 +810,7 @@ textarea.campoInvalido:focus,
         <div class="secao">
             <h3>Documentos</h3>
             <p class="ajuda">Arquivos em PDF, JPG ou PNG, com até 10 MB cada.</p>
+            <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-documentos">O arquivo não foi aceito?</button></div>
 
             <div class="campo">
                 <label for="inputArquivoRg">CIN / RG <span class="obrigatorio">*</span></label>
@@ -678,6 +938,7 @@ textarea.campoInvalido:focus,
         <p id="confSituacao"></p>
         <p id="confRecibo"></p>
         <p>Recebimento não é deferimento: o Serviço de Graduação ainda vai conferir os seus dados e documentos.</p>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece agora?</button></div>
         <button type="button" class="botaoSecundario" id="botaoMeusPedidosConf">Meus pedidos</button>
     </div>
 
@@ -685,6 +946,7 @@ textarea.campoInvalido:focus,
         <div class="secao">
             <h3>Meus pedidos</h3>
             <p class="ajuda">Pedidos de colação de grau feitos com a sua conta. Recebido não é deferido: cada pedido ainda passa pela conferência da equipe.</p>
+            <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-meus-pedidos">O que significa cada situação?</button></div>
             <p id="meusPedidosVazio" hidden>Nenhum pedido encontrado para a sua conta.</p>
             <ul class="listaPedidos" id="listaMeusPedidos"></ul>
             <button type="button" class="botaoSecundario" id="botaoVoltarInicio">Voltar</button>
@@ -692,6 +954,8 @@ textarea.campoInvalido:focus,
     </div>
 
 </main>
+
+<div class="rodape">Serviço de Graduação — Instituto de Psicologia da USP</div>
 
 <div id="loadingOverlay" role="status" aria-live="polite">
     <div id="loadingBox">
@@ -1195,3 +1459,9 @@ function esconderLoading() {
     el("loadingOverlay").style.display = "none";
 }
 </script>
+
+<?!= include_('ColacaoAjuda') ?>
+<?!= include_('ColacaoAjudaUI') ?>
+
+</body>
+</html>

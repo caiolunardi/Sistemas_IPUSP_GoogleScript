@@ -1,6 +1,6 @@
 # STATUS — Formulário de Pedido de Colação de Grau
 
-**Fotografia:** 09/11/2026. Versão **2.0.0 em PR** (fonte reescrita, sem IDs); o legado continua fora do Git e em uso.
+**Fotografia:** 10/11/2026. Versão **2.0.0 em PR** (fonte reescrita, sem IDs) e **2.1.0 em PR empilhado** (tema GRADIP e Central de Ajuda); o legado continua fora do Git e em uso.
 
 | Eixo | Estado | Evidência e limite |
 | --- | --- | --- |
@@ -10,7 +10,7 @@
 | Autorização e proteção de dados | **2.0: IMPLEMENTADA EM PR, revisão independente pendente** | [segurança](../../docs/sistemas/pedido-colacao-grau/DADOS_E_SEGURANCA.md) |
 | Integração com Gerenciador 4.0 | **CONTRATO DOCUMENTADO** | [contrato](../../docs/sistemas/pedido-colacao-grau/CONTRATO_INTEGRACAO.md); funcionamento real Google não testado |
 | Reutilização/atualização de anexos | **REQUISITO FUTURO** | Decisão do responsável; legado substitui arquivos por nome |
-| Testes locais e no Google | **2.0: locais 79 + 66 ok; Google EM_ANDAMENTO (H1, H2, H4, H5, H7–H12 ok em 10/11/2026)** | [roteiro](../../docs/sistemas/pedido-colacao-grau/HOMOLOGACAO.md) |
+| Testes locais e no Google | **2.0: locais 79 + 66 ok; Google EM_ANDAMENTO (H1, H2, H4, H5, H7–H12 ok em 10/11/2026). 2.1: locais 79 + 198 ok; Google G1–G8 ok em 10/11/2026** | [roteiro](../../docs/sistemas/pedido-colacao-grau/HOMOLOGACAO.md) |
 | Implantação atual `/exec` | **NAO_VERIFICADA** | O responsável chamou os arquivos de atuais, mas editor/manifesto/deployment não foram conferidos |
 | Contexto local | **PROPOSTA, NÃO ADOTADO** | [CONTEXT_SYSTEM](contexto/CONTEXT_SYSTEM.md); `context.config.json` não alterado |
 | Próximo ato permitido | Revisão independente e ok do responsável no PR da 2.0 | Homologação, `clasp`, planilhas e Drive dependem de ordem específica |

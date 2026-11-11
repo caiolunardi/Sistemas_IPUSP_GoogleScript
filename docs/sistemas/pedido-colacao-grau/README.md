@@ -2,6 +2,8 @@
 
 **Versão 2.0.0 em PR (09/11/2026):** fonte reescrita a partir do legado, sem IDs, em [`sistemas/pedido-colacao-grau/src/`](../../../sistemas/pedido-colacao-grau/src/). Recebimento com protocolo persistido antes de ser mostrado, idempotência pela chave de envio, `PEDIDOS_COLACAO`, entrada de documentos, "Meus pedidos", recibo, caminho provisório e diagnóstico. **Não homologada nem implantada**; ver [RECEBIMENTO_2_0.md](RECEBIMENTO_2_0.md). O legado continua em uso até a virada única (D13).
 
+**Versão 2.1.0 em PR empilhado (10/11/2026):** tela no tema GRADIP (Sistema, Claro e Escuro, marcas IPUSP e USP, seletor de aparência) e Central de Ajuda estática com busca, perguntas frequentes e links contextuais ([AJUDA.md](AJUDA.md)). Fluxos, campos, textos e chamadas ao servidor são os da 2.0; roteiro G em [HOMOLOGACAO.md](HOMOLOGACAO.md#versão-210-pr-7-do-plano--tema-gradip-e-central-de-ajuda).
+
 **Legado (06/11/2026):** inventário técnico baseado nos arquivos `Codigo(1).gs` (841 linhas) e `ColacaoApp.html` (870 linhas) entregues pelo responsável. **O código bruto não foi incorporado ao Git público**: contém identificadores operacionais reais. As seções abaixo sobre finalidade, fronteira e tabela de estado descrevem o **legado**.
 
 **Natureza:** projeto Apps Script independente destinado aos alunos; **não** é o [Gerenciador de Colação de Grau e Diplomas](../emissao-diplomas/README.md), que pertence à equipe. A implantação de um não implanta o outro. O [Painel dos Servidores](../painel-servidores/README.md) apenas configura o período e o semestre do formulário.

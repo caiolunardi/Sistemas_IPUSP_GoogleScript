@@ -3,8 +3,10 @@
 // 100% fictícios e confere: telas por situação, validação na página,
 // chave de envio (mesma chave ao enviar de novo, chave nova na
 // correção), protocolo só com resposta do servidor, "Meus pedidos"
-// sem HTML injetado e larguras de 360 a 1280 px.
-// A interface GRADIP (tema, ajuda) é o PR 7; aqui a tela é a legada.
+// sem HTML injetado e larguras de 360 a 1280 px. Desde a 2.1 (PR 7):
+// tema GRADIP (Sistema/Claro/Escuro, persistência, mudança do sistema),
+// contraste, marcas, Central de Ajuda (ESC, foco, busca, gatilhos) e
+// alvos de toque. A página é montada com os include_ resolvidos.
 // Uso: node testar_navegador.js [pasta-para-capturas]
 'use strict';
 const fs = require('fs');
@@ -15,7 +17,17 @@ function carregarPlaywright() {
   }
 }
 const { chromium } = carregarPlaywright();
-const HTML = fs.readFileSync(path.join(__dirname, '..', 'src', 'ColacaoApp.html'), 'utf8');
+const SRC = path.join(__dirname, '..', 'src') + '/';
+const MARCA_USP_OFFLINE = fs.readFileSync(path.join(__dirname, '..', '..', '..', 'assets', 'usp', 'logo-usp-preto.svg'), 'utf8');
+function montar() {
+  let h = fs.readFileSync(SRC + 'ColacaoApp.html', 'utf8');
+  for (let k = 0; k < 3; k++) h = h.replace(/<\?!= include_\('(\w+)'\) \?>/g, (_, n) => fs.readFileSync(SRC + n + '.html', 'utf8'));
+  if (/<\?/.test(h)) throw new Error('scriptlet sobrando');
+  return h;
+}
+const HTML = montar();
+function lum(c) { const m = c.match(/[\d.]+/g).map(Number); const a = m.slice(0, 3).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * a[0] + .7152 * a[1] + .0722 * a[2]; }
+function cr(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); }
 const CAPTURAS = process.argv[2] || null;
 
 const CONFIRMADA = { situacao: 'CONFIRMADO', nome: 'Aluna Fictícia Um', nUsp: '9000001', anoIngresso: '2021', emailSecundario: 'um@exemplo.invalid' };
@@ -52,12 +64,14 @@ let ok = 0, falhas = 0;
 const chk = (n, c, extra = '') => { if (c) { ok++; } else { falhas++; console.log('FALHA', n, extra); } };
 
 async function abrir(ctx, cen) {
+  if (!CENARIOS[cen]) throw new Error('cenário ' + cen);
   const p = await ctx.newPage();
   p.__erros = [];
   p.on('pageerror', e => p.__erros.push(e.message));
   await p.route('https://form.teste/**', r => r.fulfill({ contentType: 'text/html; charset=utf-8',
-    body: '<!DOCTYPE html><html><head><meta charset="utf-8"><script>' + stub(CENARIOS[cen]) + '</script></head><body>' + HTML + '</body></html>' }));
-  await p.route('**/*', r => (r.request().url().startsWith('https://form.teste/') ? r.fallback() : r.fulfill({ body: '' })));
+    body: HTML.replace('<head>', '<head><script>' + stub(CENARIOS[cen]) + '</script>') }));
+  await p.route('**/*', r => (r.request().url().startsWith('https://form.teste/') ? r.fallback()
+    : r.fulfill(/datagrad\.sistemas\.ip\.usp\.br/.test(r.request().url()) ? { contentType: 'image/svg+xml', body: MARCA_USP_OFFLINE } : { body: '' })));
   await p.goto('https://form.teste/');
   await p.waitForFunction(() => document.getElementById('telaCarregando').hidden);
   return p;
@@ -109,14 +123,19 @@ async function preencher(p) {
       c.getAttribute('aria-describedby') === 'erroCampo' && document.activeElement === c;
   }));
   chk('validação: aviso no topo e no campo', /e-mail alternativo/.test(await p.textContent('#caixaErro')) && /e-mail alternativo/.test(await p.textContent('#erroCampo')));
-  chk('validação: borda vermelha', (await p.$eval('#campoEmailAlternativo', e => getComputedStyle(e).borderTopColor)) === 'rgb(198, 40, 40)');
+  chk('validação: borda na cor de perigo do tema', await p.$eval('#campoEmailAlternativo', e => {
+    const t = document.createElement('span'); t.style.color = 'var(--gradip-danger)'; document.body.appendChild(t);
+    const cor = getComputedStyle(t).color; t.remove(); return getComputedStyle(e).borderTopColor === cor; }));
   if (CAPTURAS) await p.screenshot({ path: path.join(CAPTURAS, 'campo-invalido.png') });
   await p.fill('#campoEmailAlternativo', 'um@exemplo.invalid');
   chk('validação: destaque some ao digitar', await p.$eval('#campoEmailAlternativo', e => !e.classList.contains('campoInvalido') && !e.hasAttribute('aria-invalid')) && !(await p.$('#erroCampo')));
   // Grupo Sim/Não (rádios escondidos): o grupo recebe o foco.
   await p.evaluate(() => { document.querySelectorAll('#grupoAntecipada input').forEach(i => { i.checked = false; }); document.querySelectorAll('#grupoAntecipada .opcaoSimNao').forEach(l => l.classList.remove('selecionada')); });
   await p.click('#botaoEnviar');
-  chk('validação: grupo Sim/Não destacado e focado', await p.evaluate(() => { const g = document.getElementById('grupoAntecipada'); return g.classList.contains('campoInvalido') && document.activeElement === g; }));
+  chk('validação: grupo Sim/Não destacado, foco no rádio', await p.evaluate(() => { const g = document.getElementById('grupoAntecipada'); return g.classList.contains('campoInvalido') && g.contains(document.activeElement) && document.activeElement.type === 'radio'; }));
+  // Teclado: a seta troca a opção do grupo (rádio focável desde a 2.1).
+  await p.keyboard.press('ArrowRight');
+  chk('teclado: seta escolhe no grupo Sim/Não', await p.evaluate(() => document.querySelectorAll('#grupoAntecipada .opcaoSimNao.selecionada').length === 1));
   await p.click('#grupoAntecipada label:has-text("Não")');
   chk('validação: destaque do grupo some ao escolher', await p.$eval('#grupoAntecipada', e => !e.classList.contains('campoInvalido')));
   await p.click('#botaoEnviar');
@@ -246,14 +265,136 @@ async function preencher(p) {
   chk('sem erros de script', p.__erros.length === 0, p.__erros.join('; '));
   await p.close();
 
-  // Larguras: sem rolagem horizontal.
+  // ---------- 2.1: tema GRADIP e Central de Ajuda ----------
+  const corToken = (p, token) => p.evaluate(t => { const x = document.createElement('span'); x.style.color = `var(${t})`; document.body.appendChild(x); const c = getComputedStyle(x).color; x.remove(); return c; }, token);
+  for (const scheme of ['light', 'dark']) {
+    const T = `[${scheme}]`;
+    const cx = await b.newContext({ colorScheme: scheme, viewport: { width: 1280, height: 900 } });
+    let p = await abrir(cx, 'provisoria');
+    chk(`${T} tema Sistema resolvido`, await p.evaluate(s => document.documentElement.dataset.theme === s && document.documentElement.dataset.themePreference === 'system', scheme));
+    chk(`${T} seletor mostra Sistema`, await p.$eval('[data-gradip-theme-select]', e => e.value === 'system'));
+    chk(`${T} marca IPUSP certa para o tema`, await p.evaluate(s => { const l = document.querySelector('.marcaIpuspSvg.gradip-logo-light'), d = document.querySelector('.marcaIpuspSvg.gradip-logo-dark'); return s === 'dark' ? getComputedStyle(l).display === 'none' && getComputedStyle(d).display !== 'none' : getComputedStyle(d).display === 'none' && getComputedStyle(l).display !== 'none'; }, scheme));
+    chk(`${T} marcas sem filtro CSS`, await p.$$eval('.marcaIpuspSvg, .logoUSP', e => e.length >= 2 && e.every(x => getComputedStyle(x).filter === 'none')));
+    chk(`${T} fundo da página é o token`, await p.evaluate(() => getComputedStyle(document.body).backgroundColor) === await corToken(p, '--gradip-bg'));
+    // Preenche e marca um erro para medir também o texto de erro e a opção escolhida.
+    await p.click('#grupoPermanece label:has-text("Não")');
+    await p.click('#botaoEnviar');
+    const pares = await p.evaluate(() => {
+      const cs = e => getComputedStyle(typeof e === 'string' ? document.querySelector(e) : e); const bg = e => cs(e).backgroundColor;
+      const secao = bg('.secao'), pag = getComputedStyle(document.body).backgroundColor;
+      return { texto: [cs('.secao label').color, secao], ajudaCampo: [cs('.secao .ajuda').color, secao], titulo: [cs('.secao h3').color, secao],
+        link: [cs('.ajuda a').color, secao], linkAjuda: [cs('#telaFormulario .linkAjudaContextual').color, pag],
+        aviso: [cs('#avisoProvisorio').color, bg('#avisoProvisorio')], erroTopo: [cs('#caixaErro').color, bg('#caixaErro')],
+        erroCampo: [cs('#erroCampo').color, bg('#erroCampo').replace(/rgba\(0, 0, 0, 0\)/, '') || secao],
+        opcao: [cs('#grupoPermanece .opcaoSimNao.selecionada').color, bg('#grupoPermanece .opcaoSimNao.selecionada')],
+        campo: [cs('#campoNome').color, bg('#campoNome')], somenteLeitura: [cs('#campoEmailUsp').color, bg('#campoEmailUsp')],
+        zona: [cs('#linhaUploadRg .zonaClique').color, bg('#linhaUploadRg')],
+        botao: [cs('#botaoEnviar').color, bg('#botaoEnviar')], secundario: [cs('#botaoMeusPedidosForm').color, bg('#botaoMeusPedidosForm')],
+        cabecalho: [cs('.subtituloSistema').color, bg('#headerSistema')], ajudaBotao: [cs('.botaoAjuda').color, bg('.botaoAjuda')], rodape: [cs('.rodape').color, pag],
+        borda: [cs('#campoNome').borderTopColor, bg('#campoNome')] };
+    });
+    for (const [k, [c, f]] of Object.entries(pares)) { const r = cr(c, f); const alvo = k === 'borda' ? 3 : 4.5; chk(`${T} contraste ${k} ≥ ${alvo}`, r >= alvo, r.toFixed(2)); }
+    chk(`${T} placeholder com contraste`, cr(await p.$eval('#campoAnoIngresso', e => getComputedStyle(e, '::placeholder').color), await p.$eval('#campoAnoIngresso', e => getComputedStyle(e).backgroundColor)) >= 4.5);
+    chk(`${T} opção escolhida não depende só da cor`, await p.$eval('#grupoPermanece .opcaoSimNao.selecionada', e => getComputedStyle(e, '::before').content.includes('✓')));
+    if (CAPTURAS) await p.screenshot({ path: path.join(CAPTURAS, `formulario-${scheme}.png`), fullPage: true });
+
+    // Central de Ajuda: abre, scroll lock, busca sem acento, FAQ, ESC, foco.
+    await p.click('.botaoAjuda'); await p.waitForSelector('[data-gradip-help-overlay]:not([hidden])');
+    await p.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    chk(`${T} ajuda abre com scroll lock`, await p.evaluate(() => document.body.style.overflow === 'hidden'));
+    chk(`${T} ajuda: foco dentro do diálogo`, await p.evaluate(() => document.querySelector('[data-gradip-help-dialog]').contains(document.activeElement)));
+    for (let i = 0; i < 40; i++) await p.keyboard.press('Tab');
+    chk(`${T} ajuda: Tab não sai do diálogo`, await p.evaluate(() => document.querySelector('[data-gradip-help-dialog]').contains(document.activeElement)));
+    await p.fill('[data-gradip-help-search]', 'certidao');
+    chk(`${T} busca sem acento acha a certidão`, await p.waitForFunction(() => document.querySelectorAll('#ajuda-documentos [data-gradip-help-search-item]:not([hidden])').length >= 1, null, { timeout: 5000 }).then(() => true, () => false));
+    await p.fill('[data-gradip-help-search]', 'PROCURAÇÃO');
+    chk(`${T} busca com acento e maiúsculas`, await p.waitForFunction(() => /^\d+ resultados?$/.test(document.querySelector('[data-gradip-help-search-status]').textContent), null, { timeout: 5000 }).then(() => true, () => false));
+    await p.fill('[data-gradip-help-search]', 'xyzsemresultado');
+    chk(`${T} busca sem resultado avisa`, await p.waitForFunction(() => !document.querySelector('[data-gradip-help-no-results]').hidden, null, { timeout: 5000 }).then(() => true, () => false));
+    await p.fill('[data-gradip-help-search]', '');
+    const faq = await p.$('#ajuda-faq .gradip-help-faq-toggle'); await faq.click();
+    chk(`${T} FAQ expande com aria-expanded`, await faq.getAttribute('aria-expanded') === 'true' && await visivel(p, '#faq-garantido'));
+    const helpC = await p.evaluate(() => { const c = document.querySelector('.gradip-help-card p'); return [getComputedStyle(c).color, getComputedStyle(c.closest('.gradip-help-card')).backgroundColor]; });
+    chk(`${T} contraste da ajuda ≥ 4.5`, cr(...helpC) >= 4.5, cr(...helpC).toFixed(2));
+    if (CAPTURAS) await p.screenshot({ path: path.join(CAPTURAS, `ajuda-${scheme}.png`) });
+    await p.keyboard.press('Escape');
+    chk(`${T} ESC fecha, devolve foco e solta o scroll`, await p.evaluate(() => document.querySelector('[data-gradip-help-overlay]').hidden && document.activeElement.classList.contains('botaoAjuda') && document.body.style.overflow === ''));
+    await p.click('#avisoProvisorio [data-gradip-help-open]'); await p.waitForSelector('[data-gradip-help-overlay]:not([hidden])'); await p.waitForTimeout(100);
+    chk(`${T} gatilho contextual abre na seção`, await p.evaluate(() => document.activeElement && document.activeElement.closest('#ajuda-cadastro') !== null));
+    await p.keyboard.press('Escape');
+    chk(`${T} gatilho no formulário não envia`, (await envios(p)).length === 0);
+    chk(`${T} todos os gatilhos têm seção`, await p.evaluate(() => [...document.querySelectorAll('[data-gradip-help-open]')].every(b => b.type === 'button' && document.getElementById(b.getAttribute('data-gradip-help-open') || 'ajuda-inicio'))));
+    chk(`${T} cada seção da ajuda tem item no menu`, await p.evaluate(() => [...document.querySelectorAll('[data-gradip-help-section]')].every(s => document.querySelector(`[data-gradip-help-target="${s.id}"]`))));
+    chk(`${T} ajuda sem chamada ao servidor`, await p.evaluate(() => window.__chamadas.every(c => c[0] === 'obterDadosIniciais')));
+    chk(`${T} sem erros de script`, p.__erros.length === 0, p.__erros.join('; '));
+    await p.close();
+
+    // Telas centrais e Meus pedidos no tema.
+    p = await abrir(cx, 'fechado');
+    chk(`${T} fechado: ajuda leva a "Quando posso pedir"`, await p.$eval('#telaFechado [data-gradip-help-open]', e => e.getAttribute('data-gradip-help-open')) === 'ajuda-prazo');
+    const fc = await p.evaluate(() => [getComputedStyle(document.querySelector('#telaFechado p')).color, getComputedStyle(document.getElementById('telaFechado')).backgroundColor]);
+    chk(`${T} contraste tela fechada ≥ 4.5`, cr(...fc) >= 4.5, cr(...fc).toFixed(2));
+    await p.click('#botaoMeusPedidosFechado'); await p.waitForSelector('#telaMeusPedidos:not([hidden])');
+    const li = await p.evaluate(() => { const e = document.querySelector('#listaMeusPedidos li'); return [getComputedStyle(e).color, getComputedStyle(e).backgroundColor]; });
+    chk(`${T} contraste Meus pedidos ≥ 4.5`, cr(...li) >= 4.5, cr(...li).toFixed(2));
+    await p.click('#listaMeusPedidos button');
+    await p.waitForSelector('#listaMeusPedidos .statusReenvio');
+    const st = await p.evaluate(() => { const e = document.querySelector('#listaMeusPedidos .statusReenvio'); return [getComputedStyle(e).color, getComputedStyle(e.closest('li')).backgroundColor]; });
+    chk(`${T} contraste do aviso de reenvio ≥ 4.5`, cr(...st) >= 4.5, cr(...st).toFixed(2));
+    if (CAPTURAS) await p.screenshot({ path: path.join(CAPTURAS, `meus-pedidos-${scheme}.png`), fullPage: true });
+    await p.close();
+    p = await abrir(cx, 'confirmada');
+    const fh = await p.evaluate(() => { const e = document.getElementById('faixaHomologacao'); return [getComputedStyle(e).color, getComputedStyle(e.querySelector('strong')).color, getComputedStyle(e).backgroundColor]; });
+    chk(`${T} faixa de homologação com contraste AA`, cr(fh[0], fh[2]) >= 4.5 && cr(fh[1], fh[2]) >= 4.5, `${cr(fh[0], fh[2]).toFixed(2)} / ${cr(fh[1], fh[2]).toFixed(2)}`);
+    await preencher(p); await p.click('#botaoEnviar'); await p.waitForSelector('#telaConfirmacao:not([hidden])');
+    const pc = await p.evaluate(() => [getComputedStyle(document.getElementById('confProtocolo')).color, getComputedStyle(document.getElementById('telaConfirmacao')).backgroundColor]);
+    chk(`${T} contraste do protocolo ≥ 4.5`, cr(...pc) >= 4.5, cr(...pc).toFixed(2));
+    if (CAPTURAS) await p.screenshot({ path: path.join(CAPTURAS, `confirmacao-${scheme}.png`) });
+    await p.close(); await cx.close();
+  }
+
+  // Tema manual: persistência e mudança do sistema com a página aberta.
+  {
+    const cx = await b.newContext({ colorScheme: 'light' }); const p = await abrir(cx, 'confirmada');
+    await p.selectOption('[data-gradip-theme-select]', 'dark');
+    chk('manual Escuro aplica e salva', await p.evaluate(() => document.documentElement.dataset.theme === 'dark' && localStorage.getItem('gradip-theme') === 'dark'));
+    await p.reload(); await p.waitForFunction(() => document.getElementById('telaCarregando').hidden);
+    chk('Escuro persiste após recarregar', await p.evaluate(() => document.documentElement.dataset.theme === 'dark') && await p.$eval('[data-gradip-theme-select]', e => e.value === 'dark'));
+    await p.emulateMedia({ colorScheme: 'light' });
+    chk('manual ignora mudança do sistema', await p.evaluate(() => document.documentElement.dataset.theme === 'dark'));
+    await p.selectOption('[data-gradip-theme-select]', 'light');
+    chk('manual Claro aplica e salva', await p.evaluate(() => document.documentElement.dataset.theme === 'light' && localStorage.getItem('gradip-theme') === 'light'));
+    await p.selectOption('[data-gradip-theme-select]', 'system'); await p.emulateMedia({ colorScheme: 'dark' }); await p.waitForTimeout(50);
+    chk('Sistema acompanha mudança com a página aberta', await p.evaluate(() => document.documentElement.dataset.theme === 'dark' && document.documentElement.dataset.themePreference === 'system'));
+    await p.emulateMedia({ colorScheme: 'light' }); await p.waitForTimeout(50);
+    chk('Sistema volta para Claro', await p.evaluate(() => document.documentElement.dataset.theme === 'light'));
+    chk('tema não chama o servidor', await p.evaluate(() => window.__chamadas.every(c => c[0] === 'obterDadosIniciais')));
+    await cx.close();
+  }
+
+  // Larguras: sem rolagem horizontal, alvos de toque e ajuda utilizável.
   for (const largura of [360, 390, 480, 768, 1280]) {
-    const c2 = await b.newContext({ viewport: { width: largura, height: 800 } });
-    const q = await abrir(c2, 'provisoria');
-    chk(`largura ${largura}: sem rolagem horizontal`, await q.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
-    chk(`largura ${largura}: botão de envio ≥ 44 px`, await q.$eval('#botaoEnviar', e => e.getBoundingClientRect().height >= 44));
-    if (CAPTURAS) await q.screenshot({ path: path.join(CAPTURAS, `formulario-${largura}.png`), fullPage: true });
-    await c2.close();
+    for (const scheme of ['light', 'dark']) {
+      const c2 = await b.newContext({ colorScheme: scheme, viewport: { width: largura, height: 800 }, hasTouch: largura < 1000 });
+      const q = await abrir(c2, 'provisoria');
+      const L = `largura ${largura} ${scheme}`;
+      chk(`${L}: sem rolagem horizontal`, await q.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+      const pequenos = await q.$$eval('#botaoEnviar,#botaoMeusPedidosForm,.botaoAjuda,[data-gradip-theme-select],.itemCheckbox:not([style*="none"]),.opcaoSimNao,.zonaClique,#campoNome,#campoTelefone',
+        e => e.filter(x => x.offsetParent !== null).filter(x => { const r = x.getBoundingClientRect(); return r.height < 44 || r.width < 44; }).map(x => x.id || x.className));
+      chk(`${L}: alvos ≥ 44 px`, pequenos.length === 0, pequenos.join());
+      const cab = await q.evaluate(() => [...document.querySelectorAll('#headerSistema *')].filter(e => { const r = e.getBoundingClientRect(); return r.width && (r.right > window.innerWidth + 0.5 || r.left < -0.5); }).length);
+      chk(`${L}: cabeçalho dentro da tela`, cab === 0, cab);
+      if (scheme === 'light' || largura === 360) {
+        await q.click('.botaoAjuda'); await q.waitForSelector('[data-gradip-help-overlay]:not([hidden])');
+        chk(`${L}: ajuda com botão fechar visível`, await q.$eval('.gradip-help-close', e => { const r = e.getBoundingClientRect(); return r.right <= window.innerWidth && r.top >= 0; }));
+        const ov2 = await q.evaluate(() => { const d = document.querySelector('[data-gradip-help-dialog]'); return d.scrollWidth - d.clientWidth; });
+        chk(`${L}: ajuda sem rolagem horizontal`, ov2 <= 0, ov2);
+        if (CAPTURAS && largura === 360) await q.screenshot({ path: path.join(CAPTURAS, `ajuda-360-${scheme}.png`) });
+        await q.keyboard.press('Escape');
+      }
+      if (CAPTURAS && (largura === 360 || largura === 768)) await q.screenshot({ path: path.join(CAPTURAS, `formulario-${largura}-${scheme}.png`), fullPage: true });
+      await c2.close();
+    }
   }
 
   await b.close();

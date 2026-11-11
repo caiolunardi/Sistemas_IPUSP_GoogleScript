@@ -29,7 +29,7 @@
 =====================================================*/
 
 const COLACAO = {
-  VERSAO: "2.0.0",
+  VERSAO: "2.1.0",
   FUSO: "America/Sao_Paulo",
   DOMINIO: "usp.br",
   CHAVES: {
