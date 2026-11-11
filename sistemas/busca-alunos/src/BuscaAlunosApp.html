@@ -1531,7 +1531,7 @@
     aviso.className = "fichaAviso" + (FICHA.podeEditar ? "" : " alerta");
     aviso.textContent = FICHA.podeEditar
         ? "Altere os campos necessários e clique em Salvar alterações. Só os campos modificados são gravados na planilha."
-        : `Sua conta pode consultar esta ficha, mas não alterar a planilha de ${CADASTRO_DO_TIPO[FICHA.aluno.tipo]}. Para editar, é preciso ser editor da planilha.`;
+        : `Sua conta pode consultar esta ficha, mas não alterar a planilha de ${CADASTRO_DO_TIPO[FICHA.aluno.tipo]}. Para editar, é preciso ter o perfil de administrador nesta página e ser editor da planilha.`;
     fichaCampos.appendChild(aviso);
 
     ficha.campos.forEach((campo, i) => {

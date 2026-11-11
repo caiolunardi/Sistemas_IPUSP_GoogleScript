@@ -1,4 +1,4 @@
-# Manual de operação — Gerenciador de Pessoas, antes Comunidade IPUSP (v1.3)
+# Manual de operação — Gerenciador de Pessoas, antes Comunidade IPUSP (v1.4)
 
 Referência de uso, instalação e manutenção da Comunidade IPUSP, antiga Busca de Alunos (pasta `busca-alunos` e nomes de arquivo mantidos). A ajuda incorporada ao app está documentada em [AJUDA.md](AJUDA.md). Este manual descreve a fonte do Git, sem presumir que ela já esteja implantada.
 
@@ -58,13 +58,13 @@ Os arquivos contêm dados pessoais: envie só a quem pediu, para a finalidade in
 Vale para alunos, docentes, servidores e setores; cada um é gravado na sua própria planilha.
 
 1. Clique no nome no resultado (ou Tab até ele e Enter). A ficha mostra **todas as colunas com título** da linha, na ordem da planilha. O rótulo diz "Ficha do aluno", "do docente", "do servidor" ou "do setor". Na de docente, o título vem com **Prof.** ou **Profª.**, calculado pelo campo `M / F`; a coluna `TRATAMENTO` não aparece.
-2. Quem é **editor da planilha daquele cadastro** pode alterar os campos. O campo alterado fica marcado e o rodapé informa quantos campos mudaram.
+2. Quem tem o perfil **ADMINISTRADOR** (v1.4) e é **editor da planilha daquele cadastro** pode alterar os campos. O campo alterado fica marcado e o rodapé informa quantos campos mudaram.
 3. **Salvar alterações** grava só as células modificadas e mostra "Alterações salvas na planilha." A lista da página já passa a refletir o dado novo (o aluno pode sair do filtro atual, se o ingresso mudou; mudar o `TIPO` troca o selo entre Servidor e Setor).
 4. **Fechar**, × ou Esc fecham. Com alteração não salva, a página pergunta antes de descartar.
 
 | Regra | Detalhe |
 |---|---|
-| Quem pode salvar | Conta identificada que esteja entre os editores (ou seja a dona) da planilha daquele cadastro, individualmente. Compartilhamento só por grupo não é reconhecido. Os demais veem a ficha só para consulta, com aviso no topo. |
+| Quem pode salvar | (v1.4) Perfil ADMINISTRADOR na aba `PESSOAS_IPUSP` **e** conta identificada que esteja entre os editores (ou seja a dona) da planilha daquele cadastro, individualmente. Compartilhamento só por grupo não é reconhecido. Os demais veem a ficha só para consulta, com aviso no topo. |
 | Somente leitura | `ID da Pasta` (usado por outro sistema) e qualquer célula com fórmula. Aparecem com borda tracejada e "(somente leitura)". |
 | Formatos | Número USP (`Número USP`, `N. USP`, `N.USP`): só dígitos. Ingresso: `AAAA/1` ou `AAAA/2`. E-mails (principal e secundário): formato de e-mail ou vazio. Nome: não vazio. `M / F`: `M`, `F` ou vazio (gravado em maiúscula). `TIPO`: `SERVIDOR`, `SETOR` ou vazio (gravado em maiúscula). Demais colunas: texto livre, até 500 caracteres. |
 | Linha conferida por | Alunos: número USP + nome. Docentes e servidores: nome + e-mail. |
@@ -80,6 +80,10 @@ Vale para alunos, docentes, servidores e setores; cada um é gravado na sua pró
 
 | Mensagem | Significado | O que fazer |
 |---|---|---|
+| Página "Conta não identificada" (v1.4) | A sessão não trouxe o e-mail (outra conta Google no navegador, ou conta de fora do domínio de quem implantou). | Entrar com a conta @usp.br e abrir de novo. |
+| Página "Sem acesso a esta página" (v1.4) | O e-mail não está na aba `PESSOAS_IPUSP` com perfil LEITOR ou ADMINISTRADOR (coringa, grupo e perfil diferente não valem). | Incluir a linha na aba (ver [Configuração](#configuração)); o cache leva até 60 s. |
+| Página "Não foi possível abrir a página" (v1.4) | A lista de acesso não abriu: chave `PERMISSOES_DE_ACESSO` ausente no `ID_INDEX`, aba `PESSOAS_IPUSP` inexistente, títulos de C/E errados, `AMBIENTE` inválido ou, em homologação, coluna `Homologação` vazia. Ninguém entra (falha fechada). | Rodar o diagnóstico; o motivo vai para os registros de execução, sem e-mail. |
+| "O seu acesso é somente de consulta..." (v1.4) | LEITOR tentou salvar. | Pedir o perfil ADMINISTRADOR, se for o caso. |
 | "Carregando a lista de pessoas..." persistente | A chamada ao servidor não terminou. | Recarregar; conferir a conexão. |
 | "...Configuração obrigatória ausente: ID_INDEX_SPREADSHEET_ID." | Falta a propriedade do script. | Cadastrar a propriedade ([Configuração](#configuração)). |
 | "...Configuração obrigatória ausente: 1AbC..." (um ID no lugar do nome) | O ID foi colado em `PROPRIEDADE_ID_INDICE` no código. | Voltar a constante para `"ID_INDEX_SPREADSHEET_ID"` e pôr o ID só no **Valor** da propriedade. |
@@ -108,7 +112,7 @@ A fonte está em [`sistemas/busca-alunos/src/`](../../../sistemas/busca-alunos/s
 
 1. Guarde a versão atual do projeto e anote a versão da implantação ativa.
 2. Substitua **`Codigo.gs`**, **`BuscaAlunosApp.html`** e **`BuscaAlunosAjuda.html`** (os nomes de arquivo continuam os mesmos desde a v1.0).
-3. Vindo do código original, crie também os sete arquivos HTML na raiz do projeto:
+3. (v1.4) **Antes** do passo 2, crie e preencha a aba `PESSOAS_IPUSP` (ver [Configuração](#configuração)): sem ela, ninguém abre a página, nem a conta institucional. Crie também `PessoasAcesso` (Script) e `PessoasSemAcesso` (HTML). Vindo do código original, crie ainda os sete arquivos HTML na raiz do projeto:
 
 | Nome no editor (sem extensão) | Conteúdo |
 |---|---|
@@ -121,15 +125,15 @@ A fonte está em [`sistemas/busca-alunos/src/`](../../../sistemas/busca-alunos/s
 | `BuscaAlunosAjudaUI` | comportamento da Central |
 
 4. Faça a [configuração](#configuração).
-5. Rode o [diagnóstico](#diagnóstico) e **aceite a autorização** se o Google pedir (desde a v1.1 o app lê o e-mail de quem usa, para conferir se é editor, e grava na planilha de alunos; a v1.2 não acrescenta serviços).
+5. Rode o [diagnóstico](#diagnóstico) e **aceite a autorização** se o Google pedir (desde a v1.1 o app lê o e-mail de quem usa, para conferir se é editor, e grava na planilha de alunos; a v1.2 não acrescenta serviços; a v1.4 acrescenta o cache de script, para a lista de acesso).
 6. Abra a URL de teste (`/dev`) e faça a [conferência](#conferência-no-dev-e-no-exec).
-7. Promova: **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar**. A URL `/exec` não muda.
+7. Promova: **Implantar → Gerenciar implantações → editar (lápis) → Versão: Nova versão → Implantar**. A URL `/exec` não muda. Na v1.4, mantenha **Quem pode acessar: somente eu** (o manifesto versionado já diz isso) até a homologação negativa terminar; abrir o acesso a outras contas é uma decisão separada do responsável.
 
 Para voltar atrás, edite a implantação e selecione a versão anterior anotada no passo 1.
 
 ### Instalar em projeto novo
 
-Crie um projeto Apps Script independente, copie os nove arquivos para a raiz (`.gs` como Script, `.html` como HTML), confirme o runtime V8 e siga os passos 4 a 7 acima, criando uma implantação **App da Web**. O pacote não traz `appsscript.json`; identidade de execução e acesso dependem da implantação real e devem ser registrados em [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md), sem IDs.
+Crie um projeto Apps Script independente, copie os nove arquivos para a raiz (`.gs` como Script, `.html` como HTML), confirme o runtime V8 e siga os passos 4 a 7 acima, criando uma implantação **App da Web**. Desde a v1.4 o pacote traz `appsscript.json` (executa como quem implanta, acesso **somente eu**); a mudança de acesso passa a aparecer num diff. Registre a implantação real em [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md), sem IDs.
 
 ## Configuração
 
@@ -138,8 +142,11 @@ Em **Configurações do projeto → Propriedades do script → Adicionar proprie
 | Campo **Propriedade** | Campo **Valor** |
 |---|---|
 | `ID_INDEX_SPREADSHEET_ID` | ID da planilha mestre `ID_INDEX` (não registrar no Git) |
+| `AMBIENTE` (v1.4, opcional) | `producao` (ou vazia) ou `homologacao`. Outro valor: ninguém entra. |
 
-No `ID_INDEX`, aba `Página1` (ou a primeira aba), linha 1 com os títulos `Chave` e `ID de Produção` em qualquer coluna, e as linhas `PLANILHA_ALUNOS`, `SERVIDORES` e `PLANILHA_DOCENTES` (as mesmas usadas pela auditoria da Estrutura Curricular). Se a chave estiver repetida, vale a primeira. A coluna de homologação não é lida.
+No `ID_INDEX`, aba `Página1` (ou a primeira aba), linha 1 com os títulos `Chave` e `ID de Produção` em qualquer coluna, e as linhas `PLANILHA_ALUNOS`, `SERVIDORES` e `PLANILHA_DOCENTES` (as mesmas usadas pela auditoria da Estrutura Curricular). Se a chave estiver repetida, vale a primeira. (v1.4) Com `AMBIENTE=homologacao`, lê a coluna cujo título começa com `Homologação` no lugar de `ID de Produção`; coluna vazia é erro e nunca cai para a produção. A chave `PERMISSOES_DE_ACESSO` também precisa estar no índice.
+
+**Lista de acesso (v1.4).** Na planilha de `PERMISSOES_DE_ACESSO`, aba `PESSOAS_IPUSP`, linha 1 com títulos (a coluna C precisa conter "mail" e a E, "Perfil") e, da linha 2 em diante: A = N. USP (vazio para setor), B = Nome, C = e-mail, D = Observação, E = Perfil (`LEITOR` ou `ADMINISTRADOR`, sem diferença de maiúscula). Linhas com coringa, grupo, texto que não é e-mail completo ou outro perfil não dão acesso; e-mail repetido vale o menor perfil. A conta que executa o Web App precisa ler essa planilha. Mudanças valem em até 60 s (cache). Exemplo fictício: [`dados-ficticios/PESSOAS_IPUSP.csv`](dados-ficticios/PESSOAS_IPUSP.csv).
 
 Na planilha de alunos, a primeira aba precisa ter na linha 1 os títulos `Número USP`, `Nome do Aluno`, `Ingresso`, `eMail` e `eMail Secundario`, em qualquer posição (espaços nas pontas são ignorados). Linhas sem número USP e sem nome são ignoradas na busca. Na ficha aparecem todas as colunas com título; só as cinco acima vão para a lista e para as exportações.
 
@@ -152,11 +159,11 @@ Nas planilhas de servidores e de docentes (v1.3), também se lê a primeira aba 
 
 `TRATAMENTO` deixou de ser usada: o app calcula Prof./Profª. a partir de `M / F`. A coluna pode ser apagada da planilha quando for conveniente (nenhum outro sistema do repositório a lê). A auditoria da Estrutura Curricular lê esses dois cadastros **pela posição** (servidores A e-mail, B nome, C setor; docentes B nome, D e-mail); o esquema atual é compatível, mas mover essas colunas exige ajustar `PESSOAS_AUDITORIA` lá.
 
-A conta que executa o Web App precisa **editar** as três planilhas (para gravar) e ler o `ID_INDEX`. Quem vai editar pela página precisa ser editor individual da planilha daquele cadastro.
+A conta que executa o Web App precisa **editar** as três planilhas (para gravar) e ler o `ID_INDEX`. Quem vai editar pela página precisa do perfil ADMINISTRADOR (v1.4) e ser editor individual da planilha daquele cadastro.
 
 ## Diagnóstico
 
-No editor, selecione `diagnosticarComunidadeIPUSP` (até a v1.1, `diagnosticarBuscaAlunos`) e clique em **Executar**. Em **Registros de execução** aparecem: se a propriedade existe, qual aba do índice foi lida, para cada chave (`PLANILHA_ALUNOS`, `PLANILHA_DOCENTES`, `SERVIDORES`) se foi encontrada, a aba lida e cada coluna esperada ("ok", "NÃO ENCONTRADA (obrigatória)" ou "não encontrada (opcional)"), se `TRATAMENTO` ainda existe, ou o motivo de não abrir; por fim, quantos alunos, docentes, servidores e setores seriam enviados. Nenhum ID, nome, número USP ou e-mail é registrado.
+No editor, selecione `diagnosticarComunidadeIPUSP` (até a v1.1, `diagnosticarBuscaAlunos`) e clique em **Executar**. Em **Registros de execução** aparecem: se a propriedade existe, (v1.4) o ambiente e o perfil da sua conta na aba `PESSOAS_IPUSP` (ou o motivo da recusa); o restante só roda para ADMINISTRADOR: qual aba do índice foi lida, para cada chave (`PLANILHA_ALUNOS`, `PLANILHA_DOCENTES`, `SERVIDORES`) se foi encontrada, a aba lida e cada coluna esperada ("ok", "NÃO ENCONTRADA (obrigatória)" ou "não encontrada (opcional)"), se `TRATAMENTO` ainda existe, ou o motivo de não abrir; por fim, quantos alunos, docentes, servidores e setores seriam enviados. Nenhum ID, nome, número USP ou e-mail é registrado.
 
 ## Conferência no `/dev` e no `/exec`
 
