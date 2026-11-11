@@ -1,5 +1,54 @@
 # Homologação — Gerenciador de Colação de Grau e Diplomas
 
+## 4.1.0 (10/11/2026) — em PR sobre a 4.0.1, não enviada ao Google
+
+Testes locais: `testar_encaminhador.js` 22 ok (novo), `testar_acesso.js` 40 ok, `testar_integridade.js` 20 ok, `testar_navegador.js` 23 ok, `testar_historico.js` ok (as 2 de sempre aceitas pelo nome). Na integridade, o teste do autocadastro virou o teste do D6 (sem cadastro na central, nada é criado) e o do autocadastro simultâneo saiu, porque o autocadastro não existe mais. Contrato e motivos: [ENCAMINHADOR_COLACAO.md](ENCAMINHADOR_COLACAO.md).
+
+| Suíte | O que confere na 4.1.0 |
+|---|---|
+| `testar_encaminhador.js` | inclusão com a linha inteira e os documentos movidos (mesmo ID); segunda execução sem nada novo; retomada depois de um bloqueio resolvido; `RECEBENDO` não entra; `PENDENTE` espera, `APROVADO` entra com o Nº USP decidido, `REJEITADO` não entra; cada bloqueio (sem cadastro, Nº USP repetido na central, Registro ID repetido ou divergente, duplicidade na colação, coluna ausente, documento fora da entrada, dados ilegíveis), sem gravar na aba `Diplomas`; correção aplicada só nas colunas do aluno e retida com o status preenchido; `BLOQUEADO` repetido sem linha nova; pendências sem IDs; LEITOR recusado; origem `GATILHO` só no contexto do dono; trava ocupada; vários pedidos numa execução; nenhum dado pessoal no registro de execução |
+| `testar_acesso.js` | as funções do editor e do gatilho recusam quem abre a página, mesmo ADMINISTRADOR |
+| `testar_navegador.js` | faixa de pendências do ADMINISTRADOR (nome como texto, contraste nos dois temas); LEITOR não dispara o encaminhador |
+
+Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e com o formulário 2.x de homologação gravando na cópia de `PEDIDOS_COLACAO`. Preparação: chaves `PEDIDOS_COLACAO` e `PASTA_PROVISORIOS_COLACAO` com o ID de homologação no `ID_INDEX` (as mesmas do formulário); rodar `prepararEncaminhamentosColacao` pelo editor (pede a autorização nova do Drive e dos gatilhos); linhas de [dados fictícios da 4.1.0](dados-ficticios/README.md#410--encaminhador-roteiro-e1e11-do-homologacaomd).
+
+| # | Passo | Esperado |
+|---|---|---|
+| E1 | Aluno fictício com cadastro envia um pedido pelo formulário; ADMINISTRADOR abre o Gerenciador | linha nova na colação com os dados do pedido e o "Status — Dados Pessoais" vazio; documentos na pasta do aluno; `ENCAMINHADO` em `ENCAMINHAMENTOS`; o formulário mostra "Em análise pela equipe" |
+| E2 | Abrir de novo | nada muda; nenhuma linha nova em `ENCAMINHAMENTOS` |
+| E3 | O aluno corrige o pedido; abrir | dados corrigidos na mesma linha, Versão +1, `ENCAMINHADO` com `CORRECAO_APLICADA` |
+| E4 | Preencher o "Status — Dados Pessoais"; o aluno corrige de novo; abrir | linha sem mudança; `CORRECAO RETIDA`; faixa com o pedido; o formulário mostra "Correção em conferência" |
+| E4b | Com o "Status — Dados Pessoais" vazio, o aluno corrige apontando uma divergência nova (campo "O seu nome ou nº USP está errado?", que só aparece com o cadastro confirmado); abrir | linha sem mudança; `CORRECAO RETIDA` com `DIVERGENCIA_APONTADA`; o aviso mostra o texto do aluno |
+| E5 | Pedido de 9000201 (conta sem cadastro: o formulário protocola como `PENDENTE`); abrir | nada na aba `Diplomas`, nada em `ENCAMINHAMENTOS`, nenhuma faixa: espera a decisão do cadastro |
+| E6 | Digitar `APROVADO` para esse protocolo em `DECISOES_CADASTRO`, ainda sem linha na central; abrir | `BLOQUEADO` `SEM_CADASTRO_CENTRAL`; nada na aba `Diplomas`; faixa com o motivo |
+| E7 | Cadastrar 9000201 na central; abrir | entra como em E1; a faixa some |
+| E8 | Incluir à mão 9000202 na colação e depois o pedido dele | `BLOQUEADO` `DUPLICIDADE_DIPLOMAS`; a linha manual não muda |
+| E9 | Conta LEITOR abre | nenhuma faixa; nada encaminhado |
+| E10 | "Abrir/criar pasta" de um registro sem cadastro na central | mensagem pedindo o cadastro pelo Gerenciador de Pessoas; nada criado |
+| E11 | Fora do roteiro: na D15 (10/11/2026) o responsável escolheu só ao abrir a página, sem gatilho | — |
+
+### Registro da homologação da 4.1.0 (10/11/2026, responsável)
+
+`clasp push` de `cf8bed0` só no projeto HOMOLOGACAO, com o ok do responsável. O primeiro envio foi sobrescrito pelo editor, que estava aberto com a versão anterior; o segundo, com o editor fechado, conferido por clone: 26/26 arquivos iguais ao commit, `VERSAO_DIPLOMAS` 4.1.0. Sem implantação nova, sem gatilho. `prepararEncaminhamentosColacao` rodado pelo responsável: aba `ENCAMINHAMENTOS` criada.
+
+| # | Resultado |
+|---|---|
+| E1 | ok: o pedido com cadastro confirmado entrou na colação com status Pendente; `ENCAMINHADO`, origem `ADMINISTRADOR`. O outro pedido da cópia (cadastro `PENDENTE`, conflito de Nº USP) ficou fora, como manda o E5. Achado: a colação nova só apareceu depois, porque a lista de colações é lida em paralelo com o encaminhador e não era relida. Corrigido: com pedidos novos, a página relê a lista de colações e a lista aberta (teste de navegador novo). |
+| E2 | ok: depois de várias aberturas, `ENCAMINHAMENTOS` tem uma linha por resultado, sem repetição |
+| E3 | ok: correção pelo formulário (campo de divergência), Versão 2 na mesma linha, `ENCAMINHADO` com `CORRECAO_APLICADA`, sem linha repetida. Achado: o aviso dizia "1 pedido novo do formulário entrou"; agora as correções aplicadas são contadas à parte (`corrigidos`) |
+| E4 | ok, pela primeira barreira: com o "Status — Dados Pessoais" preenchido ("Confirmar Dados Pessoais"), o formulário já não deixa corrigir ("A equipe já começou a conferir o seu pedido…"), e "Meus pedidos" mostra "Em análise pela equipe". O `CORRECAO RETIDA` do Gerenciador é a segunda barreira, para uma correção enviada antes da conferência e encaminhada depois; fica coberto por `testar_encaminhador.js` (não dá para provocar pela tela) |
+| E3 (2ª) | ok: correção do nome no pedido aprovado pelo Pessoas, aplicada na mesma linha. Antes, três aberturas pelo /exec (versão implantada anterior) levaram ~24 s cada e não trouxeram a correção nem aviso; causa não confirmada (trava ocupada é a hipótese). Depois de nova implantação com `cc7ee91`, que avisa trava ocupada e grava o resumo no registro, entrou na primeira abertura |
+| — | Achado do E3 (responsável): a divergência apontada numa correção de pedido já confirmado não chegava a lugar nenhum. Decisão do responsável: reter a correção e mostrar o texto no aviso (E4b, `testar_encaminhador.js` 24) |
+| E4b | ok: depois de "Devolver para conferência", correção com texto em "O seu nome ou nº USP está errado?"; linha sem mudança; aviso "Correção retida" com o motivo e o texto do aluno |
+| E5 | ok: o pedido com cadastro `PENDENTE` não entrou nem gerou aviso |
+| E6 | ok: `APROVADO` digitado à mão em `DECISOES_CADASTRO` (o Pessoas 1.5 ainda não está na homologação) com Nº USP fictício sem cadastro; nada entrou; aviso "Bloqueado" com o motivo |
+| E7 | ok: depois do cadastro fictício na central, o pedido entrou sozinho e o aviso sumiu |
+| E8 | ok (10/11, na homologação do Gerenciador de Pessoas 1.5): pedido novo com nº USP já presente na colação, vinculado pelo Gerenciador de Pessoas, apareceu como "Bloqueado. Já existe outro registro deste Nº USP nesta colação na aba Diplomas" |
+| E9 | ok: conta LEITOR vê "Somente consulta" e nenhum aviso de pedidos |
+| E10 | ok: "Criar pasta no Drive" num registro sem cadastro na central recusou com a mensagem para cadastrar pelo Gerenciador de Pessoas; nada criado. Achado: o aviso dizia "Erro: Error: …"; o prefixo do Apps Script sai agora (teste de navegador novo) |
+| E12 | ok (11/11, push de `3969cac` rodado pelo responsável, com backup antes): pedido em conferência (`PENDENTE`, nome digitado diferente do cadastro) vinculado no Gerenciador de Pessoas a um cadastro da cópia; ao abrir, "1 pedido novo do formulário entrou na lista"; a linha da aba Diplomas e a lista "Dados Pessoais" usam o nome da planilha central, e os documentos foram para a pasta do aluno (nome da central + nº USP) |
+
+
 ## 4.0.1 (06/11/2026) — em PR, não enviada ao Google
 
 Testes locais: `testar_integridade.js` 21 ok (novo), `testar_acesso.js` 39 ok, `testar_historico.js` 484 de 486 (as 2 de sempre), `testar_navegador.js` 21 ok. Revisão para auditoria: [REVISAO_4.0.1.md](REVISAO_4.0.1.md).

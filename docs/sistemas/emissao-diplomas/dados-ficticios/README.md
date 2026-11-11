@@ -24,4 +24,15 @@ Linhas para as **cópias de homologação** da aba `Diplomas` ([`INTEGRIDADE_4.0
 | Mesma pessoa em duas colações; só a de 2026/2 tem o cache de pasta | Diplomas 2–3, Central 2 | excluir o registro de 2026/2: a pasta continua no Drive, com os arquivos; o "ID da Pasta" da central não muda; o registro de 2025/2 continua |
 | Nº USP repetido na central | Diplomas 4, Central 3–4 | "Abrir/criar pasta" e envio de anexo param com a mensagem de Nº USP repetido; nenhuma pasta nova; nada gravado na central |
 | Inclusão repetida | Diplomas 2–3 | "+ Adicionar Aluno" com 9000101 na colação 20262: recusado, nenhuma linha nova |
-| Autocadastro temporário | Diplomas 5 (sem linha na central) | "Abrir/criar pasta": uma linha nova na central e uma pasta nova, com o ID gravado |
+| Autocadastro temporário (só 4.0.1; **saiu na 4.1.0**, D6) | Diplomas 5 (sem linha na central) | 4.0.1: uma linha nova na central e uma pasta nova. 4.1.0: mensagem pedindo o cadastro pelo Gerenciador de Pessoas, nada criado |
+
+## 4.1.0 — encaminhador (roteiro E1–E11 do [HOMOLOGACAO.md](../HOMOLOGACAO.md))
+
+Os pedidos são criados **pelo formulário 2.x de homologação** com as contas de teste; as linhas abaixo mostram o que se espera em `PEDIDOS_COLACAO` e o que preparar nas outras planilhas. Valores entre parênteses são gerados pelo sistema e não se digitam. A aba `DECISOES_CADASTRO` é do Gerenciador de Pessoas (PR 5); até ele existir, a linha de decisão é digitada à mão **só na cópia de homologação**.
+
+| Arquivo | Onde | Caso |
+|---|---|---|
+| [`ENCAMINHADOR_4.1.0_PROTOCOLOS.csv`](ENCAMINHADOR_4.1.0_PROTOCOLOS.csv) | `PEDIDOS_COLACAO` → `PROTOCOLOS` (gravado pelo formulário) | 0001 confirmado (E1–E4); 0002 sem cadastro (E5–E7); 0003 com registro manual na mesma colação (E8) |
+| [`ENCAMINHADOR_4.1.0_Central.csv`](ENCAMINHADOR_4.1.0_Central.csv) | planilha central de homologação | 9000200 e 9000202 cadastrados; 9000201 **sem** linha até o passo E7 |
+| [`ENCAMINHADOR_4.1.0_Diplomas.csv`](ENCAMINHADOR_4.1.0_Diplomas.csv) | aba `Diplomas` de homologação | registro manual de 9000202 em 20262 (E8) |
+| [`ENCAMINHADOR_4.1.0_DECISOES_CADASTRO.csv`](ENCAMINHADOR_4.1.0_DECISOES_CADASTRO.csv) | `PEDIDOS_COLACAO` → `DECISOES_CADASTRO` | `APROVADO` para 0002, no passo E6, antes do cadastro na central |

@@ -28,7 +28,7 @@
 
 
 
-const VERSAO_DIPLOMAS = "4.0.1";
+const VERSAO_DIPLOMAS = "4.1.0";
 
 const ABA_DIPLOMAS = "Diplomas";
 const ABA_INFOS = "INFOS";
@@ -1096,51 +1096,55 @@ function descartarPastaNovaVazia_(pasta) {
   }
 }
 
+const MENSAGEM_SEM_CADASTRO_CENTRAL_ =
+  "Este Nº USP não tem cadastro na planilha central de alunos. Nada foi criado. " +
+  "Cadastre o aluno pelo Gerenciador de Pessoas e tente de novo.";
+
 // Ponto único de verdade pra pasta de um aluno: consulta a planilha
-// central por NUSP, cria o cadastro lá se ainda não existir (auto-
-// cadastro TEMPORÁRIO, mantido por compatibilidade até a integração com
-// o Formulário de Pedido de Colação; decisão D6 de 06/11/2026), cria a
-// pasta no Drive se a linha existir mas ainda não tiver "ID da Pasta",
-// e devolve a pasta (já validada dentro da raiz gerenciada).
+// central por NUSP, cria a pasta no Drive se a linha existir mas ainda
+// não tiver "ID da Pasta", e devolve a pasta (já validada dentro da
+// raiz gerenciada).
+//
+// 4.1.0 — fim do autocadastro (decisão D6 de 06/11/2026): sem linha do
+// NUSP na planilha central, para com erro e não cria nada. Quem cria
+// cadastro é só o Gerenciador de Pessoas.
 //
 // 4.0.1 — integridade entre projetos. O ScriptLock só coordena este
 // projeto; a planilha central também é gravada pelo Gerenciador de
 // Pessoas e por pessoas direto na planilha. Por isso:
 //   - NUSP repetido na central → para sem gravar nada;
-//   - o auto-cadastro grava a linha numa chamada só (appendRow) e
-//     depois relê a coluna A: se outra linha com o mesmo NUSP surgiu ao
-//     mesmo tempo, para com erro em vez de escolher uma;
 //   - a pasta nova só é gravada depois de reler a coluna E: se outra
 //     pasta foi gravada nesse meio-tempo, usa a outra e descarta a nova
 //     (vazia); depois de gravar, relê para confirmar.
 function garantirPastaAlunoCentral_(nUsp, nome, email) {
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
+  try {
+    return garantirPastaAlunoCentralSemTrava_(nUsp, nome, email);
+  } finally {
+    lock.releaseLock();
+  }
+
+}
+
+// Mesmo trabalho, para quem já está dentro do ScriptLock (o encaminhador
+// dos pedidos de colação): não pega nem solta a trava.
+function garantirPastaAlunoCentralSemTrava_(nUsp, nome, email) {
 
   const nUspAlvo = String(nUsp || "").trim();
   if (!nUspAlvo) {
     throw new Error("Esse registro não tem Nº USP preenchido — não é possível localizar/criar a pasta sem ele.");
   }
 
-  const lock = LockService.getScriptLock();
-  lock.waitLock(15000);
-
-  try {
+  {
 
     const abaCentral = obterAbaAlunosCentral_();
     let linhaCentral = linhaUnicaAlunoCentral_(abaCentral, nUspAlvo);
 
     if (!linhaCentral) {
-      const largura = Math.max(abaCentral.getLastColumn(), COL_ALUNOS_CENTRAL_ID_PASTA);
-      const novaLinha = [];
-      for (let c = 0; c < largura; c++) novaLinha.push("");
-      novaLinha[COL_ALUNOS_CENTRAL_NUSP - 1] = nUspAlvo;
-      novaLinha[COL_ALUNOS_CENTRAL_NOME - 1] = nome || "";
-      if (email) novaLinha[COL_ALUNOS_CENTRAL_EMAIL - 1] = email;
-      abaCentral.appendRow(novaLinha);
-      linhaCentral = linhaUnicaAlunoCentral_(abaCentral, nUspAlvo);
-      if (!linhaCentral) {
-        throw new Error("Erro de integridade: o cadastro na planilha central não foi encontrado depois de gravado. Nada mais foi alterado.");
-      }
-      Logger.log(`Aluno cadastrado automaticamente na planilha central de Alunos (linha ${linhaCentral}).`);
+      throw new Error(MENSAGEM_SEM_CADASTRO_CENTRAL_);
     }
 
     const idPastaAtual = lerIdPastaCentral_(abaCentral, linhaCentral);
@@ -1187,8 +1191,6 @@ function garantirPastaAlunoCentral_(nUsp, nome, email) {
 
     return novaPasta;
 
-  } finally {
-    lock.releaseLock();
   }
 
 }

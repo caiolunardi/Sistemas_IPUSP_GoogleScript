@@ -52,7 +52,10 @@ const DADOS = {
     emailDiplomaEnviado: '', emailColacaoEnviado: '',
     arquivos: [{ id: 'ARQ1', nome: 'Histórico Escolar - Aluna Fictícia Um - 20261.pdf', link: 'https://exemplo.invalid/arq1' }]
   },
-  obterObservacoes: { texto: 'Observação fictícia.', versaoArquivo: 1 }
+  obterObservacoes: { texto: 'Observação fictícia.', versaoArquivo: 1 },
+  executarEncaminhadorColacao: { encaminhados: 2, retidos: 0, bloqueados: 1, pendencias: [
+    { protocolo: 'PCG-20262-00003', nome: '<img src=x onerror="window.__xss=1">Aluna Fictícia Três', colacao: '20262', versao: 1, resultado: 'BLOQUEADO',
+      motivoCodigo: 'SEM_CADASTRO_CENTRAL', motivo: 'O Nº USP não tem cadastro na planilha central de alunos. Cadastre pelo Gerenciador de Pessoas.' }] }
 };
 
 const simulacao = dados => `
@@ -65,7 +68,7 @@ const simulacao = dados => `
         if (nome === 'withSuccessHandler') return f => { ok = f; return p; };
         if (nome === 'withFailureHandler') return f => { falha = f; return p; };
         if (nome === 'withUserObject') return () => p;
-        return (...args) => { window.__chamadas.push(nome); setTimeout(() => (nome in dados) ? ok(JSON.parse(JSON.stringify(dados[nome]))) : falha(new Error('sem dado simulado: ' + nome)), 5); };
+        return (...args) => { window.__chamadas.push(nome); setTimeout(() => (dados[nome] && dados[nome].__erro) ? falha(new Error(dados[nome].__erro)) : (nome in dados) ? ok(JSON.parse(JSON.stringify(dados[nome]))) : falha(new Error('sem dado simulado: ' + nome)), 5); };
       } });
       return p;
     }
@@ -88,12 +91,12 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
 (async () => {
   const navegador = await chromium.launch();
 
-  async function abrir({ perfil = 'ADMINISTRADOR', homologacao = false, usuario, tema, esquema = 'light', largura = 1280 } = {}) {
+  async function abrir({ perfil = 'ADMINISTRADOR', homologacao = false, usuario, tema, esquema = 'light', largura = 1280, dados = DADOS } = {}) {
     const contexto = await navegador.newContext({ viewport: { width: largura, height: 900 }, colorScheme: esquema });
     const pagina = await contexto.newPage();
     const erros = [];
     pagina.on('pageerror', e => erros.push(String(e)));
-    await pagina.addInitScript(simulacao(DADOS));
+    await pagina.addInitScript(simulacao(dados));
     // pdf.js vem de CDN no Google; aqui a rede fica fechada.
     await pagina.addInitScript(() => { Object.defineProperty(window, 'pdfjsLib', { value: { GlobalWorkerOptions: {} }, writable: true }); });
     if (tema) await pagina.addInitScript(t => { try { localStorage.setItem('gradip-theme', t); } catch (e) {} }, tema);
@@ -289,6 +292,75 @@ const contraste = (a, b) => { const [x, y] = [luminancia(a), luminancia(b)].sort
     assert(!/255, 255, 255/.test(fundo), 'ajuda com fundo branco no tema escuro: ' + fundo);
     assert(!erros.length, erros.join('\n'));
     await captura(pagina, 'ajuda-escuro');
+    await contexto.close();
+  });
+
+  await t('4.1: ADMINISTRADOR roda o encaminhador ao abrir e vê as pendências como texto, com contraste', async () => {
+    for (const esquema of ['light', 'dark']) {
+      const { contexto, pagina, erros } = await abrir({ esquema });
+      await pagina.waitForSelector('#avisoEncaminhamentos:not([hidden])');
+      const r = await pagina.evaluate(() => {
+        const f = document.getElementById('avisoEncaminhamentos'), cs = getComputedStyle(f);
+        return { texto: f.innerText, img: !!f.querySelector('img'), xss: !!window.__xss, chamadas: window.__chamadas.filter(c => c === 'executarEncaminhadorColacao').length,
+          cor: cs.color.match(/\d+/g).slice(0, 3).map(Number), fundo: cs.backgroundColor.match(/\d+/g).slice(0, 3).map(Number) };
+      });
+      assert(r.chamadas === 1, 'encaminhador deveria rodar uma vez');
+      assert(/2 pedidos novos do formulário entraram/.test(r.texto) && /PCG-20262-00003/.test(r.texto) && /Bloqueado/.test(r.texto) && /Gerenciador de Pessoas/.test(r.texto) && /2026 — 2º semestre/.test(r.texto), r.texto);
+      assert(!r.img && !r.xss, 'nome entrou como HTML');
+      assert(contraste(r.cor, r.fundo) >= 4.5, esquema + ' contraste ' + contraste(r.cor, r.fundo).toFixed(2));
+      assert(!erros.length, erros.join('\n'));
+      await captura(pagina, 'pendencias-encaminhamento-' + esquema);
+      await contexto.close();
+    }
+  });
+
+  await t('4.1: com pedidos novos, a lista de colações é relida; correção não vira "pedido novo"; sem nada, não relê', async () => {
+    const { contexto, pagina, erros } = await abrir();
+    await pagina.waitForFunction(() => window.__chamadas.filter(c => c === 'obterColacoes').length === 2);
+    await pagina.click('.botaoColacao');
+    await pagina.waitForFunction(() => window.__chamadas.includes('obterAlunos'));
+    assert(!erros.length, erros.join('\n'));
+    await contexto.close();
+    const semNovos = Object.assign({}, DADOS, { executarEncaminhadorColacao: { encaminhados: 0, retidos: 0, bloqueados: 0, pendencias: [] } });
+    const soCorrecao = Object.assign({}, DADOS, { executarEncaminhadorColacao: { encaminhados: 1, corrigidos: 1, retidos: 0, bloqueados: 0, pendencias: [] } });
+    const c = await abrir({ dados: soCorrecao });
+    await c.pagina.waitForSelector('#avisoEncaminhamentos:not([hidden])');
+    const tc = await c.pagina.textContent('#avisoEncaminhamentos');
+    assert(/1 correção do aluno foi aplicada/.test(tc) && !/pedido novo/.test(tc), tc);
+    await c.contexto.close();
+    const ocupado = Object.assign({}, DADOS, { executarEncaminhadorColacao: { encaminhados: 0, corrigidos: 0, retidos: 0, bloqueados: 0, ocupado: true, pendencias: [] } });
+    const o = await abrir({ dados: ocupado });
+    await o.pagina.waitForSelector('#avisoEncaminhamentos:not([hidden])');
+    assert(/Outra execução/.test(await o.pagina.textContent('#avisoEncaminhamentos')));
+    await o.contexto.close();
+    const b = await abrir({ dados: semNovos });
+    // A lista desenhada e o encaminhador chamado; depois, folga para uma releitura indevida aparecer.
+    await b.pagina.waitForSelector('.botaoColacao');
+    await b.pagina.waitForFunction(() => window.__chamadas.includes('executarEncaminhadorColacao'));
+    await b.pagina.waitForTimeout(300);
+    const n = await b.pagina.evaluate(() => window.__chamadas.filter(c => c === 'obterColacoes').length);
+    const botoes = await b.pagina.$$eval('.botaoColacao', e => e.length);
+    assert(n === 1 && botoes === 2, JSON.stringify({ n, botoes }));
+    await b.contexto.close();
+  });
+
+  await t('erro do servidor aparece sem o prefixo "Error:"', async () => {
+    const comErro = Object.assign({}, DADOS, { obterAlunos: { __erro: 'Error: Este Nº USP não tem cadastro na planilha central de alunos.' } });
+    const { contexto, pagina } = await abrir({ dados: comErro });
+    const espera = pagina.waitForEvent('dialog');
+    await pagina.click('.botaoColacao');
+    const aviso = await espera;
+    const texto = aviso.message();
+    await aviso.accept();
+    assert(texto === '❌ Erro: Este Nº USP não tem cadastro na planilha central de alunos.', texto);
+    await contexto.close();
+  });
+
+  await t('4.1: LEITOR não dispara o encaminhador nem vê a faixa', async () => {
+    const { contexto, pagina } = await abrir({ perfil: 'LEITOR' });
+    await pagina.waitForTimeout(100);
+    const r = await pagina.evaluate(() => ({ chamadas: window.__chamadas.filter(c => c === 'executarEncaminhadorColacao').length, oculta: document.getElementById('avisoEncaminhamentos').offsetParent === null }));
+    assert(r.chamadas === 0 && r.oculta, JSON.stringify(r));
     await contexto.close();
   });
 

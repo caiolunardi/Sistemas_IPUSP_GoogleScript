@@ -233,14 +233,12 @@ t('pasta já registrada na central: nada é criado nem gravado (regressão)', ()
   assert.strictEqual(gravacoes(abaCentral(amb)), 0);
 });
 
-t('autocadastro temporário: a linha nova entra na central numa chamada só e recebe a pasta', () => {
+t('fim do autocadastro (4.1, D6): sem cadastro na central, para sem criar linha nem pasta', () => {
   const amb = montar({ diplomas: [linhaDiploma(ID_A, 'Aluna Fictícia Um', '9000001', '20262', '')] });
-  S.executar(amb, 'garantirPasta', [ID_A]);
-  const c = abaCentral(amb);
-  assert.strictEqual(c.valores.length, 2);
-  assert.strictEqual(JSON.stringify(c.valores[1].slice(0, 5)), JSON.stringify(['9000001', 'Aluna Fictícia Um', '', '9000001@exemplo.invalid', 'PASTA_NOVA_1']));
-  assert.strictEqual(c.gravacoes[0][2].length, 1, 'cadastro deveria entrar numa única gravação de linha');
-  assert.deepStrictEqual(amb.drive.criacoes, ['Aluna Fictícia Um 9000001']);
+  assert.throws(() => S.executar(amb, 'garantirPasta', [ID_A]), erroCom('Gerenciador de Pessoas'));
+  assert.strictEqual(abaCentral(amb).valores.length, 1, 'não deveria criar cadastro');
+  assert.strictEqual(gravacoes(abaCentral(amb)), 0);
+  assert.deepStrictEqual(amb.drive.criacoes, []);
   nenhumDadoPessoalNoLog(amb);
 });
 
@@ -252,15 +250,6 @@ t('Nº USP repetido na central: para sem criar pasta nem gravar (não escolhe um
   assert.throws(() => S.executar(amb, 'garantirPasta', [ID_A]), erroCom('mais de uma linha'));
   assert.deepStrictEqual(amb.drive.criacoes, []);
   assert.strictEqual(gravacoes(abaCentral(amb)), 0);
-});
-
-t('concorrência: outro sistema cria o mesmo Nº USP na central ao mesmo tempo → para sem criar pasta', () => {
-  const amb = montar({ diplomas: [linhaDiploma(ID_A, 'Aluna Fictícia Um', '9000001', '20262', '')] });
-  const c = abaCentral(amb);
-  const original = c.appendRow.bind(c);
-  c.appendRow = linha => { original(linha); c.valores.push(['9000001', 'Aluna Fictícia Um', '', '', '', '']); return c; };
-  assert.throws(() => S.executar(amb, 'garantirPasta', [ID_A]), erroCom('mais de uma linha'));
-  assert.deepStrictEqual(amb.drive.criacoes, []);
 });
 
 t('concorrência: outra pasta gravada na central enquanto esta era criada → usa a outra e descarta a nova vazia', () => {

@@ -7,7 +7,7 @@ Modelo: [SYSTEM_SECURITY_TEMPLATE.md](../../seguranca/SYSTEM_SECURITY_TEMPLATE.m
 - Sistema: Gerenciador de Colação de Grau e Diplomas 4.0 (projetos autônomos de PRODUÇÃO e HOMOLOGACAO).
 - Público: equipe do Serviço de Graduação.
 - Responsável funcional: Serviço de Graduação do IPUSP.
-- Última revisão: 05/11/2026 (incorporação ao repositório e 4.0).
+- Última revisão: 10/11/2026 (4.1.0, encaminhador dos pedidos de colação).
 
 ## 2. Dados tratados
 
@@ -17,6 +17,7 @@ Modelo: [SYSTEM_SECURITY_TEMPLATE.md](../../seguranca/SYSTEM_SECURITY_TEMPLATE.m
 | Situação acadêmica | habilitações, anos, etapas, colação, diploma | acompanhar o processo | planilha de diplomas | tela, documentos | planilha de diplomas | Pessoal |
 | Histórico escolar | PDF e dados extraídos (disciplinas, créditos) | conferência de requisitos | pasta do aluno no Drive | navegador (leitura), servidor (regras), auditoria | `ANALISE_HISTORICO` (permanente), relatórios em PDF na pasta | Pessoal/restrito |
 | Anexos | documentos enviados pela equipe | instruir o processo | tela | pasta do aluno | Drive | Pessoal |
+| Pedido do formulário (4.1.0) | nome, Nº USP, e-mail da sessão, RG, telefone, procurador, observações, documentos | levar o pedido à aba `Diplomas` | `PEDIDOS_COLACAO` (`PROTOCOLOS`, `VERSOES`, `DOCUMENTOS`, `DECISOES_CADASTRO`) e pasta de entrada | aba `Diplomas`, pasta do aluno; faixa de pendências com protocolo, nome e colação (ADMINISTRADOR) | aba `Diplomas`; `ENCAMINHAMENTOS` (só protocolo, versão, resultado, motivo, Registro ID e origem) | Pessoal |
 | Lista de acesso | e-mail, nome, observação, perfil da equipe | autorizar | `PERMISSOES_DE_ACESSO` | servidor; nome e observação vão para o topo da página | cache de 60 s | Pessoal (equipe) |
 
 ## 3. Recursos externos
@@ -31,6 +32,8 @@ Todos pelo `ID_INDEX` (coluna Homologação quando `AMBIENTE=homologacao`), reso
 | Cadastro central de alunos | Sheets | `PLANILHA_ALUNOS` | pasta por Nº USP (L/G) |
 | Modelos | Docs | `TEMPLATE_OFICIO_ID`, `TEMPLATE_CERTIFICADO_ID`, `TEMPLATE_FORMANDOS_ID` | documentos (L) |
 | Regras Curriculares | Sheets | `REGRAS_CURRICULARES` | regras (L); auditoria `ANALISE_HISTORICO` (G, só inserção); `AUDITORIA_REGRAS_CURRICULARES` (L) |
+| Pedidos de colação (4.1.0) | Sheets | `PEDIDOS_COLACAO` | `PROTOCOLOS`, `VERSOES`, `DOCUMENTOS`, `DECISOES_CADASTRO` (L); `ENCAMINHAMENTOS` (G, só inserção; a aba é criada pelo editor) |
+| Pasta de entrada do formulário (4.1.0) | Drive | `PASTA_PROVISORIOS_COLACAO` | confere que cada documento está na subpasta do protocolo e o move para a pasta do aluno (`moveTo`, mesmo ID); nunca apaga |
 | pdf.js 3.11.174 | CDN (cdnjs) | — | leitura do PDF no navegador |
 
 O Painel dos servidores também lê a aba `Diplomas` (coluna "Status — Dados Pessoais") para o aviso do card.
@@ -41,6 +44,7 @@ O Painel dos servidores também lê a aba `Diplomas` (coluna "Status — Dados P
 - Executa como: `USER_DEPLOYING` (conta do Serviço).
 - Autorização no servidor (`DiplomasAcesso.gs`): identidade só por `Session.getActiveUser()`; toda função pública começa com `exigirLeitorDiplomas_()` ou `exigirAdministradorDiplomas_()` (o `testar_acesso.js` confere; as suítes novas ainda não estão na CI, ver o PR #42). Desde a revisão independente, o mesmo teste chama cada consulta como LEITOR e exige zero gravações em planilha e no Drive: o `obterObservacoes` do LEITOR localiza a pasta sem criá-la. Recusas: `SEM_IDENTIFICACAO`, `SEM_ACESSO`, `ACESSO_INDISPONIVEL` (falha fechada) e `SO_LEITURA`. Esconder botões na página é só conveniência.
 - Dados enviados ao cliente: os do aluno aberto e das listas; do usuário, só nome, observação (ou o e-mail, sem nome) e perfil.
+- Encaminhador (4.1.0): `executarEncaminhadorColacao` só para ADMINISTRADOR; as funções do editor e do gatilho (`prepararEncaminhamentosColacao`, `instalarGatilhoEncaminhadorColacao`, `removerGatilhoEncaminhadorColacao`, `diagnosticarEncaminhamentosColacao`, `encaminharPedidosColacaoPorGatilho`) só rodam quando o usuário da sessão é a própria conta que executa o projeto, o que exclui quem abre a página. A faixa de pendências não leva IDs de arquivo, pasta nem Registro ID.
 - Operações privilegiadas (ADMINISTRADOR): gravar e excluir na planilha, criar pastas e arquivos, upload e exclusão de anexos, documentos, ZIP, lista de formandos, análise e relatórios de histórico, e-mails, testes e migração do módulo de histórico.
 
 ## 5. Configuração
@@ -57,11 +61,12 @@ Em **Configurações do projeto → Propriedades do script**. Sem valores aqui.
 
 - Registro de execução: falhas técnicas; a recusa de acesso registra só o motivo técnico, sem e-mail.
 - **Auditoria existente:** só a análise de histórico, na aba `ANALISE_HISTORICO` da planilha de Regras (uma linha por tentativa legítima, só inserção, com sessão assinada). **Não registra quem fez.** As demais ações (status, e-mails, documentos, exclusões) não têm auditoria. A 4.0 não mudou a auditoria; o modelo do [docs/auditoria](../../auditoria/MODELO.md) fica para a próxima etapa, por decisão do responsável.
+- Encaminhador (4.1.0): a aba `ENCAMINHAMENTOS` registra cada resultado (quando, protocolo, versão, resultado, motivo, Registro ID, origem `ADMINISTRADOR` ou `GATILHO`), sem quem abriu a página. O registro de execução tem só contagens e mensagens técnicas, com e-mails mascarados.
 - Proibido em log: e-mails, conteúdo de histórico, IDs.
 
 ## 7. Compartilhamento e acesso
 
-- **Integridade de gravação (4.0.1).** O `ScriptLock` só coordena este projeto; a planilha central também é gravada pelo Gerenciador de Pessoas e direto na planilha. Por isso: a exclusão de um registro remove só a linha daquela colação e nunca mexe na pasta do aluno nem no "ID da Pasta" da central (a pasta é do Nº USP); a inclusão manual recusa Nº USP repetido na mesma colação, confere todas as colunas antes de gravar, grava a linha numa chamada só e confere depois pelo Registro ID; a criação de pasta e o autocadastro temporário param com Nº USP repetido na central, relêem a coluna E antes e depois de gravar e descartam só uma pasta criada na mesma execução e ainda vazia. Detalhes e riscos residuais: [REVISAO_4.0.1.md](REVISAO_4.0.1.md).
+- **Integridade de gravação (4.0.1).** O `ScriptLock` só coordena este projeto; a planilha central também é gravada pelo Gerenciador de Pessoas e direto na planilha. Por isso: a exclusão de um registro remove só a linha daquela colação e nunca mexe na pasta do aluno nem no "ID da Pasta" da central (a pasta é do Nº USP); a inclusão manual recusa Nº USP repetido na mesma colação, confere todas as colunas antes de gravar, grava a linha numa chamada só e confere depois pelo Registro ID; a criação de pasta e o autocadastro temporário param com Nº USP repetido na central, relêem a coluna E antes e depois de gravar e descartam só uma pasta criada na mesma execução e ainda vazia. Detalhes e riscos residuais: [REVISAO_4.0.1.md](REVISAO_4.0.1.md). Na 4.1.0 o autocadastro saiu (D6): sem cadastro na central, a pasta não é criada e nada é gravado.
 - Planilhas e pastas: compartilhadas com a conta do Serviço, que executa o app; a lista de acesso não muda permissões do Drive.
 - Abrir a pasta do aluno ou um anexo pelo link exige permissão no Drive para a conta de quem clica (o app não compartilha nada).
 
@@ -80,4 +85,5 @@ Em **Configurações do projeto → Propriedades do script**. Sem valores aqui.
 - **pdf.js 3.11.174 pelo CDN, sem `isEvalSupported: false`.** Versões anteriores à 4.2.67 têm a falha CVE-2024-4367 (execução de código a partir de um PDF malicioso). Correção fora do escopo da 4.0; precisa de decisão do responsável (atualizar a versão ou desligar o `eval`, e homologar a leitura dos históricos).
 - E-mails da homologação não levam `[HOMOLOGAÇÃO]` no assunto, ao contrário dos formulários.
 - Auditoria geral das ações (próxima etapa).
+- Encaminhador (4.1.0): documentos movidos e pedido bloqueado depois ficam na pasta do aluno até a próxima execução; o formulário legado e o 2.x não devem gravar na aba `Diplomas` ao mesmo tempo (troca única, D13).
 - Os dois projetos (vinculado e autônomo) não podem gravar ao mesmo tempo ([manual §5](MANUAL_OPERACAO.md#5-voltar-atrás)).
