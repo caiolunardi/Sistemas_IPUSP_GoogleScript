@@ -209,7 +209,7 @@
             <li>As 4 abas correspondem às 4 etapas do <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-guia-rapido">Guia Rápido</button>.</li>
             <li>O contador mostra quantos alunos existem na aba/filtro atual.</li>
             <li>O campo de busca localiza por Nome ou Nº USP.</li>
-            <li>"+ Adicionar Aluno" cadastra um novo aluno na colação atual.</li>
+            <li>"+ Adicionar Aluno" cadastra um novo aluno na colação atual. Se o Nº USP já tem registro nesta colação, nada é criado e o sistema pede para abrir o registro existente.</li>
             <li>Clicar em um aluno da lista abre o <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-modal-aluno">Modal do Aluno</button>.</li>
           </ul>
 
@@ -539,11 +539,11 @@
         <div class="ajudaSecao" id="ajuda-exclusao" data-ajuda-titulo="Exclusão de aluno" data-ajuda-palavraschave="excluir deletar remover apagar">
           <h2>Exclusão de aluno</h2>
           <div class="ajudaAviso ajudaAvisoPerigo">
-            <strong>Esta é uma ação perigosa.</strong> Ela remove o registro do aluno e pode enviar a pasta correspondente do Google Drive para a lixeira.
+            <strong>Esta ação não pode ser desfeita.</strong> Ela remove o registro do aluno nesta colação.
           </div>
           <ul>
-            <li>Antes de enviar a pasta para a lixeira, o sistema confere se nenhum outro registro ainda utiliza aquela mesma pasta (lembrando que a pasta é organizada por Nº USP e pode ser compartilhada entre sistemas);</li>
-            <li>Só é permitido mexer em pastas dentro do escopo que o sistema efetivamente gerencia.</li>
+            <li>A pasta do aluno no Google Drive e os arquivos dela <strong>ficam guardados</strong>: a pasta é organizada por Nº USP e serve também a outras colações da mesma pessoa e a outros sistemas;</li>
+            <li>O cadastro do aluno na planilha central também não muda.</li>
           </ul>
           <p>Confira sempre o Nº USP do aluno antes de confirmar a exclusão.</p>
         </div>
@@ -822,7 +822,7 @@
 
             <div class="ajudaFaqItem">
               <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp20" data-titulo="O que acontece se eu excluir um aluno?">O que acontece se eu excluir um aluno?<span class="ajudaFaqIcone">+</span></button>
-              <div class="ajudaFaqResposta" id="ajudaFaqResp20">O registro é removido e a pasta pode ir para a lixeira do Drive, se nenhum outro registro ainda estiver usando essa mesma pasta.</div>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp20">Só o registro daquela colação é removido. A pasta do aluno no Drive, com os arquivos, e o cadastro na planilha central ficam como estavam.</div>
             </div>
 
             <div class="ajudaFaqItem">
