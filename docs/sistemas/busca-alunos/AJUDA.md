@@ -403,7 +403,7 @@ Use quando a pessoa não tem linha na planilha de alunos. Confira o número USP,
 
 ### Rejeitar
 
-Se o pedido não puder ser aceito, clique em **Rejeitar**, escreva o motivo e confirme. Nada é apagado: o protocolo e os documentos continuam guardados.
+Se o pedido não puder ser aceito, clique em **Rejeitar**, escreva o motivo e confirme. O aluno recebe esse motivo por e-mail e o vê no formulário, então escreva o que ele precisa corrigir no novo pedido. Nada é apagado: o protocolo e os documentos continuam guardados.
 
 ### Depois da decisão
 

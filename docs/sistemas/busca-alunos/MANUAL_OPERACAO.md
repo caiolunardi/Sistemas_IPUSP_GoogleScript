@@ -74,7 +74,7 @@ Vale para alunos, docentes, servidores e setores; cada um é gravado na sua pró
 
 ### Solicitações de cadastro (v1.5)
 
-Só para ADMINISTRADOR. Os pedidos de colação de grau cujo cadastro o formulário não confirmou aparecem em **Solicitações de cadastro: N**, acima dos resultados. Para cada um: conferir os documentos, então **Vincular ao cadastro marcado** (com a opção de trocar o e-mail principal pelo do pedido), **Criar cadastro novo** ou **Rejeitar** com motivo. Decidir exige ser editor da planilha de alunos. O pedido aprovado vai sozinho para o Gerenciador de Diplomas. Regras e mensagens: [FILA_CADASTRO.md](FILA_CADASTRO.md).
+Só para ADMINISTRADOR. Os pedidos de colação de grau cujo cadastro o formulário não confirmou aparecem em **Solicitações de cadastro: N**, acima dos resultados. Para cada um: conferir os documentos, então **Vincular ao cadastro marcado** (com a opção de trocar o e-mail principal pelo do pedido), **Criar cadastro novo** ou **Rejeitar** com motivo (o aluno recebe o motivo por e-mail). Decidir exige ser editor da planilha de alunos. O pedido aprovado vai sozinho para o Gerenciador de Diplomas. Regras e mensagens: [FILA_CADASTRO.md](FILA_CADASTRO.md).
 
 Preparação (uma vez por ambiente, com autorização): a chave `PEDIDOS_COLACAO` no `ID_INDEX` (a mesma do formulário), edição nessa planilha para a conta que executa o projeto e, pelo editor, `prepararDecisoesCadastro` (cria a aba `DECISOES_CADASTRO`, se faltar).
 

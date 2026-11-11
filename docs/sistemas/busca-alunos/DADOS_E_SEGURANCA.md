@@ -91,6 +91,7 @@ Configurada em **Configurações do projeto → Propriedades do script**. A chav
 - Proibido em log: IDs de planilha, nomes, números USP, e-mails, setores, termos digitados na busca, valores da ficha e conteúdo das exportações.
 - Estratégia de debug: o diagnóstico acima; mensagens de erro citam nomes de chave/coluna, nunca valores.
 
+- (v1.5) Rejeição de cadastro: e-mail ao aluno (`MailApp`, sem resposta) só para o e-mail da sessão do pedido, com protocolo, colação e motivo; nada mais do pedido. Primeiro uso de envio de e-mail neste projeto: o próximo `clasp push` pede a autorização do escopo de envio uma vez, pelo editor.
 - (v1.5) Fila de cadastro: nenhum registro de execução com dados; a trilha das decisões é a própria aba `DECISOES_CADASTRO` (quando, protocolo, versão, decisão, nº USP, ação, troca de e-mail, motivo e e-mail de quem decidiu).
 
 ## 7. Compartilhamento e acesso

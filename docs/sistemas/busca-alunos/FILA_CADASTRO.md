@@ -27,7 +27,7 @@ Tudo é conferido no servidor, sob o `ScriptLock` do projeto, antes de gravar. O
 | Vincular | linha da planilha de alunos conferida pelo nº USP e nome mostrados; nº USP preenchido e sem repetição | `APROVADO`, ação `VINCULADO`, com o nº USP do cadastro |
 | Vincular + trocar e-mail (D7) | o e-mail do pedido não está em outra linha; a célula não mudou desde a leitura | também a coluna `eMail` da linha; `E-mail anterior` e `E-mail novo` na decisão |
 | Criar | nº USP só dígitos e sem cadastro; nome não vazio; ingresso `AAAA/S` ou vazio; e-mail do pedido em nenhuma linha | linha nova na planilha de alunos (nº USP, nome, ingresso, e-mail), relida depois: nº USP repetido → `DUPLICIDADE` (o pedido volta à fila); senão `APROVADO`, ação `CRIADO` |
-| Rejeitar | motivo obrigatório (até 300 caracteres) | `REJEITADO`, com o motivo |
+| Rejeitar | motivo obrigatório (até 300 caracteres) | `REJEITADO`, com o motivo; e-mail ao aluno com o motivo (abaixo) |
 
 O formulário só pergunta o **ano** de ingresso; o semestre é conferido pela equipe ao criar o cadastro (a página não preenche um semestre).
 
@@ -54,4 +54,5 @@ Leitores: o formulário lê `Protocolo ID` e `Decisão` (situação mostrada ao 
 - A página do Gerenciador de Pessoas está com **Quem pode acessar: somente eu** (manifesto da v1.4). Enquanto não for aberta a outras contas (decisão separada, depois da homologação), só a conta que implanta usa a fila.
 - A conta que executa o projeto precisa de edição na planilha `PEDIDOS_COLACAO` (para gravar `DECISOES_CADASTRO`) e na planilha de alunos.
 - "Corrigir os dados informados" pelo pedido não existe nesta versão: a equipe escolhe o cadastro certo (ou digita os dados ao criar), e o aluno corrige o pedido pelo formulário.
-- Aviso ao aluno quando o cadastro é aprovado ou rejeitado fica para depois; o aluno vê a situação em "Meus pedidos".
+- Rejeição: o aluno recebe um e-mail (decisão do responsável de 11/11/2026), enviado pela conta que executa o projeto, só para o e-mail da sessão do pedido, sem resposta, com protocolo, colação e o motivo escrito pela equipe; sem nº USP, nome, RG nem anexos; assunto com `[HOMOLOGAÇÃO]` fora da produção. A tela avisa a equipe, junto do campo, que o motivo vai para o aluno. Enviado depois de gravar a decisão e fora da trava: se falhar, a rejeição fica, a tela avisa a equipe e o aluno ainda vê a situação em "Meus pedidos". O registro de execução diz só que o envio falhou.
+- Aprovação não gera e-mail; o aluno vê a situação em "Meus pedidos".

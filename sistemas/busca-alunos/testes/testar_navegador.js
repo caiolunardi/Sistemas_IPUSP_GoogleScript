@@ -43,7 +43,7 @@ var API={listarComunidadeParaBusca:function(){if(MODO==='erro')throw new Error('
  obterFilaCadastro:function(){if(MODO==='leitor')return {visivel:false};if(MODO==='erro')throw new Error('A planilha de pedidos de colação não tem a aba DECISOES_CADASTRO.');
   return {visivel:true,podeDecidir:true,itens:MODO==='parcial'?[]:FILA}},
  decidirCadastro:function(p){if(p.acao==='CRIAR'&&p.novo.numeroUsp==='9000002')throw new Error('Error: Este nº USP já tem cadastro. Use Vincular ao cadastro existente.');
-  FILA=FILA.filter(function(i){return i.protocoloId!==p.protocoloId});return {decisao:p.acao==='REJEITAR'?'REJEITADO':'APROVADO',itens:FILA}}};
+  FILA=FILA.filter(function(i){return i.protocoloId!==p.protocoloId});return {decisao:p.acao==='REJEITAR'?'REJEITADO':'APROVADO',avisoAluno:p.acao==='REJEITAR'?'ENVIADO':undefined,itens:FILA}}};
 var FILA=[{protocoloId:'PID-1',protocolo:'PCG-20262-00001',versao:1,recebidoEm:'2026-11-10T10:00:00-03:00',colacao:'20262',email:'pedido1@exemplo.invalid',nome:'<img src=x onerror="window.__xss=1">Pessoa Fictícia Um',numeroUsp:'9000001',ingresso:'2021',divergencia:'',motivo:'Nenhuma linha da planilha central tem o e-mail do pedido.',duplicidadeAnterior:false,
   documentos:[{tipo:'RG',url:'https://drive.google.com/file/d/ARQUIVOFICTICIO1/view'}],candidatos:[]},
  {protocoloId:'PID-2',protocolo:'PCG-20262-00002',versao:2,recebidoEm:'2026-11-10T10:05:00-03:00',colacao:'20262',email:'pedido2@exemplo.invalid',nome:'Pessoa Fictícia Dois',numeroUsp:'9000002',ingresso:'2020',divergencia:'Meu nome está escrito errado',motivo:'O aluno apontou divergência nos dados do cadastro.',duplicidadeAnterior:false,
@@ -301,9 +301,10 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   await (await item1.$$('.filaAcoes .botaoSecundario'))[1].click();
   await (await item1.$$('.filaBloco .botaoPrimario'))[1].click();
   chk(`[${scheme}] fila: rejeitar sem motivo é barrado na página`,(await (await item1.$('.filaStatus')).textContent()).includes('motivo'));
+  chk(`[${scheme}] fila: rejeitar avisa que o motivo vai ao aluno, ligado ao campo`,await item1.$eval('textarea',e=>{const d=document.getElementById(e.getAttribute('aria-describedby')||'');return !!d&&/recebe este motivo por e-mail/.test(d.textContent)}));
   await (await item1.$('textarea')).fill('Documento não confere');await (await item1.$$('.filaBloco .botaoPrimario'))[1].click();
   await p.waitForFunction(()=>document.getElementById('filaContador').textContent==='0');
-  chk(`[${scheme}] fila vazia: sem botão Ver solicitações`,await p.$eval('#filaAlternar',e=>getComputedStyle(e).display==='none')&&(await p.textContent('#filaStatus')).includes('rejeitado'));
+  chk(`[${scheme}] fila vazia: sem botão Ver solicitações`,await p.$eval('#filaAlternar',e=>getComputedStyle(e).display==='none')&&(await p.textContent('#filaStatus')).includes('rejeitado')&&(await p.textContent('#filaStatus')).includes('avisado por e-mail'));
   chk(`[${scheme}] fila: sem erro de script`,errs.length===0,errs.join('|'));
   await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`fila-${scheme}.png`,fullPage:true});
   await ctx.close();}

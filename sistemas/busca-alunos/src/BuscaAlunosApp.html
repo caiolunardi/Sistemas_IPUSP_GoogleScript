@@ -821,6 +821,7 @@
   .filaOpcao input{ width:18px; height:18px; }
   .filaAcoes{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
   .filaBloco{ margin-top:10px; display:grid; gap:8px; }
+  .filaDica{ margin:0; font-size:12px; color:var(--gradip-text-muted); }
   .filaBloco label{ display:grid; gap:4px; font-size:13px; color:var(--gradip-text); }
   .filaBloco input, .filaBloco textarea{
     font:inherit; font-size:14px; min-height:44px; box-sizing:border-box; padding:8px 10px;
@@ -1931,6 +1932,10 @@
     const eMotivo = document.createElement("textarea");
     eMotivo.rows = 3; eMotivo.maxLength = 300;
     lMotivo.appendChild(eMotivo); blocoRejeitar.appendChild(lMotivo);
+    const dicaMotivo = elemento_("p", "filaDica", "O aluno recebe este motivo por e-mail e o vê no formulário. Escreva o que ele precisa corrigir no novo pedido.");
+    dicaMotivo.id = "dicaMotivo-" + String(item.protocoloId || "").replace(/[^A-Za-z0-9_-]/g, "");
+    eMotivo.setAttribute("aria-describedby", dicaMotivo.id);
+    blocoRejeitar.appendChild(dicaMotivo);
     const bConfirmarRejeitar = elemento_("button", "botaoPrimario", "Rejeitar pedido");
     bConfirmarRejeitar.type = "button";
     blocoRejeitar.appendChild(bConfirmarRejeitar);
@@ -1953,9 +1958,11 @@
             FILA.itens = r.itens || [];
             renderizarFila_();
             const texto = r.decisao === "APROVADO" ? "Pedido " + (item.protocolo || "") + " aprovado. Ele segue para o Gerenciador de Diplomas."
-              : r.decisao === "REJEITADO" ? "Pedido " + (item.protocolo || "") + " rejeitado."
+              : r.decisao === "REJEITADO" ? "Pedido " + (item.protocolo || "") + " rejeitado. " + (r.avisoAluno === "ENVIADO"
+                  ? "O aluno foi avisado por e-mail."
+                  : "Não consegui enviar o e-mail ao aluno; ele ainda vê a rejeição no formulário. Se for urgente, avise-o por outro meio.")
               : "Cadastro criado, mas o nº USP ficou repetido na planilha de alunos. Corrija e decida de novo.";
-            definirStatusFila_(texto, r.decisao === "DUPLICIDADE" ? "erro" : "ok");
+            definirStatusFila_(texto, r.decisao === "DUPLICIDADE" || r.avisoAluno === "FALHOU" ? "erro" : "ok");
             filaStatus.setAttribute("tabindex", "-1");
             filaStatus.focus();
           })

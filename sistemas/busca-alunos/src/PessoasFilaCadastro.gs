@@ -11,7 +11,7 @@
               e-mail do pedido, nunca de forma automática, D7);
     CRIAR     um cadastro novo (recusado se o nº USP ou o e-mail
               já estiverem em outra linha: aí só vincular);
-    REJEITAR  com motivo.
+    REJEITAR  com motivo; o aluno recebe o motivo por e-mail.
 
   Cada decisão é uma linha nova em DECISOES_CADASTRO (só
   acréscimo; escritor único: este projeto). APROVADO libera o
@@ -85,6 +85,7 @@ function decidirCadastro(pedido) {
   if (!trava.tryLock(FILA_CADASTRO.ESPERA_TRAVA_MS)) {
     throw new Error("Outra gravação está em andamento. Aguarde alguns segundos e tente de novo.");
   }
+  let resultado = null, rejeitado = null;
   try {
     const abaCentral = obterAbaAlunos_();
     if (!usuarioPodeEditar_(abaCentral)) {
@@ -104,10 +105,14 @@ function decidirCadastro(pedido) {
 
     registrarDecisaoFila_(fontes, item, decisao, usuario.email);
     const centralDepois = lerCentralFila_(abaCentral);
-    return { decisao: decisao.decisao, acao: decisao.acao, itens: itensDaFila_(abrirFontesFila_(), centralDepois) };
+    resultado = { decisao: decisao.decisao, acao: decisao.acao, itens: itensDaFila_(abrirFontesFila_(), centralDepois) };
+    if (decisao.decisao === "REJEITADO") rejeitado = { item: item, motivo: decisao.motivo };
   } finally {
     trava.releaseLock();
   }
+  // Fora da trava: a decisão já está gravada; falha no e-mail não a desfaz.
+  if (rejeitado) resultado.avisoAluno = avisarRejeicaoAoAluno_(rejeitado.item, rejeitado.motivo) ? "ENVIADO" : "FALHOU";
+  return resultado;
 }
 
 /** Só pelo editor: cria a aba DECISOES_CADASTRO, se faltar (nunca apaga nada). */
@@ -279,6 +284,51 @@ function rejeitarFila_(p) {
   const motivo = limparValor_(p.motivo).slice(0, FILA_CADASTRO.MAX_MOTIVO);
   if (!motivo) throw new Error("Escreva o motivo da rejeição.");
   return { decisao: "REJEITADO", acao: "REJEITADO", numeroUsp: "", motivo: motivo };
+}
+
+/*----------------------------------------------------
+  E-mail ao aluno quando o cadastro é rejeitado (decisão do
+  responsável, 11/11/2026): só para o e-mail da sessão que fez o
+  pedido, com protocolo, colação e o motivo escrito pela equipe;
+  sem nº USP, RG nem anexos. A equipe é avisada na tela de que o
+  motivo vai para o aluno. Se o envio falhar, a rejeição fica
+  gravada e o aluno ainda a vê em "Meus pedidos" no formulário.
+----------------------------------------------------*/
+
+function colacaoLegivelFila_(codigo) {
+  const m = String(codigo || "").match(/^(\d{4})([12])$/);
+  return m ? m[1] + "/" + m[2] : String(codigo || "");
+}
+
+function avisarRejeicaoAoAluno_(item, motivo) {
+  try {
+    if (!item.email) throw new Error("pedido sem e-mail da sessão");
+    const linhas = [
+      "Olá,",
+      "",
+      "O Serviço de Graduação conferiu o seu pedido de colação de grau e não conseguiu aprovar o cadastro.",
+      "",
+      "Protocolo: " + item.protocolo,
+      "Colação: " + colacaoLegivelFila_(item.colacao),
+      "Motivo: " + motivo,
+      "",
+      "Você pode enviar um novo pedido pelo formulário de colação de grau, corrigindo o que foi apontado. Em caso de dúvida, fale com o Serviço de Graduação.",
+      "",
+      "Esta é uma mensagem automática; não responda.",
+      "Serviço de Graduação — Instituto de Psicologia da USP"
+    ];
+    MailApp.sendEmail({
+      to: item.email,
+      subject: prefixoAmbientePessoas_() + "Pedido de colação de grau " + item.protocolo + ": cadastro não aprovado",
+      body: linhas.join("\n"),
+      noReply: true
+    });
+    return true;
+  } catch (erro) {
+    // Sem e-mail, nº USP nem motivo no registro de execução.
+    console.error("Aviso de rejeição ao aluno não enviado: " + (erro && erro.name ? erro.name : "erro"));
+    return false;
+  }
 }
 
 function vincularFila_(abaCentral, central, item, p) {

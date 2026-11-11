@@ -24,7 +24,7 @@ function sheet(name, vals) {
 }
 
 function run(props, files, opts = {}) {
-  const logs = [], abertos = [];
+  const logs = [], abertos = [], enviados = [];
   const ctx = { Logger: { log: m => logs.push(String(m)) },
     console: { log: m => logs.push(String(m)), error: m => logs.push(String(m)), warn: m => logs.push(String(m)) },
     PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] || null }) },
@@ -36,12 +36,13 @@ function run(props, files, opts = {}) {
     Session: { getActiveUser: () => ({ getEmail: () => opts.usuario || '' }), getEffectiveUser: () => ({ getEmail: () => opts.efetivo || 'implantador@exemplo.invalid' }) },
     CacheService: { getScriptCache: () => ({ get: () => null, put() {} }) },
     LockService: { getScriptLock: () => ({ tryLock: () => !opts.ocupado, releaseLock() {} }) },
+    MailApp: { sendEmail: m => { if (opts.emailFalha) throw new Error('Service invoked too many times: email'); enviados.push(m); } },
     Utilities: { formatDate: () => '2026-11-10T12:00:00.000-03:00' },
     HtmlService: { createTemplateFromFile: () => ({ evaluate: () => ({ setTitle() { return this; }, addMetaTag() { return this; } }) }), createHtmlOutputFromFile: () => ({ getContent: () => '' }) },
     Date, JSON, Math };
   vm.createContext(ctx);
   ['Codigo.gs', 'PessoasAcesso.gs', 'PessoasFilaCadastro.gs'].forEach(f => vm.runInContext(fs.readFileSync(SRC + f, 'utf8'), ctx, { filename: f }));
-  ctx.logs = logs; ctx.abertos = abertos; return ctx;
+  ctx.logs = logs; ctx.abertos = abertos; ctx.enviados = enviados; return ctx;
 }
 
 const TIT_PERM = ['N. USP', 'Nome', 'e-mail', 'Observação', 'Perfil'];
@@ -80,7 +81,7 @@ function ambiente(o = {}) {
     ALU: [central], PED: pedidos,
     PERM: [sheet('PESSOAS_IPUSP', [TIT_PERM.slice(), ['', 'Lia Leitora', 'lia@exemplo.invalid', '', 'LEITOR'], ['', 'Adão Admin', 'adao@exemplo.invalid', '', 'ADMINISTRADOR']])] };
   const usuario = o.usuario === undefined ? 'adao@exemplo.invalid' : o.usuario;
-  const c = run({ ID_INDEX_SPREADSHEET_ID: 'IDX' }, files, { usuario, editores: o.editores || ['adao@exemplo.invalid', 'lia@exemplo.invalid'], efetivo: o.efetivo, ocupado: o.ocupado });
+  const c = run({ ID_INDEX_SPREADSHEET_ID: 'IDX' }, files, { usuario, editores: o.editores || ['adao@exemplo.invalid', 'lia@exemplo.invalid'], efetivo: o.efetivo, ocupado: o.ocupado, emailFalha: o.emailFalha });
   return { c, central, abas };
 }
 const J = x => JSON.parse(JSON.stringify(x));
@@ -197,6 +198,28 @@ t('REJEITAR: exige motivo; grava REJEITADO sem tocar na central', () => {
   assert.throws(() => a.c.decidirCadastro({ protocoloId: 'PID-1', versao: 1, acao: 'REJEITAR', motivo: '  ' }), /motivo/);
   const r = J(a.c.decidirCadastro({ protocoloId: 'PID-1', versao: 1, acao: 'REJEITAR', motivo: 'Documento não confere' }));
   assert.strictEqual(r.decisao, 'REJEITADO'); assert.strictEqual(a.central.escritas.length, 0); assert.strictEqual(decisoes(a)[0]['Motivo'], 'Documento não confere');
+});
+
+t('REJEITAR: e-mail ao aluno só para o e-mail do pedido, com protocolo, colação e motivo, sem nº USP nem RG', () => {
+  const a = ambiente();
+  const r = J(a.c.decidirCadastro({ protocoloId: 'PID-1', versao: 1, acao: 'REJEITAR', motivo: 'Documento ilegível' }));
+  assert.strictEqual(r.avisoAluno, 'ENVIADO'); assert.strictEqual(a.c.enviados.length, 1);
+  const m = a.c.enviados[0];
+  assert.strictEqual(m.to, 'pedido1@exemplo.invalid'); assert.strictEqual(m.noReply, true);
+  assert.ok(/PCG-20262-00001/.test(m.subject) && /não aprovado/.test(m.subject), m.subject);
+  assert.ok(/Colação: 2026\/2/.test(m.body) && /Motivo: Documento ilegível/.test(m.body) && /novo pedido/.test(m.body), m.body);
+  assert.ok(!/900000|00\.000|Pessoa Fictícia/.test(m.body + m.subject), 'sem nº USP, RG nem nome');
+});
+t('REJEITAR: falha no e-mail não desfaz a decisão e não registra dado pessoal', () => {
+  const a = ambiente({ emailFalha: true });
+  const r = J(a.c.decidirCadastro({ protocoloId: 'PID-1', versao: 1, acao: 'REJEITAR', motivo: 'Documento ilegível' }));
+  assert.strictEqual(r.decisao, 'REJEITADO'); assert.strictEqual(r.avisoAluno, 'FALHOU'); assert.strictEqual(decisoes(a).length, 1);
+  assert.ok(!a.c.logs.some(l => /exemplo\.invalid|900000|ilegível/.test(l)), a.c.logs.join(' | '));
+});
+t('VINCULAR e CRIAR não mandam e-mail', () => {
+  const a = ambiente();
+  a.c.decidirCadastro({ protocoloId: 'PID-2', versao: 1, acao: 'VINCULAR', linha: 2, numeroUsp: '9000002', nome: 'Pessoa Fictícia 2' });
+  assert.strictEqual(a.c.enviados.length, 0);
 });
 
 // ---------- concorrência e conferências ----------
