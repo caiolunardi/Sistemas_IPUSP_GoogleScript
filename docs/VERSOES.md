@@ -21,6 +21,7 @@ Uma Release **marca o código do repositório**. Ela não publica nada no Google
 | Gerenciador de Trancamento Total | `trancamento-total-gerenciador-v1.1` |
 | Gerenciador de Abertura de Habilitações | `abertura-habilitacoes-gerenciador-v2.0` |
 | Planilha das secretarias | `planilha-secretarias-v1.1` |
+| Pedido de Colação de Grau (formulário) | `pedido-colacao-grau-v2.0.0` |
 
 Gerenciadores usam o sufixo `-gerenciador` (código em `sistemas/<sistema>/gerenciador/`). Os formulários com gerenciador usam o nome do sistema sem sufixo.
 
