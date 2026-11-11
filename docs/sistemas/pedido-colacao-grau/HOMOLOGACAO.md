@@ -109,7 +109,7 @@ Com a ordem do responsável, `clasp push` de `6c71759` (2.0 com o aviso de rejei
 | --- | --- |
 | R1 | ok: pedido fictício rejeitado com motivo no Gerenciador de Pessoas (/dev); a mesma conta, ao abrir o formulário de novo, viu "O seu pedido … não foi aprovado pelo Serviço de Graduação", o motivo como texto e o link "O que fazer?", e o formulário liberado para pedido novo na mesma colação; recibo do pedido com `[HOMOLOGAÇÃO]` e e-mail de rejeição recebidos na conta do pedido |
 
-Pendente: push de `0fcd779` (pasta do protocolo com nome único, achado da revisão independente) e conferência de que um pedido novo cria a pasta `PCG-… · <8 caracteres>`.
+Push 3 (11/11, com a ordem dele, `clasp push --force` rodado por ele a partir de `0fcd779`, backup antes): R2 ok: o pedido seguinte criou a subpasta `PCG-20262-00003 · <8 caracteres do Protocolo ID>` na pasta provisória; depois do encaminhamento pelo Gerenciador de Diplomas, ela ficou vazia e os documentos foram para a pasta do aluno. Observação sem correção: os nomes dos arquivos levam o nome digitado pelo aluno, dado no envio, antes da conferência.
 
 **Retorno:** a 2.0 não substitui nada em uso; desfazer a homologação é arquivar a implantação de teste. Nenhum dado de produção é tocado: o projeto de homologação lê só a coluna Homologação.
 
