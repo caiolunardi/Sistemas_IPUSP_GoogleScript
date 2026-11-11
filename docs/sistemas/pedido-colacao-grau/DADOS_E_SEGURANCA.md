@@ -73,6 +73,6 @@ Fonte em `sistemas/pedido-colacao-grau/src/`; fluxo em [RECEBIMENTO_2_0.md](RECE
 | SEG-07 | aba `EVENTOS` (sem valores) e diagnóstico de pedidos parados; registros de execução sem nome, nº USP, e-mail, RG ou IDs | T-REC-01, T-REC-03 |
 | SEG-08 | manifesto, `.claspignore`, testes e `AMBIENTE` versionados | CI |
 
-**Dados novos tratados:** "Motivo do cadastro" (interno, nunca mostrado ao aluno), chave de envio, hash SHA-256 dos arquivos e o JSON de cada versão, todos em `PEDIDOS_COLACAO` (acesso restrito). O recibo vai só para o e-mail da sessão, sem RG nem anexos. Retenção dos pedidos rejeitados e dos documentos da entrada: sem exclusão automática (D12); prazo **A VALIDAR INSTITUCIONALMENTE**.
+**Dados novos tratados:** "Motivo do cadastro" (interno, nunca mostrado ao aluno; o motivo de **rejeição** de `DECISOES_CADASTRO`, ao contrário, é escrito pela equipe para o aluno e aparece só para a própria conta, como texto, até 300 caracteres), chave de envio, hash SHA-256 dos arquivos e o JSON de cada versão, todos em `PEDIDOS_COLACAO` (acesso restrito). O recibo vai só para o e-mail da sessão, sem RG nem anexos. Retenção dos pedidos rejeitados e dos documentos da entrada: sem exclusão automática (D12); prazo **A VALIDAR INSTITUCIONALMENTE**.
 
 **Limite conhecido:** funções do responsável (`diagnosticarConfiguracao`, `prepararPlanilhaPedidosColacao`) recusam quando o e-mail da sessão difere do usuário efetivo. Pela página, com "Executar como: eu", só a própria conta institucional passa nessa conferência.

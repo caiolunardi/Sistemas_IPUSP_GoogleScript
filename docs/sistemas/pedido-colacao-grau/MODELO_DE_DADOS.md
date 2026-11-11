@@ -76,7 +76,7 @@ Planilha nova, chave `PEDIDOS_COLACAO` do `ID_INDEX`, com acesso só da conta in
 | `VERSOES` | formulário | versão do pedido (1 no envio, +1 a cada correção) | Protocolo ID, Versão, Chave de envio, E-mail da sessão, Situação, Enviada em, Concluída em, Dados do pedido (JSON) |
 | `DOCUMENTOS` | formulário | documento apresentado numa versão | Documento ID, Protocolo ID, Versão, Chave do documento, Tipo (`RG`, `CERTIDAO`), ID do arquivo, Origem (`ENVIADO`, `REUTILIZADO`), Documento de origem, SHA-256, Tamanho (bytes), Formato (`PDF`, `JPEG`, `PNG`), Situação, Registrado em |
 | `EVENTOS` | formulário | evento | Quando, Protocolo ID, Versão, Evento (`PROTOCOLO_CRIADO`, `CORRECAO_INICIADA`, `RETOMADA`, `RECEBIDO`, `CORRECAO_RECEBIDA`, `RECIBO_ENVIADO`, `RECIBO_FALHOU`), Campos alterados (só os nomes) |
-| `DECISOES_CADASTRO` | Gerenciador de Pessoas (PR 5) | decisão | o formulário lê `Protocolo ID` e `Decisão`, se a aba existir |
+| `DECISOES_CADASTRO` | Gerenciador de Pessoas (PR 5) | decisão | o formulário lê `Protocolo ID`, `Decisão` e, para `REJEITADO`, `Motivo` (mostrado ao aluno), se a aba existir |
 | `ENCAMINHAMENTOS` | Gerenciador de Diplomas (PR 4) | tentativa de encaminhamento | o formulário lê `Protocolo ID` e `Resultado`, se a aba existir |
 
 **Datas e horas:** ISO 8601 com o fuso (`2026-11-30T23:59:58.000-03:00`). "Recebido em" é gravado uma vez e nunca reescrito; a correção tem a própria hora em "Enviada em".

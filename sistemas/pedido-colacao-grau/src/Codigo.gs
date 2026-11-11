@@ -76,6 +76,15 @@ function obterDadosIniciais() {
 
     const ativo = protocoloAtivoColacao_(tabelas, pedidos, periodo.codigoColacao);
     if (ativo) base.pedidoAtual = resumoPedidoAtualColacao_(tabelas, email, ativo);
+    else {
+      // Sem pedido ativo: se o último desta colação foi rejeitado, a página
+      // avisa no topo do formulário (decisão do responsável, 11/11/2026).
+      const motivos = motivosRejeicaoColacao_(tabelas.DECISOES_CADASTRO);
+      const rejeitado = pedidos
+        .filter(p => textoColacao_(p, "Colação") === periodo.codigoColacao && textoColacao_(p, "Protocolo ID") in motivos)
+        .sort((a, b) => (textoColacao_(a, "Protocolo") < textoColacao_(b, "Protocolo") ? 1 : -1))[0];
+      if (rejeitado) base.ultimoRejeitado = { protocolo: textoColacao_(rejeitado, "Protocolo"), motivo: motivos[textoColacao_(rejeitado, "Protocolo ID")] };
+    }
     return base;
   } catch (erro) {
     if (erro && erro.codigoColacao) throw erro;

@@ -289,6 +289,9 @@ body{
     line-height:1.5;
 }
 
+#avisoRejeitado p{ margin:0 0 6px; }
+#avisoRejeitado p:last-child{ margin:0; }
+
 #loadingOverlay{
     display:none;
     position:fixed;
@@ -497,6 +500,12 @@ textarea.campoInvalido:focus,
 
         <div class="avisoInfo" id="avisoModoCorrecao" hidden>
             Você está corrigindo o pedido <strong id="correcaoProtocolo"></strong>. A data e a hora do pedido continuam as originais. Os documentos que você não trocar continuam os já enviados.
+        </div>
+
+        <div class="avisoInfo" id="avisoRejeitado" hidden>
+            <p><strong>O seu pedido <span id="rejeitadoProtocolo"></span> não foi aprovado pelo Serviço de Graduação.</strong></p>
+            <p id="rejeitadoMotivoLinha" hidden>Motivo: <span id="rejeitadoMotivo"></span></p>
+            <p>Você pode enviar um novo pedido abaixo, corrigindo o que foi apontado. Em caso de dúvida, fale com o Serviço de Graduação.</p>
         </div>
 
         <div class="avisoInfo" id="avisoRetomada" hidden>
@@ -855,6 +864,13 @@ function abrirFormulario(pedido, retomada) {
     ["campoNome", "campoNUsp"].forEach(c => { el(c).readOnly = confirmado; });
     el("campoAnoIngresso").readOnly = confirmado && !!id.anoIngresso;
     mostrar("avisoProvisorio", !confirmado);
+    const rejeitado = !pedido && dados.ultimoRejeitado;
+    mostrar("avisoRejeitado", !!rejeitado);
+    if (rejeitado) {
+        el("rejeitadoProtocolo").textContent = rejeitado.protocolo || "";
+        el("rejeitadoMotivo").textContent = rejeitado.motivo || "";
+        mostrar("rejeitadoMotivoLinha", !!rejeitado.motivo);
+    }
     mostrar("blocoDivergencia", confirmado);
     el("campoDivergencia").value = anterior.divergenciaApontada || "";
     el("campoEmailAlternativo").value = anterior.emailAlternativo || (confirmado ? id.emailSecundario || "" : "");
@@ -1110,6 +1126,7 @@ function desenharMeusPedidos(lista) {
             ["Cadastro", p.cadastro],
             ["Andamento", p.andamento]
         ];
+        if (p.motivoRejeicao) linhas.push(["Motivo", p.motivoRejeicao]);
         if (p.correcaoIncompleta) linhas.push(["Correção", "não terminou: abra o formulário e envie de novo"]);
         linhas.forEach(([rotulo, valor]) => {
             const div = document.createElement("div");

@@ -341,11 +341,31 @@ caso('Numeração sequencial por colação e pedido REJEITADO não bloqueia pedi
   amb.planilhas[ID.PEDIDOS].abas.DECISOES_CADASTRO = null;
   const pl = amb.planilhas[ID.PEDIDOS];
   pl.insertSheet('DECISOES_CADASTRO');
-  pl.abas.DECISOES_CADASTRO.valores = [['Protocolo ID', 'Decisão'], [idDois, 'REJEITADO']];
+  pl.abas.DECISOES_CADASTRO.valores = [['Protocolo ID', 'Decisão', 'Motivo'], [idDois, 'REJEITADO', '  Documento   ilegível ']];
+  const antes = executar(amb, 'obterDadosIniciais', []);
+  igual(antes.ultimoRejeitado, { protocolo: 'PCG-20262-00002', motivo: 'Documento ilegível' });
+  verdade(!antes.pedidoAtual, 'rejeitado não é pedido ativo');
+  const listaAntes = executar(amb, 'listarMeusPedidos', []);
+  igual([listaAntes[0].motivoRejeicao, /Encerrado/.test(listaAntes[0].andamento)], ['Documento ilegível', true]);
   const r3 = enviar(amb, pedido());
   igual([r3.protocolo, r3.correcao], ['PCG-20262-00003', false]);
   const lista = executar(amb, 'listarMeusPedidos', []);
   verdade(lista.some(p => /não aprovado/.test(p.cadastro)), 'decisão aparece');
+  verdade(!executar(amb, 'obterDadosIniciais', []).ultimoRejeitado, 'com pedido novo ativo, sem aviso de rejeição');
+  igual(lista.filter(p => !/não aprovado/.test(p.cadastro)).map(p => p.motivoRejeicao), ['']);
+});
+
+caso('Rejeição seguida de aprovação: vale a última decisão, sem motivo nem aviso', () => {
+  const amb = cenario({ usuario: 'bruno@usp.br' });
+  enviar(amb, pedido());
+  const id = protocolos(amb)[0]['Protocolo ID'];
+  const pl = amb.planilhas[ID.PEDIDOS];
+  amb.planilhas[ID.PEDIDOS].abas.DECISOES_CADASTRO = null;
+  pl.insertSheet('DECISOES_CADASTRO');
+  pl.abas.DECISOES_CADASTRO.valores = [['Protocolo ID', 'Decisão', 'Motivo'], [id, 'REJEITADO', 'x'], [id, 'APROVADO', '']];
+  const inicio = executar(amb, 'obterDadosIniciais', []);
+  verdade(!inicio.ultimoRejeitado && !!inicio.pedidoAtual, 'aprovado continua ativo');
+  igual(executar(amb, 'listarMeusPedidos', [])[0].motivoRejeicao, '');
 });
 
 /*---------------- T-CON ----------------*/

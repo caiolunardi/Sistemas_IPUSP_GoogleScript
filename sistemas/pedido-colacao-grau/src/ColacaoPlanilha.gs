@@ -116,6 +116,25 @@ function ultimoPorProtocoloColacao_(tabela, tituloValor) {
   return mapa;
 }
 
+/**
+ * Motivo escrito pela equipe quando a última decisão do protocolo é
+ * REJEITADO (DECISOES_CADASTRO, do Gerenciador de Pessoas). O texto é
+ * para o aluno: o Gerenciador de Pessoas avisa a equipe disso e o
+ * manda também por e-mail. Até 300 caracteres.
+ */
+function motivosRejeicaoColacao_(tabela) {
+  const mapa = {};
+  if (!tabela || !tabela.col[normalizarTituloColacao_("Protocolo ID")] || !tabela.col[normalizarTituloColacao_("Decisão")]) return mapa;
+  lerLinhasColacao_(tabela).forEach(l => {
+    const id = textoColacao_(l, "Protocolo ID");
+    if (!id) return;
+    const decisao = normalizarTituloColacao_(valorColacao_(l, "Decisão")).toUpperCase();
+    if (decisao === "REJEITADO") mapa[id] = String(tabela.col[normalizarTituloColacao_("Motivo")] ? valorColacao_(l, "Motivo") : "").replace(/\s+/g, " ").trim().slice(0, 300);
+    else delete mapa[id];
+  });
+  return mapa;
+}
+
 /*----------------------------------------------------
   Funções do responsável (só pelo editor).
 
