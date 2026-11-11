@@ -65,3 +65,24 @@ A pasta raiz compartilhada é a chave lógica **`PASTA_RAIZ_ALUNOS`**, mas o leg
 ## E. Consistência e transações
 
 Gravação fracionada: cadastro central → pasta → primeiro arquivo → segundo arquivo → linha de pedido. Sem transação única, sem rollback e com `ScriptLock` apenas dentro deste projeto. Não pressupor integridade caso haja exceção ou concorrência com o Gerenciador.
+
+## F. Planilha `PEDIDOS_COLACAO` (formulário 2.0)
+
+Planilha nova, chave `PEDIDOS_COLACAO` do `ID_INDEX`, com acesso só da conta institucional e de quem administra. Colunas localizadas pelo **título** da linha 1 (ordem livre); falta de aba ou de título é falha fechada, sem gravar. Todo texto é gravado com o apóstrofo inicial do Sheets, para data/hora, `2026/2`, nº USP e colação não virarem data ou número. Linhas nunca são apagadas; a única mudança em linha existente é RECEBENDO → RECEBIDO (com a hora da conclusão).
+
+| Aba | Quem grava | Uma linha por | Colunas |
+| --- | --- | --- | --- |
+| `PROTOCOLOS` | formulário | pedido | Protocolo, Protocolo ID, Chave de envio, E-mail da sessão, Recebimento, Cadastro, Motivo do cadastro, Recebido em, Recebimento concluído em, Colação, Janela do período, Semestre do período, Nº USP informado, Nome informado, Registro ID, Pasta do protocolo |
+| `VERSOES` | formulário | versão do pedido (1 no envio, +1 a cada correção) | Protocolo ID, Versão, Chave de envio, E-mail da sessão, Situação, Enviada em, Concluída em, Dados do pedido (JSON) |
+| `DOCUMENTOS` | formulário | documento apresentado numa versão | Documento ID, Protocolo ID, Versão, Chave do documento, Tipo (`RG`, `CERTIDAO`), ID do arquivo, Origem (`ENVIADO`, `REUTILIZADO`), Documento de origem, SHA-256, Tamanho (bytes), Formato (`PDF`, `JPEG`, `PNG`), Situação, Registrado em |
+| `EVENTOS` | formulário | evento | Quando, Protocolo ID, Versão, Evento (`PROTOCOLO_CRIADO`, `CORRECAO_INICIADA`, `RETOMADA`, `RECEBIDO`, `CORRECAO_RECEBIDA`, `RECIBO_ENVIADO`, `RECIBO_FALHOU`), Campos alterados (só os nomes) |
+| `DECISOES_CADASTRO` | Gerenciador de Pessoas (PR 5) | decisão | o formulário lê `Protocolo ID`, `Decisão` e, para `REJEITADO`, `Motivo` (mostrado ao aluno), se a aba existir |
+| `ENCAMINHAMENTOS` | Gerenciador de Diplomas (PR 4) | tentativa de encaminhamento | o formulário lê `Protocolo ID` e `Resultado`, se a aba existir |
+
+**Datas e horas:** ISO 8601 com o fuso (`2026-11-30T23:59:58.000-03:00`). "Recebido em" é gravado uma vez e nunca reescrito; a correção tem a própria hora em "Enviada em".
+
+**"Dados do pedido" (JSON da versão):** usa as chaves internas do legado (`nome`, `nUsp`, `anoIngresso`, `rg`, `telefone`, `emailAlternativo`, `bachConcluiu`, `licConcluiu`, `psiConcluiu`, `permaneceMatriculado`, `habilitacaoPendente` (lista), `procuracao`, `procuradorNome`, `procuradorRg`, `colacaoAntecipada`, `observacoesAluno`) mais `divergenciaApontada`, `cadastro`, `colacao` e `ano`. Assim o encaminhador do PR 4 monta a linha da aba `Diplomas` com os mesmos 24 cabeçalhos da seção C. Texto que começaria por `=`, `+`, `-` ou `@` já vem com o apóstrofo.
+
+**Pasta `PASTA_PROVISORIOS_COLACAO`:** uma subpasta por protocolo, com o nome `<protocolo> · <8 primeiros caracteres do Protocolo ID>` (decisão do responsável de 11/11/2026): se a numeração recomeçar porque linhas de `PROTOCOLOS` foram apagadas, o nome não se repete e pedidos diferentes nunca dividem a mesma pasta. O encaminhador acha a subpasta pelo ID gravado em `Pasta do protocolo`, não pelo nome. Arquivos novos: `<Tipo> - <nome> - <AAAAS> - <protocolo> - v<n>.<ext>` (`RG-CIN` ou `Certidão de Nascimento`), que nunca coincide com o nome gerado pelo Gerenciador. Na correção, o documento não trocado é registrado de novo como `REUTILIZADO`, apontando para o mesmo arquivo; nada é copiado, movido, renomeado ou mandado para a lixeira.
+
+Dados fictícios para montar a homologação: [dados-ficticios/](dados-ficticios/README.md).

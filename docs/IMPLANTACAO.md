@@ -73,7 +73,7 @@ Projetos registrados em 26/10/2026, com o nome exatamente como está no Google. 
 |---|---|---|
 | `GRADIP · Painel Alunos · PRODUÇÃO` | [Painel de Solicitações](sistemas/painel-solicitacoes/README.md) | (público aos alunos) |
 | `GRADIP · Painel Servidores · PRODUÇÃO` | [Painel de Sistemas](sistemas/painel-servidores/README.md) | `PAINEL_SERVIDORES` |
-| `GRADIP · Gerenciador de Pessoas · PRODUÇÃO` | [Gerenciador de Pessoas](sistemas/busca-alunos/README.md) (antes Comunidade IPUSP) | `PESSOAS_IPUSP` (o código atual não confere a aba) |
+| `GRADIP · Gerenciador de Pessoas · PRODUÇÃO` | [Gerenciador de Pessoas](sistemas/busca-alunos/README.md) (antes Comunidade IPUSP) | `PESSOAS_IPUSP` (a v1.3 não confere a aba; a v1.4, em PR, confere) |
 | `GRADIP · Grade Horaria - Config · PRODUÇÃO` | [Grade Horaria - Config](sistemas/estrutura-curricular/README.md) (Estrutura Curricular e Grade Horária) | `ESTRUTURA_CURRICULAR` |
 | `GRADIP · Gerenciador de Abertura de Habilitações · PRODUÇÃO` | [Gerenciador de Abertura de Habilitações](sistemas/abertura-habilitacoes/README.md) | `GERENCIADOR_HABILITACOES` |
 | `GRADIP · Gerenciador de Abertura de Habilitações · HOMOLOGAÇÃO` | idem | `GERENCIADOR_HABILITACOES`, na planilha da coluna Homologação |
@@ -83,6 +83,7 @@ Projetos registrados em 26/10/2026, com o nome exatamente como está no Google. 
 | `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO` | [Gerenciador de Colação de Grau e Diplomas](sistemas/emissao-diplomas/README.md) (projeto autônomo; recebe a 4.0.0) | `EMISSAO_DIPLOMAS` |
 | `GRADIP · Gerenciador de Colação de Grau e Diplomas · HOMOLOGACAO` | idem (`AMBIENTE=homologacao`) | `EMISSAO_DIPLOMAS`, na planilha da coluna Homologação |
 | `GRADIP · Gerenciador de Colação de Grau e Diplomas · PRODUÇÃO - Vinculado` e `· HOMOLOGACAO - vinculado` | 3.x, ligados à planilha de diplomas; saem de uso depois da troca do link no Painel dos servidores | (a 3.x não confere lista) |
+| `GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO` (o de produção, com o mesmo padrão, ainda a criar) | [Formulário de Pedido de Colação de Grau 2.0](sistemas/pedido-colacao-grau/README.md) (em PR; projetos novos, decisão D14; o legado continua no projeto atual até a virada) | nenhuma: formulário dos alunos, a identidade é o e-mail `@usp.br` da sessão |
 | `GRADIP · Gerenciador BUSP · PRODUÇÃO` | fora do repositório | `GERENCIADOR_BUSP` |
 | `GRADIP · Gerenciador de Matrícula dos Intercambistas · PRODUÇÃO` | fora do repositório | `GERENCIADOR_INTERCAMBISTAS` |
 

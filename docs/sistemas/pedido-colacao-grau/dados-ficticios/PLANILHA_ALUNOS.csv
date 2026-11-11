@@ -1,0 +1,9 @@
+N. USP,Nome,Ingresso,E-mail USP,ID da Pasta,E-mail secundário
+9000001,Aluna Fictícia Um,2021/1,teste.um@exemplo.usp.br,,um@exemplo.invalid
+9000002,Aluno Fictício Dois,2020/1,teste.dois@exemplo.usp.br,,
+9000003,Pessoa Repetida A,2020/1,teste.repetido@exemplo.usp.br,,
+9000004,Pessoa Repetida B,2020/1,teste.repetido@exemplo.usp.br,,
+9000005,Número Repetido A,2019/1,teste.rep.a@exemplo.usp.br,,
+9000005,Número Repetido B,2019/1,teste.rep.b@exemplo.usp.br,,
+,Sem Número Fictício,2019/1,teste.sem.numero@exemplo.usp.br,,
+9000008,Sem Ingresso Fictício,,teste.sem.ingresso@exemplo.usp.br,,

@@ -1,6 +1,6 @@
 # Formulário de Pedido de Colação de Grau — entrada do aplicativo
 
-**Estado:** inventário de legado documentado em 06/11/2026 a partir de **dois arquivos privados fornecidos pelo responsável**. Código atual **não versionado** neste repositório e versão efetivamente servida em Google **NAO_VERIFICADA**. Nenhum `src/`, `appsscript.json`, testes, `.clasp.json` ou ID operacional foi adicionado nesta rodada.
+**Estado:** versão **2.0.0 em PR** em [`src/`](src/) com [testes](testes/README.md): fonte reescrita, sem IDs (tudo pelo `ID_INDEX`), **não homologada nem implantada** ([recebimento 2.0](../../docs/sistemas/pedido-colacao-grau/RECEBIMENTO_2_0.md)). O legado (dois arquivos privados de 06/11/2026) continua fora do Git e em uso; a versão servida pelo Google segue **NAO_VERIFICADA**. Nenhum `.clasp.json` nem ID operacional no repositório.
 
 **Este aplicativo é distinto** do [Gerenciador de Colação de Grau e Diplomas](../emissao-diplomas/README.md) e do módulo de configuração de períodos no Painel dos Servidores. É o ponto de entrada dos pedidos dos estudantes. Na próxima modernização, também será dono da experiência de **reutilização ou atualização dos anexos de colações anteriores**, segundo a decisão registrada — ainda não implementada.
 
@@ -15,7 +15,7 @@
 
 ## Fonte de código
 
-Os dois arquivos originais enviados em 06/11/2026 foram analisados, mas **não podem ser copiados integralmente ao Git**, pois trazem IDs/URLs de operação. O diretório `src/` deverá nascer somente depois de preflight de segurança, decisão sobre autorização e isolamento de homologação. Ausência de código no Git **não** significa inexistência do app no Google.
+`src/` é a 2.0, reescrita a partir dos originais (que continuam fora do Git por terem IDs e URLs operacionais). Testes em [`testes/`](testes/README.md), na CI exigida. Ausência do legado no Git **não** significa inexistência do app no Google.
 
 ## Atualizações futuras
 

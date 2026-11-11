@@ -36,6 +36,8 @@ Termos que aparecem na documentação e nas telas, para quem não é do Serviço
 
 | Termo | Significado |
 |---|---|
+| **Protocolo (colação)** | Número `PCG-AAAAS-NNNNN` que o Formulário de Pedido de Colação de Grau 2.0 dá a cada pedido, só depois de gravá-lo. Recebido não quer dizer deferido. |
+| **Chave de envio** | Código que a página do formulário gera para cada envio. Enviar de novo com a mesma chave devolve o mesmo protocolo, sem duplicar o pedido. |
 | **ADR** | *Architecture Decision Record*, registro de decisão arquitetural: documento curto que diz o que foi decidido, por quê, quais alternativas havia e quando rever. Ficam em [`arquitetura/`](arquitetura/README.md). |
 | **Google Apps Script** | Plataforma do Google para programar sobre Planilhas, Drive e Gmail. Todos os sistemas daqui são feitos nela. |
 | **Web App** | Projeto Apps Script publicado como página. **Executar como** diz com que conta o código roda; **Quem pode acessar** diz quem abre a página. |

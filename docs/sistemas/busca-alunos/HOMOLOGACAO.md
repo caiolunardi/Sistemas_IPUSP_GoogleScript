@@ -1,6 +1,69 @@
-# Homologação — Gerenciador de Pessoas, antes Comunidade IPUSP e Busca de Alunos (v1.0 a v1.3)
+# Homologação — Gerenciador de Pessoas, antes Comunidade IPUSP e Busca de Alunos (v1.0 a v1.4)
 
 **Estado:** v1.3 verificada localmente em 14/10/2026; **homologação no `/exec` pendente** (v1.1 a v1.3). A v1.0 foi colada no Apps Script pelo responsável funcional em 13/10/2026 (primeiro erro de configuração resolvido: ID no lugar do nome da propriedade) e revelou que o título real da coluna é `eMail`, não `Tr eMail`; isso motivou a v1.1. Esta página registra as diferenças, os hashes e os testes. Ela não atesta a configuração da implantação.
+
+## v1.4 — autorização no servidor
+
+**Estado:** em PR (09/11/2026), verificada localmente, **não enviada ao Google**. Classe de risco **crítica** (autorização e dados pessoais): exige parecer de revisão independente e autorização do responsável escrita no PR antes do merge e, separadamente, antes de cada `clasp push` e de cada implantação.
+
+### O que mudou
+
+| Arquivo | Mudança |
+|---|---|
+| `PessoasAcesso.gs` | novo: lê a aba `PESSOAS_IPUSP` de `PERMISSOES_DE_ACESSO`, perfis LEITOR e ADMINISTRADOR, falha fechada, cache de 60 s, página de quem não tem acesso. Mesmo padrão de `DiplomasAcesso.gs`. |
+| `PessoasSemAcesso.html` | novo: aviso sem dados e sem `google.script.run` (cópia de `DiplomasSemAcesso.html` com o título trocado). |
+| `appsscript.json` | novo no Git: executa como quem implanta, **somente eu** (o que o responsável informou em 20/10/2026). |
+| `Codigo.gs` | `doGet` confere o acesso antes de servir a página; `exigirLeitorPessoas_()` na primeira linha de `listarAlunosParaBusca`, `listarComunidadeParaBusca`, `obterFicha` e `gerarPdfListaAlunos`; `exigirAdministradorPessoas_()` em `salvarFicha` (os atalhos `obterFichaAluno` e `salvarFichaAluno` passam por elas); `podeEditar` da ficha = ADMINISTRADOR **e** editor da planilha; `AMBIENTE` e coluna `Homologação` em `obterIdProducao_`; diagnóstico mostra ambiente e perfil e só lê cadastros para ADMINISTRADOR. Leitura, ficha, gravação e PDF sem outra mudança. |
+| `BuscaAlunosApp.html` | uma frase do aviso da ficha só para consulta ("é preciso ter o perfil de administrador nesta página e ser editor da planilha"). |
+| `BuscaAlunosAjuda.html` | "Quem pode editar", a FAQ de correção e o novo problema comum "Sem acesso a esta página" ou "Conta não identificada". |
+
+Antes da v1.4, `listarComunidadeParaBusca`, `listarAlunosParaBusca`, `obterFicha`, `obterFichaAluno` e `gerarPdfListaAlunos` não conferiam ninguém, e `diagnosticarComunidadeIPUSP` podia ser chamada pela página. A proteção era só "Quem pode acessar: somente eu" (achado A1 do plano do formulário de colação; proposta em [ACESSO_LEITURA_EQUIPE.md](../../seguranca/propostas/ACESSO_LEITURA_EQUIPE.md)).
+
+### Verificação local (09/11/2026)
+
+| Suíte | Resultado | Observação |
+|---|---|---|
+| `testar_acesso.js` (nova) | 75 ok | contra o `Codigo.gs` do `main` (v1.3), com o mesmo `PessoasAcesso.gs`, 68 dos 75 casos falham: as funções públicas entregam o cadastro sem conferir ninguém |
+| `testar_backend.js` | 51/51 | a conferência de perfil é trocada por um ADMINISTRADOR fixo; os 51 casos de regra de negócio da v1.3 continuam iguais |
+| `testar_navegador.js` | 299/299 | os 268 casos da v1.3 e 31 novos da página sem acesso (três modos de tema, 360 a 1280 px, contraste ≥ 4,5:1, nenhum dado) |
+
+Regressão avaliada: (1) quem tem acesso vê a mesma página, a mesma lista e a mesma ficha da v1.3; (2) LEITOR que é editor da planilha **perde** a edição pela página (antes bastava ser editor): é intencional; (3) quem não está na aba, inclusive a conta institucional, deixa de abrir a página: por isso a aba precisa existir e estar preenchida **antes** do `clasp push`; (4) o diagnóstico passa a exigir ADMINISTRADOR para ler cadastros; (5) as cópias de `shared/` não mudaram.
+
+Limites: sem Google real. `Session.getActiveUser()` com a implantação "executar como eu", o cache de script e a leitura da planilha de permissões pela conta que executa só se confirmam no Apps Script.
+
+### SHA-256 da fonte v1.4
+
+| Arquivo | SHA-256 |
+|---|---|
+| `Codigo.gs` | `7f8880cf07ad2db6104095f0b62f52b0c8fe2dee86d11ebecfada029be5e5021` |
+| `PessoasAcesso.gs` | `7c4679679951599b3fceab9a358d8044acc654ef49c4909a083d0af2ff42bcc9` |
+| `PessoasSemAcesso.html` | `2a45d19f1e1ddfefe63e444a1fdae27b2eedce162d65050176b2911b8614ff3e` |
+| `BuscaAlunosApp.html` | `7e6ecc046e583d6981b622ae5f0b2d6f0b4a0e93705dfc1ac41a99a318d3b790` |
+| `BuscaAlunosAjuda.html` | `755631d7f57df28e489bd52c0bec7c9cf12961017a1f3fea629535bcbed1b73e` |
+| `appsscript.json` | `77bc7f2cc524587cabfb0243253d0bf83b4b93459d355e6d64a2f861ca6fdcb5` |
+
+Os outros seis arquivos de `src/` são iguais aos da v1.3 (tabela abaixo). Se o ramo mudar depois do parecer, estes valores mudam com ele.
+
+### Roteiro no Google (com autorização para cada passo)
+
+Preparação (responsável): criar a aba `PESSOAS_IPUSP` na planilha de permissões de **homologação** com as linhas de [`dados-ficticios/PESSOAS_IPUSP.csv`](dados-ficticios/PESSOAS_IPUSP.csv) (e-mails trocados pelas contas de teste) e as cópias fictícias dos três cadastros ([`ALUNOS.csv`](dados-ficticios/ALUNOS.csv), [`SERVIDORES.csv`](dados-ficticios/SERVIDORES.csv), [`DOCENTES.csv`](dados-ficticios/DOCENTES.csv)) na coluna `Homologação` do `ID_INDEX`; projeto `GRADIP · Gerenciador de Pessoas · HOMOLOGAÇÃO` com `AMBIENTE=homologacao` e implantação em "somente eu" ou restrita às contas de teste.
+
+| # | Conta | Passo | Esperado |
+|---|---|---|---|
+| P1 | fora da aba | abrir o `/dev` | "Sem acesso a esta página"; nenhum nome, nº USP ou e-mail no código-fonte da página |
+| P2 | sem login / outra conta Google | abrir | "Conta não identificada" |
+| P3 | LEITOR | buscar, abrir ficha, exportar CSV e PDF | tudo funciona; ficha só para consulta, com o aviso do perfil |
+| P4 | LEITOR que é editora da planilha fictícia | abrir ficha | continua só para consulta (o perfil vale mais que ser editora) |
+| P5 | ADMINISTRADOR editora | corrigir um campo de aluno fictício | grava; a lista mostra o dado novo |
+| P6 | ADMINISTRADOR não editora | abrir ficha | só para consulta |
+| P7 | qualquer | renomear a aba para outro nome e abrir em até 1 min | "Não foi possível abrir a página" depois do cache; desfazer |
+| P8 | ADMINISTRADOR | rodar `diagnosticarComunidadeIPUSP` | ambiente `homologacao`, perfil ADMINISTRADOR, colunas ok, contagens fictícias; nenhum e-mail no registro |
+
+Produção, depois do merge e cada passo com autorização: criar e preencher a aba `PESSOAS_IPUSP` de produção (a conta institucional como ADMINISTRADOR), `clasp push` do `main`, conferência no `/dev` com a conta institucional e com uma conta fora da lista, nova versão da implantação **mantendo "somente eu"**. Abrir o acesso a outras contas é uma decisão separada, que muda o manifesto num PR próprio.
+
+### Voltar atrás
+
+Editar a implantação e escolher a versão anterior. Como a implantação continua "somente eu", voltar não expõe nada.
 
 ## Base recebida
 
@@ -148,5 +211,5 @@ Limites: PNG externo da marca USP simulado; sem planilhas reais, editor do Apps 
 2. Rodar `diagnosticarComunidadeIPUSP()` e conferir o registro: todas as colunas "ok" nos três cadastros.
 3. Fazer a conferência do manual no `/dev` e, depois de promover, no `/exec`, nos três modos de tema e no celular, incluindo gravação com conta editora e recusa com conta não editora, e um CSV/PDF real de um ano.
 4. Conferir a cópia do nº USP dentro do `/exec` (o iframe do Apps Script pode exigir o método alternativo), a ficha e a gravação de um docente e de um servidor, e o selo **Setor** das linhas com `TIPO` = `SETOR`.
-5. Decidir o modelo de acesso pendente em [DADOS_E_SEGURANCA.md](DADOS_E_SEGURANCA.md#4-web-app) e registrar `executeAs` e **Quem pode acessar**.
+5. Modelo de acesso: decidido (lista nominal na aba `PESSOAS_IPUSP`, plano aprovado em 06/11/2026) e implementado na v1.4; ver o roteiro P1–P8 acima.
 6. Registrar aqui data, responsável funcional e resultado.

@@ -1,0 +1,64 @@
+<!--
+  GRADIP UI — Marca USP (variante Dark em SVG inline, sem dependência
+  de rede; variante Light continua o PNG institucional já usado)
+
+  NOVO NA v1.2. Antes desta rodada só existia a variante azul (PNG),
+  reaproveitada nos dois temas com um "wrapper" de superfície clara
+  atrás dela em Dark Mode (para não perder contraste/legibilidade
+  contra o fundo escuro do header). A partir desta rodada, Dark Mode
+  passa a mostrar a marca USP branca institucional diretamente sobre o
+  fundo escuro do header, com fundo transparente — sem nenhuma
+  superfície/tarja atrás dela. Light Mode continua exatamente como
+  antes (PNG azul, inalterado).
+
+  ORIGEM DO SVG BRANCO: geometria e fill-rule copiados EXATAMENTE de
+  assets/usp/logo-usp-branco.svg do repositório central
+  (Sistemas_IPUSP_GoogleScript), sem redesenho — path e viewBox
+  idênticos ao arquivo de origem (viewBox="0 0 738.57 299.48"; path
+  único, fill="#ffffff", fill-rule="evenodd", exatamente como
+  fornecido pelo arquivo). Conforme assets/usp/README.md desse
+  repositório: o SVG vem do vetor institucional oficial (Superintendência
+  de Comunicação Social da USP, "Logotipo USP — Versão Vetor"), convertido
+  por Ghostscript+Poppler — não é o PNG azul recolorido nem traçado/
+  reconstruído aqui. O PNG azul da variante Light permanece o único
+  ativo Light, sem qualquer troca ou decisão visual nova (o mesmo
+  README recomenda explicitamente que ele só deve ser substituído por
+  decisão visual própria, fora do escopo desta correção).
+
+  A troca entre as duas variantes usa o MESMO mecanismo já empregado
+  pela marca IPUSP: as classes gradip-logo-light / gradip-logo-dark,
+  definidas uma única vez em GradipTema.html (display:none conforme
+  data-theme), que precisa estar incluído antes deste arquivo. Nenhum
+  filter/invert/recolorização via CSS é aplicado a nenhuma das duas —
+  são dois ativos distintos (PNG azul original; SVG branco
+  institucional), exatamente como fornecidos. A troca acompanha
+  data-theme automaticamente, inclusive quando a preferência Sistema
+  muda com a página já aberta (mesma reatividade 100% CSS que já
+  existe para o resto do tema — nenhum script novo precisou ser
+  escrito para isso; testado nesta rodada).
+
+  Acessibilidade: segue o padrão documentado em
+  docs/THEME_IMPLEMENTATION.md (seção 6, "Logo por tema") do
+  repositório central — cada variante carrega seu próprio nome
+  acessível "Universidade de São Paulo" (alt na <img>; role="img" +
+  aria-label no <svg>, o mesmo aria-label que o arquivo de origem já
+  traz) e a exclusividade entre as duas é só o display:none/block já
+  existente conforme o tema — sem aria-hidden estático em nenhuma das
+  duas. A marca IPUSP (GradipMarcaIPUSP.html) segue hoje o MESMO
+  padrão: tinha originalmente um aria-hidden="true" fixo na variante
+  Dark além do aria-label — como CSS não consegue alternar atributos
+  aria-* conforme o tema, esse aria-hidden fixo fazia a marca IPUSP
+  nunca ser anunciada a tecnologia assistiva enquanto o Dark Mode
+  estava ativo (a variante Light, sem aria-hidden, fica com
+  display:none nesse momento). Esse aria-hidden fixo foi removido numa
+  correção pontual posterior (ver comentário em GradipMarcaIPUSP.html)
+  — as duas marcas do cabeçalho agora usam exatamente o mesmo
+  mecanismo de exclusividade só por display:none, sem nenhum
+  aria-hidden estático em nenhuma variante de nenhuma das duas.
+
+  Este arquivo não contém <style> nem <script> próprios.
+-->
+<img class="logoUSP gradip-logo-light" src="https://datagrad.sistemas.ip.usp.br/vendor/laravel-usp-theme/skins/ip/images/usp.png" alt="Universidade de São Paulo">
+<svg class="logoUSP gradip-logo-dark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 738.57 299.48" role="img" aria-label="Universidade de São Paulo" focusable="false">
+<path fill="#ffffff" fill-rule="evenodd" d="M 239.542969 229.222656 C 239.542969 256.65625 217.164062 279.035156 189.726562 279.035156 L 189.726562 298.960938 C 215.042969 298.960938 237.28125 285.351562 249.503906 265.070312 L 249.503906 229.222656 Z M 259.464844 229.222656 C 259.464844 256.65625 281.847656 279.035156 309.289062 279.035156 L 309.289062 298.960938 C 283.960938 298.960938 261.726562 285.351562 249.503906 265.070312 L 249.503906 229.222656 Z M 498.585938 69.742188 C 498.585938 42.304688 520.960938 19.929688 548.402344 19.929688 L 548.402344 0 C 523.082031 0 500.839844 13.613281 488.625 33.890625 L 488.625 69.742188 Z M 478.652344 69.773438 L 488.625 69.773438 L 488.625 33.925781 C 476.40625 13.644531 454.160156 0.0351562 428.835938 0.0351562 L 428.835938 19.957031 C 456.28125 19.957031 478.652344 42.339844 478.652344 69.773438 Z M 478.652344 229.195312 C 478.652344 256.628906 456.28125 279.066406 428.835938 279.066406 L 428.835938 298.933594 C 467.253906 298.933594 498.585938 267.597656 498.585938 229.195312 Z M 717.773438 69.78125 L 737.714844 69.78125 C 737.714844 31.367188 706.378906 0.0390625 667.960938 0.0390625 L 667.960938 19.957031 C 695.390625 19.957031 717.773438 42.339844 717.773438 69.78125 Z M 20.351562 229.195312 L 0.425781 229.195312 C 0.425781 267.597656 31.753906 298.933594 70.167969 298.933594 L 70.167969 279.003906 C 42.726562 279.003906 20.351562 256.628906 20.351562 229.195312 Z M 309.300781 0.0390625 C 272.792969 0.0390625 239.480469 31.527344 239.542969 69.753906 L 259.484375 69.753906 C 259.484375 41.433594 282.625 19.929688 309.300781 19.917969 C 309.230469 10.433594 309.242188 7.28125 309.300781 0.0390625 Z M 498.585938 279.011719 L 498.585938 298.953125 L 618.148438 298.953125 L 618.148438 199.296875 L 737.714844 199.296875 L 737.714844 69.78125 L 717.773438 69.78125 L 717.773438 179.367188 L 618.148438 179.367188 L 618.148438 69.78125 L 598.21875 69.78125 L 598.21875 279.003906 Z M 548.402344 0 L 667.960938 0.0390625 L 667.960938 19.980469 L 548.402344 19.929688 Z M 498.632812 185.195312 L 498.585938 229.195312 L 478.652344 229.195312 L 478.652344 193.460938 L 362.101562 76.722656 L 376.070312 62.597656 Z M 239.542969 113.78125 L 362.101562 236.375 L 376.070312 222.246094 L 259.484375 105.515625 L 259.484375 69.753906 L 239.542969 69.753906 Z M 0.425781 0.0390625 L 239.542969 0.0390625 L 239.542969 19.957031 L 139.910156 19.957031 L 139.910156 228.773438 L 119.980469 228.773438 L 119.980469 19.957031 L 20.351562 19.957031 L 20.351562 229.195312 L 0.425781 229.195312 Z M 70.167969 279.003906 L 189.746094 279.003906 L 189.746094 298.953125 L 70.167969 298.953125 Z M 309.289062 0.046875 L 428.851562 0.0390625 L 428.851562 19.980469 L 309.289062 19.917969 Z M 309.289062 279.035156 L 428.851562 279.109375 L 428.851562 298.9375 L 309.289062 298.90625 L 309.289062 279.035156 "/>
+</svg>
