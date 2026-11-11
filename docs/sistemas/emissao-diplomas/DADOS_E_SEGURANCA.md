@@ -61,6 +61,7 @@ Em **Configurações do projeto → Propriedades do script**. Sem valores aqui.
 
 ## 7. Compartilhamento e acesso
 
+- **Integridade de gravação (4.0.1).** O `ScriptLock` só coordena este projeto; a planilha central também é gravada pelo Gerenciador de Pessoas e direto na planilha. Por isso: a exclusão de um registro remove só a linha daquela colação e nunca mexe na pasta do aluno nem no "ID da Pasta" da central (a pasta é do Nº USP); a inclusão manual recusa Nº USP repetido na mesma colação, confere todas as colunas antes de gravar, grava a linha numa chamada só e confere depois pelo Registro ID; a criação de pasta e o autocadastro temporário param com Nº USP repetido na central, relêem a coluna E antes e depois de gravar e descartam só uma pasta criada na mesma execução e ainda vazia. Detalhes e riscos residuais: [REVISAO_4.0.1.md](REVISAO_4.0.1.md).
 - Planilhas e pastas: compartilhadas com a conta do Serviço, que executa o app; a lista de acesso não muda permissões do Drive.
 - Abrir a pasta do aluno ou um anexo pelo link exige permissão no Drive para a conta de quem clica (o app não compartilha nada).
 

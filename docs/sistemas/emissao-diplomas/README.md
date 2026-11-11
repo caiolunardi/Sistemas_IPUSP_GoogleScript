@@ -1,6 +1,6 @@
 # Gerenciador de Colação de Grau e Diplomas
 
-**Versão:** **4.0.0** (05/11/2026), **homologação parcial concluída em 06/11/2026, com as correções da revisão independente · EM PRODUÇÃO** (implantação confirmada pelo responsável em 06/11/2026). O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). O código enviado ao projeto PRODUÇÃO foi conferido por hash (commit `4792667`); a versão e o identificador da implantação não foram conferidos por este repositório, e o GitHub não informa o que está implantado no Apps Script. O desligamento da 3.x do projeto vinculado à planilha de diplomas fica com o responsável.
+**Versão:** **4.0.0** (05/11/2026), **homologação parcial concluída em 06/11/2026, com as correções da revisão independente · EM PRODUÇÃO** (implantação confirmada pelo responsável em 06/11/2026). O código está em [`sistemas/emissao-diplomas/`](../../../sistemas/emissao-diplomas/README.md). O código enviado ao projeto PRODUÇÃO foi conferido por hash (commit `4792667`); versão 4 da implantação ativa, de 09/11/2026 15:04 (horário de Brasília), informada pelo responsável; três implantações anteriores arquivadas (o identificador da implantação fica fora do repositório), e o GitHub não informa o que está implantado no Apps Script. O desligamento da 3.x do projeto vinculado à planilha de diplomas fica com o responsável.
 
 ## Finalidade
 
@@ -81,3 +81,4 @@ Nada muda nas regras de etapa, documentos, e-mails, análise de histórico nem n
 |---|---|---|
 | 3.x (até set/2026) | em uso, projeto vinculado, fora do repositório até 05/11/2026 | Endurecimento, análise de histórico, relatórios, Central de Ajuda 1.0. Importada sem mudanças no commit `35e621e` como linha de base. |
 | 4.0.0 (05/11/2026) | homologação parcial e implantação em produção confirmada pelo responsável em 06/11/2026 | Projeto autônomo, acesso pela aba `EMISSAO_DIPLOMAS`, perfis LEITOR/ADMINISTRADOR, tema GRADIP, identificação no topo. [Notas](../../../notas-de-versao/emissao-diplomas-v4.0.md). |
+| 4.0.1 (06/11/2026) | em PR, não enviada ao Google | Exclusão preserva a pasta compartilhada do aluno; inclusão manual sem duplicidade e conferida depois de gravar; criação de pasta segura quando outro sistema grava a planilha central ao mesmo tempo. [Revisão](REVISAO_4.0.1.md), [notas](../../../notas-de-versao/emissao-diplomas-v4.0.1.md). |

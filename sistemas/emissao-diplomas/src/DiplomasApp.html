@@ -1336,7 +1336,7 @@ html[data-perfil="LEITOR"] [data-somente-admin]{ display:none !important; }
 
             <div class="secaoPerigo">
                 <button data-somente-admin class="botaoExcluirAluno" onclick="excluirAlunoAtual()">
-                    🗑️ Excluir Aluno (apaga também a pasta no Drive)
+                    🗑️ Excluir registro desta colação (a pasta no Drive fica)
                 </button>
             </div>
 
@@ -1844,7 +1844,7 @@ function excluirSelecionados() {
     const qtd = selecionados.size;
     if (qtd === 0) return;
 
-    if (!confirm(`Tem certeza que quer excluir ${qtd} aluno(s)? Isso vai apagar também a pasta de cada um no Drive (quando não for compartilhada com outra colação), com todos os arquivos. Essa ação não pode ser desfeita.`)) {
+    if (!confirm(`Tem certeza que quer excluir ${qtd} aluno(s)? Isso remove o registro de cada um nesta colação. As pastas no Drive e os arquivos delas ficam guardados. Essa ação não pode ser desfeita.`)) {
         return;
     }
 
@@ -2156,7 +2156,7 @@ function transicionarParaModoEdicao(registroId, versao, dados) {
 
 function excluirAlunoAtual() {
 
-    if (!confirm(`Tem certeza que quer excluir ${alunoAtual.nome}? Isso vai apagar também a pasta dele(a) no Drive (quando não for compartilhada com outra colação), com todos os arquivos. Essa ação não pode ser desfeita.`)) {
+    if (!confirm(`Tem certeza que quer excluir ${alunoAtual.nome}? Isso remove o registro desta colação. A pasta no Drive e os arquivos dela ficam guardados. Essa ação não pode ser desfeita.`)) {
         return;
     }
 

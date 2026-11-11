@@ -1,0 +1,5 @@
+Registro ID,Versão,Nome completo,Nº USP,E-mail,Colação,Status — Dados Pessoais,Link da pasta no Drive,ID da Pasta
+,,Aluna Fictícia Integridade,9000101,aluna.integridade@exemplo.invalid,20252,OK,,
+,,Aluna Fictícia Integridade,9000101,aluna.integridade@exemplo.invalid,20262,,(link da pasta de teste),(ID da pasta de teste)
+,,Aluno Fictício Repetido,9000102,aluno.repetido@exemplo.invalid,20262,,,
+,,Aluno Fictício Sem Pasta,9000103,aluno.sempasta@exemplo.invalid,20262,,,

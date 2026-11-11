@@ -9,3 +9,9 @@ O texto completo da Central está em [`DiplomasAjuda.html`](../../../sistemas/em
 - "Segurança e integridade": item "Lista de acesso" (o servidor confere a conta e o perfil a cada ação).
 
 Conferir na homologação que a Central fala o mesmo que a tela (perfis e textos do aviso).
+
+**1.2** (06/11/2026, com a 4.0.1 do sistema):
+
+- "Exclusão de aluno" e a pergunta "O que acontece se eu excluir um aluno?": só o registro daquela colação sai; a pasta do aluno no Drive, com os arquivos, e o cadastro na planilha central ficam;
+- "Lista de alunos": "+ Adicionar Aluno" não cria um segundo registro do mesmo Nº USP na mesma colação;
+- na tela, o botão passou a se chamar "Excluir registro desta colação (a pasta no Drive fica)", e as confirmações de exclusão (individual e em lote) dizem o mesmo.

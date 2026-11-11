@@ -1,0 +1,4 @@
+N USP,Nome,Ingresso,E-mail,ID da Pasta,E-mail secundário
+9000101,Aluna Fictícia Integridade,2021/1,aluna.integridade@exemplo.invalid,(ID da pasta de teste),
+9000102,Aluno Fictício Repetido,2021/1,aluno.repetido@exemplo.invalid,,
+9000102,Aluno Fictício Repetido (linha duplicada de propósito),2021/1,,,

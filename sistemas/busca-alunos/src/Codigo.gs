@@ -70,9 +70,25 @@
     - Prof./Profª. calculado pela coluna "M / F" (tratamentoDocente_);
       a coluna TRATAMENTO, com fórmula, não é mais lida nem exibida.
 
+  v1.4 (09/11/2026, autorização no servidor — PR 2 do plano do
+  formulário de colação de grau):
+    - toda função pública confere, ANTES de abrir qualquer cadastro,
+      o perfil da conta na aba PESSOAS_IPUSP de PERMISSOES_DE_ACESSO
+      (ver PessoasAcesso.gs): LEITOR consulta e exporta; ADMINISTRADOR
+      também salva a ficha (e continua precisando ser editor da
+      planilha do cadastro, como na v1.1);
+    - doGet sem acesso devolve a página PessoasSemAcesso, sem dados;
+    - Script Property AMBIENTE (producao | homologacao): em
+      homologação, os IDs vêm da coluna "Homologação" do ID_INDEX, sem
+      cair para a produção quando ela está vazia.
+  Leitura dos cadastros, ficha, gravação, exportação e o contrato com
+  a página não mudaram.
+
   ARQUIVOS DO PROJETO (todos na raiz do Apps Script, nomes sem
   extensão no include_):
     Codigo.gs                  — este arquivo
+    PessoasAcesso.gs           — quem pode usar e com que perfil (v1.4)
+    PessoasSemAcesso.html      — página de quem não tem acesso (v1.4)
     BuscaAlunosApp.html        — página principal (busca)
     GradipTema.html            — tokens + Sistema/Claro/Escuro
     GradipTemaControle.html    — seletor "Aparência"
@@ -190,10 +206,16 @@ const MAXIMO_LINHAS_EXPORTACAO = 5000;
 // scriptlets <?!= include_('...') ?> pra trazer o tema e a ajuda.
 // Nenhum dado pessoal passa por aqui: a lista continua chegando só
 // pela chamada google.script.run.listarComunidadeParaBusca().
+// v1.4: antes de servir a página, confere o acesso no servidor. Quem
+// não tem acesso recebe só o aviso (PessoasSemAcesso), sem nenhum dado.
+// A conferência é repetida em cada função pública: abrir a página não
+// libera nada por si.
 function doGet() {
+  const acesso = verificarAcessoParaPaginaPessoas_();
+  if (!acesso.ok) return paginaSemAcessoPessoas_(acesso);
   return HtmlService.createTemplateFromFile("BuscaAlunosApp")
       .evaluate()
-      .setTitle("Comunidade IPUSP — Serviço de Graduação")
+      .setTitle(prefixoAmbientePessoas_() + "Comunidade IPUSP — Serviço de Graduação")
       .addMetaTag("viewport", "width=device-width, initial-scale=1");
 }
 
@@ -222,8 +244,28 @@ function obterIdIndice_() {
   return String(id).trim();
 }
 
+// v1.4: Script Property AMBIENTE. Vazia = produção. Qualquer outro
+// valor que não seja produção ou homologação é recusado (falha fechada).
+function ambientePessoas_() {
+  const valor = String(PropertiesService.getScriptProperties().getProperty("AMBIENTE") || "producao").trim().toLowerCase();
+  if (valor === "producao" || valor === "produção") return "producao";
+  if (valor === "homologacao" || valor === "homologação") return "homologacao";
+  throw new Error("Configuração inválida: AMBIENTE deve ser producao ou homologacao.");
+}
+
+function prefixoAmbientePessoas_() {
+  try {
+    return ambientePessoas_() === "homologacao" ? "[HOMOLOGAÇÃO] " : "";
+  } catch (err) {
+    return "";
+  }
+}
+
+// Nome mantido da v1.0. Em homologação (v1.4) devolve o ID da coluna
+// "Homologação" e nunca o de produção.
 function obterIdProducao_(chave) {
 
+  const homologacao = ambientePessoas_() === "homologacao";
   const planilha = SpreadsheetApp.openById(obterIdIndice_());
   const aba = planilha.getSheetByName(ABA_INDICE) || planilha.getSheets()[0];
 
@@ -237,16 +279,19 @@ function obterIdProducao_(chave) {
   const cabecalho = valores[0];
 
   const colChave = cabecalho.indexOf("Chave");
-  const colId = cabecalho.indexOf("ID de Produção");
+  const colId = homologacao
+    ? cabecalho.findIndex(t => comparavel_(t).indexOf("homologacao") === 0)
+    : cabecalho.indexOf("ID de Produção");
+  const nomeColuna = homologacao ? "Homologação" : "ID de Produção";
   if (colChave === -1 || colId === -1) {
-    throw new Error('A planilha ID_INDEX precisa ter as colunas "Chave" e "ID de Produção".');
+    throw new Error(`A planilha ID_INDEX precisa ter as colunas "Chave" e "${nomeColuna}".`);
   }
 
   for (let i = 1; i < valores.length; i++) {
     if (String(valores[i][colChave]).trim() === chave) {
       const id = String(valores[i][colId] || "").trim();
       if (!id) {
-        throw new Error(`A chave "${chave}" está cadastrada no ID_INDEX, mas a coluna "ID de Produção" está vazia.`);
+        throw new Error(`A chave "${chave}" está cadastrada no ID_INDEX, mas a coluna "${nomeColuna}" está vazia.`);
       }
       return id;
     }
@@ -271,6 +316,7 @@ function obterIdProducao_(chave) {
 // Lista só de alunos, no formato da v1.1 (sem "tipo"). Usada por
 // listarComunidadeParaBusca e mantida pública por compatibilidade.
 function listarAlunosParaBusca() {
+  exigirLeitorPessoas_();
   return lerCadastro_("alunos").map(item => {
     const semTipo = Object.assign({}, item);
     delete semTipo.tipo;
@@ -295,6 +341,14 @@ function listarAlunosParaBusca() {
   configuração (propriedade ausente, ID_INDEX errado).
 ------------------------------------------------------*/
 function listarComunidadeParaBusca() {
+  exigirLeitorPessoas_();
+  return lerComunidade_();
+}
+
+// Leitura dos três cadastros, sem conferência de acesso: só é chamada
+// por funções que já conferiram (listarComunidadeParaBusca e o
+// diagnóstico, que exige ADMINISTRADOR).
+function lerComunidade_() {
 
   const pessoas = [];
   const indisponiveis = [];
@@ -464,6 +518,7 @@ function mapearColunas_(cabecalho, nomeCadastro) {
   recusamos em vez de mostrar/editar o errado.
 ------------------------------------------------------*/
 function obterFicha(referencia) {
+  exigirLeitorPessoas_();
   const ref = referencia || {};
   const cadastro = obterCadastro_(ref.cadastro);
   const aba = abrirCadastro_(cadastro);
@@ -525,7 +580,9 @@ function montarFicha_(nomeCadastro, aba, linha) {
     });
   });
 
-  const ficha = { cadastro: nomeCadastro, linha: linha, campos: campos, podeEditar: usuarioPodeEditar_(aba) };
+  // v1.4: o botão de editar só aparece para ADMINISTRADOR que também é
+  // editor da planilha (as mesmas duas condições de salvarFicha).
+  const ficha = { cadastro: nomeCadastro, linha: linha, campos: campos, podeEditar: perfilPodeGravar_() && usuarioPodeEditar_(aba) };
   if (nomeCadastro === "docentes") {
     const mapa = mapearColunas_(cabecalho, nomeCadastro);
     ficha.tratamento = tratamentoDocente_(valorCampo_(exibidos, mapa, "genero"));
@@ -534,9 +591,20 @@ function montarFicha_(nomeCadastro, aba, linha) {
 
 }
 
+// v1.4: o perfil da conta (já conferido nesta execução) permite gravar?
+function perfilPodeGravar_() {
+  try {
+    return usuarioAtualPessoas_().perfil === ACESSO_PESSOAS.ADMINISTRADOR;
+  } catch (err) {
+    return false;
+  }
+}
+
 /*-----------------------------------------------------
-  QUEM PODE SALVAR — só quem é EDITOR da planilha daquele
-  cadastro (alunos, docentes ou servidores).
+  QUEM PODE SALVAR — v1.4: perfil ADMINISTRADOR na aba
+  PESSOAS_IPUSP (exigirAdministradorPessoas_) E, como desde a v1.1,
+  ser EDITOR da planilha daquele cadastro (alunos, docentes ou
+  servidores).
 
   O Web App pode estar implantado para executar como quem
   implantou; nesse caso o Sheets aceitaria a gravação de
@@ -590,6 +658,7 @@ function usuarioPodeEditar_(aba) {
 ------------------------------------------------------*/
 function salvarFicha(pedido) {
 
+  exigirAdministradorPessoas_();
   const p = pedido || {};
   const nomeCadastro = p.cadastro;
   const cadastro = obterCadastro_(nomeCadastro);
@@ -721,6 +790,7 @@ function converterParaCelula_(novo, valorAnterior) {
 ------------------------------------------------------*/
 function gerarPdfListaAlunos(pedido) {
 
+  exigirLeitorPessoas_();
   const p = pedido || {};
   const linhas = Array.isArray(p.linhas) ? p.linhas : [];
   if (!linhas.length) throw new Error("Não há pessoas na lista para exportar.");
@@ -783,6 +853,23 @@ function diagnosticarComunidadeIPUSP() {
   Logger.log(`Propriedade ${PROPRIEDADE_ID_INDICE}: ${temPropriedade ? "configurada" : "AUSENTE — cadastre em Configurações do projeto → Propriedades do script"}`);
   if (!temPropriedade) return;
 
+  // v1.4: ambiente e acesso de quem está rodando. O resto do
+  // diagnóstico lê os cadastros, então só continua para ADMINISTRADOR.
+  let ambiente;
+  try {
+    ambiente = ambientePessoas_();
+  } catch (err) {
+    Logger.log(mensagemSegura_(err));
+    return;
+  }
+  Logger.log(`Ambiente: ${ambiente}`);
+  const acesso = verificarAcessoParaPaginaPessoas_();
+  Logger.log(`Acesso da conta que está rodando (aba ${ACESSO_PESSOAS.ABA}): ${acesso.ok ? acesso.perfil : acesso.codigo}`);
+  if (!acesso.ok || acesso.perfil !== ACESSO_PESSOAS.ADMINISTRADOR) {
+    Logger.log(`O restante do diagnóstico lê os cadastros e exige o perfil ${ACESSO_PESSOAS.ADMINISTRADOR}.`);
+    return;
+  }
+
   const indice = SpreadsheetApp.openById(obterIdIndice_());
   const abaIndice = indice.getSheetByName(ABA_INDICE) || indice.getSheets()[0];
   Logger.log(`Aba lida no ID_INDEX: "${abaIndice.getName()}"${abaIndice.getName() === ABA_INDICE ? "" : ` (não existe "${ABA_INDICE}"; usada a primeira aba)`}`);
@@ -812,7 +899,7 @@ function diagnosticarComunidadeIPUSP() {
 
   let resultado;
   try {
-    resultado = listarComunidadeParaBusca();
+    resultado = lerComunidade_();
   } catch (err) {
     Logger.log(`Nenhum cadastro pôde ser lido: ${mensagemSegura_(err)}`);
     return;
