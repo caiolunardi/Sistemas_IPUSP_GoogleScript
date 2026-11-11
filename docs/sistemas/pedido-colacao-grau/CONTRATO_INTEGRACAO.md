@@ -45,3 +45,14 @@ Pedido de Bacharelado em **2025/2** seguido de novo pedido de Formação de Psic
 ## 4. Gates para mudar o contrato
 
 Não alterar a planilha de Diplomas, nomenclatura de anexos, `Registro ID`, versões, status ou vínculos do Drive até existir: (a) diagnóstico dos dados reais sob ambiente autorizado, (b) desenho do esquema e transição compatível com o Gerenciador 4.0, (c) testes sintéticos e negativos, (d) homologação isolada, (e) revisão técnica independente e (f) autorização humana de implantação. Não interpretar este documento como autorização de desenvolvimento, deploy ou migração.
+
+## 5. Contrato da versão 2.0 (escritor único)
+
+Na 2.0 o formulário **não grava** na aba `Diplomas` nem na planilha central. O que ele entrega, para o encaminhador do Gerenciador de Diplomas (PR 4) e para a fila do Gerenciador de Pessoas (PR 5), está em [MODELO_DE_DADOS.md, seção F](MODELO_DE_DADOS.md#f-planilha-pedidos_colacao-formulário-20):
+
+- pedido elegível para encaminhar: `PROTOCOLOS.Recebimento = RECEBIDO` e cadastro `CONFIRMADO` (ou `APROVADO` em `DECISOES_CADASTRO`);
+- versão a aplicar: a maior `VERSOES.Versão` com `Situação = RECEBIDO`; os dados vêm do JSON com as chaves do legado;
+- `Registro ID` já gerado no protocolo, para a inclusão idempotente;
+- documentos da versão em `DOCUMENTOS` (`ID do arquivo`), todos na subpasta do protocolo; o encaminhador move com `moveTo` (mesmo ID).
+
+O formulário lê a aba `Diplomas` só para a regra D3 (correção enquanto "Status — Dados Pessoais" estiver vazio na linha do `Registro ID`).

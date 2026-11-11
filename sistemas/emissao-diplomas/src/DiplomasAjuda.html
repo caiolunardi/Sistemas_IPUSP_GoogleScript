@@ -209,7 +209,7 @@
             <li>As 4 abas correspondem às 4 etapas do <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-guia-rapido">Guia Rápido</button>.</li>
             <li>O contador mostra quantos alunos existem na aba/filtro atual.</li>
             <li>O campo de busca localiza por Nome ou Nº USP.</li>
-            <li>"+ Adicionar Aluno" cadastra um novo aluno na colação atual.</li>
+            <li>"+ Adicionar Aluno" cadastra um novo aluno na colação atual. Se o Nº USP já tem registro nesta colação, nada é criado e o sistema pede para abrir o registro existente.</li>
             <li>Clicar em um aluno da lista abre o <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-modal-aluno">Modal do Aluno</button>.</li>
           </ul>
 
@@ -508,7 +508,7 @@
 
           <ul>
             <li>Cada aluno tem uma <strong>pasta única por Nº USP</strong> no Google Drive — compartilhada conceitualmente com outros sistemas que usam o mesmo cadastro central de alunos;</li>
-            <li>"Abrir/criar pasta no Drive" abre a pasta se ela já existir, ou cria uma nova se ainda não existir;</li>
+            <li>"Abrir/criar pasta no Drive" abre a pasta se ela já existir, ou cria uma nova se ainda não existir. O aluno precisa ter cadastro na planilha central; sem cadastro, nada é criado e o aviso pede o cadastro pelo Gerenciador de Pessoas;</li>
             <li>Em Anexos: lista de arquivos já existentes, opção de excluir um anexo, "+ Adicionar arquivo" e "Salvar Anexos";</li>
             <li>O tipo de cada arquivo vem de uma lista de tipos já configurada no sistema.</li>
           </ul>
@@ -539,11 +539,11 @@
         <div class="ajudaSecao" id="ajuda-exclusao" data-ajuda-titulo="Exclusão de aluno" data-ajuda-palavraschave="excluir deletar remover apagar">
           <h2>Exclusão de aluno</h2>
           <div class="ajudaAviso ajudaAvisoPerigo">
-            <strong>Esta é uma ação perigosa.</strong> Ela remove o registro do aluno e pode enviar a pasta correspondente do Google Drive para a lixeira.
+            <strong>Esta ação não pode ser desfeita.</strong> Ela remove o registro do aluno nesta colação.
           </div>
           <ul>
-            <li>Antes de enviar a pasta para a lixeira, o sistema confere se nenhum outro registro ainda utiliza aquela mesma pasta (lembrando que a pasta é organizada por Nº USP e pode ser compartilhada entre sistemas);</li>
-            <li>Só é permitido mexer em pastas dentro do escopo que o sistema efetivamente gerencia.</li>
+            <li>A pasta do aluno no Google Drive e os arquivos dela <strong>ficam guardados</strong>: a pasta é organizada por Nº USP e serve também a outras colações da mesma pessoa e a outros sistemas;</li>
+            <li>O cadastro do aluno na planilha central também não muda.</li>
           </ul>
           <p>Confira sempre o Nº USP do aluno antes de confirmar a exclusão.</p>
         </div>
@@ -584,6 +584,22 @@
           <p class="ajudaSubtituloSecao">Orientação prática para uma situação concreta. Para dúvidas de conceito, veja o <button type="button" class="ajudaLinkInterno" data-alvo="ajuda-faq">FAQ</button>.</p>
 
           <div id="ajudaListaProblemas">
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Apareceu o aviso de pedidos do formulário com pendência.">
+              <div class="ajudaProblemaTitulo">"Apareceu o aviso de pedidos do formulário com pendência."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">Os pedidos enviados pelo Formulário de Pedido de Colação de Grau entram na lista sozinhos. O aviso mostra os que não puderam entrar (por exemplo, aluno sem cadastro na planilha central ou outro registro do mesmo Nº USP na mesma colação) e as correções enviadas pelo aluno depois que a conferência dos dados pessoais começou.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Leia o motivo de cada linha e resolva a causa (cadastro pelo Gerenciador de Pessoas, registro repetido na lista). O pedido entra sozinho na próxima vez que alguém da administração abrir a página. Uma correção retida não muda nada no registro: confira com o aluno e altere o que for preciso pela própria tela.</div>
+            </div>
+
+            <div class="ajudaProblemaCard" data-ajuda-titulo="Abrir/criar pasta diz que o Nº USP não tem cadastro.">
+              <div class="ajudaProblemaTitulo">"Abrir/criar pasta diz que o Nº USP não tem cadastro."</div>
+              <div class="ajudaProblemaLabel">O que significa</div>
+              <div class="ajudaProblemaTexto">A pasta do aluno é ligada ao cadastro da planilha central. Este gerenciador não cria mais esse cadastro.</div>
+              <div class="ajudaProblemaLabel">O que fazer</div>
+              <div class="ajudaProblemaTexto">Cadastre o aluno pelo Gerenciador de Pessoas e tente de novo.</div>
+            </div>
 
             <div class="ajudaProblemaCard" data-ajuda-titulo="O botão que eu esperava não aparece.">
               <div class="ajudaProblemaTitulo">"O botão que eu esperava não aparece."</div>
@@ -822,7 +838,7 @@
 
             <div class="ajudaFaqItem">
               <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp20" data-titulo="O que acontece se eu excluir um aluno?">O que acontece se eu excluir um aluno?<span class="ajudaFaqIcone">+</span></button>
-              <div class="ajudaFaqResposta" id="ajudaFaqResp20">O registro é removido e a pasta pode ir para a lixeira do Drive, se nenhum outro registro ainda estiver usando essa mesma pasta.</div>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp20">Só o registro daquela colação é removido. A pasta do aluno no Drive, com os arquivos, e o cadastro na planilha central ficam como estavam.</div>
             </div>
 
             <div class="ajudaFaqItem">
@@ -853,6 +869,11 @@
             <div class="ajudaFaqItem">
               <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp26" data-titulo="Por que uma alteração no código ainda não apareceu no sistema?">Por que uma alteração no código ainda não apareceu no sistema?<span class="ajudaFaqIcone">+</span></button>
               <div class="ajudaFaqResposta" id="ajudaFaqResp26">Porque o Web App publicado (/exec) precisa ser atualizado/implantado de novo depois de qualquer mudança no código.</div>
+            </div>
+
+            <div class="ajudaFaqItem">
+              <button type="button" class="ajudaFaqPergunta" aria-expanded="false" aria-controls="ajudaFaqResp27" data-titulo="Como os pedidos do formulário de colação chegam à lista?">Como os pedidos do formulário de colação chegam à lista?<span class="ajudaFaqIcone">+</span></button>
+              <div class="ajudaFaqResposta" id="ajudaFaqResp27">Sozinhos: quando o pedido está completo e o cadastro do aluno está confirmado, ele entra na colação escolhida, com os documentos já na pasta do aluno. Se o aluno enviar uma correção antes de a equipe começar a conferência dos dados pessoais, os dados do registro são atualizados; depois disso, a correção fica retida e aparece no aviso de pendências. Também fica retida a correção em que o aluno aponta uma divergência nova nos dados do cadastro; o aviso mostra o que ele escreveu.</div>
             </div>
 
           </div>

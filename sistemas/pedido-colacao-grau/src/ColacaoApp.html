@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedido de Colação de Grau — IPUSP</title>
+
+<!-- GRADIP UI — tema (Sistema/Claro/Escuro), antes de qualquer <style>
+     e da carga de dados: o tema é só do navegador. -->
+<?!= include_('GradipTema') ?>
+
+<style>
+/*=====================================================
+  PEDIDO DE COLAÇÃO DE GRAU — 2.1 (tema GRADIP + Central de
+  Ajuda). Todas as cores vêm dos tokens de GradipTema.html;
+  Claro e Escuro saem do mesmo CSS. IDs, textos, campos,
+  telas e chamadas ao servidor são os da 2.0.
+=====================================================*/
+
+*{ box-sizing:border-box; }
+
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--gradip-bg);
+    color:var(--gradip-text);
+}
+
+[hidden]{ display:none !important; }
+
+/*---------------- CABEÇALHO (padrão GRADIP) ----------------*/
+
+#headerSistema{
+    background:var(--gradip-header-bg);
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    border-bottom:1px solid var(--gradip-border);
+    gap:12px;
+}
+
+.logoEsquerda{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    min-width:0;
+}
+
+.logoEsquerda .marcaIpuspSvg{
+    height:52px;
+    flex:0 0 auto;
+}
+
+.textoCabecalho{ min-width:0; }
+
+.tituloSistema{
+    margin:0;
+    font-size:17px;
+    font-weight:bold;
+    color:var(--gradip-text);
+}
+
+.subtituloSistema{
+    font-size:13px;
+    color:var(--gradip-text-muted);
+    margin-top:2px;
+}
+
+.cabecalhoDireita{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex:0 0 auto;
+}
+
+.logoUSP{
+    height:44px;
+    width:auto;
+    flex:0 0 auto;
+}
+
+.logoUSPWrap{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+    padding:4px 6px;
+}
+
+.botaoAjuda{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--gradip-info-bg);
+    border:1px solid var(--gradip-info-border);
+    color:var(--gradip-link);
+    font:inherit;
+    font-size:13px;
+    font-weight:bold;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    min-width:44px;
+    min-height:44px;
+}
+
+.botaoAjuda:hover{
+    background:var(--gradip-surface-2);
+    border-color:var(--gradip-link);
+}
+
+.botaoAjuda:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.barraAzul{
+    height:6px;
+    background:var(--gradip-header-accent);
+}
+
+/* Faixa do ambiente de homologação (a página liga só quando o servidor
+   informa homologação). */
+.faixaHomologacao{
+    background:var(--gradip-warning-bg);
+    border-bottom:2px solid var(--gradip-warning-border);
+    color:var(--gradip-text);
+    padding:10px 16px;
+    text-align:center;
+    font-size:14px;
+}
+.faixaHomologacao strong{ color:var(--gradip-warning); }
+
+/*---------------- CONTEÚDO ----------------*/
+
+#conteudo{
+    max-width:760px;
+    margin:24px auto;
+    padding:0 20px 40px 20px;
+}
+
+.cardMensagem{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:32px 28px;
+    text-align:center;
+    color:var(--gradip-text);
+    line-height:1.6;
+}
+
+.cardMensagem h2{
+    color:var(--gradip-text);
+    font-size:19px;
+    margin-top:0;
+}
+
+.secao{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:20px 24px;
+    margin-bottom:16px;
+    color:var(--gradip-text);
+}
+
+fieldset.secao{
+    margin:0 0 16px 0;
+    min-width:0;
+}
+
+.secao h3{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--gradip-link);
+    margin:0 0 14px 0;
+    border-bottom:2px solid var(--gradip-border);
+    padding-bottom:8px;
+}
+
+/* Gatilhos de ajuda contextual (abrem a Central na seção certa). */
+.ajudaContextualLinha{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:16px 18px;
+    margin:16px 0 8px 0;
+}
+
+.secao .ajudaContextualLinha{ margin:0 0 14px 0; }
+
+.secao .ajudaContextualLinha,
+#telaFormulario > .ajudaContextualLinha{
+    justify-content:flex-start;
+}
+
+#telaFormulario > .ajudaContextualLinha{ margin:8px 0 18px 2px; }
+
+.linkAjudaContextual{
+    display:inline-block;
+    background:none;
+    border:none;
+    padding:15px 4px;
+    margin:-15px -4px;
+    font:inherit;
+    font-size:12.5px;
+    font-weight:bold;
+    text-decoration:underline;
+    cursor:pointer;
+    color:var(--gradip-link);
+}
+
+.linkAjudaContextual:hover{ color:var(--gradip-link-hover); }
+
+.linkAjudaContextual:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:-10px;
+}
+
+/*---------------- CAMPOS ----------------*/
+
+.campo{ margin-bottom:16px; }
+.campo:last-child{ margin-bottom:0; }
+
+.campo label{
+    display:block;
+    font-size:14px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    margin-bottom:5px;
+}
+
+.obrigatorio{ color:var(--gradip-danger); }
+
+.ajuda{
+    font-size:12.5px;
+    color:var(--gradip-text-muted);
+    margin:0 0 8px 0;
+    line-height:1.5;
+}
+
+.ajuda a,
+.cardMensagem a{
+    color:var(--gradip-link);
+    overflow-wrap:anywhere;
+}
+.ajuda a:hover{ color:var(--gradip-link-hover); }
+.ajuda a:focus-visible{
+    outline:2px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.campo input[type=text],
+.campo textarea{
+    width:100%;
+    min-height:44px;
+    padding:10px 12px;
+    border:1px solid var(--gradip-border-strong);
+    border-radius:8px;
+    font-size:15px;
+    font-family:inherit;
+    background:var(--gradip-input-bg);
+    color:var(--gradip-input-text);
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder{
+    /* --gradip-input-placeholder fica abaixo de 4,5:1 no Claro;
+       --gradip-text-muted passa nos dois temas (mesmo ajuste dos
+       outros sistemas). */
+    color:var(--gradip-text-muted);
+}
+
+.campo input[type=text]:hover,
+.campo textarea:hover{ border-color:var(--gradip-link); }
+
+.campo input[readonly]{
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text);
+    border-color:var(--gradip-border);
+}
+.campo input[readonly]:hover{ border-color:var(--gradip-border); }
+
+.campo textarea{
+    resize:vertical;
+    min-height:90px;
+    line-height:1.5;
+}
+
+.linhaDupla{
+    display:flex;
+    gap:14px;
+}
+
+.linhaDupla > div{
+    flex:1;
+    min-width:0;
+}
+
+.itemCheckbox,
+.campo label.itemCheckbox{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-height:44px;
+    margin:0;
+    padding:4px 0;
+    font-size:15px;
+    font-weight:normal;
+    color:var(--gradip-text);
+    cursor:pointer;
+}
+
+.itemCheckbox input{
+    width:18px;
+    height:18px;
+    margin:0;
+    flex-shrink:0;
+    accent-color:var(--gradip-primary);
+}
+
+.itemCheckbox input:focus-visible{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+.grupoSimNao{
+    display:flex;
+    gap:10px;
+}
+
+.campo label.opcaoSimNao,
+.opcaoSimNao{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    margin:0;
+    padding:10px;
+    border:1.5px solid var(--gradip-border-strong);
+    border-radius:8px;
+    background:var(--gradip-input-bg);
+    cursor:pointer;
+    font-size:14px;
+    font-weight:bold;
+    color:var(--gradip-text);
+    transition:.15s;
+    user-select:none;
+    position:relative;
+}
+
+.opcaoSimNao:hover{ border-color:var(--gradip-link); }
+
+/* Selecionada: borda, fundo e marca ✓ (não só a cor). */
+.opcaoSimNao.selecionada{
+    border-color:var(--gradip-primary);
+    background:var(--gradip-info-bg);
+    color:var(--gradip-link);
+}
+.opcaoSimNao.selecionada::before{
+    content:"✓";
+    margin-right:6px;
+}
+
+/* O rádio fica fora da vista mas continua focável: Tab entra no grupo e
+   as setas trocam a opção. */
+.opcaoSimNao input{
+    position:absolute;
+    opacity:0;
+    width:1px;
+    height:1px;
+    margin:0;
+    pointer-events:none;
+}
+
+.linhaUpload{
+    border:1.5px dashed var(--gradip-border-strong);
+    border-radius:8px;
+    padding:16px;
+    position:relative;
+    background:var(--gradip-input-bg);
+}
+
+.linhaUpload.arrastando{
+    border-color:var(--gradip-link);
+    background:var(--gradip-info-bg);
+}
+
+.linhaUpload.comArquivo{
+    border-style:solid;
+    border-color:var(--gradip-success-border);
+    background:var(--gradip-success-bg);
+}
+
+.linhaUpload .zonaClique{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:13px;
+    cursor:pointer;
+    border-radius:6px;
+}
+
+.linhaUpload .nomeArquivoEscolhido{
+    font-weight:bold;
+    color:var(--gradip-success);
+    overflow-wrap:anywhere;
+}
+
+#blocoProcurador{
+    display:none;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid var(--gradip-border);
+}
+
+#blocoHabilitacoesPendentes .itemCheckbox{ display:none; }
+#blocoHabilitacoesPendentes .itemCheckbox.disponivel{ display:flex; }
+
+.manterDocumento{
+    font-size:13px;
+    color:var(--gradip-success);
+    margin:0 0 8px 0;
+}
+
+/*---------------- BOTÕES ----------------*/
+
+.botaoPrimario{
+    width:100%;
+    min-height:48px;
+    padding:12px 16px;
+    background:var(--gradip-primary);
+    color:var(--gradip-on-primary);
+    border:1px solid transparent;
+    border-radius:8px;
+    font:inherit;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.15s;
+}
+
+.botaoPrimario:hover{ background:var(--gradip-primary-hover); }
+
+.botaoPrimario:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+    cursor:not-allowed;
+}
+
+.botaoSecundario{
+    width:100%;
+    min-height:44px;
+    padding:12px;
+    background:var(--gradip-surface);
+    border:1.5px solid var(--gradip-link);
+    color:var(--gradip-link);
+    border-radius:8px;
+    font:inherit;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+.botaoSecundario:hover{ background:var(--gradip-surface-2); }
+
+.botaoSecundario:disabled{
+    background:var(--gradip-disabled-bg);
+    color:var(--gradip-disabled-text);
+    border-color:var(--gradip-border);
+    cursor:not-allowed;
+}
+
+.campo input[type=text]:focus-visible,
+.campo textarea:focus-visible,
+.botaoPrimario:focus-visible,
+.botaoSecundario:focus-visible,
+.zonaClique:focus-visible,
+.opcaoSimNao:focus-within{
+    outline:3px solid var(--gradip-focus);
+    outline-offset:2px;
+}
+
+/*---------------- AVISOS (padrão de alerta GRADIP) ----------------*/
+
+.avisoInfo{
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    border-left-width:4px;
+    color:var(--gradip-text);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:13.5px;
+    margin-bottom:16px;
+    line-height:1.5;
+}
+
+#avisoRejeitado p{ margin:0 0 6px; }
+#avisoRejeitado p:last-child{ margin:0; }
+
+.avisoErro{
+    background:var(--gradip-danger-bg);
+    border:1px solid var(--gradip-danger-border);
+    border-left-width:4px;
+    color:var(--gradip-text);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:14px;
+    margin:0 0 16px 0;
+    line-height:1.5;
+}
+.avisoErro::before{
+    content:"⚠ ";
+    color:var(--gradip-danger);
+    font-weight:bold;
+}
+
+/* Campo com problema: borda vermelha e texto logo abaixo (nunca só a cor). */
+.campoInvalido{
+    border-color:var(--gradip-danger) !important;
+    box-shadow:inset 4px 0 0 var(--gradip-danger);
+}
+input.campoInvalido:focus,
+textarea.campoInvalido:focus,
+.campoInvalido:focus-visible{
+    border-color:var(--gradip-danger) !important;
+    outline:2px solid var(--gradip-danger) !important;
+    outline-offset:1px;
+}
+.campo.campoInvalido{
+    border:1.5px solid var(--gradip-danger);
+    border-radius:8px;
+    padding:8px;
+}
+.erroCampo{
+    color:var(--gradip-danger);
+    font-size:13px;
+    font-weight:bold;
+    margin:6px 0 0 0;
+}
+
+.statusReenvio{
+    font-size:13px;
+    margin:8px 0 0 0;
+    color:var(--gradip-success);
+}
+.statusReenvio.statusReenvioErro{
+    color:var(--gradip-danger);
+    font-weight:bold;
+}
+
+/*---------------- PROTOCOLO E MEUS PEDIDOS ----------------*/
+
+.protocoloDestaque{
+    font-size:22px;
+    font-weight:bold;
+    color:var(--gradip-link);
+    letter-spacing:.02em;
+    margin:8px 0;
+    overflow-wrap:anywhere;
+}
+
+.listaPedidos{
+    list-style:none;
+    padding:0;
+    margin:0;
+    text-align:left;
+}
+
+.listaPedidos li{
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:12px;
+    background:var(--gradip-surface-2);
+    color:var(--gradip-text);
+    font-size:14px;
+    line-height:1.6;
+    overflow-wrap:anywhere;
+}
+
+.listaPedidos .botaoSecundario{
+    width:auto;
+    padding:8px 14px;
+}
+
+#meusPedidosVazio{ color:var(--gradip-text-muted); }
+
+.rodape{
+    text-align:center;
+    color:var(--gradip-text-muted);
+    font-size:12px;
+    padding:0 0 30px 0;
+}
+
+/*---------------- CARREGANDO ----------------*/
+
+#loadingOverlay{
+    display:none;
+    position:fixed;
+    z-index:9000;
+    inset:0;
+    background:var(--gradip-overlay);
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+}
+
+#loadingBox{
+    background:var(--gradip-surface-elevated);
+    color:var(--gradip-text);
+    border:1px solid var(--gradip-border);
+    border-radius:10px;
+    box-shadow:var(--gradip-shadow);
+    padding:26px 36px;
+    text-align:center;
+    max-width:100%;
+}
+
+#loadingTitulo{
+    font-weight:bold;
+    font-size:15px;
+}
+
+#loadingTexto{
+    color:var(--gradip-text-muted);
+    font-size:13px;
+    margin-top:6px;
+}
+
+/*---------------- RESPONSIVO ----------------*/
+
+@media (max-width:640px){
+    #headerSistema{
+        flex-wrap:wrap;
+        padding:10px 12px;
+        row-gap:8px;
+    }
+    .logoEsquerda{
+        gap:8px;
+        flex:1 1 100%;
+    }
+    .logoEsquerda .marcaIpuspSvg{ height:38px; }
+    .logoUSP{ height:32px; }
+    .logoUSPWrap{ padding:2px 3px; margin-left:auto; }
+    .tituloSistema{ font-size:14px; }
+    .subtituloSistema{ font-size:11.5px; }
+    .cabecalhoDireita{
+        gap:8px;
+        flex:1 1 100%;
+    }
+}
+
+@media (max-width:480px){
+    .botaoAjuda .textoAjuda{ display:none; }
+    .botaoAjuda{
+        padding:8px;
+        border-radius:50%;
+    }
+    .gradip-theme-control{ gap:0; }
+    .gradip-theme-control__select{
+        padding:0 26px 0 8px;
+        font-size:12px;
+    }
+    .linhaDupla{ flex-direction:column; gap:0; }
+    .linhaDupla > div{ margin-bottom:16px; }
+    #conteudo{
+        margin-top:16px;
+        padding:0 12px 30px 12px;
+    }
+    .secao{ padding:16px 14px; }
+    .cardMensagem{ padding:24px 16px; }
+}
+</style>
+
+<?!= include_('ColacaoAjudaEstilos') ?>
+
+</head>
+<body>
+
+<header id="headerSistema">
+    <div class="logoEsquerda">
+        <?!= include_('GradipMarcaIPUSP') ?>
+        <div class="textoCabecalho">
+            <h1 class="tituloSistema">Pedido de Colação de Grau</h1>
+            <div class="subtituloSistema" id="subtitulo">Instituto de Psicologia da USP · Serviço de Graduação</div>
+        </div>
+    </div>
+    <div class="cabecalhoDireita">
+        <?!= include_('GradipTemaControle') ?>
+        <button type="button" class="botaoAjuda" data-gradip-help-open="ajuda-inicio" aria-haspopup="dialog" aria-label="Ajuda">
+            <span aria-hidden="true">❓</span>
+            <span class="textoAjuda">Ajuda</span>
+        </button>
+        <span class="logoUSPWrap">
+            <?!= include_('GradipMarcaUSP') ?>
+        </span>
+    </div>
+</header>
+
+<div class="barraAzul"></div>
+
+<div id="faixaHomologacao" class="faixaHomologacao" role="note" hidden><strong>HOMOLOGAÇÃO:</strong> ambiente de teste, com dados fictícios. Nada aqui é um pedido real.</div>
+
+<main id="conteudo">
+
+    <div id="caixaErro" class="avisoErro" role="alert" hidden></div>
+
+    <div id="telaCarregando" class="cardMensagem">
+        <p>Carregando…</p>
+    </div>
+
+    <div id="telaErro" class="cardMensagem" hidden>
+        <h2>Não foi possível abrir o formulário</h2>
+        <p id="textoErro"></p>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-problemas">Como resolver?</button></div>
+    </div>
+
+    <div id="telaFechado" class="cardMensagem" hidden>
+        <h2>Formulário fechado no momento</h2>
+        <p>O período de solicitação de colação de grau não está aberto agora. Consulte o Serviço de Graduação para saber quando reabre.</p>
+        <button type="button" class="botaoSecundario" id="botaoMeusPedidosFechado" hidden>Meus pedidos</button>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-prazo">Quando posso pedir?</button></div>
+    </div>
+
+    <div id="telaPedidoExistente" class="cardMensagem" hidden>
+        <h2>Você já tem um pedido nesta colação</h2>
+        <p>Protocolo</p>
+        <p class="protocoloDestaque" id="existenteProtocolo"></p>
+        <p id="existenteTexto"></p>
+        <button type="button" class="botaoPrimario" id="botaoCorrigir">Corrigir o pedido</button>
+        <button type="button" class="botaoSecundario" id="botaoMeusPedidosExistente">Meus pedidos</button>
+        <button type="button" class="botaoSecundario" id="botaoVoltarPainel" hidden>Voltar ao Painel de Solicitações</button>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-correcao">Como funciona a correção?</button></div>
+    </div>
+
+    <form id="telaFormulario" hidden novalidate>
+
+        <div class="ajudaContextualLinha">
+            <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-preencher">Como preencher?</button>
+            <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-documentos">Quais documentos enviar?</button>
+            <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece depois?</button>
+        </div>
+
+        <div class="avisoInfo" id="avisoModoCorrecao" hidden>
+            Você está corrigindo o pedido <strong id="correcaoProtocolo"></strong>. A data e a hora do pedido continuam as originais. Os documentos que você não trocar continuam os já enviados.
+        </div>
+
+        <div class="avisoInfo" id="avisoRejeitado" hidden>
+            <p><strong>O seu pedido <span id="rejeitadoProtocolo"></span> não foi aprovado pelo Serviço de Graduação.</strong></p>
+            <p id="rejeitadoMotivoLinha" hidden>Motivo: <span id="rejeitadoMotivo"></span></p>
+            <p>Você pode enviar um novo pedido abaixo, corrigindo o que foi apontado. Em caso de dúvida, fale com o Serviço de Graduação.
+                <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-cadastro">O que fazer?</button></p>
+        </div>
+
+        <div class="avisoInfo" id="avisoRetomada" hidden>
+            O seu último envio não terminou. Anexe os documentos de novo e clique em "Enviar pedido": ele continua de onde parou, com a data e a hora em que começou.
+        </div>
+
+        <div class="secao">
+            <h3>Dados do Aluno</h3>
+
+            <div class="avisoInfo" id="avisoProvisorio" hidden>
+                Não conseguimos confirmar o seu cadastro automaticamente. Preencha os seus dados: o pedido será recebido normalmente, com protocolo, e a equipe vai conferir o cadastro.
+                <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-cadastro">Por que isso aparece?</button>
+            </div>
+
+            <div class="campo">
+                <label for="campoNome">Nome completo <span class="obrigatorio">*</span></label>
+                <p class="ajuda">Insira seu nome exatamente como está grafado na Certidão de Nascimento, respeitando a acentuação correta.</p>
+                <input type="text" id="campoNome" autocomplete="name">
+            </div>
+
+            <div class="linhaDupla">
+                <div class="campo">
+                    <label for="campoNUsp">Nº USP <span class="obrigatorio">*</span></label>
+                    <input type="text" id="campoNUsp" inputmode="numeric">
+                </div>
+                <div class="campo">
+                    <label for="campoAnoIngresso">Ano de ingresso <span class="obrigatorio">*</span></label>
+                    <input type="text" id="campoAnoIngresso" maxlength="4" inputmode="numeric" placeholder="AAAA">
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="campoEmailUsp">E-mail USP</label>
+                <input type="text" id="campoEmailUsp" readonly>
+            </div>
+
+            <div class="campo" id="blocoDivergencia" hidden>
+                <label for="campoDivergencia">O seu nome ou nº USP está errado?</label>
+                <p class="ajuda">Nome e nº USP vêm do seu cadastro e não podem ser mudados aqui. Se algo estiver errado, descreva abaixo: o pedido é recebido do mesmo jeito e a equipe confere o cadastro.</p>
+                <textarea id="campoDivergencia" maxlength="1000"></textarea>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h3>Documentos</h3>
+            <p class="ajuda">Arquivos em PDF, JPG ou PNG, com até 10 MB cada.</p>
+            <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-documentos">O arquivo não foi aceito?</button></div>
+
+            <div class="campo">
+                <label for="inputArquivoRg">CIN / RG <span class="obrigatorio">*</span></label>
+                <p class="ajuda">Deve ser feito o envio de apenas um documento, fora do plástico e em aberto para visualização de inteiro teor do mesmo. Favor enviar o documento mais recente e atualizado.</p>
+                <p class="manterDocumento" id="manterRg" hidden>Já enviado neste pedido. Escolha outro arquivo só se quiser trocar.</p>
+                <div class="linhaUpload" id="linhaUploadRg">
+                    <div class="zonaClique" tabindex="0" role="button">Arraste aqui ou clique para escolher o arquivo</div>
+                    <input type="file" id="inputArquivoRg" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" hidden>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="campoRg">Nº RG/CIN <span class="obrigatorio">*</span></label>
+                <p class="ajuda">Digite exatamente como está no seu documento, com pontos e traços.</p>
+                <input type="text" id="campoRg" placeholder="00.000.000-0">
+            </div>
+
+            <div class="campo">
+                <label for="inputArquivoCertidao">Certidão de Nascimento <span class="obrigatorio">*</span></label>
+                <p class="ajuda">
+                    Solicitamos que envie cópia da sua Certidão de Nascimento. Ressaltamos que esta verificação é feita, cuidadosamente, para evitar erros de grafia no nome, pois a informação será utilizada para a emissão do Certificado de Colação de Grau, Histórico Escolar Final e Diploma de Graduação.<br><br>
+                    De acordo com a Portaria do Ministério da Educação nº 554/2019 e Deliberação CEE nº 220/2024, do Estado de São Paulo, informamos que as solicitações de diploma com data de expedição a partir de 01/04/2026 não serão mais emitidas em formato impresso, conforme estabelecido nessas normativas. No momento, essas novas solicitações permanecerão aguardando os ajustes finais necessários para que a Universidade atenda integralmente às exigências regulamentares.<br><br>
+                    Regras para a emissão de 2ª via de diploma da USP: <a href="https://secretaria.webhostusp.sti.usp.br/?p=284" target="_blank" rel="noopener">Resolução nº 8766, de 19/3/2025</a>.<br>
+                    Taxa de pagamento para emissão de 2ª via de diploma da USP: Portaria GR nº 8066, de 21/6/2023.
+                </p>
+                <p class="manterDocumento" id="manterCertidao" hidden>Já enviada neste pedido. Escolha outro arquivo só se quiser trocar.</p>
+                <div class="linhaUpload" id="linhaUploadCertidao">
+                    <div class="zonaClique" tabindex="0" role="button">Arraste aqui ou clique para escolher o arquivo</div>
+                    <input type="file" id="inputArquivoCertidao" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" hidden>
+                </div>
+            </div>
+        </div>
+
+        <fieldset class="secao">
+            <h3>Curso Concluído</h3>
+            <p class="ajuda">
+                Informe o curso/complemento que concluiu nesse semestre, para o(s) qual(is) deseja solicitar colação de grau.<br><br>
+                <em>De acordo com o Código de Ética da USP Artigo 23 – É vedado aos membros do corpo discente e demais alunos da Universidade: I – prolongar indevidamente o período de formação acadêmica ou manter matrícula com o objetivo de utilizar as estruturas da Universidade;</em>
+            </p>
+            <div class="campo">
+                <label class="itemCheckbox"><input type="checkbox" id="ccPsi"> Formação de Psicólogo(a)</label>
+                <label class="itemCheckbox"><input type="checkbox" id="ccBach"> Bacharelado em Psicologia</label>
+                <label class="itemCheckbox"><input type="checkbox" id="ccLic"> Licenciatura em Psicologia</label>
+            </div>
+        </fieldset>
+
+        <div class="secao">
+            <div class="campo">
+                <label id="rotuloPermanece">No próximo semestre você permanecerá matriculado no IPUSP? <span class="obrigatorio">*</span></label>
+                <div class="grupoSimNao" id="grupoPermanece" role="radiogroup" aria-labelledby="rotuloPermanece">
+                    <label class="opcaoSimNao"><input type="radio" name="permanece" value="SIM">Sim</label>
+                    <label class="opcaoSimNao"><input type="radio" name="permanece" value="NÃO">Não</label>
+                </div>
+            </div>
+
+            <div class="campo" id="blocoHabilitacoesPendentes">
+                <label>Quais habilitações permanecerá cursando no próximo semestre?</label>
+                <label class="itemCheckbox" id="linhaCpPsi"><input type="checkbox" id="cpPsi"> Formação de Psicólogo(a)</label>
+                <label class="itemCheckbox" id="linhaCpBach"><input type="checkbox" id="cpBach"> Bacharelado</label>
+                <label class="itemCheckbox" id="linhaCpLic"><input type="checkbox" id="cpLic"> Licenciatura</label>
+            </div>
+        </div>
+
+        <div class="secao">
+            <h3>Dados Complementares</h3>
+
+            <div class="campo">
+                <label for="campoTelefone">Telefone Celular <span class="obrigatorio">*</span></label>
+                <p class="ajuda">Com DDD e sem espaços. Ex.: 11999999999 (Caso seja necessário, entraremos em contato via Whatsapp neste contato)</p>
+                <input type="text" id="campoTelefone" inputmode="numeric" autocomplete="tel">
+            </div>
+
+            <div class="campo">
+                <label for="campoEmailAlternativo">E-mail alternativo <span class="obrigatorio">*</span></label>
+                <p class="ajuda">Insira seu e-mail pessoal (não informe o e-mail USP). Após o encerramento do programa, caso você não tenha mais vínculo com a USP, o e-mail institucional é desativado. Caso seja necessário, entraremos em contato neste endereço alternativo.</p>
+                <input type="text" id="campoEmailAlternativo" autocomplete="email">
+            </div>
+
+            <div class="campo">
+                <label id="rotuloProcuracao">Colação de grau por procuração? <span class="obrigatorio">*</span></label>
+                <p class="ajuda">Caso necessite colar grau por procuração, o documento (com firma reconhecida) deverá ser entregue ao Serviço de Graduação em até três dias úteis antes da data da colação.</p>
+                <div class="grupoSimNao" id="grupoProcuracao" role="radiogroup" aria-labelledby="rotuloProcuracao">
+                    <label class="opcaoSimNao"><input type="radio" name="procuracao" value="SIM">Sim</label>
+                    <label class="opcaoSimNao"><input type="radio" name="procuracao" value="NÃO">Não</label>
+                </div>
+
+                <div id="blocoProcurador">
+                    <div class="campo">
+                        <label for="campoProcuradorNome">Nome do Procurador(a) <span class="obrigatorio">*</span></label>
+                        <input type="text" id="campoProcuradorNome">
+                    </div>
+                    <div class="campo">
+                        <label for="campoProcuradorRg">RG / CIN do Procurador(a) <span class="obrigatorio">*</span></label>
+                        <input type="text" id="campoProcuradorRg">
+                    </div>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label id="rotuloAntecipada">Colação antecipada (Urgência) <span class="obrigatorio">*</span></label>
+                <p class="ajuda">Os pedidos de colação de grau antecipada serão analisados, individualmente, e serão aprovados, somente, nos casos em que as/os alunas/os estiverem, comprovadamente, inscritas/os ou aprovadas/os ou classificadas/os em concursos/processos seletivos para ingresso em programas de residência/aprimoramento/pós-graduação, ou que tenham sido convocados para assumir vaga no serviço público, e desde que no edital conste a necessidade de apresentação de certificado de conclusão do curso antes da colação de grau regular.</p>
+                <div class="grupoSimNao" id="grupoAntecipada" role="radiogroup" aria-labelledby="rotuloAntecipada">
+                    <label class="opcaoSimNao"><input type="radio" name="antecipada" value="SIM">Sim</label>
+                    <label class="opcaoSimNao"><input type="radio" name="antecipada" value="NÃO">Não</label>
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="campoObservacoes">Observações</label>
+                <textarea id="campoObservacoes" maxlength="2000" placeholder="Alguma informação que julgue necessária."></textarea>
+            </div>
+        </div>
+
+        <button type="submit" class="botaoPrimario" id="botaoEnviar">Enviar Pedido</button>
+        <button type="button" class="botaoSecundario" id="botaoMeusPedidosForm">Meus pedidos</button>
+
+    </form>
+
+    <div id="telaConfirmacao" class="cardMensagem" hidden>
+        <h2 id="tituloConfirmacao">Pedido recebido</h2>
+        <p>Protocolo</p>
+        <p class="protocoloDestaque" id="confProtocolo"></p>
+        <p id="confRecebido"></p>
+        <p id="confCorrecao" hidden></p>
+        <p id="confSituacao"></p>
+        <p id="confRecibo"></p>
+        <p>Recebimento não é deferimento: o Serviço de Graduação ainda vai conferir os seus dados e documentos.</p>
+        <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-depois">O que acontece agora?</button></div>
+        <button type="button" class="botaoSecundario" id="botaoMeusPedidosConf">Meus pedidos</button>
+    </div>
+
+    <div id="telaMeusPedidos" hidden>
+        <div class="secao">
+            <h3>Meus pedidos</h3>
+            <p class="ajuda">Pedidos de colação de grau feitos com a sua conta. Recebido não é deferido: cada pedido ainda passa pela conferência da equipe.</p>
+            <div class="ajudaContextualLinha"><button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-meus-pedidos">O que significa cada situação?</button></div>
+            <p id="meusPedidosVazio" hidden>Nenhum pedido encontrado para a sua conta.</p>
+            <ul class="listaPedidos" id="listaMeusPedidos"></ul>
+            <button type="button" class="botaoSecundario" id="botaoVoltarInicio">Voltar</button>
+        </div>
+    </div>
+
+</main>
+
+<div class="rodape">Serviço de Graduação — Instituto de Psicologia da USP</div>
+
+<div id="loadingOverlay" role="status" aria-live="polite">
+    <div id="loadingBox">
+        <div id="loadingTitulo">Pedido de Colação de Grau</div>
+        <div id="loadingTexto">Processando<span id="loadingPontos"></span></div>
+    </div>
+</div>
+
+<script>
+// Formulário de Pedido de Colação de Grau 2.0 — página.
+// Toda decisão (identidade, prazo, titularidade, documentos) é do
+// servidor; aqui só há conforto: aviso rápido, botão desabilitado e a
+// chave de envio que evita pedido duplicado quando se envia de novo.
+
+const LIMITE_ARQUIVO_BYTES = 10 * 1024 * 1024;
+const FORMATOS_ACEITOS = ["application/pdf", "image/jpeg", "image/png"];
+const CHAVE_SESSAO = "pcg-chave-envio";
+
+let dadosIniciais = null;
+let arquivos = { RG: null, CERTIDAO: null };
+let enviando = false;
+let loadingTimer;
+
+function el(id) { return document.getElementById(id); }
+function mostrar(id, sim) { el(id).hidden = !sim; }
+
+const TELAS = ["telaCarregando", "telaErro", "telaFechado", "telaPedidoExistente", "telaFormulario", "telaConfirmacao", "telaMeusPedidos"];
+function mostrarTela(id) {
+    TELAS.forEach(t => mostrar(t, t === id));
+    esconderErro();
+    window.scrollTo(0, 0);
+}
+
+function mostrarErro(mensagem, semRolar) {
+    const caixa = el("caixaErro");
+    caixa.textContent = mensagem || "Não foi possível concluir. Tente de novo.";
+    caixa.hidden = false;
+    if (!semRolar) caixa.scrollIntoView({ block: "center" });
+}
+function esconderErro() { el("caixaErro").hidden = true; limparCampoInvalido(); }
+
+// Destaca o campo do problema: borda vermelha, mensagem logo abaixo,
+// aria-invalid e foco. Some quando a pessoa mexe no campo.
+function marcarCampoInvalido(alvo, mensagem) {
+    limparCampoInvalido();
+    if (!alvo) return;
+    alvo.classList.add("campoInvalido");
+    alvo.setAttribute("aria-invalid", "true");
+    const aviso = document.createElement("p");
+    aviso.className = "erroCampo";
+    aviso.id = "erroCampo";
+    aviso.textContent = mensagem;
+    alvo.insertAdjacentElement("afterend", aviso);
+    alvo.setAttribute("aria-describedby", "erroCampo");
+    let foco = alvo.matches("input, textarea, select") ? alvo
+        : alvo.querySelector(".zonaClique, input:not([type=hidden]):not([hidden]), textarea");
+    if (!foco || foco.offsetParent === null) {
+        if (!alvo.hasAttribute("tabindex")) alvo.setAttribute("tabindex", "-1");
+        foco = alvo;
+    }
+    alvo.scrollIntoView({ block: "center" });
+    try { foco.focus({ preventScroll: true }); } catch (e) { foco.focus(); }
+    const limpar = () => { if (alvo.classList.contains("campoInvalido")) limparCampoInvalido(); };
+    ["input", "change", "click"].forEach(t => alvo.addEventListener(t, limpar, { once: true }));
+}
+function limparCampoInvalido() {
+    const aviso = el("erroCampo");
+    if (aviso) aviso.remove();
+    document.querySelectorAll(".campoInvalido").forEach(c => {
+        c.classList.remove("campoInvalido");
+        c.removeAttribute("aria-invalid");
+        if (c.getAttribute("aria-describedby") === "erroCampo") c.removeAttribute("aria-describedby");
+    });
+}
+// O Apps Script entrega a mensagem do servidor com "Error: " ou
+// "Exception: " na frente; a pessoa vê só o texto.
+function mensagemDe(erro) {
+    return String((erro && erro.message) || erro || "").replace(/^\s*(?:\w*Error|Exception):\s*/, "");
+}
+
+/*---------------- chave de envio ----------------*/
+
+function novaChave() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    const b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = Array.from(b, x => x.toString(16).padStart(2, "0")).join("");
+    return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
+}
+function chaveDeEnvio() {
+    let chave = "";
+    try { chave = sessionStorage.getItem(CHAVE_SESSAO) || ""; } catch (e) { chave = window.__chaveEnvio || ""; }
+    if (!chave) {
+        chave = novaChave();
+        guardarChave(chave);
+    }
+    return chave;
+}
+function guardarChave(chave) {
+    try { sessionStorage.setItem(CHAVE_SESSAO, chave); } catch (e) { window.__chaveEnvio = chave; }
+}
+function descartarChave() {
+    try { sessionStorage.removeItem(CHAVE_SESSAO); } catch (e) { /* nada */ }
+    window.__chaveEnvio = "";
+}
+
+/*---------------- início ----------------*/
+
+window.addEventListener("load", function () {
+    configurarEventos();
+    carregarDadosIniciais();
+});
+
+function carregarDadosIniciais() {
+    mostrarTela("telaCarregando");
+    google.script.run
+        .withSuccessHandler(receberDadosIniciais)
+        .withFailureHandler(erro => mostrarTelaErro(mensagemDe(erro)))
+        .obterDadosIniciais();
+}
+
+function mostrarTelaErro(mensagem) {
+    el("textoErro").textContent = mensagem || "Erro desconhecido.";
+    mostrarTela("telaErro");
+}
+
+function receberDadosIniciais(dados) {
+    dadosIniciais = dados || null;
+    if (!dados) return mostrarTelaErro("Não recebi resposta do servidor. Recarregue a página.");
+    mostrar("faixaHomologacao", !!dados.homologacao);
+    if (dados.periodoErro) return mostrarTelaErro(dados.periodoErro);
+    if (dados.tituloSemestre) el("subtitulo").textContent = dados.tituloSemestre + " · Instituto de Psicologia da USP";
+    mostrar("botaoVoltarPainel", !!dados.linkPainel);
+
+    if (dados.periodoFechado) {
+        mostrar("botaoMeusPedidosFechado", !!dados.temPedidos);
+        return mostrarTela("telaFechado");
+    }
+
+    const pedido = dados.pedidoAtual || null;
+    if (pedido && pedido.chaveIncompleta) {
+        // Envio desta conta que não terminou: retoma com a mesma chave.
+        guardarChave(pedido.chaveIncompleta);
+        return abrirFormulario(pedido, true);
+    }
+    if (pedido) {
+        el("existenteProtocolo").textContent = pedido.protocolo;
+        el("existenteTexto").textContent = "Recebido em " + pedido.recebidoEm + "." +
+            (pedido.podeCorrigir ? " Você pode corrigir as informações enquanto o prazo estiver aberto e a equipe não tiver começado a conferência."
+                                 : " A equipe já começou a conferir o seu pedido; para corrigir alguma informação, fale com o Serviço de Graduação.");
+        mostrar("botaoCorrigir", !!pedido.podeCorrigir);
+        return mostrarTela("telaPedidoExistente");
+    }
+    abrirFormulario(null, false);
+}
+
+function abrirFormulario(pedido, retomada) {
+    const dados = dadosIniciais;
+    const id = dados.identidade || { situacao: "PROVISORIO" };
+    const anterior = (pedido && pedido.dados) || {};
+    const confirmado = id.situacao === "CONFIRMADO";
+
+    if (!retomada) chaveDeEnvio();
+    el("campoEmailUsp").value = dados.emailUsp || "";
+    el("campoNome").value = confirmado ? id.nome : (anterior.nome || "");
+    el("campoNUsp").value = confirmado ? id.nUsp : (anterior.nUsp || "");
+    el("campoAnoIngresso").value = (confirmado && id.anoIngresso) || anterior.anoIngresso || "";
+    ["campoNome", "campoNUsp"].forEach(c => { el(c).readOnly = confirmado; });
+    el("campoAnoIngresso").readOnly = confirmado && !!id.anoIngresso;
+    mostrar("avisoProvisorio", !confirmado);
+    const rejeitado = !pedido && dados.ultimoRejeitado;
+    mostrar("avisoRejeitado", !!rejeitado);
+    if (rejeitado) {
+        el("rejeitadoProtocolo").textContent = rejeitado.protocolo || "";
+        el("rejeitadoMotivo").textContent = rejeitado.motivo || "";
+        mostrar("rejeitadoMotivoLinha", !!rejeitado.motivo);
+    }
+    mostrar("blocoDivergencia", confirmado);
+    el("campoDivergencia").value = anterior.divergenciaApontada || "";
+    el("campoEmailAlternativo").value = anterior.emailAlternativo || (confirmado ? id.emailSecundario || "" : "");
+
+    el("campoRg").value = anterior.rg || "";
+    el("campoTelefone").value = anterior.telefone || "";
+    el("ccPsi").checked = !!anterior.psiConcluiu;
+    el("ccBach").checked = !!anterior.bachConcluiu;
+    el("ccLic").checked = !!anterior.licConcluiu;
+    el("campoProcuradorNome").value = anterior.procuradorNome || "";
+    el("campoProcuradorRg").value = anterior.procuradorRg || "";
+    el("campoObservacoes").value = anterior.observacoesAluno || "";
+    selecionarGrupoSimNao("grupoPermanece", anterior.permaneceMatriculado);
+    selecionarGrupoSimNao("grupoProcuracao", anterior.procuracao);
+    selecionarGrupoSimNao("grupoAntecipada", anterior.colacaoAntecipada);
+    (anterior.habilitacaoPendente || []).forEach(h => {
+        if (h === "Formação de Psicólogo(a)") el("cpPsi").checked = true;
+        if (h === "Bacharelado") el("cpBach").checked = true;
+        if (h === "Licenciatura") el("cpLic").checked = true;
+    });
+    alternarBlocoProcurador();
+    atualizarHabilitacoesPendentes();
+
+    const mantidos = (pedido && pedido.documentosMantidos) || [];
+    mostrar("manterRg", mantidos.indexOf("RG") !== -1);
+    mostrar("manterCertidao", mantidos.indexOf("CERTIDAO") !== -1);
+    mostrar("avisoModoCorrecao", !!pedido && !retomada);
+    mostrar("avisoRetomada", !!retomada);
+    if (pedido) el("correcaoProtocolo").textContent = pedido.protocolo;
+    el("botaoEnviar").textContent = pedido && !retomada ? "Enviar correção" : "Enviar Pedido";
+    mostrarTela("telaFormulario");
+}
+
+/*---------------- eventos ----------------*/
+
+function configurarEventos() {
+    configurarUpload("linhaUploadRg", "inputArquivoRg", "RG");
+    configurarUpload("linhaUploadCertidao", "inputArquivoCertidao", "CERTIDAO");
+    configurarGrupoSimNao("grupoPermanece");
+    configurarGrupoSimNao("grupoProcuracao", alternarBlocoProcurador);
+    configurarGrupoSimNao("grupoAntecipada");
+    ["ccPsi", "ccBach", "ccLic"].forEach(c => el(c).addEventListener("change", atualizarHabilitacoesPendentes));
+    el("telaFormulario").addEventListener("submit", e => { e.preventDefault(); validarEEnviar(); });
+    el("botaoCorrigir").addEventListener("click", () => {
+        // Correção é um envio novo (chave nova) sobre o mesmo pedido.
+        descartarChave();
+        abrirFormulario(dadosIniciais.pedidoAtual, false);
+    });
+    ["botaoMeusPedidosFechado", "botaoMeusPedidosExistente", "botaoMeusPedidosForm", "botaoMeusPedidosConf"]
+        .forEach(b => el(b).addEventListener("click", abrirMeusPedidos));
+    el("botaoVoltarInicio").addEventListener("click", carregarDadosIniciais);
+    el("botaoVoltarPainel").addEventListener("click", () => {
+        if (dadosIniciais && dadosIniciais.linkPainel) top.location.href = dadosIniciais.linkPainel;
+    });
+}
+
+function configurarGrupoSimNao(idGrupo, aoMudar) {
+    el(idGrupo).querySelectorAll(".opcaoSimNao input").forEach(input => {
+        input.addEventListener("change", () => {
+            el(idGrupo).querySelectorAll(".opcaoSimNao").forEach(o => o.classList.toggle("selecionada", o.querySelector("input").checked));
+            if (aoMudar) aoMudar();
+        });
+    });
+}
+
+function valorGrupoSimNao(idGrupo) {
+    const marcado = document.querySelector("#" + idGrupo + " input:checked");
+    return marcado ? marcado.value : "";
+}
+
+function selecionarGrupoSimNao(idGrupo, valor) {
+    el(idGrupo).querySelectorAll(".opcaoSimNao").forEach(opcao => {
+        const input = opcao.querySelector("input");
+        const bate = !!valor && input.value === valor;
+        input.checked = bate;
+        opcao.classList.toggle("selecionada", bate);
+    });
+}
+
+function alternarBlocoProcurador() {
+    el("blocoProcurador").style.display = valorGrupoSimNao("grupoProcuracao") === "SIM" ? "block" : "none";
+}
+
+function atualizarHabilitacoesPendentes() {
+    [{ c: "ccPsi", l: "linhaCpPsi", p: "cpPsi" }, { c: "ccBach", l: "linhaCpBach", p: "cpBach" }, { c: "ccLic", l: "linhaCpLic", p: "cpLic" }]
+        .forEach(m => {
+            const concluido = el(m.c).checked;
+            el(m.l).classList.toggle("disponivel", !concluido);
+            if (concluido) el(m.p).checked = false;
+        });
+}
+
+/*---------------- arquivos ----------------*/
+
+function configurarUpload(idLinha, idInput, tipo) {
+    const linha = el(idLinha);
+    const input = el(idInput);
+    const zona = linha.querySelector(".zonaClique");
+    zona.addEventListener("click", () => input.click());
+    zona.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); } });
+    input.addEventListener("change", e => { if (e.target.files.length > 0) escolherArquivo(linha, e.target.files[0], tipo); });
+    linha.addEventListener("dragover", e => { e.preventDefault(); linha.classList.add("arrastando"); });
+    linha.addEventListener("dragleave", () => linha.classList.remove("arrastando"));
+    linha.addEventListener("drop", e => {
+        e.preventDefault();
+        linha.classList.remove("arrastando");
+        if (e.dataTransfer.files.length > 0) escolherArquivo(linha, e.dataTransfer.files[0], tipo);
+    });
+}
+
+function escolherArquivo(linha, arquivo, tipo) {
+    const zona = linha.querySelector(".zonaClique");
+    esconderErro();
+    if (arquivo.size > LIMITE_ARQUIVO_BYTES) {
+        arquivos[tipo] = null;
+        linha.classList.remove("comArquivo");
+        zona.textContent = "Arraste aqui ou clique para escolher o arquivo";
+        return mostrarErro("O arquivo " + arquivo.name + " passa de 10 MB. Escolha um arquivo menor.");
+    }
+    if (arquivo.type && FORMATOS_ACEITOS.indexOf(arquivo.type) === -1) {
+        arquivos[tipo] = null;
+        return mostrarErro("O arquivo " + arquivo.name + " precisa ser PDF, JPG ou PNG.");
+    }
+    const leitor = new FileReader();
+    leitor.onload = function () {
+        arquivos[tipo] = { tipo: tipo, ordem: 1, base64: String(leitor.result).split(",")[1] || "" };
+        linha.classList.add("comArquivo");
+        zona.textContent = "📎 " + arquivo.name + " (clique para trocar)";
+        zona.classList.add("nomeArquivoEscolhido");
+    };
+    leitor.readAsDataURL(arquivo);
+}
+
+/*---------------- envio ----------------*/
+
+function coletar() {
+    const pendentes = [];
+    if (el("cpPsi").checked) pendentes.push("Formação de Psicólogo(a)");
+    if (el("cpBach").checked) pendentes.push("Bacharelado");
+    if (el("cpLic").checked) pendentes.push("Licenciatura");
+    return {
+        chaveEnvio: chaveDeEnvio(),
+        nome: el("campoNome").value.trim(),
+        nUsp: el("campoNUsp").value.trim(),
+        anoIngresso: el("campoAnoIngresso").value.trim(),
+        divergenciaApontada: el("blocoDivergencia").hidden ? "" : el("campoDivergencia").value.trim(),
+        rg: el("campoRg").value.trim(),
+        telefone: el("campoTelefone").value.trim(),
+        emailAlternativo: el("campoEmailAlternativo").value.trim(),
+        bachConcluiu: el("ccBach").checked,
+        licConcluiu: el("ccLic").checked,
+        psiConcluiu: el("ccPsi").checked,
+        permaneceMatriculado: valorGrupoSimNao("grupoPermanece"),
+        habilitacaoPendente: pendentes,
+        procuracao: valorGrupoSimNao("grupoProcuracao"),
+        procuradorNome: el("campoProcuradorNome").value.trim(),
+        procuradorRg: el("campoProcuradorRg").value.trim(),
+        colacaoAntecipada: valorGrupoSimNao("grupoAntecipada"),
+        observacoesAluno: el("campoObservacoes").value.trim(),
+        documentos: ["RG", "CERTIDAO"].map(t => arquivos[t]).filter(Boolean)
+    };
+}
+
+// Devolve o primeiro problema: { mensagem, campo } (campo = elemento a destacar).
+function conferirNaPagina(d) {
+    const manterRg = !el("manterRg").hidden;
+    const manterCertidao = !el("manterCertidao").hidden;
+    const p = (mensagem, campo) => ({ mensagem: mensagem, campo: campo });
+    if (!d.nome) return p("Informe o nome completo.", el("campoNome"));
+    if (!/^\d+$/.test(d.nUsp)) return p("Informe o Nº USP (só números).", el("campoNUsp"));
+    if (!/^\d{4}$/.test(d.anoIngresso)) return p("Informe o ano de ingresso (4 dígitos).", el("campoAnoIngresso"));
+    if (!arquivos.RG && !manterRg) return p("Anexe o documento de CIN/RG.", el("linhaUploadRg"));
+    if (!d.rg) return p("Informe o Nº RG/CIN.", el("campoRg"));
+    if (!arquivos.CERTIDAO && !manterCertidao) return p("Anexe a Certidão de Nascimento.", el("linhaUploadCertidao"));
+    if (!d.bachConcluiu && !d.licConcluiu && !d.psiConcluiu) return p('Selecione ao menos uma habilitação em "Curso Concluído".', el("ccPsi").closest(".campo"));
+    if (!d.permaneceMatriculado) return p("Responda se permanecerá matriculado no próximo semestre.", el("grupoPermanece"));
+    if (!d.telefone) return p("Informe o telefone celular.", el("campoTelefone"));
+    if (!d.emailAlternativo) return p("Informe o e-mail alternativo.", el("campoEmailAlternativo"));
+    if (!d.procuracao) return p("Responda se a colação será por procuração.", el("grupoProcuracao"));
+    if (d.procuracao === "SIM" && !d.procuradorNome) return p("Informe nome e RG/CIN do(a) procurador(a).", el("campoProcuradorNome"));
+    if (d.procuracao === "SIM" && !d.procuradorRg) return p("Informe nome e RG/CIN do(a) procurador(a).", el("campoProcuradorRg"));
+    if (!d.colacaoAntecipada) return p("Responda sobre colação antecipada.", el("grupoAntecipada"));
+    return null;
+}
+
+function validarEEnviar() {
+    if (enviando) return;
+    esconderErro();
+    const dados = coletar();
+    const problema = conferirNaPagina(dados);
+    if (problema) {
+        mostrarErro(problema.mensagem, true);
+        return marcarCampoInvalido(problema.campo, problema.mensagem);
+    }
+    enviando = true;
+    el("botaoEnviar").disabled = true;
+    mostrarLoading("Enviando pedido");
+    google.script.run
+        .withSuccessHandler(aoSucessoEnvio)
+        .withFailureHandler(erro => {
+            enviando = false;
+            esconderLoading();
+            el("botaoEnviar").disabled = false;
+            // A chave fica: enviar de novo retoma o mesmo pedido.
+            mostrarErro(mensagemDe(erro) || "O envio não terminou. Envie de novo: o seu pedido não será duplicado.");
+        })
+        .enviarPedidoColacao(dados);
+}
+
+function aoSucessoEnvio(r) {
+    enviando = false;
+    esconderLoading();
+    el("botaoEnviar").disabled = false;
+    if (!r || !r.protocolo) {
+        return mostrarErro("O servidor não confirmou o protocolo. Envie de novo: o seu pedido não será duplicado.");
+    }
+    descartarChave();
+    arquivos = { RG: null, CERTIDAO: null };
+    el("tituloConfirmacao").textContent = r.correcao ? "Correção recebida" : "Pedido recebido";
+    el("confProtocolo").textContent = r.protocolo;
+    el("confRecebido").textContent = "Recebido em " + r.recebidoEm + " (horário de Brasília), colação " + r.colacao + ".";
+    el("confCorrecao").textContent = r.correcao ? "Correção (versão " + r.versao + ") enviada em " + r.correcaoEnviadaEm + "." : "";
+    mostrar("confCorrecao", !!r.correcao);
+    el("confSituacao").textContent = r.cadastro === "CONFIRMADO"
+        ? "Situação: recebido."
+        : "Situação: recebido; o seu cadastro está em conferência pela equipe.";
+    el("confRecibo").textContent = r.reciboEnviado === false
+        ? "Não conseguimos enviar o comprovante por e-mail agora. O pedido está registrado; você pode reenviar o comprovante em \"Meus pedidos\"."
+        : "Enviamos um comprovante para o seu e-mail USP.";
+    mostrarTela("telaConfirmacao");
+}
+
+/*---------------- meus pedidos ----------------*/
+
+function abrirMeusPedidos() {
+    mostrarLoading("Carregando seus pedidos");
+    google.script.run
+        .withSuccessHandler(lista => { esconderLoading(); desenharMeusPedidos(lista || []); })
+        .withFailureHandler(erro => { esconderLoading(); mostrarErro(mensagemDe(erro)); })
+        .listarMeusPedidos();
+}
+
+function desenharMeusPedidos(lista) {
+    const ul = el("listaMeusPedidos");
+    ul.textContent = "";
+    lista.forEach(p => {
+        const li = document.createElement("li");
+        const linhas = [
+            ["Protocolo", p.protocolo],
+            ["Colação", p.colacao],
+            ["Recebido em", p.recebidoEm],
+            ["Recebimento", p.recebimento + (p.versao > 1 ? " (versão " + p.versao + ")" : "")],
+            ["Cadastro", p.cadastro],
+            ["Andamento", p.andamento]
+        ];
+        if (p.motivoRejeicao) linhas.push(["Motivo", p.motivoRejeicao]);
+        if (p.correcaoIncompleta) linhas.push(["Correção", "não terminou: abra o formulário e envie de novo"]);
+        linhas.forEach(([rotulo, valor]) => {
+            const div = document.createElement("div");
+            const b = document.createElement("strong");
+            b.textContent = rotulo + ": ";
+            div.appendChild(b);
+            div.appendChild(document.createTextNode(valor || ""));
+            li.appendChild(div);
+        });
+        if (p.podeReenviarRecibo) {
+            const botao = document.createElement("button");
+            botao.type = "button";
+            botao.className = "botaoSecundario";
+            botao.textContent = "Reenviar comprovante";
+            botao.addEventListener("click", () => reenviarComprovante(p.protocolo, botao));
+            li.appendChild(botao);
+        }
+        ul.appendChild(li);
+    });
+    mostrar("meusPedidosVazio", lista.length === 0);
+    mostrarTela("telaMeusPedidos");
+}
+
+// O retorno aparece logo abaixo do botão (role="status"), não só no topo
+// da página, para a pessoa ver o resultado de cada clique.
+function reenviarComprovante(protocolo, botao) {
+    let status = botao.nextElementSibling;
+    if (!status || !status.classList.contains("statusReenvio")) {
+        status = document.createElement("p");
+        status.className = "statusReenvio";
+        status.setAttribute("role", "status");
+        botao.insertAdjacentElement("afterend", status);
+    }
+    botao.disabled = true;
+    status.classList.remove("statusReenvioErro");
+    status.textContent = "Enviando o comprovante…";
+    google.script.run
+        .withSuccessHandler(() => {
+            botao.textContent = "Comprovante reenviado";
+            status.textContent = "Comprovante enviado para o seu e-mail USP. Confira também o spam. Um novo reenvio fica disponível em 2 minutos.";
+            setTimeout(() => { botao.disabled = false; botao.textContent = "Reenviar comprovante"; }, 120000);
+        })
+        .withFailureHandler(erro => {
+            botao.disabled = false;
+            status.classList.add("statusReenvioErro");
+            status.textContent = mensagemDe(erro) || "Não foi possível reenviar agora. Tente de novo mais tarde.";
+        })
+        .reenviarComprovanteColacao(protocolo);
+}
+
+/*---------------- carregando ----------------*/
+
+function mostrarLoading(texto) {
+    if (loadingTimer) clearInterval(loadingTimer);
+    el("loadingTitulo").textContent = texto || "Processando";
+    el("loadingOverlay").style.display = "flex";
+    let pontos = 0;
+    loadingTimer = setInterval(() => {
+        pontos = (pontos + 1) % 4;
+        el("loadingPontos").textContent = ".".repeat(pontos);
+    }, 350);
+}
+
+function esconderLoading() {
+    if (loadingTimer) clearInterval(loadingTimer);
+    el("loadingOverlay").style.display = "none";
+}
+</script>
+
+<?!= include_('ColacaoAjuda') ?>
+<?!= include_('ColacaoAjudaUI') ?>
+
+</body>
+</html>

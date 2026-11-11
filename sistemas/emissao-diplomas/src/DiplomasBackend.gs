@@ -28,7 +28,7 @@
 
 
 
-const VERSAO_DIPLOMAS = "4.0.0";
+const VERSAO_DIPLOMAS = "4.1.0";
 
 const ABA_DIPLOMAS = "Diplomas";
 const ABA_INFOS = "INFOS";
@@ -1003,31 +1003,12 @@ function listarArquivosPasta_(idPasta) {
 
 }
 
-// Checa se outro REGISTRO (linha) aponta pro mesmo ID de pasta EXATO
-// — usado antes de excluir/renomear uma pasta pra não afetar quem
-// mais a usa (outra colação da mesma pessoa).
-function outrosRegistrosUsamPasta_(aba, mapa, idPasta, linhaAtual) {
-
-  const colIdPasta = obterColunaOpcional_(mapa, "idPasta");
-  const colLinkPasta = obterColuna_(mapa, "linkPasta");
-
-  const ultimaLinha = aba.getLastRow();
-  if (ultimaLinha < 2) return false;
-
-  const valoresId = colIdPasta ? aba.getRange(2, colIdPasta, ultimaLinha - 1, 1).getValues() : null;
-  const valoresLink = aba.getRange(2, colLinkPasta, ultimaLinha - 1, 1).getValues();
-
-  for (let i = 0; i < valoresLink.length; i++) {
-    const linhaPlanilha = i + 2;
-    if (linhaPlanilha === linhaAtual) continue;
-
-    const idLinha = (valoresId ? valoresId[i][0] : null) || extrairIdDaUrl_(valoresLink[i][0]);
-    if (idLinha && String(idLinha).trim() === String(idPasta).trim()) return true;
-  }
-
-  return false;
-
-}
+// 4.0.1: outrosRegistrosUsamPasta_ saiu. Ela só olhava o cache de
+// pasta (Link/ID da Pasta) das outras linhas, que fica vazio em linhas
+// criadas pelo formulário ou à mão, e com isso a exclusão de um
+// registro podia mandar para a lixeira a pasta de outra colação da
+// mesma pessoa. Agora a exclusão nunca mexe na pasta (decisão D5 do
+// responsável, 06/11/2026) e a função não tem mais uso.
 
 /*=====================================================
   PLANILHA CENTRAL DE ALUNOS — fonte de verdade única
@@ -1067,64 +1048,110 @@ function localizarLinhaAlunoCentral_(abaCentral, nUsp) {
 
 }
 
-// Limpa o "ID da Pasta" de um NUSP na planilha central — usado quando
-// a pasta física é excluída (ver excluirAlunoInterno_), pra não deixar
-// nenhum sistema (Diplomas, BUSP, futuros) reaproveitando um ID de
-// pasta que não existe mais no Drive.
-function limparIdPastaNaCentral_(nUsp) {
+// Todas as linhas da planilha central com este NUSP (normalmente uma).
+// Usado por quem GRAVA: com mais de uma, não há como saber qual é a
+// certa, e a gravação para (falha fechada). A leitura continua usando
+// localizarLinhaAlunoCentral_ (primeira ocorrência), como antes.
+function localizarLinhasAlunoCentral_(abaCentral, nUsp) {
+
+  const nUspAlvo = String(nUsp || "").trim();
+  if (!nUspAlvo) return [];
+
+  const ultimaLinha = abaCentral.getLastRow();
+  if (ultimaLinha < 2) return [];
+
+  const valores = abaCentral.getRange(2, COL_ALUNOS_CENTRAL_NUSP, ultimaLinha - 1, 1).getValues();
+  const linhas = [];
+  for (let i = 0; i < valores.length; i++) {
+    if (String(valores[i][0] || "").trim() === nUspAlvo) linhas.push(i + 2);
+  }
+  return linhas;
+
+}
+
+const MENSAGEM_NUSP_REPETIDO_CENTRAL_ =
+  "Este Nº USP aparece em mais de uma linha da planilha central de alunos. " +
+  "Nada foi criado nem alterado. Corrija o cadastro pelo Gerenciador de Pessoas e tente de novo.";
+
+// Linha única do NUSP na central, ou null quando não há nenhuma.
+// Repetição → erro (nada é gravado).
+function linhaUnicaAlunoCentral_(abaCentral, nUsp) {
+  const linhas = localizarLinhasAlunoCentral_(abaCentral, nUsp);
+  if (linhas.length > 1) throw new Error(MENSAGEM_NUSP_REPETIDO_CENTRAL_);
+  return linhas.length ? linhas[0] : null;
+}
+
+function lerIdPastaCentral_(abaCentral, linhaCentral) {
+  return String(abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_ID_PASTA).getValue() || "").trim();
+}
+
+// Pasta que ESTA execução acabou de criar e não chegou a ser usada:
+// só vai para a lixeira se estiver vazia (nenhum arquivo, nenhuma
+// subpasta). Qualquer outra pasta nunca é descartada aqui.
+function descartarPastaNovaVazia_(pasta) {
   try {
-    const abaCentral = obterAbaAlunosCentral_();
-    const linhaCentral = localizarLinhaAlunoCentral_(abaCentral, nUsp);
-    if (linhaCentral) {
-      abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_ID_PASTA).setValue("");
-    }
+    if (!pasta.getFiles().hasNext() && !pasta.getFolders().hasNext()) pasta.setTrashed(true);
   } catch (err) {
-    Logger.log(`Não consegui limpar o ID da Pasta na planilha central: ${String(err && err.message || err).slice(0, 200)}`);
+    Logger.log("Pasta nova não usada ficou no Drive: " + String(err && err.message || err).slice(0, 200));
   }
 }
 
+const MENSAGEM_SEM_CADASTRO_CENTRAL_ =
+  "Este Nº USP não tem cadastro na planilha central de alunos. Nada foi criado. " +
+  "Cadastre o aluno pelo Gerenciador de Pessoas e tente de novo.";
+
 // Ponto único de verdade pra pasta de um aluno: consulta a planilha
-// central por NUSP, cria o cadastro lá se ainda não existir (cobre
-// aluno novo ou alumni que nunca passou pela planilha de Alunos —
-// auto-cadastro), cria a pasta no Drive se a linha existir mas ainda
+// central por NUSP, cria a pasta no Drive se a linha existir mas ainda
 // não tiver "ID da Pasta", e devolve a pasta (já validada dentro da
-// raiz gerenciada). Roda sob lock porque é check-then-write (criar
-// linha e/ou criar pasta) — evita duas sessões criando cadastro/pasta
-// duplicados pro mesmo NUSP dentro do MESMO projeto Apps Script.
-// (Concorrência ENTRE projetos diferentes — ex: Diplomas e BUSP no
-// mesmo instante — é um risco residual não coberto por esse lock,
-// aceito conforme conversado: baixíssima chance na prática, já que
-// cada solicitação vem de uma pessoa preenchendo um formulário.)
+// raiz gerenciada).
+//
+// 4.1.0 — fim do autocadastro (decisão D6 de 06/11/2026): sem linha do
+// NUSP na planilha central, para com erro e não cria nada. Quem cria
+// cadastro é só o Gerenciador de Pessoas.
+//
+// 4.0.1 — integridade entre projetos. O ScriptLock só coordena este
+// projeto; a planilha central também é gravada pelo Gerenciador de
+// Pessoas e por pessoas direto na planilha. Por isso:
+//   - NUSP repetido na central → para sem gravar nada;
+//   - a pasta nova só é gravada depois de reler a coluna E: se outra
+//     pasta foi gravada nesse meio-tempo, usa a outra e descarta a nova
+//     (vazia); depois de gravar, relê para confirmar.
 function garantirPastaAlunoCentral_(nUsp, nome, email) {
 
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
 
   try {
+    return garantirPastaAlunoCentralSemTrava_(nUsp, nome, email);
+  } finally {
+    lock.releaseLock();
+  }
+
+}
+
+// Mesmo trabalho, para quem já está dentro do ScriptLock (o encaminhador
+// dos pedidos de colação): não pega nem solta a trava.
+function garantirPastaAlunoCentralSemTrava_(nUsp, nome, email) {
+
+  const nUspAlvo = String(nUsp || "").trim();
+  if (!nUspAlvo) {
+    throw new Error("Esse registro não tem Nº USP preenchido — não é possível localizar/criar a pasta sem ele.");
+  }
+
+  {
 
     const abaCentral = obterAbaAlunosCentral_();
-    let linhaCentral = localizarLinhaAlunoCentral_(abaCentral, nUsp);
+    let linhaCentral = linhaUnicaAlunoCentral_(abaCentral, nUspAlvo);
 
     if (!linhaCentral) {
-      // Auto-cadastro: aluno (ou alumni) ainda não consta na planilha
-      // central — cria a linha agora, com o que temos disponível.
-      linhaCentral = abaCentral.getLastRow() + 1;
-      abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_NUSP).setValue(String(nUsp).trim());
-      abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_NOME).setValue(nome || "");
-      if (email) abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_EMAIL).setValue(email);
-      Logger.log(`Aluno cadastrado automaticamente na planilha central de Alunos (linha ${linhaCentral}).`);
+      throw new Error(MENSAGEM_SEM_CADASTRO_CENTRAL_);
     }
 
-    const idPastaAtual = String(abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_ID_PASTA).getValue() || "").trim();
-
+    const idPastaAtual = lerIdPastaCentral_(abaCentral, linhaCentral);
     if (idPastaAtual) {
       return validarPastaGerenciada_(idPastaAtual);
     }
 
-    // Ainda não tem pasta — cria agora dentro da raiz gerenciada e
-    // grava o ID na planilha central, que passa a ser a referência
-    // pra qualquer sistema (Diplomas, BUSP, futuros) que consultar
-    // esse mesmo NUSP depois.
     let pastaRaiz;
     try {
       pastaRaiz = DriveApp.getFolderById(obterPastaRaizId_());
@@ -1134,15 +1161,36 @@ function garantirPastaAlunoCentral_(nUsp, nome, email) {
       );
     }
 
-    const nomePasta = `${nome} ${nUsp}`;
-    const novaPasta = pastaRaiz.createFolder(nomePasta);
+    const novaPasta = pastaRaiz.createFolder(`${nome} ${nUspAlvo}`);
+
+    // Releitura antes de gravar: a linha pode ter mudado de posição e
+    // outra pasta pode ter sido gravada por outro sistema.
+    linhaCentral = linhaUnicaAlunoCentral_(abaCentral, nUspAlvo);
+    if (!linhaCentral) {
+      descartarPastaNovaVazia_(novaPasta);
+      throw new Error("Erro de integridade: o cadastro deste Nº USP sumiu da planilha central durante a operação. Nada foi gravado.");
+    }
+    const idAntesDeGravar = lerIdPastaCentral_(abaCentral, linhaCentral);
+    if (idAntesDeGravar) {
+      descartarPastaNovaVazia_(novaPasta);
+      return validarPastaGerenciada_(idAntesDeGravar);
+    }
 
     abaCentral.getRange(linhaCentral, COL_ALUNOS_CENTRAL_ID_PASTA).setValue(novaPasta.getId());
 
+    // Conferência depois de gravar.
+    const linhaConferida = linhaUnicaAlunoCentral_(abaCentral, nUspAlvo);
+    const idGravado = linhaConferida ? lerIdPastaCentral_(abaCentral, linhaConferida) : "";
+    if (idGravado !== novaPasta.getId()) {
+      if (idGravado) {
+        descartarPastaNovaVazia_(novaPasta);
+        return validarPastaGerenciada_(idGravado);
+      }
+      throw new Error("Erro de integridade: o ID da pasta não ficou gravado na planilha central. Tente de novo.");
+    }
+
     return novaPasta;
 
-  } finally {
-    lock.releaseLock();
   }
 
 }
@@ -2547,10 +2595,35 @@ function gerarZipDocumentos(registroIds, tipoDocumento, dataColacao) {
   ADICIONAR / EXCLUIR ALUNO
 =====================================================*/
 
+// Já existe linha deste NUSP nesta colação? (lida sob o lock de quem chama)
+function existeRegistroMesmaColacao_(aba, mapa, nUsp, colacao) {
+  const ultimaLinha = aba.getLastRow();
+  if (ultimaLinha < 2) return false;
+  const colNUsp = obterColuna_(mapa, "nUsp");
+  const colColacao = obterColuna_(mapa, "colacao");
+  const largura = Math.max(colNUsp, colColacao);
+  const valores = aba.getRange(2, 1, ultimaLinha - 1, largura).getValues();
+  const nUspAlvo = String(nUsp).trim();
+  const colacaoAlvo = String(colacao).trim();
+  return valores.some(l =>
+    String(l[colNUsp - 1] || "").trim() === nUspAlvo &&
+    String(l[colColacao - 1] || "").trim() === colacaoAlvo
+  );
+}
+
+// 4.0.1 — inclusão manual com integridade:
+//   - recusa um segundo registro do mesmo NUSP na mesma colação;
+//   - grava a linha inteira numa chamada só (appendRow), em vez de
+//     reservar getLastRow()+1 e gravar célula por célula (outra
+//     gravação no mesmo instante, fora deste projeto, podia cair na
+//     mesma linha e misturar dois registros);
+//   - depois de gravar, localiza a linha pelo Registro ID e confere
+//     NUSP, nome e colação; qualquer diferença é erro de integridade.
 function adicionarAluno(colacao, dados) {
   exigirAdministradorDiplomas_(); // DiplomasAcesso.gs
 
   const colacaoValidada = validarCodigoColacao_(colacao);
+  dados = dados || {};
   const nome = sanitizarTextoPlano_(dados.nome);
   const nUsp = normalizarNUsp_(dados.nUsp);
 
@@ -2565,29 +2638,43 @@ function adicionarAluno(colacao, dados) {
     const mapa = mapearCabecalhos_(aba);
     garantirColunasBase_(aba, mapa);
 
-    const ultimaLinha = aba.getLastRow();
-    const novaLinha = ultimaLinha + 1;
-    const ultimaColuna = aba.getLastColumn();
-
-    aba.getRange(novaLinha, 1, 1, ultimaColuna).clearContent();
+    if (existeRegistroMesmaColacao_(aba, mapa, nUsp, colacaoValidada)) {
+      throw new Error(
+        "Já existe um registro deste Nº USP nesta colação. Nada foi criado; " +
+        "abra o registro existente para corrigir os dados."
+      );
+    }
 
     const registroId = Utilities.getUuid();
+    const valores = {
+      registroId: registroId,
+      versao: 1,
+      nome: nome,
+      nUsp: nUsp,
+      email: sanitizarTextoPlano_(dados.email),
+      genero: validarGenero_(dados.genero),
+      rg: sanitizarTextoPlano_(dados.rg),
+      colacao: colacaoValidada,
+      bachConcluiu: dados.bachConcluiu ? "SIM" : "NÃO",
+      licConcluiu: dados.licConcluiu ? "SIM" : "NÃO",
+      psiConcluiu: dados.psiConcluiu ? "SIM" : "NÃO",
+      bachAno: sanitizarTextoPlano_(dados.bachAno || ""),
+      licAno: sanitizarTextoPlano_(dados.licAno || ""),
+      psiAno: sanitizarTextoPlano_(dados.psiAno || "")
+    };
 
-    aba.getRange(novaLinha, obterColuna_(mapa, "registroId")).setValue(registroId);
-    aba.getRange(novaLinha, obterColuna_(mapa, "versao")).setValue(1);
-    aba.getRange(novaLinha, obterColuna_(mapa, "nome")).setValue(nome);
-    aba.getRange(novaLinha, obterColuna_(mapa, "nUsp")).setValue(nUsp);
-    aba.getRange(novaLinha, obterColuna_(mapa, "email")).setValue(sanitizarTextoPlano_(dados.email));
-    aba.getRange(novaLinha, obterColuna_(mapa, "genero")).setValue(validarGenero_(dados.genero));
-    aba.getRange(novaLinha, obterColuna_(mapa, "rg")).setValue(sanitizarTextoPlano_(dados.rg));
-    aba.getRange(novaLinha, obterColuna_(mapa, "colacao")).setValue(colacaoValidada);
+    // Todas as colunas são conferidas ANTES de gravar qualquer coisa.
+    const colunas = {};
+    Object.keys(valores).forEach(chave => { colunas[chave] = obterColuna_(mapa, chave); });
 
-    aba.getRange(novaLinha, obterColuna_(mapa, "bachConcluiu")).setValue(dados.bachConcluiu ? "SIM" : "NÃO");
-    aba.getRange(novaLinha, obterColuna_(mapa, "licConcluiu")).setValue(dados.licConcluiu ? "SIM" : "NÃO");
-    aba.getRange(novaLinha, obterColuna_(mapa, "psiConcluiu")).setValue(dados.psiConcluiu ? "SIM" : "NÃO");
-    aba.getRange(novaLinha, obterColuna_(mapa, "bachAno")).setValue(sanitizarTextoPlano_(dados.bachAno || ""));
-    aba.getRange(novaLinha, obterColuna_(mapa, "licAno")).setValue(sanitizarTextoPlano_(dados.licAno || ""));
-    aba.getRange(novaLinha, obterColuna_(mapa, "psiAno")).setValue(sanitizarTextoPlano_(dados.psiAno || ""));
+    const largura = aba.getLastColumn();
+    const linhaNova = [];
+    for (let c = 0; c < largura; c++) linhaNova.push("");
+    Object.keys(valores).forEach(chave => { linhaNova[colunas[chave] - 1] = valores[chave]; });
+
+    aba.appendRow(linhaNova);
+
+    conferirInclusao_(aba, mapa, registroId, { nUsp: nUsp, nome: nome, colacao: colacaoValidada });
 
     return { sucesso: true, registroId: registroId, versao: 1 };
 
@@ -2597,39 +2684,33 @@ function adicionarAluno(colacao, dados) {
 
 }
 
-// Lógica de exclusão de UM registro (sem lock — chamadores cuidam
-// disso). Só manda a pasta pra lixeira se: (1) ela é reconhecida
-// como pasta gerenciada (dentro da raiz) e (2) nenhum OUTRO registro
-// (outra colação da mesma pessoa) aponta pro mesmo ID de pasta.
-function excluirAlunoInterno_(aba, mapa, linha) {
-
-  const colIdPasta = obterColunaOpcional_(mapa, "idPasta");
-  const colLinkPasta = obterColuna_(mapa, "linkPasta");
-  const colNUsp = obterColuna_(mapa, "nUsp");
-
-  const idPastaColuna = colIdPasta ? aba.getRange(linha, colIdPasta).getValue() : null;
-  const linkPasta = aba.getRange(linha, colLinkPasta).getValue();
-  const idPasta = idPastaColuna || extrairIdDaUrl_(linkPasta);
-  const nUsp = aba.getRange(linha, colNUsp).getValue();
-
-  if (idPasta) {
-    const outroUsa = outrosRegistrosUsamPasta_(aba, mapa, idPasta, linha);
-    if (!outroUsa) {
-      try {
-        validarPastaGerenciada_(idPasta).setTrashed(true);
-        // A pasta física sumiu — limpa também o "ID da Pasta" na
-        // planilha central, senão qualquer sistema (Diplomas, BUSP,
-        // futuros) que consultar esse NUSP depois vai encontrar um ID
-        // órfão apontando pra uma pasta que não existe mais.
-        limparIdPastaNaCentral_(nUsp);
-      } catch (err) {
-        // Pasta já pode ter sido excluída manualmente, ou (erro de
-        // integridade) não está dentro da raiz gerenciada — nesses
-        // dois casos NÃO forçamos a exclusão da pasta física. A
-        // linha da planilha é removida de qualquer forma abaixo.
-      }
-    }
+// Confere, depois de gravar, que existe UMA linha com o Registro ID
+// novo e que ela tem o NUSP, o nome e a colação esperados.
+function conferirInclusao_(aba, mapa, registroId, esperado) {
+  let linha;
+  try {
+    linha = localizarLinhaPorId_(aba, mapa, registroId);
+  } catch (err) {
+    throw new Error("Erro de integridade: o registro novo não foi encontrado de forma única depois de gravado. Confira a planilha antes de tentar de novo.");
   }
+  const ler = chave => String(aba.getRange(linha, obterColuna_(mapa, chave)).getValue() || "").trim();
+  if (ler("nUsp") !== String(esperado.nUsp).trim() ||
+      ler("nome") !== String(esperado.nome).trim() ||
+      ler("colacao") !== String(esperado.colacao).trim()) {
+    Logger.log(`Inclusão divergente na linha ${linha}.`);
+    throw new Error("Erro de integridade: a linha gravada não corresponde aos dados enviados. Confira a planilha antes de tentar de novo.");
+  }
+  return linha;
+}
+
+// Lógica de exclusão de UM registro (sem lock — chamadores cuidam
+// disso). 4.0.1: remove só a linha desta colação. A pasta do aluno no
+// Drive e o "ID da Pasta" da planilha central NUNCA são tocados: a
+// pasta é do Nº USP e é usada por outras colações da mesma pessoa e
+// por outros sistemas (decisão D5 do responsável, 06/11/2026). Antes,
+// a pasta ia para a lixeira quando nenhuma outra linha tinha o cache
+// de pasta preenchido, o que não provava que ninguém mais a usava.
+function excluirAlunoInterno_(aba, mapa, linha) {
 
   aba.deleteRow(linha);
 

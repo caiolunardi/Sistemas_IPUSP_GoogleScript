@@ -78,6 +78,10 @@ t('nenhum arquivo usa a planilha vinculada (getActiveSpreadsheet/getUi)', () => 
 const LEITURA = ['obterColacoes', 'obterAlunos', 'obterDetalheAluno', 'obterTiposDeArquivo', 'obterObservacoes',
   'historicoListarSessoesAnalise', 'historicoObterSessaoAnalise', 'historicoObterUltimaSessaoAnalise'];
 
+// 4.1: só pelo editor ou pelo gatilho (o e-mail da sessão é o do dono).
+const SO_DONO = ['encaminharPedidosColacaoPorGatilho', 'prepararEncaminhamentosColacao', 'instalarGatilhoEncaminhadorColacao',
+  'removerGatilhoEncaminhadorColacao', 'diagnosticarEncaminhamentosColacao'];
+
 t('toda função pública confere o acesso na primeira linha (consulta = LEITOR; o resto = ADMINISTRADOR)', () => {
   let publicas = 0;
   fontes.forEach(([f, s]) => {
@@ -87,7 +91,7 @@ t('toda função pública confere o acesso na primeira linha (consulta = LEITOR;
       const nome = m[1];
       if (nome === 'doGet') continue;
       publicas++;
-      const esperado = LEITURA.includes(nome) ? 'exigirLeitorDiplomas_();' : 'exigirAdministradorDiplomas_();';
+      const esperado = LEITURA.includes(nome) ? 'exigirLeitorDiplomas_();' : SO_DONO.includes(nome) ? 'exigirContextoDoDonoDiplomas_();' : 'exigirAdministradorDiplomas_();';
       assert(m[3].trim().startsWith(esperado), `${f}: ${nome} começa com "${m[3].trim()}"`);
     }
   });
@@ -258,11 +262,18 @@ t('LEITOR: obterObservacoes de aluno com pasta lê o texto sem gravar', () => {
   assert.strictEqual(amb.drive.criacoes.length, 0);
 });
 
-t('ADMINISTRADOR: obterObservacoes mantém o comportamento da 3.x (cria a pasta que faltava)', () => {
+t('ADMINISTRADOR: sem cadastro na central, obterObservacoes não cria cadastro nem pasta (fim do autocadastro, D6)', () => {
   const amb = montarComCentral(ADMIN, false);
-  S.executar(amb, 'obterObservacoes', [ID_ALUNA]);
-  assert.strictEqual(amb.drive.criacoes.length, 1, 'ADMINISTRADOR deveria criar a pasta como antes');
-  assert(amb.planilhas[CENTRAL].abas['Página1'].gravacoes.length > 0, 'cadastro na planilha central como antes');
+  assert.throws(() => S.executar(amb, 'obterObservacoes', [ID_ALUNA]), /Gerenciador de Pessoas/);
+  assert.strictEqual(amb.drive.criacoes.length, 0, 'não deveria criar pasta');
+  assert.strictEqual(amb.planilhas[CENTRAL].abas['Página1'].gravacoes.length, 0, 'não deveria gravar na planilha central');
+});
+
+t('só o dono (editor ou gatilho) chama o encaminhador do gatilho e as funções do editor', () => {
+  for (const nome of SO_DONO) {
+    const amb = montarComCentral(ADMIN, true);
+    assert.throws(() => S.executar(amb, nome, []), /editor do projeto/, nome + ' aceitou chamada pela página');
+  }
 });
 
 t('toda consulta de LEITOR termina sem nenhuma gravação em planilha nem criação no Drive', () => {

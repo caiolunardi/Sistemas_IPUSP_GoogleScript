@@ -23,3 +23,17 @@
 ## Retorno seguro
 
 Antes de substituir a versão usada pelos alunos, registrar versão atual no editor, implantação `/exec` e configuração (sem valores no Git); preservar versão anterior para rollback. O retorno do `/exec` não desfaz modificações já realizadas em planilhas/Drive. Toda migração de dados, exclusão, mudança de ACL ou de Script Properties requer autorização própria.
+
+## Versão 2.0 (em PR)
+
+Fonte em `sistemas/pedido-colacao-grau/src/` (`Codigo.gs`, `ColacaoConfig.gs`, `ColacaoIdentidade.gs`, `ColacaoPlanilha.gs`, `ColacaoPedidos.gs`, `ColacaoDocumentos.gs`, `ColacaoRecibo.gs`, `ColacaoApp.html`, `appsscript.json` e o `.claspignore` padrão). Projetos novos (D14): `GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO`, criado pelo responsável em 06/11/2026, e o de produção, ainda a criar com o mesmo padrão. O projeto do legado não recebe este código.
+
+| Configuração | Valor |
+| --- | --- |
+| Manifesto | `executeAs: USER_DEPLOYING`, `access: DOMAIN` (versionado) |
+| Script Properties | `ID_INDEX_SPREADSHEET_ID`; na homologação `AMBIENTE = homologacao`; opcional `LINK_PAINEL_ALUNOS` (URL `/exec` do Painel de Solicitações, para o botão de voltar) |
+| Chaves novas no `ID_INDEX` | `PEDIDOS_COLACAO` (`spreadsheet`), `PASTA_PROVISORIOS_COLACAO` (`folder`), nas duas colunas |
+| Chaves existentes lidas | `PLANILHA_ALUNOS`, `PERIODOS`, `EMISSAO_DIPLOMAS` |
+| Compartilhamento | nenhum com alunos; `PEDIDOS_COLACAO` e a pasta de entrada só com a conta institucional e quem administra |
+
+Ordem para a homologação: [HOMOLOGACAO.md](HOMOLOGACAO.md#versão-200-pr-3-do-plano--testes-locais-e-roteiro-no-google). A produção só depois dos PRs 4 e 5 homologados juntos e da interface do PR 7 (D13), cada passo (`clasp push`, implantação, troca do link no Painel dos alunos, retirada da edição dos alunos nas planilhas) com ordem separada do responsável.

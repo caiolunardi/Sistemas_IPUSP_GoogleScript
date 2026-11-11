@@ -1,0 +1,290 @@
+<!--
+  PEDIDO DE COLAÇÃO DE GRAU — Central de Ajuda (conteúdo estático, 2.1).
+
+  Estrutura de shared/ajuda/GradipAjudaTemplate.html com o conteúdo deste
+  formulário. Comportamento em ColacaoAjudaUI.html e estilos em
+  ColacaoAjudaEstilos.html (cópias byte-idênticas de shared/ajuda/).
+  Nenhuma chamada ao servidor.
+
+  Público: alunos. Não cita planilhas, pastas, IDs, funções nem detalhes de
+  implementação. Datas do período não são copiadas aqui: mudam a cada
+  semestre e quem as divulga é o Serviço de Graduação.
+
+  Texto-fonte: docs/sistemas/pedido-colacao-grau/AJUDA.md. Ao mudar um
+  texto aqui, mude também lá. Os IDs de seção (ajuda-...) são usados pelos
+  gatilhos de ColacaoApp.html.
+-->
+<div class="gradip-help-overlay" data-gradip-help-overlay hidden>
+  <section class="gradip-help-dialog" data-gradip-help-dialog role="dialog" aria-modal="true" aria-labelledby="gradip-help-title" tabindex="-1">
+    <header class="gradip-help-header">
+      <div><p class="gradip-help-eyebrow">Colação de Grau — IPUSP</p><h2 id="gradip-help-title">Central de Ajuda</h2></div>
+      <button type="button" class="gradip-help-close" data-gradip-help-close aria-label="Fechar ajuda"><span aria-hidden="true">×</span></button>
+    </header>
+    <div class="gradip-help-search-wrap">
+      <label for="gradip-help-search">Buscar na ajuda</label>
+      <input id="gradip-help-search" type="search" placeholder="Ex.: protocolo, certidão, procuração, corrigir" autocomplete="off" data-gradip-help-search>
+      <p class="gradip-help-search-status" data-gradip-help-search-status aria-live="polite"></p>
+    </div>
+    <div class="gradip-help-layout">
+      <nav class="gradip-help-nav" aria-label="Seções da ajuda">
+        <button type="button" data-gradip-help-target="ajuda-inicio">Comece aqui</button>
+        <button type="button" data-gradip-help-target="ajuda-prazo">Quando posso pedir</button>
+        <button type="button" data-gradip-help-target="ajuda-preencher">Como preencher</button>
+        <button type="button" data-gradip-help-target="ajuda-documentos">Documentos</button>
+        <button type="button" data-gradip-help-target="ajuda-cadastro">Seu cadastro</button>
+        <button type="button" data-gradip-help-target="ajuda-depois">Depois de enviar</button>
+        <button type="button" data-gradip-help-target="ajuda-correcao">Corrigir o pedido</button>
+        <button type="button" data-gradip-help-target="ajuda-meus-pedidos">Meus pedidos</button>
+        <button type="button" data-gradip-help-target="ajuda-problemas">Problemas comuns</button>
+        <button type="button" data-gradip-help-target="ajuda-aparencia">Aparência</button>
+        <button type="button" data-gradip-help-target="ajuda-faq">Perguntas frequentes</button>
+      </nav>
+      <main class="gradip-help-main" data-gradip-help-main>
+
+        <section id="ajuda-inicio" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Comece aqui</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="para que serve objetivo colacao grau pedido formatura conclusao curso">
+            <h4>Para que serve</h4>
+            <p>Este formulário envia ao Serviço de Graduação do Instituto de Psicologia o seu pedido de <strong>colação de grau</strong> do curso que você concluiu no semestre: Formação de Psicólogo(a), Bacharelado ou Licenciatura em Psicologia.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="resumo passos rapido como usar enviar">
+            <h4>Em cinco passos</h4>
+            <p>1. Confira os seus dados.<br>2. Anexe o RG/CIN e a Certidão de Nascimento.<br>3. Marque o curso concluído e responda se continuará matriculado.<br>4. Preencha telefone, e-mail alternativo, procuração e colação antecipada.<br>5. Clique em <strong>Enviar Pedido</strong> e guarde o número do protocolo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="login conta usp entrar acesso email institucional">
+            <h4>Use a sua conta USP</h4>
+            <p>O formulário só abre para quem está conectado ao navegador com o e-mail <strong>@usp.br</strong>. O pedido fica ligado a essa conta: é com ela que você acompanha e corrige o pedido depois.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="recebido deferido aprovado diferenca analise">
+            <h4>Recebido não é deferido</h4>
+            <p>O protocolo confirma que o pedido chegou. Depois disso, o Serviço de Graduação ainda confere os seus dados e documentos.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-prazo" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Quando posso pedir</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="periodo prazo datas abertura semestre quando abre">
+            <h4>Só no período aberto</h4>
+            <p>O formulário recebe pedidos apenas no período definido pelo Serviço de Graduação para cada colação. As datas são divulgadas pelo Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="formulario fechado no momento fora do periodo encerrado">
+            <h4>Apareceu "Formulário fechado no momento"</h4>
+            <p>O período não está aberto agora. Se você já fez um pedido, o botão <strong>Meus pedidos</strong> continua disponível para consultar a situação e reenviar o comprovante.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="prazo encerrado enquanto preenchia pagina aberta fora do prazo">
+            <h4>O prazo acabou enquanto eu preenchia</h4>
+            <p>O formulário confere o prazo no envio. Se o prazo terminou com a página aberta, o pedido não é registrado e aparece um aviso. Para qualquer pedido fora do prazo, fale com o Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="um pedido por colacao ja tenho pedido novo pedido segundo">
+            <h4>Um pedido por colação</h4>
+            <p>Cada conta tem um pedido por colação. Se você já enviou, a página mostra o seu protocolo e, quando ainda for possível, o botão <strong>Corrigir o pedido</strong>. Se o pedido não foi aprovado, você pode enviar um novo.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-preencher" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Como preencher</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nome completo grafia acento certidao">
+            <h4>Nome completo</h4>
+            <p>Escreva o nome exatamente como está na Certidão de Nascimento, com os acentos. Ele será usado no Certificado de Colação de Grau, no Histórico Escolar Final e no Diploma.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nome numero usp bloqueado cinza nao consigo mudar travado">
+            <h4>Nome e Nº USP sem edição</h4>
+            <p>Quando o seu cadastro é confirmado, nome e Nº USP vêm dele e não podem ser mudados no formulário. Se algo estiver errado, descreva no campo <strong>O seu nome ou nº USP está errado?</strong>: o pedido é recebido do mesmo jeito e a equipe confere.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="rg cin numero pontos tracos digitar">
+            <h4>Nº RG/CIN</h4>
+            <p>Digite como está no documento, com pontos e traços.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="curso concluido formacao psicologo bacharelado licenciatura marcar mais de um">
+            <h4>Curso concluído</h4>
+            <p>Marque o curso ou complemento que você concluiu neste semestre. Se concluiu mais de um, marque todos.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="permanecer matriculado proximo semestre habilitacao pendente continuar cursando">
+            <h4>Vai continuar matriculado?</h4>
+            <p>Responda se no próximo semestre você continuará matriculado no IPUSP. Se sim, marque as habilitações que continuará cursando; a lista mostra só as que você não marcou como concluídas.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="telefone celular whatsapp ddd contato">
+            <h4>Telefone celular</h4>
+            <p>Com DDD e sem espaços, por exemplo 11999999999. Se for preciso, a equipe entra em contato por WhatsApp nesse número.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="email alternativo pessoal secundario gmail desativado">
+            <h4>E-mail alternativo</h4>
+            <p>Informe um e-mail pessoal, diferente do e-mail USP. Depois que você deixa de ter vínculo com a USP, o e-mail institucional é desativado, e a equipe usa o alternativo para falar com você.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="procuracao procurador firma reconhecida entregar tres dias">
+            <h4>Colação por procuração</h4>
+            <p>Marque <strong>Sim</strong> se outra pessoa vai colar grau por você e informe o nome e o RG/CIN dela. A procuração, com firma reconhecida, deve ser entregue ao Serviço de Graduação até três dias úteis antes da data da colação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="colacao antecipada urgencia residencia pos graduacao concurso edital">
+            <h4>Colação antecipada</h4>
+            <p>É só para quem precisa do certificado antes da colação regular por causa de concurso, processo seletivo, residência, aprimoramento, pós-graduação ou posse em vaga pública, quando o edital exigir. Cada pedido é analisado pela equipe; marcar <strong>Sim</strong> não garante a antecipação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="erro campo vermelho marcado corrigir nao envia faltando">
+            <h4>Campo marcado em vermelho</h4>
+            <p>Ao clicar em <strong>Enviar Pedido</strong>, o formulário confere os campos. O primeiro com problema fica marcado, com a explicação logo abaixo, e o cursor vai até ele. Corrija e clique em Enviar de novo.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-documentos" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Documentos</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="quais documentos anexar rg cin certidao nascimento obrigatorio">
+            <h4>O que anexar</h4>
+            <p>Dois documentos são obrigatórios: o <strong>RG ou CIN</strong> (um só documento, o mais recente, fora do plástico e aberto, com tudo legível) e a <strong>Certidão de Nascimento</strong>, usada para conferir a grafia do nome.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="formato pdf jpg jpeg png tamanho 10 mb limite arquivo grande">
+            <h4>Formato e tamanho</h4>
+            <p>Arquivos em <strong>PDF, JPG ou PNG</strong>, com até <strong>10 MB</strong> cada. Arraste o arquivo para a área tracejada ou clique nela para escolher.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="arquivo nao aceito recusado invalido erro documento formato inesperado renomeado">
+            <h4>O arquivo não foi aceito</h4>
+            <p>Confira se é mesmo PDF, JPG ou PNG e se tem até 10 MB. O formulário confere o conteúdo do arquivo, não só o nome: um arquivo de outro tipo renomeado para .pdf é recusado. Se for uma foto grande, diminua a resolução ou salve como PDF.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="documento ja enviado manter trocar correcao substituir">
+            <h4>Documento já enviado</h4>
+            <p>Na correção, os documentos já enviados aparecem como <strong>Já enviado neste pedido</strong>. Escolha outro arquivo só se quiser trocá-lo; os que você não trocar continuam valendo.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-cadastro" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Seu cadastro</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao conseguimos confirmar cadastro automaticamente preencha dados provisorio">
+            <h4>Apareceu "Não conseguimos confirmar o seu cadastro automaticamente"</h4>
+            <p>O formulário não encontrou o seu cadastro de aluno ligado a esta conta. Preencha nome, Nº USP e ano de ingresso. O pedido é recebido normalmente, com protocolo, e a equipe confere o cadastro depois.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="cadastro em conferencia confirmado aprovado nao aprovado significado">
+            <h4>Cadastro em conferência</h4>
+            <p>Quer dizer que a equipe ainda vai conferir os dados que você informou. Isso não impede o recebimento do pedido. Se o cadastro não for aprovado, você recebe um e-mail com o motivo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="pedido nao aprovado rejeitado recusado motivo email enviar novo pedido de novo">
+            <h4>O pedido não foi aprovado</h4>
+            <p>A equipe explica o motivo por e-mail, no aviso do topo do formulário e em <strong>Meus pedidos</strong>. Corrija o que foi apontado e envie um <strong>novo pedido</strong> pelo formulário, enquanto o prazo estiver aberto; o pedido antigo fica encerrado. Em caso de dúvida, fale com o Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="outra conta email diferente cadastro errado conta usp diferente">
+            <h4>Causa comum</h4>
+            <p>Estar conectado com um e-mail USP diferente do que consta no cadastro. Se tiver mais de uma conta USP, use a principal.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-depois" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Depois de enviar</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="protocolo numero pedido recebido guardar">
+            <h4>Protocolo</h4>
+            <p>A tela <strong>Pedido recebido</strong> mostra o número do protocolo, a data e a hora do recebimento. O protocolo só aparece depois que o pedido está registrado. Guarde o número para falar com o Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="comprovante email recibo confirmacao recebido">
+            <h4>Comprovante por e-mail</h4>
+            <p>Você recebe no e-mail USP um comprovante com os dados enviados. Ele confirma o recebimento; não é a resposta do pedido. Se não chegar, reenvie pelo botão em <strong>Meus pedidos</strong>.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="o que acontece agora conferencia equipe deferimento resultado">
+            <h4>O que acontece agora</h4>
+            <p>O Serviço de Graduação confere os seus dados e documentos. Acompanhe a situação em <strong>Meus pedidos</strong> e, se for preciso, a equipe fala com você pelo e-mail ou pelo telefone informados.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-correcao" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Corrigir o pedido</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="corrigir alterar editar pedido enviado errado quando posso">
+            <h4>Quando dá para corrigir</h4>
+            <p>Enquanto o prazo estiver aberto e a equipe ainda não tiver começado a conferir o seu pedido. Abra o formulário de novo e clique em <strong>Corrigir o pedido</strong>.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="correcao data hora original protocolo mesmo documentos mantidos">
+            <h4>O que muda na correção</h4>
+            <p>O protocolo e a data e a hora do pedido continuam os originais. Mude só o que precisa e clique em <strong>Enviar correção</strong>. Os documentos que você não trocar continuam os já enviados.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nada mudou correcao recusada sem alteracao">
+            <h4>Apareceu "Nada mudou em relação ao pedido"</h4>
+            <p>A correção só é registrada quando algo muda. Altere o que precisa corrigir e envie de novo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="equipe ja comecou conferir nao posso corrigir botao sumiu">
+            <h4>Não aparece o botão de corrigir</h4>
+            <p>A equipe já começou a conferir o seu pedido ou o prazo terminou. Para corrigir alguma informação, fale com o Serviço de Graduação.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-meus-pedidos" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Meus pedidos</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="meus pedidos lista acompanhar situacao consultar">
+            <h4>O que aparece</h4>
+            <p>Os pedidos de colação feitos com a sua conta, com protocolo, colação, data do recebimento, situação do cadastro e andamento.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="situacao aguardando encaminhamento em analise em conferencia significado andamento">
+            <h4>Andamento</h4>
+            <p><strong>Aguardando encaminhamento à equipe</strong>: o pedido foi recebido e ainda não chegou à conferência. <strong>Em análise pela equipe</strong> ou <strong>Em conferência pela equipe</strong>: a equipe está conferindo. <strong>Correção em conferência pela equipe</strong>: a sua correção chegou e está sendo conferida.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="envio incompleto nao terminou retomar continuar anexar de novo">
+            <h4>Envio incompleto</h4>
+            <p>O seu último envio não terminou. Abra o formulário, anexe os documentos de novo e clique em <strong>Enviar Pedido</strong>: ele continua de onde parou, com a data e a hora em que começou, e não cria pedido duplicado.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="reenviar comprovante dois minutos aguarde botao">
+            <h4>Reenviar o comprovante</h4>
+            <p>O botão envia o comprovante de novo para o seu e-mail USP. A mensagem aparece logo abaixo do botão. Depois de um reenvio, o próximo fica disponível em 2 minutos.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-problemas" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Problemas comuns</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao abre login conta google gmail pessoal outra conta acesso negado">
+            <h4>O formulário não abre ou pede login</h4>
+            <p>Uma causa comum é estar conectado com uma conta Google pessoal (por exemplo, @gmail.com) em vez da conta @usp.br, ou com várias contas ao mesmo tempo. Tente: sair das outras contas ou abrir o link numa janela anônima, entrar só com o e-mail USP e abrir a página de novo.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="nao foi possivel abrir formulario erro ao carregar pagina em branco travado">
+            <h4>Apareceu "Não foi possível abrir o formulário"</h4>
+            <p>Recarregue a página. Se o erro continuar, tente de novo em alguns minutos. Persistindo, avise o Serviço de Graduação.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="envio nao terminou falhou erro ao enviar duplicado enviar de novo muitos envios">
+            <h4>O envio não terminou</h4>
+            <p>Leia a mensagem no topo da página. Se ela pedir para enviar de novo, clique no mesmo botão: o pedido não é duplicado. Enquanto não aparecer a tela <strong>Pedido recebido</strong> com o protocolo, o pedido não está registrado.</p>
+          </article>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="comprovante nao chegou email nao recebi spam lixo eletronico">
+            <h4>O comprovante não chegou</h4>
+            <p>Confira a caixa de spam ou lixo eletrônico do e-mail USP. O pedido continua registrado mesmo sem o comprovante; você pode reenviá-lo em <strong>Meus pedidos</strong>.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-aparencia" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Aparência</h3>
+          <article class="gradip-help-card" data-gradip-help-search-item data-search="tema claro escuro sistema modo noturno dark cores">
+            <h4>Claro, Escuro ou Sistema</h4>
+            <p>Use o seletor <strong>Aparência</strong> no topo. <strong>Sistema</strong> acompanha a configuração do seu computador ou celular. A escolha fica salva só neste navegador.</p>
+          </article>
+        </section>
+
+        <section id="ajuda-faq" class="gradip-help-section" data-gradip-help-section>
+          <h3 tabindex="-1">Perguntas frequentes</h3>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="protocolo aprovado garantido colacao confirmada deferido">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-garantido">
+              <span>Ter o protocolo garante a colação?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-garantido" class="gradip-help-faq-panel" hidden><p>Não. O protocolo confirma que o pedido foi recebido. O Serviço de Graduação ainda confere os seus dados e documentos.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="enviei duas vezes duplicado cliquei de novo repetido">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-duplicado">
+              <span>Cliquei em enviar de novo. Ficou duplicado?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-duplicado" class="gradip-help-faq-panel" hidden><p>Não. Reenviar pelo mesmo botão continua o mesmo pedido. Cada conta tem um pedido por colação.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="diploma digital impresso papel emissao">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-diploma">
+              <span>O diploma será impresso?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-diploma" class="gradip-help-faq-panel" hidden><p>A orientação em vigor está no texto do campo <strong>Certidão de Nascimento</strong>, no próprio formulário. Em caso de dúvida, fale com o Serviço de Graduação.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="quem ve meus dados privacidade documentos sigilo outros alunos">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-dados">
+              <span>Quem vê o que eu envio?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-dados" class="gradip-help-faq-panel" hidden><p>O pedido e os documentos vão para o Serviço de Graduação, que os usa para a colação de grau e a emissão dos documentos de conclusão. Neste formulário, cada aluno vê só os próprios pedidos.</p></div>
+          </article>
+          <article class="gradip-help-faq" data-gradip-help-search-item data-search="painel solicitacoes voltar outros pedidos">
+            <button type="button" class="gradip-help-faq-toggle" data-gradip-help-faq-toggle aria-expanded="false" aria-controls="faq-painel">
+              <span>Como volto ao Painel de Solicitações?</span><span class="gradip-help-faq-chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div id="faq-painel" class="gradip-help-faq-panel" hidden><p>Quando você já tem um pedido, a página mostra o botão <strong>Voltar ao Painel de Solicitações</strong>, quando ele estiver disponível.</p></div>
+          </article>
+        </section>
+
+        <div class="gradip-help-no-results" data-gradip-help-no-results hidden><strong>Nenhum resultado encontrado.</strong><p>Tente outra palavra ou limpe a busca.</p></div>
+      </main>
+    </div>
+  </section>
+</div>

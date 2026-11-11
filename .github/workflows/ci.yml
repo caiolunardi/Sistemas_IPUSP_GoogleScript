@@ -70,9 +70,14 @@ jobs:
           - sistemas/abertura-habilitacoes/gerenciador/testes/testar_equivalencia.js
           - sistemas/abertura-habilitacoes/formulario/testes/testar_backend.js
           - sistemas/painel-solicitacoes/testes/testar_contagem.js
+          - sistemas/pedido-colacao-grau/testes/testar_backend.js
           - sistemas/painel-servidores/testes/testar_acesso.js
           - sistemas/painel-servidores/testes/testar_saudacao.js
           - sistemas/painel-servidores/testes/testar_auditoria.js
+          - sistemas/emissao-diplomas/testes/testar_acesso.js
+          - sistemas/emissao-diplomas/testes/testar_historico.js
+          - sistemas/emissao-diplomas/testes/testar_integridade.js
+          - sistemas/emissao-diplomas/testes/testar_encaminhador.js
           - ferramentas/testes/testar_conferir_implantacao.js
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -101,6 +106,8 @@ jobs:
           - sistemas/painel-servidores/testes/testar_navegador.js
           - sistemas/abertura-habilitacoes/gerenciador/testes/testar_navegador.js
           - sistemas/abertura-habilitacoes/formulario/testes/testar_navegador.js
+          - sistemas/pedido-colacao-grau/testes/testar_navegador.js
+          - sistemas/emissao-diplomas/testes/testar_navegador.js
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
