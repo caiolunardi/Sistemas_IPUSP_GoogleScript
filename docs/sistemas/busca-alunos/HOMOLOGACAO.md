@@ -30,6 +30,7 @@ Projeto `GRADIP · Gerenciador de Pessoas · HOMOLOGACAO` criado pelo responsáv
 | Passo | Resultado (11/11/2026) |
 |---|---|
 | F1 | ok: pedido fictício com nº USP já cadastrado na cópia apareceu na fila com motivo, links dos documentos e a linha do mesmo nº USP como candidata. |
+| F5 | decisão ok: `DECISOES_CADASTRO` com `APROVADO`/`VINCULADO`, e-mail anterior vazio e novo preenchido; o Gerenciador de Diplomas, no ciclo seguinte, bloqueou o pedido por `DUPLICIDADE_DIPLOMAS` (E8 dele). Falta conferir a linha da planilha central. |
 
 Achados de F1 (sem correção ainda, para decisão): o motivo diz "já pertence a outro e-mail" mesmo quando a linha da planilha central não tem e-mail; o cabeçalho da página ainda diz "Comunidade IPUSP"; as chaves `SERVIDORES` e `PLANILHA_DOCENTES` estão sem valor na coluna Homologação (aviso esperado).
 
