@@ -43,7 +43,7 @@ Roteiro no projeto HOMOLOGACAO, depois de autorização para o `clasp push` e co
 | E5 | ok: o pedido com cadastro `PENDENTE` não entrou nem gerou aviso |
 | E6 | ok: `APROVADO` digitado à mão em `DECISOES_CADASTRO` (o Pessoas 1.5 ainda não está na homologação) com Nº USP fictício sem cadastro; nada entrou; aviso "Bloqueado" com o motivo |
 | E7 | ok: depois do cadastro fictício na central, o pedido entrou sozinho e o aviso sumiu |
-| E8 | não feito: o encaminhador incluiu o pedido antes da linha manual; fica para a homologação do Gerenciador de Pessoas 1.5, com pedido novo (coberto por `testar_encaminhador.js`) |
+| E8 | ok (10/11, na homologação do Gerenciador de Pessoas 1.5): pedido novo com nº USP já presente na colação, vinculado pelo Gerenciador de Pessoas, apareceu como "Bloqueado. Já existe outro registro deste Nº USP nesta colação na aba Diplomas" |
 | E9 | ok: conta LEITOR vê "Somente consulta" e nenhum aviso de pedidos |
 | E10 | ok: "Criar pasta no Drive" num registro sem cadastro na central recusou com a mensagem para cadastrar pelo Gerenciador de Pessoas; nada criado. Achado: o aviso dizia "Erro: Error: …"; o prefixo do Apps Script sai agora (teste de navegador novo) |
 
