@@ -27,6 +27,12 @@ Roteiro no Google, cada passo com autorização, depois do formulário 2.x de ho
 
 Projeto `GRADIP · Gerenciador de Pessoas · HOMOLOGACAO` criado pelo responsável, com `ID_INDEX_SPREADSHEET_ID` e `AMBIENTE=homologacao`. Com a ordem dele, `clasp push` de `a52bd8a` só nesse projeto (backup do conteúdo anterior, 10 arquivos, fora do repositório); conferência por clone: 13/13 arquivos iguais ao commit. Sem implantação. A aba `DECISOES_CADASTRO` da cópia de homologação já existia (criada à mão no roteiro E6 do Gerenciador de Diplomas, com os mesmos títulos).
 
+| Passo | Resultado (11/11/2026) |
+|---|---|
+| F1 | ok: pedido fictício com nº USP já cadastrado na cópia apareceu na fila com motivo, links dos documentos e a linha do mesmo nº USP como candidata. |
+
+Achados de F1 (sem correção ainda, para decisão): o motivo diz "já pertence a outro e-mail" mesmo quando a linha da planilha central não tem e-mail; o cabeçalho da página ainda diz "Comunidade IPUSP"; as chaves `SERVIDORES` e `PLANILHA_DOCENTES` estão sem valor na coluna Homologação (aviso esperado).
+
 ## v1.4 — autorização no servidor
 
 **Estado:** em PR (09/11/2026), verificada localmente, **não enviada ao Google**. Classe de risco **crítica** (autorização e dados pessoais): exige parecer de revisão independente e autorização do responsável escrita no PR antes do merge e, separadamente, antes de cada `clasp push` e de cada implantação.
