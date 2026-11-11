@@ -50,7 +50,7 @@
 
 | Suíte | O que cobre | Resultado local |
 | --- | --- | --- |
-| `sistemas/pedido-colacao-grau/testes/testar_backend.js` | servidor com o Apps Script simulado: T-AUT-01 a 05, T-DUP-01/02/03/06, T-CON-01, T-DOC-03/06, T-PRZ-01/02/03/05/06, T-REC-01/02/03, D3, recibo (D9), homologação, escritor único, diagnóstico e preparação, motivo e aviso de rejeição | 80 ok |
+| `sistemas/pedido-colacao-grau/testes/testar_backend.js` | servidor com o Apps Script simulado: T-AUT-01 a 05, T-DUP-01/02/03/06, T-CON-01, T-DOC-03/06, T-PRZ-01/02/03/05/06, T-REC-01/02/03, D3, recibo (D9), homologação, escritor único, diagnóstico e preparação, motivo e aviso de rejeição, pasta própria mesmo com a numeração recomeçando | 81 ok |
 | `sistemas/pedido-colacao-grau/testes/testar_navegador.js` | página em Chromium: telas por situação, validação (campo do problema destacado, focado e com a mensagem ao lado), chave de envio (mesma no reenvio, nova na correção, a do servidor na retomada), duplo clique, "Meus pedidos" sem HTML injetado, aviso de rejeição com o motivo como texto, 360 a 1280 px | 70 ok |
 
 Fora do alcance local (só no Google): T-AUT-06 e H1 (e-mail da sessão com "Executar como: eu"), cotas de e-mail, tempo real de gravação de arquivos de 10 MB, `appendRow` com o apóstrofo inicial, `noReply`, comportamento do `ScriptLock` com vários alunos ao mesmo tempo. Os casos T-CON-02 a 06, T-DUP-04/05, T-DOC-01/02/04/05/07/08 e T-PRZ-04 dependem dos PRs 1, 4, 5 e 6.

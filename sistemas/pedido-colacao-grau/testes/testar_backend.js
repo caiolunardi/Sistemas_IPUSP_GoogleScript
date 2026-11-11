@@ -401,8 +401,25 @@ caso('T-DOC-03 nome dos arquivos novos: tipo, nome, colação, protocolo e vers�
   ]);
   igual(amb.arquivos.map(a => a.mime).sort(), ['application/pdf', 'image/png']);
   verdade(amb.arquivos.every(a => a.pasta !== ID.PASTA), 'arquivo fora da subpasta do protocolo');
-  igual(amb.pastas[ID.PASTA].pastas.map(p => p.nome), ['PCG-20262-00001']);
+  const idUm = protocolos(amb)[0]['Protocolo ID'].replace(/[^A-Za-z0-9]/g, '').slice(0, 8);
+  igual(amb.pastas[ID.PASTA].pastas.map(p => p.nome), ['PCG-20262-00001 · ' + idUm]);
   igual(amb.lixeira, []);
+});
+
+caso('Numeração que recomeça (PROTOCOLOS apagada) não reaproveita a pasta de outro pedido', () => {
+  const amb = cenario();
+  enviar(amb, pedido());
+  const pastaAntiga = protocolos(amb)[0]['Pasta do protocolo'];
+  // Alguém apaga as linhas de PROTOCOLOS: o próximo número volta a 00001.
+  const pl = amb.planilhas[ID.PEDIDOS];
+  pl.abas.PROTOCOLOS.valores = pl.abas.PROTOCOLOS.valores.slice(0, 1);
+  amb.usuario = 'bruno@usp.br';
+  const r = enviar(amb, pedido());
+  igual(r.protocolo, 'PCG-20262-00001');
+  const pastaNova = protocolos(amb)[0]['Pasta do protocolo'];
+  verdade(pastaNova !== pastaAntiga, 'pedido novo ganhou pasta própria');
+  igual(amb.pastas[ID.PASTA].pastas.length, 2);
+  igual(new Set(amb.pastas[ID.PASTA].pastas.map(p => p.nome)).size, 2);
 });
 
 caso('T-DOC-06 conteúdo recusado antes de gravar qualquer coisa', () => {
