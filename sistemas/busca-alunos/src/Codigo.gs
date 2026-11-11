@@ -84,10 +84,18 @@
   Leitura dos cadastros, ficha, gravação, exportação e o contrato com
   a página não mudaram.
 
+  v1.5 (10/11/2026, fila de cadastro — PR 5 do plano do formulário de
+  colação de grau): PessoasFilaCadastro.gs. Os pedidos de colação com
+  cadastro PENDENTE (planilha PEDIDOS_COLACAO) aparecem só para
+  ADMINISTRADOR; vincular, criar cadastro ou rejeitar grava uma linha
+  em DECISOES_CADASTRO (e, ao criar ou trocar o e-mail, a planilha de
+  alunos). Este arquivo não mudou na v1.5, além deste comentário.
+
   ARQUIVOS DO PROJETO (todos na raiz do Apps Script, nomes sem
   extensão no include_):
     Codigo.gs                  — este arquivo
     PessoasAcesso.gs           — quem pode usar e com que perfil (v1.4)
+    PessoasFilaCadastro.gs     — fila de cadastro dos pedidos de colação (v1.5)
     PessoasSemAcesso.html      — página de quem não tem acesso (v1.4)
     BuscaAlunosApp.html        — página principal (busca)
     GradipTema.html            — tokens + Sistema/Claro/Escuro

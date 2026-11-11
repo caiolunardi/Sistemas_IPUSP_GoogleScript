@@ -1,4 +1,4 @@
-# Ajuda — Comunidade IPUSP (texto-fonte da Central de Ajuda, v1.4)
+# Ajuda — Comunidade IPUSP (texto-fonte da Central de Ajuda, v1.5)
 
 > **Nota editorial.** Este é o texto-fonte da Central de Ajuda do app (`src/BuscaAlunosAjuda.html`), na mesma ordem, com os mesmos títulos e identificadores (`{#ajuda-…}`) usados pelos gatilhos contextuais. O padrão segue [docs/ajuda](../../ajuda/README.md) e o [modelo de conteúdo](../../ajuda/HELP_CONTENT_MODEL.md).
 >
@@ -380,3 +380,39 @@ Alguns navegadores bloqueiam a cópia automática. Abra a ficha (clique no nome)
 Recarregue a página, abra o aluno de novo e refaça a alteração. A gravação é recusada quando a planilha mudou depois que você abriu a página ou a ficha, para que você não sobrescreva o trabalho de outra pessoa nem grave no aluno errado.
 
 <sub>Termos extras da busca: alguem mudou outra pessoa conflito planilha mudou recarregue erro salvar</sub>
+
+
+## Solicitações de cadastro {#ajuda-fila-cadastro}
+
+(v1.5; gatilho contextual "Como decidir uma solicitação?" na caixa da fila, que só aparece para administradores.)
+
+### O que é
+
+Quando um aluno pede a colação de grau pelo formulário e o sistema não consegue confirmar quem ele é pela planilha de alunos (por exemplo, o e-mail não está cadastrado, está em duas linhas ou o aluno apontou dados errados), o pedido é protocolado do mesmo jeito e aparece aqui, em **Solicitações de cadastro**. Só quem tem o perfil de administrador vê esta parte.
+
+### Vincular a um cadastro que já existe
+
+1. Abra os documentos do pedido e confira se são da pessoa.
+2. Em **Cadastros parecidos**, marque o cadastro certo (aparecem os que têm o mesmo nº USP ou o mesmo e-mail).
+3. Se o e-mail do pedido for o certo, marque **trocar o e-mail principal**; a troca só é feita se esse e-mail não estiver em outra linha.
+4. Clique em **Vincular ao cadastro marcado** e confirme.
+
+### Criar um cadastro novo
+
+Use quando a pessoa não tem linha na planilha de alunos. Confira o número USP, o nome e o ingresso (ano e semestre, como 2021/1: o formulário só pergunta o ano) e clique em **Criar cadastro e aprovar**. Se o número USP ou o e-mail já estiverem na planilha, o sistema recusa e pede que você vincule.
+
+### Rejeitar
+
+Se o pedido não puder ser aceito, clique em **Rejeitar**, escreva o motivo e confirme. O aluno recebe esse motivo por e-mail e o vê no formulário, então escreva o que ele precisa corrigir no novo pedido. Nada é apagado: o protocolo e os documentos continuam guardados.
+
+### Depois da decisão
+
+O pedido aprovado sai da fila e segue sozinho para o Gerenciador de Colação de Grau e Diplomas, que o coloca na colação escolhida com a data original do pedido. Esta página não mexe na lista de diplomas nem nos documentos.
+
+### Não aparecem os botões de decisão
+
+Para decidir é preciso, além do perfil de administrador, ser editor da planilha de alunos. Sem isso, a fila aparece só para consulta, com um aviso em cada pedido.
+
+### "Nº USP repetido" ou "mudou ou já foi decidido"
+
+Se o número USP aparece em mais de uma linha da planilha de alunos, corrija a ficha (deixe uma linha só) e decida de novo: o pedido continua na fila. Se outra pessoa decidiu o mesmo pedido, ou o aluno enviou uma correção, recarregue a página e confira de novo.

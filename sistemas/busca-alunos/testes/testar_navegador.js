@@ -39,7 +39,15 @@ var API={listarComunidadeParaBusca:function(){if(MODO==='erro')throw new Error('
   Object.keys(p.novos).forEach(function(k){if(k==='Ingresso'&&!/^\\d{4}\\/[12]$/.test(p.novos[k]))throw new Error('O ingresso deve estar no formato AAAA/S, por exemplo 2024/1 ou 2024/2.');
    if(k==='M / F'&&!/^[MF]?$/i.test(p.novos[k]))throw new Error('O campo "M / F" aceita só M ou F (ou vazio).');a[M[k]]=k==='M / F'||k==='TIPO'?p.novos[k].toUpperCase():p.novos[k]});
   var f=ficha(p.cadastro,a);f.alterados=Object.keys(p.novos).length;f.resumo=resumo(a);return f},
- gerarPdfListaAlunos:function(p){return {nome:p.nomeArquivo+'.pdf',base64:btoa('%PDF-1.4 '+p.linhas.length)}}};
+ gerarPdfListaAlunos:function(p){return {nome:p.nomeArquivo+'.pdf',base64:btoa('%PDF-1.4 '+p.linhas.length)}},
+ obterFilaCadastro:function(){if(MODO==='leitor')return {visivel:false};if(MODO==='erro')throw new Error('A planilha de pedidos de colação não tem a aba DECISOES_CADASTRO.');
+  return {visivel:true,podeDecidir:true,itens:MODO==='parcial'?[]:FILA}},
+ decidirCadastro:function(p){if(p.acao==='CRIAR'&&p.novo.numeroUsp==='9000002')throw new Error('Error: Este nº USP já tem cadastro. Use Vincular ao cadastro existente.');
+  FILA=FILA.filter(function(i){return i.protocoloId!==p.protocoloId});return {decisao:p.acao==='REJEITAR'?'REJEITADO':'APROVADO',avisoAluno:p.acao==='REJEITAR'?'ENVIADO':undefined,itens:FILA}}};
+var FILA=[{protocoloId:'PID-1',protocolo:'PCG-20262-00001',versao:1,recebidoEm:'2026-11-10T10:00:00-03:00',colacao:'20262',email:'pedido1@exemplo.invalid',nome:'<img src=x onerror="window.__xss=1">Pessoa Fictícia Um',numeroUsp:'9000001',ingresso:'2021',divergencia:'',motivo:'Nenhuma linha da planilha central tem o e-mail do pedido.',duplicidadeAnterior:false,
+  documentos:[{tipo:'RG',url:'https://drive.google.com/file/d/ARQUIVOFICTICIO1/view'}],candidatos:[]},
+ {protocoloId:'PID-2',protocolo:'PCG-20262-00002',versao:2,recebidoEm:'2026-11-10T10:05:00-03:00',colacao:'20262',email:'pedido2@exemplo.invalid',nome:'Pessoa Fictícia Dois',numeroUsp:'9000002',ingresso:'2020',divergencia:'Meu nome está escrito errado',motivo:'O aluno apontou divergência nos dados do cadastro.',duplicidadeAnterior:false,
+  documentos:[],candidatos:[{linha:5,numeroUsp:'9000002',nome:'Pessoa Ficticia Dois',ingresso:'2020/1',email:'antigo2@exemplo.invalid',mesmoNumeroUsp:true,mesmoEmail:false,numeroUspRepetido:false}]}];
 function runner(){var s=function(){},f=function(){};var o={withSuccessHandler:function(x){s=x;return o},withFailureHandler:function(x){f=x;return o}};
  Object.keys(API).forEach(function(n){o[n]=function(arg){window.__chamadas.push([n,JSON.parse(JSON.stringify(arg===undefined?null:arg))]);setTimeout(function(){try{s(API[n](arg))}catch(e){f(e)}},40)}});return o}
 window.google={script:{get run(){return runner()}}};})();`;
@@ -257,6 +265,58 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   await p.click('#fichaCancelar');await p.selectOption('#filtroAno','');
   if(w===390){await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`m390-ajuda-${scheme}.png`});await p.keyboard.press('Escape');await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`m390-${scheme}.png`,fullPage:false});}
   await ctx.close();}}
+ // v1.5: fila de cadastro (só ADMINISTRADOR)
+ for(const scheme of ['light','dark']){const ctx=await b.newContext({colorScheme:scheme,viewport:{width:1280,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  p.on('dialog',d=>d.accept());
+  await load(p,'ok');await p.waitForFunction(()=>!document.getElementById('filaCadastro').hidden);
+  chk(`[${scheme}] fila: contador e lista recolhida`,(await p.textContent('#filaContador'))==='2'&&await p.$eval('#filaLista',e=>e.hidden)&&(await p.getAttribute('#filaAlternar','aria-expanded'))==='false');
+  await p.click('#filaAlternar');
+  chk(`[${scheme}] fila: abre com aria-expanded`,(await p.getAttribute('#filaAlternar','aria-expanded'))==='true'&&(await p.$$eval('.filaItem',e=>e.length))===2);
+  chk(`[${scheme}] fila: nome com HTML vira texto (sem executar)`,await p.evaluate(()=>!window.__xss&&!document.querySelector('.filaItem img')&&document.querySelector('.filaItem h3').textContent.includes('<img')));
+  chk(`[${scheme}] fila: documento com link em nova aba`,await p.$eval('.filaDocumentos a',a=>a.target==='_blank'&&a.rel.includes('noopener')&&a.textContent==='RG'));
+  chk(`[${scheme}] fila: sem candidatos não mostra Vincular`,await p.evaluate(()=>{const b=[...document.querySelectorAll('.filaItem')][0].querySelector('.filaAcoes .botaoPrimario');return getComputedStyle(b).display==='none'}));
+  const cont=await p.evaluate(()=>{function bg(el){while(el){const c=getComputedStyle(el).backgroundColor;if(c&&!/rgba\(0, 0, 0, 0\)|transparent/.test(c))return c;el=el.parentElement}return 'rgb(255,255,255)'}
+   return ['.filaTitulo','.filaDados dt','.filaDados dd','.filaMotivo','.filaCandidato','.filaMarca','.filaDocumentos a'].map(q=>{const e=document.querySelector(q);return [q,getComputedStyle(e).color,bg(e)]})});
+  for(const [q,c,f] of cont)chk(`[${scheme}] fila: contraste ${q}`,cr(c,f)>=4.5,cr(c,f).toFixed(2));
+  // vincular: precisa marcar o cadastro
+  const item2=(await p.$$('.filaItem'))[1];
+  await (await item2.$('.filaAcoes .botaoPrimario')).click();
+  chk(`[${scheme}] fila: vincular sem marcar pede a marcação`,(await (await item2.$('.filaStatus')).textContent()).includes('Marque o cadastro'));
+  await (await item2.$('.filaCandidato input')).check();await (await item2.$('.filaOpcao input')).check();
+  await (await item2.$('.filaAcoes .botaoPrimario')).click();
+  await p.waitForFunction(()=>document.getElementById('filaContador').textContent==='1');
+  const ch=await p.evaluate(()=>window.__chamadas.filter(c=>c[0]==='decidirCadastro').pop()[1]);
+  chk(`[${scheme}] fila: vincular envia protocolo, versão, linha, identidade e troca de e-mail`,ch.acao==='VINCULAR'&&ch.protocoloId==='PID-2'&&ch.versao===2&&ch.linha===5&&ch.numeroUsp==='9000002'&&ch.nome==='Pessoa Ficticia Dois'&&ch.trocarEmail===true,JSON.stringify(ch));
+  chk(`[${scheme}] fila: mensagem de aprovado e foco nela`,(await p.textContent('#filaStatus')).includes('aprovado')&&await p.evaluate(()=>document.activeElement.id==='filaStatus'));
+  // criar com nº USP existente: erro do servidor no próprio pedido
+  const item1=(await p.$$('.filaItem'))[0];
+  await (await item1.$$('.filaAcoes .botaoSecundario'))[0].click();
+  const campos=await item1.$$('.filaBloco input');
+  chk(`[${scheme}] fila: criar vem com o informado e sem inventar semestre`,(await campos[0].inputValue())==='9000001'&&(await campos[2].inputValue())===''&&(await (await item1.$('.filaBloco label:nth-of-type(3)')).textContent()).includes('ano informado: 2021'));
+  await campos[0].fill('9000002');await campos[2].fill('2021/1');
+  await (await item1.$('.filaBloco .botaoPrimario')).click();
+  await p.waitForFunction(()=>document.querySelector('.filaItem .filaStatus.erro'));
+  chk(`[${scheme}] fila: erro do servidor aparece no pedido, sem o prefixo Error, e libera os botões`,/^Este nº USP já tem cadastro/.test(await (await item1.$('.filaStatus.erro')).textContent())&&!(await (await item1.$('.filaBloco .botaoPrimario')).isDisabled()));
+  // rejeitar exige motivo
+  await (await item1.$$('.filaAcoes .botaoSecundario'))[1].click();
+  await (await item1.$$('.filaBloco .botaoPrimario'))[1].click();
+  chk(`[${scheme}] fila: rejeitar sem motivo é barrado na página`,(await (await item1.$('.filaStatus')).textContent()).includes('motivo'));
+  chk(`[${scheme}] fila: rejeitar avisa que o motivo vai ao aluno, ligado ao campo`,await item1.$eval('textarea',e=>{const d=document.getElementById(e.getAttribute('aria-describedby')||'');return !!d&&/recebe este motivo por e-mail/.test(d.textContent)}));
+  await (await item1.$('textarea')).fill('Documento não confere');await (await item1.$$('.filaBloco .botaoPrimario'))[1].click();
+  await p.waitForFunction(()=>document.getElementById('filaContador').textContent==='0');
+  chk(`[${scheme}] fila vazia: sem botão Ver solicitações`,await p.$eval('#filaAlternar',e=>getComputedStyle(e).display==='none')&&(await p.textContent('#filaStatus')).includes('rejeitado')&&(await p.textContent('#filaStatus')).includes('avisado por e-mail'));
+  chk(`[${scheme}] fila: sem erro de script`,errs.length===0,errs.join('|'));
+  await p.screenshot({path:require('path').join(require('os').tmpdir(),'busca-alunos-')+`fila-${scheme}.png`,fullPage:true});
+  await ctx.close();}
+ {const ctx=await b.newContext({colorScheme:'light'});const p=await ctx.newPage();await load(p,'leitor');await p.waitForFunction(()=>window.__chamadas.some(c=>c[0]==='obterFilaCadastro'));await p.waitForTimeout(150);
+  chk('LEITOR: fila não existe nem como contador',await p.$eval('#filaCadastro',e=>e.hidden&&getComputedStyle(e).display==='none'));await ctx.close();}
+ {const ctx=await b.newContext({colorScheme:'dark'});const p=await ctx.newPage();await load(p,'erro');await p.waitForFunction(()=>!document.getElementById('filaCadastro').hidden);
+  chk('fila: erro de leitura aparece para o administrador',(await p.textContent('#filaStatus')).includes('DECISOES_CADASTRO')&&(await p.textContent('#filaContador'))==='?');await ctx.close();}
+ for(const w of [360,390]){const ctx=await b.newContext({colorScheme:'light',viewport:{width:w,height:800}});const p=await ctx.newPage();await load(p,'ok');await p.waitForFunction(()=>!document.getElementById('filaCadastro').hidden);
+  await p.click('#filaAlternar');
+  const r=await p.evaluate(()=>({ov:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+   peq:[...document.querySelectorAll('#filaCadastro button, .filaCandidato')].filter(e=>e.offsetParent!==null&&!e.classList.contains('linkAjudaContextual')).map(e=>e.getBoundingClientRect().height).filter(h=>h<44).length}));
+  chk(`[${w}] fila: sem rolagem horizontal e alvos ≥ 44 px`,r.ov<=0&&r.peq===0,JSON.stringify(r));await ctx.close();}
  // v1.4: página de quem não tem acesso (PessoasSemAcesso.html), três temas e quatro larguras
  {let h=fs.readFileSync(SRC+'PessoasSemAcesso.html','utf8');for(let k=0;k<3;k++)h=h.replace(/<\?!= include_\('(\w+)'\);? \?>/g,(_,n)=>fs.readFileSync(SRC+n+'.html','utf8'));
   h=h.replace('<?= titulo ?>','Sem acesso a esta página').replace('<?= mensagem ?>','A sua conta não tem acesso à Comunidade IPUSP.');

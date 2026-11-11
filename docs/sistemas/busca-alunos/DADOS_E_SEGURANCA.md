@@ -41,6 +41,7 @@ A lista de busca leva, de alunos, só as cinco colunas da tabela acima; de docen
 | PLANILHA_ALUNOS | Google Sheets; cadastro de alunos | chave `PLANILHA_ALUNOS` no `ID_INDEX`, coluna `ID de Produção` | Não | leitura **e edição** pela identidade de execução; Restrito |
 | (v1.2) SERVIDORES | Google Sheets; cadastro de servidores e setores | chave `SERVIDORES` no `ID_INDEX` | Não | leitura **e edição** (v1.3) pela identidade de execução; colunas pelo título |
 | (v1.2) PLANILHA_DOCENTES | Google Sheets; cadastro de docentes | chave `PLANILHA_DOCENTES` no `ID_INDEX` | Não | leitura **e edição** (v1.3) pela identidade de execução; colunas pelo título |
+| (v1.5) PEDIDOS_COLACAO | Google Sheets; pedidos de colação gravados pelo Formulário 2.x | chave `PEDIDOS_COLACAO` no `ID_INDEX` | Não | leitura de `PROTOCOLOS`, `VERSOES`, `DOCUMENTOS`; gravação só por inserção em `DECISOES_CADASTRO` (aba criada pelo editor); Restrito |
 | (v1.4) PERMISSOES_DE_ACESSO | Google Sheets; lista de quem usa cada sistema | chave `PERMISSOES_DE_ACESSO` no `ID_INDEX`, aba `PESSOAS_IPUSP` | Não | leitura pela identidade de execução (colunas B a E: nome, e-mail, observação, perfil); Restrito |
 | MARCA_USP_CLARA | PNG externo (marca institucional) | URL fixa em `GradipMarcaUSP.html` | Sim | mesma usada pelos outros sistemas |
 
@@ -60,6 +61,9 @@ O código versionado não contém o ID do `ID_INDEX` nem os das planilhas de alu
 | `doGet` (v1.4) | perfil LEITOR ou ADMINISTRADOR na aba `PESSOAS_IPUSP`; senão devolve `PessoasSemAcesso` (aviso, nenhum dado, nenhuma chamada ao servidor). Abrir a página não libera nada por si: cada função confere de novo. |
 | `listarComunidadeParaBusca` (v1.2), `listarAlunosParaBusca`, `obterFicha` (v1.3), `obterFichaAluno`, `gerarPdfListaAlunos` | (v1.4) `exigirLeitorPessoas_()`: LEITOR ou ADMINISTRADOR, **antes** de abrir qualquer cadastro. Até a v1.3: nenhuma. |
 | `salvarFicha` (v1.3), `salvarFichaAluno` | (v1.4) `exigirAdministradorPessoas_()` antes de abrir o cadastro **e**, como desde a v1.1, o e-mail de `Session.getActiveUser()` precisa estar em `getEditors()` da planilha **daquele cadastro** ou ser o dono. `cadastro` só aceita `alunos`, `docentes` ou `servidores`. Conferido a cada gravação, com `LockService`. |
+| `obterFilaCadastro` (v1.5) | `exigirLeitorPessoas_()`; LEITOR recebe só `{visivel:false}`, sem abrir nada; ADMINISTRADOR recebe a fila (sem RG; links de documento abrem só com permissão no Drive). |
+| `decidirCadastro` (v1.5) | `exigirAdministradorPessoas_()` e editor da planilha de alunos, sob `LockService`; pedido conferido na fila e na versão mostrada; vincular confere a linha pelo nº USP e nome; criar recusa nº USP ou e-mail existentes e relê o nº USP depois de gravar. |
+| `prepararDecisoesCadastro` (v1.5) | só no editor (e-mail da sessão igual ao da conta que executa); cria a aba se faltar. |
 | `diagnosticarComunidadeIPUSP` | (v1.4) registra ambiente e perfil de quem roda; só lê os cadastros para ADMINISTRADOR. Não devolve dado. |
 
 Regras comuns (v1.4, `PessoasAcesso.gs`, mesmo padrão do Gerenciador de Colação de Grau e Diplomas): identidade só de `Session.getActiveUser()` (nunca da página; `getEffectiveUser()` não autoriza); e-mail normalizado (minúsculas, sem espaços); linhas com coringa, grupo, texto que não é e-mail completo ou perfil diferente de `LEITOR`/`ADMINISTRADOR` não dão acesso; e-mail repetido vale o menor perfil; lista em cache de script por 60 s; falha fechada (`SEM_IDENTIFICACAO`, `SEM_ACESSO`, `ACESSO_INDISPONIVEL`, `SO_LEITURA`); nenhum e-mail no registro de execução. Testes negativos em `sistemas/busca-alunos/testes/testar_acesso.js`.
@@ -68,7 +72,7 @@ Além da permissão, a gravação confere que a linha ainda é da mesma pessoa (
 
 Limitações conhecidas: compartilhamento só via **grupo** não aparece em `getEditors()` (a pessoa precisa ser editora individual); a regra vale para o Web App, não substitui a revisão de quem é editor da planilha.
 
-**Leitura (decisão tomada).** Como a busca é feita no navegador, quem tem acesso recebe todo o cadastro (alunos, docentes, servidores e setores), não só o resultado da busca, e pode exportá-lo. Até a v1.3 isso valia para qualquer conta que abrisse a página, e só "Somente eu" continha o risco. A decisão foi a opção 2 da [proposta](../../seguranca/propostas/ACESSO_LEITURA_EQUIPE.md): lista nominal na planilha de permissões, com a execução como implantador (aprovada no plano do Formulário de Pedido de Colação de Grau, 06/11/2026, PR 2; implementada na v1.4). O nome da aba é `PESSOAS_IPUSP`, o já registrado na planilha `SISTEMAS`. Mover a busca para o servidor, para cada sessão receber menos dados, continua sendo uma decisão separada (etapa 2 da proposta). Cadastros pendentes do futuro formulário de colação não existem nesta versão; quando existirem, o perfil LEITOR não os verá.
+**Leitura (decisão tomada).** Como a busca é feita no navegador, quem tem acesso recebe todo o cadastro (alunos, docentes, servidores e setores), não só o resultado da busca, e pode exportá-lo. Até a v1.3 isso valia para qualquer conta que abrisse a página, e só "Somente eu" continha o risco. A decisão foi a opção 2 da [proposta](../../seguranca/propostas/ACESSO_LEITURA_EQUIPE.md): lista nominal na planilha de permissões, com a execução como implantador (aprovada no plano do Formulário de Pedido de Colação de Grau, 06/11/2026, PR 2; implementada na v1.4). O nome da aba é `PESSOAS_IPUSP`, o já registrado na planilha `SISTEMAS`. Mover a busca para o servidor, para cada sessão receber menos dados, continua sendo uma decisão separada (etapa 2 da proposta). Cadastros pendentes do formulário de colação (v1.5): só ADMINISTRADOR os vê; o perfil LEITOR não recebe a fila nem o contador.
 
 ## 5. Configuração
 
@@ -86,6 +90,9 @@ Configurada em **Configurações do projeto → Propriedades do script**. A chav
 - Identificadores registrados: nenhum.
 - Proibido em log: IDs de planilha, nomes, números USP, e-mails, setores, termos digitados na busca, valores da ficha e conteúdo das exportações.
 - Estratégia de debug: o diagnóstico acima; mensagens de erro citam nomes de chave/coluna, nunca valores.
+
+- (v1.5) Rejeição de cadastro: e-mail ao aluno (`MailApp`, sem resposta) só para o e-mail da sessão do pedido, com protocolo, colação e motivo; nada mais do pedido. Primeiro uso de envio de e-mail neste projeto: o próximo `clasp push` pede a autorização do escopo de envio uma vez, pelo editor.
+- (v1.5) Fila de cadastro: nenhum registro de execução com dados; a trilha das decisões é a própria aba `DECISOES_CADASTRO` (quando, protocolo, versão, decisão, nº USP, ação, troca de e-mail, motivo e e-mail de quem decidiu).
 
 ## 7. Compartilhamento e acesso
 

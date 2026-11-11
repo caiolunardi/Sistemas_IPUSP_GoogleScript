@@ -37,7 +37,7 @@ function run(props,files,opts={}){
       newBlob:(html)=>({getAs:()=>({getBytes:()=>Buffer.from('%PDF'+html)})})},
     HtmlService:{createTemplateFromFile:n=>{const t={evaluate:()=>({setTitle(x){this.titulo=x;return this},addMetaTag(){return this},n,dados:Object.assign({},t)})};return t},
       createHtmlOutputFromFile:n=>({getContent:()=>fs.readFileSync(SRC+n+'.html','utf8')})}};
-  vm.createContext(ctx);['Codigo.gs','PessoasAcesso.gs'].forEach(f=>vm.runInContext(fs.readFileSync(SRC+f,'utf8'),ctx));
+  vm.createContext(ctx);['Codigo.gs','PessoasAcesso.gs','PessoasFilaCadastro.gs'].forEach(f=>vm.runInContext(fs.readFileSync(SRC+f,'utf8'),ctx));
   ctx.logs=logs;ctx.abertos=abertos;ctx.cache=cache;return ctx;
 }
 
@@ -80,16 +80,21 @@ const PUBLICAS={
   obterFichaAluno:c=>c.obterFichaAluno(ref),
   salvarFicha:c=>c.salvarFicha(Object.assign({cadastro:'alunos'},pedido())),
   salvarFichaAluno:c=>c.salvarFichaAluno(pedido()),
-  gerarPdfListaAlunos:c=>c.gerarPdfListaAlunos({linhas:[{nome:'X'}]})
+  gerarPdfListaAlunos:c=>c.gerarPdfListaAlunos({linhas:[{nome:'X'}]}),
+  obterFilaCadastro:c=>c.obterFilaCadastro(),
+  decidirCadastro:c=>c.decidirCadastro({protocoloId:'PID-1',versao:1,acao:'REJEITAR',motivo:'x'})
 };
 
 let ok=0,fail=0;const t=(n,f)=>{try{f();ok++;console.log('ok',n)}catch(e){fail++;console.log('FALHA',n,e.message)}};
 
 // ---------- toda função pública é conferida no servidor ----------
 t('o código não tem função pública fora da lista conferida',()=>{
-  const src=fs.readFileSync(SRC+'Codigo.gs','utf8')+fs.readFileSync(SRC+'PessoasAcesso.gs','utf8');
+  const src=['Codigo.gs','PessoasAcesso.gs','PessoasFilaCadastro.gs'].map(f=>fs.readFileSync(SRC+f,'utf8')).join('\n');
   const publicas=[...src.matchAll(/^function ([A-Za-z0-9]+)\s*\(/gm)].map(m=>m[1]).filter(n=>!n.endsWith('_')).sort();
-  assert.deepStrictEqual(publicas,Object.keys(PUBLICAS).concat(['doGet','diagnosticarComunidadeIPUSP']).sort())});
+  assert.deepStrictEqual(publicas,Object.keys(PUBLICAS).concat(['doGet','diagnosticarComunidadeIPUSP','prepararDecisoesCadastro']).sort())});
+t('v1.5: prepararDecisoesCadastro recusa quem abre a página (sessão diferente da conta que executa), mesmo ADMINISTRADOR',()=>{
+  ['adao@exemplo.invalid','lia@exemplo.invalid',''].forEach(u=>{const {c}=ambiente({usuario:u});assert.throws(()=>c.prepararDecisoesCadastro(),/só pelo editor/);assert(!c.abertos.length,c.abertos.join(','))})});
+t('v1.5: LEITOR não vê a fila nem como contador',()=>{const {c}=ambiente({usuario:'lia@exemplo.invalid'});assert.deepStrictEqual(J(c.obterFilaCadastro()),{visivel:false});assert(!abriuCadastro(c))});
 
 [['sem e-mail na sessão',{},/identificar a sua conta/],
  ['sessão que lança erro',{sessaoErro:true},/identificar a sua conta/],

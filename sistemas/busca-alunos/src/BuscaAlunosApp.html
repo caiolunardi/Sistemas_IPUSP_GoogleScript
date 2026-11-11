@@ -767,6 +767,72 @@
   .fichaStatus.ok{ color:var(--gradip-success); font-weight:bold; }
   .fichaStatus.erro{ color:var(--gradip-danger); font-weight:bold; }
 
+  /*---------------- v1.5 — FILA DE CADASTRO (só ADMINISTRADOR) ----------------
+     Pedidos de colação cujo cadastro o formulário não confirmou. Tudo
+     montado por script com createElement/textContent. */
+  .cardFila[hidden], .cardFila [hidden]{ display:none !important; }
+  .cardFila{
+    background:var(--gradip-surface);
+    border:1px solid var(--gradip-warning-border);
+    border-left:4px solid var(--gradip-warning);
+    border-radius:8px;
+    padding:14px 20px;
+    margin-bottom:18px;
+  }
+  .filaCabecalho{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; }
+  .filaTitulo{ margin:0; font-size:15px; color:var(--gradip-text); }
+  .filaStatus{ margin:8px 0 0; font-size:13px; color:var(--gradip-text-muted); }
+  .filaStatus:empty{ display:none; }
+  .filaStatus.ok{ color:var(--gradip-success); font-weight:bold; }
+  .filaStatus.erro{ color:var(--gradip-danger); font-weight:bold; }
+  .filaLista{ margin-top:12px; display:flex; flex-direction:column; gap:14px; }
+  .filaItem{
+    border:1px solid var(--gradip-border);
+    border-radius:8px;
+    padding:12px 14px;
+    background:var(--gradip-surface-2);
+  }
+  .filaItem h3{ margin:0 0 6px; font-size:14px; color:var(--gradip-text); overflow-wrap:anywhere; }
+  .filaDados{ margin:0; display:grid; grid-template-columns:max-content 1fr; gap:2px 12px; font-size:13px; }
+  .filaDados dt{ color:var(--gradip-text-muted); }
+  .filaDados dd{ margin:0; color:var(--gradip-text); overflow-wrap:anywhere; }
+  .filaMotivo{
+    margin:8px 0;
+    padding:8px 10px;
+    font-size:13px;
+    color:var(--gradip-text);
+    background:var(--gradip-warning-bg);
+    border:1px solid var(--gradip-warning-border);
+    border-radius:8px;
+  }
+  .filaSubtitulo{ margin:12px 0 4px; font-size:13px; font-weight:bold; color:var(--gradip-text); }
+  .filaDocumentos{ margin:0; padding-left:18px; font-size:13px; }
+  .filaDocumentos a{ color:var(--gradip-link); display:inline-block; padding:6px 0; }
+  .filaCandidatos{ border:0; margin:0; padding:0; }
+  .filaCandidato{
+    display:flex; align-items:flex-start; gap:8px;
+    padding:8px; min-height:44px; box-sizing:border-box;
+    border:1px solid var(--gradip-border); border-radius:8px; margin-bottom:6px;
+    background:var(--gradip-surface); font-size:13px; color:var(--gradip-text); cursor:pointer;
+  }
+  .filaCandidato input{ margin-top:3px; width:18px; height:18px; flex:0 0 auto; }
+  .filaMarca{ font-size:12px; color:var(--gradip-text-muted); }
+  .filaOpcao{ display:flex; align-items:center; gap:8px; min-height:44px; font-size:13px; color:var(--gradip-text); }
+  .filaOpcao input{ width:18px; height:18px; }
+  .filaAcoes{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .filaBloco{ margin-top:10px; display:grid; gap:8px; }
+  .filaDica{ margin:0; font-size:12px; color:var(--gradip-text-muted); }
+  .filaBloco label{ display:grid; gap:4px; font-size:13px; color:var(--gradip-text); }
+  .filaBloco input, .filaBloco textarea{
+    font:inherit; font-size:14px; min-height:44px; box-sizing:border-box; padding:8px 10px;
+    color:var(--gradip-text); background:var(--gradip-surface);
+    border:1px solid var(--gradip-border-strong); border-radius:8px;
+  }
+  .filaBloco input:focus-visible, .filaBloco textarea:focus-visible,
+  .filaCandidato input:focus-visible, .filaOpcao input:focus-visible, .filaDocumentos a:focus-visible{
+    outline:2px solid var(--gradip-focus); outline-offset:2px;
+  }
+
   /*---------------- RESPONSIVO — TELAS ESTREITAS ----------------*/
 
   @media (max-width:480px){
@@ -953,6 +1019,20 @@
         <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-nao-encontrei">Não encontrou a pessoa?</button>
       </div>
     </div>
+
+    <!-- v1.5: fila de cadastro dos pedidos de colação. Só aparece para
+         ADMINISTRADOR (o servidor devolve visivel:false ao LEITOR). -->
+    <section id="filaCadastro" class="cardFila" aria-labelledby="filaTitulo" hidden>
+      <div class="filaCabecalho">
+        <h2 id="filaTitulo" class="filaTitulo">Solicitações de cadastro: <span id="filaContador">0</span></h2>
+        <button type="button" id="filaAlternar" class="botaoSecundario" aria-expanded="false" aria-controls="filaLista">Ver solicitações</button>
+      </div>
+      <p id="filaStatus" class="filaStatus" role="status" aria-live="polite"></p>
+      <div id="filaLista" class="filaLista" hidden></div>
+      <div class="ajudaContextualLinha">
+        <button type="button" class="linkAjudaContextual" data-gradip-help-open="ajuda-fila-cadastro">Como decidir uma solicitação?</button>
+      </div>
+    </section>
 
     <div id="listaResultados" class="listaResultados"></div>
 
@@ -1461,7 +1541,7 @@
         .withFailureHandler(erro => {
           botaoPdf.textContent = textoOriginal;
           atualizarExportacao_();
-          infoBusca.textContent = "Não consegui gerar o PDF: " + ((erro && erro.message) ? erro.message : String(erro));
+          infoBusca.textContent = "Não consegui gerar o PDF: " + textoDoErro_(erro);
         })
         .gerarPdfListaAlunos({ titulo: tituloExportacao_(), nomeArquivo: nomeBaseArquivo_(), linhas: linhas });
   });
@@ -1503,7 +1583,7 @@
     fichaDialogo.focus();
     google.script.run
         .withSuccessHandler(ficha => { if (FICHA && FICHA.aluno === aluno) preencherFicha_(ficha); })
-        .withFailureHandler(erro => { if (FICHA && FICHA.aluno === aluno) definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro"); })
+        .withFailureHandler(erro => { if (FICHA && FICHA.aluno === aluno) definirStatusFicha_(textoDoErro_(erro), "erro"); })
         .obterFicha(referenciaFicha_(aluno));
   }
 
@@ -1615,7 +1695,7 @@
         .withFailureHandler(erro => {
           fichaSalvando = false;
           atualizarAlteracoesFicha_();
-          definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro");
+          definirStatusFicha_(textoDoErro_(erro), "erro");
         })
         .salvarFicha(Object.assign(referenciaFicha_(aluno), {
           linha: FICHA.linha,
@@ -1683,6 +1763,269 @@
     avisoCadastros.hidden = false;
   }
 
+  /*-----------------------------------------------------
+    v1.5 — FILA DE CADASTRO (pedidos de colação com cadastro
+    PENDENTE). Só ADMINISTRADOR: o servidor confere o perfil e,
+    para decidir, que a conta é editora da planilha de alunos.
+    Tudo com createElement/textContent; nada vira HTML bruto.
+  ------------------------------------------------------*/
+  const filaCadastro = document.getElementById("filaCadastro");
+  const filaContador = document.getElementById("filaContador");
+  const filaAlternar = document.getElementById("filaAlternar");
+  const filaLista = document.getElementById("filaLista");
+  const filaStatus = document.getElementById("filaStatus");
+  let FILA = { itens: [], podeDecidir: false };
+  let filaOcupada = false;
+
+  // O Apps Script entrega a mensagem do servidor com "Error: " na frente; a equipe vê só o texto.
+  function textoDoErro_(erro) {
+    return String((erro && erro.message) || erro || "").replace(/^\s*(?:\w*Error|Exception):\s*/, "");
+  }
+
+  function definirStatusFila_(texto, tipo) {
+    filaStatus.textContent = texto || "";
+    filaStatus.className = "filaStatus" + (tipo ? " " + tipo : "");
+  }
+
+  function elemento_(tag, classe, texto) {
+    const el = document.createElement(tag);
+    if (classe) el.className = classe;
+    if (texto != null) el.textContent = texto;
+    return el;
+  }
+
+  function atualizarContadorFila_() {
+    filaContador.textContent = String(FILA.itens.length);
+    if (!FILA.itens.length) {
+      filaAlternar.hidden = true;
+      filaLista.hidden = true;
+      filaAlternar.setAttribute("aria-expanded", "false");
+    } else {
+      filaAlternar.hidden = false;
+    }
+  }
+
+  function renderizarFila_() {
+    filaLista.innerHTML = "";
+    FILA.itens.forEach(item => filaLista.appendChild(itemDaFila_(item)));
+    atualizarContadorFila_();
+  }
+
+  function linhaDado_(dl, rotulo, valor) {
+    dl.appendChild(elemento_("dt", "", rotulo));
+    dl.appendChild(elemento_("dd", "", valor || "—"));
+  }
+
+  function itemDaFila_(item) {
+    const art = elemento_("article", "filaItem");
+    const idBase = "fila-" + item.protocoloId.replace(/[^A-Za-z0-9_-]/g, "");
+    art.setAttribute("aria-labelledby", idBase + "-titulo");
+    const titulo = elemento_("h3", "", (item.protocolo || "Pedido") + " · " + (item.nome || "sem nome"));
+    titulo.id = idBase + "-titulo";
+    art.appendChild(titulo);
+
+    const dl = elemento_("dl", "filaDados");
+    linhaDado_(dl, "Recebido em", item.recebidoEm);
+    linhaDado_(dl, "Colação", formatarColacao_(item.colacao));
+    linhaDado_(dl, "Nº USP informado", item.numeroUsp);
+    linhaDado_(dl, "E-mail do pedido", item.email);
+    linhaDado_(dl, "Ingresso informado", item.ingresso);
+    linhaDado_(dl, "Versão", String(item.versao));
+    art.appendChild(dl);
+
+    const motivos = [];
+    if (item.motivo) motivos.push(item.motivo);
+    if (item.duplicidadeAnterior) motivos.push("Uma decisão anterior encontrou nº USP repetido na planilha de alunos. Corrija o cadastro e decida de novo.");
+    if (motivos.length) art.appendChild(elemento_("p", "filaMotivo", motivos.join(" ")));
+    if (item.divergencia) {
+      art.appendChild(elemento_("p", "filaSubtitulo", "Divergência apontada pelo aluno"));
+      art.appendChild(elemento_("p", "filaMotivo", item.divergencia));
+    }
+
+    art.appendChild(elemento_("p", "filaSubtitulo", "Documentos do pedido"));
+    if (!item.documentos.length) art.appendChild(elemento_("p", "filaMarca", "Nenhum documento nesta versão."));
+    else {
+      const ul = elemento_("ul", "filaDocumentos");
+      item.documentos.forEach(d => {
+        const li = document.createElement("li");
+        if (d.url) {
+          const a = elemento_("a", "", d.tipo || "Documento");
+          a.href = d.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+          li.appendChild(a);
+        } else li.textContent = d.tipo || "Documento";
+        ul.appendChild(li);
+      });
+      art.appendChild(ul);
+    }
+
+    const status = elemento_("p", "filaStatus");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+
+    // Cadastros candidatos (mesmo nº USP ou mesmo e-mail).
+    const grupo = elemento_("fieldset", "filaCandidatos");
+    grupo.appendChild(elemento_("legend", "filaSubtitulo", item.candidatos.length ? "Cadastros parecidos na planilha de alunos" : "Nenhum cadastro com o mesmo nº USP ou e-mail"));
+    item.candidatos.forEach((c, i) => {
+      const rotulo = elemento_("label", "filaCandidato");
+      const radio = document.createElement("input");
+      radio.type = "radio"; radio.name = idBase + "-candidato"; radio.value = String(i);
+      radio.disabled = !FILA.podeDecidir;
+      const texto = document.createElement("span");
+      texto.appendChild(document.createTextNode((c.nome || "sem nome") + " · nº USP " + (c.numeroUsp || "vazio") + " · " + (c.email || "sem e-mail") + (c.ingresso ? " · ingresso " + c.ingresso : "")));
+      const marcas = [];
+      if (c.mesmoNumeroUsp) marcas.push("mesmo nº USP");
+      if (c.mesmoEmail) marcas.push("mesmo e-mail");
+      if (c.numeroUspRepetido) marcas.push("atenção: nº USP repetido na planilha");
+      texto.appendChild(document.createElement("br"));
+      texto.appendChild(elemento_("span", "filaMarca", marcas.join(" · ")));
+      rotulo.appendChild(radio); rotulo.appendChild(texto);
+      grupo.appendChild(rotulo);
+    });
+    art.appendChild(grupo);
+
+    if (!FILA.podeDecidir) {
+      art.appendChild(elemento_("p", "filaMotivo", "Sua conta pode ver a fila, mas não decidir: é preciso ser editor da planilha de alunos."));
+      return art;
+    }
+
+    const trocar = elemento_("label", "filaOpcao");
+    const caixa = document.createElement("input");
+    caixa.type = "checkbox";
+    trocar.appendChild(caixa);
+    trocar.appendChild(document.createTextNode("Ao vincular, trocar o e-mail principal do cadastro pelo e-mail do pedido"));
+    trocar.hidden = !item.candidatos.length;
+    art.appendChild(trocar);
+
+    const acoes = elemento_("div", "filaAcoes");
+    const bVincular = elemento_("button", "botaoPrimario", "Vincular ao cadastro marcado");
+    bVincular.type = "button"; bVincular.hidden = !item.candidatos.length;
+    const bCriar = elemento_("button", "botaoSecundario", "Criar cadastro novo");
+    bCriar.type = "button";
+    const bRejeitar = elemento_("button", "botaoSecundario", "Rejeitar");
+    bRejeitar.type = "button";
+    acoes.appendChild(bVincular); acoes.appendChild(bCriar); acoes.appendChild(bRejeitar);
+    art.appendChild(acoes);
+
+    // Criar: dados conferidos pela equipe (vêm preenchidos com o informado).
+    const blocoCriar = elemento_("div", "filaBloco");
+    blocoCriar.hidden = true;
+    const campo = (rotuloTexto, valor, tipo) => {
+      const l = elemento_("label", "", rotuloTexto);
+      const e = document.createElement("input");
+      e.type = "text"; e.value = valor || ""; e.autocomplete = "off"; e.spellcheck = false;
+      if (tipo) e.inputMode = tipo;
+      l.appendChild(e); blocoCriar.appendChild(l);
+      return e;
+    };
+    const eNusp = campo("Número USP", item.numeroUsp, "numeric");
+    const eNome = campo("Nome do aluno", item.nome);
+    // O formulário só pede o ano; o semestre fica para a equipe conferir.
+    const eIngresso = campo("Ingresso (AAAA/S" + (item.ingresso ? "; ano informado: " + item.ingresso : "") + ")", /^\d{4}\/[12]$/.test(item.ingresso) ? item.ingresso : "");
+    const bConfirmarCriar = elemento_("button", "botaoPrimario", "Criar cadastro e aprovar");
+    bConfirmarCriar.type = "button";
+    blocoCriar.appendChild(bConfirmarCriar);
+    art.appendChild(blocoCriar);
+
+    const blocoRejeitar = elemento_("div", "filaBloco");
+    blocoRejeitar.hidden = true;
+    const lMotivo = elemento_("label", "", "Motivo da rejeição");
+    const eMotivo = document.createElement("textarea");
+    eMotivo.rows = 3; eMotivo.maxLength = 300;
+    lMotivo.appendChild(eMotivo); blocoRejeitar.appendChild(lMotivo);
+    const dicaMotivo = elemento_("p", "filaDica", "O aluno recebe este motivo por e-mail e o vê no formulário. Escreva o que ele precisa corrigir no novo pedido.");
+    dicaMotivo.id = "dicaMotivo-" + String(item.protocoloId || "").replace(/[^A-Za-z0-9_-]/g, "");
+    eMotivo.setAttribute("aria-describedby", dicaMotivo.id);
+    blocoRejeitar.appendChild(dicaMotivo);
+    const bConfirmarRejeitar = elemento_("button", "botaoPrimario", "Rejeitar pedido");
+    bConfirmarRejeitar.type = "button";
+    blocoRejeitar.appendChild(bConfirmarRejeitar);
+    art.appendChild(blocoRejeitar);
+    art.appendChild(status);
+
+    bCriar.addEventListener("click", () => { blocoCriar.hidden = !blocoCriar.hidden; blocoRejeitar.hidden = true; if (!blocoCriar.hidden) eNusp.focus(); });
+    bRejeitar.addEventListener("click", () => { blocoRejeitar.hidden = !blocoRejeitar.hidden; blocoCriar.hidden = true; if (!blocoRejeitar.hidden) eMotivo.focus(); });
+
+    const botoes = [bVincular, bCriar, bRejeitar, bConfirmarCriar, bConfirmarRejeitar];
+    const decidir = (pedido, pergunta) => {
+      if (filaOcupada || !window.confirm(pergunta)) return;
+      filaOcupada = true;
+      botoes.forEach(b => { b.disabled = true; });
+      status.textContent = "Gravando a decisão...";
+      status.className = "filaStatus";
+      google.script.run
+          .withSuccessHandler(r => {
+            filaOcupada = false;
+            FILA.itens = r.itens || [];
+            renderizarFila_();
+            const texto = r.decisao === "APROVADO" ? "Pedido " + (item.protocolo || "") + " aprovado. Ele segue para o Gerenciador de Diplomas."
+              : r.decisao === "REJEITADO" ? "Pedido " + (item.protocolo || "") + " rejeitado. " + (r.avisoAluno === "ENVIADO"
+                  ? "O aluno foi avisado por e-mail."
+                  : "Não consegui enviar o e-mail ao aluno; ele ainda vê a rejeição no formulário. Se for urgente, avise-o por outro meio.")
+              : "Cadastro criado, mas o nº USP ficou repetido na planilha de alunos. Corrija e decida de novo.";
+            definirStatusFila_(texto, r.decisao === "DUPLICIDADE" || r.avisoAluno === "FALHOU" ? "erro" : "ok");
+            filaStatus.setAttribute("tabindex", "-1");
+            filaStatus.focus();
+          })
+          .withFailureHandler(erro => {
+            filaOcupada = false;
+            botoes.forEach(b => { b.disabled = false; });
+            status.textContent = textoDoErro_(erro);
+            status.className = "filaStatus erro";
+          })
+          .decidirCadastro(Object.assign({ protocoloId: item.protocoloId, versao: item.versao }, pedido));
+    };
+
+    bVincular.addEventListener("click", () => {
+      const marcado = grupo.querySelector("input[type=radio]:checked");
+      if (!marcado) { status.textContent = "Marque o cadastro ao qual o pedido pertence."; status.className = "filaStatus erro"; return; }
+      const c = item.candidatos[Number(marcado.value)];
+      decidir({ acao: "VINCULAR", linha: c.linha, numeroUsp: c.numeroUsp, nome: c.nome, trocarEmail: caixa.checked },
+        "Vincular o pedido " + (item.protocolo || "") + " ao cadastro de " + (c.nome || "") + " (nº USP " + c.numeroUsp + ")" + (caixa.checked ? ", trocando o e-mail principal," : "") + " e aprovar?");
+    });
+    bConfirmarCriar.addEventListener("click", () => {
+      decidir({ acao: "CRIAR", novo: { numeroUsp: eNusp.value.trim(), nome: eNome.value.trim(), ingresso: eIngresso.value.trim() } },
+        "Criar o cadastro de " + eNome.value.trim() + " (nº USP " + eNusp.value.trim() + ") na planilha de alunos e aprovar o pedido?");
+    });
+    bConfirmarRejeitar.addEventListener("click", () => {
+      if (!eMotivo.value.trim()) { status.textContent = "Escreva o motivo da rejeição."; status.className = "filaStatus erro"; eMotivo.focus(); return; }
+      decidir({ acao: "REJEITAR", motivo: eMotivo.value.trim() }, "Rejeitar o pedido " + (item.protocolo || "") + "?");
+    });
+    return art;
+  }
+
+  function formatarColacao_(codigo) {
+    const m = String(codigo || "").match(/^(\d{4})(\d)$/);
+    return m ? m[1] + "/" + m[2] : String(codigo || "");
+  }
+
+  filaAlternar.addEventListener("click", () => {
+    const abrir = filaLista.hidden;
+    filaLista.hidden = !abrir;
+    filaAlternar.setAttribute("aria-expanded", abrir ? "true" : "false");
+    filaAlternar.textContent = abrir ? "Ocultar solicitações" : "Ver solicitações";
+  });
+
+  function carregarFilaCadastro_() {
+    google.script.run
+        .withSuccessHandler(r => {
+          if (!r || !r.visivel) { filaCadastro.hidden = true; return; }
+          FILA = { itens: r.itens || [], podeDecidir: !!r.podeDecidir };
+          filaCadastro.hidden = false;
+          definirStatusFila_("");
+          renderizarFila_();
+        })
+        .withFailureHandler(erro => {
+          // Só ADMINISTRADOR chega aqui com erro de leitura (LEITOR recebe visivel:false).
+          if (erro && erro.codigoAcesso) { filaCadastro.hidden = true; return; }
+          filaCadastro.hidden = false;
+          FILA = { itens: [], podeDecidir: false };
+          atualizarContadorFila_();
+          filaContador.textContent = "?";
+          definirStatusFila_("Não consegui ler as solicitações de cadastro: " + textoDoErro_(erro), "erro");
+        })
+        .obterFilaCadastro();
+  }
+
   function iniciar() {
     google.script.run
         .withSuccessHandler(resposta => {
@@ -1698,10 +2041,11 @@
         })
         .withFailureHandler(erro => {
           infoBusca.textContent = "";
-          const mensagem = (erro && erro.message) ? erro.message : String(erro);
+          const mensagem = textoDoErro_(erro);
           renderizarVazio_("Não consegui carregar a lista de pessoas: " + mensagem, true);
         })
         .listarComunidadeParaBusca();
+    carregarFilaCadastro_();
   }
 
   iniciar();

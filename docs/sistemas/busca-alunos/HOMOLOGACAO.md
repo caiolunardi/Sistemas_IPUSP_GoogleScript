@@ -2,6 +2,44 @@
 
 **Estado:** v1.3 verificada localmente em 14/10/2026; **homologação no `/exec` pendente** (v1.1 a v1.3). A v1.0 foi colada no Apps Script pelo responsável funcional em 13/10/2026 (primeiro erro de configuração resolvido: ID no lugar do nome da propriedade) e revelou que o título real da coluna é `eMail`, não `Tr eMail`; isso motivou a v1.1. Esta página registra as diferenças, os hashes e os testes. Ela não atesta a configuração da implantação.
 
+## v1.5 — fila de cadastro dos pedidos de colação (10/11/2026, em PR, não enviada ao Google)
+
+Testes locais: `testar_fila_cadastro.js` 31 ok (novo), `testar_acesso.js` 91 ok (inclui as duas funções novas na conferência de toda função pública e a guarda de `prepararDecisoesCadastro`), `testar_backend.js` 51/51, `testar_navegador.js` 345/345 (inclui a fila nos dois temas, nome com HTML como texto, contraste, 360 e 390 px, LEITOR sem a fila e erro de leitura). Contrato: [FILA_CADASTRO.md](FILA_CADASTRO.md).
+
+| Suíte | O que confere na v1.5 |
+|---|---|
+| `testar_fila_cadastro.js` | só pedidos `RECEBIDO` + `PENDENTE` sem decisão (ou com `DUPLICIDADE`); última versão concluída; RG fora da página; candidatos por nº USP e e-mail; LEITOR sem abrir nada; ADMINISTRADOR não editor só vê; criar (linha nova, tipo da coluna, recusa de nº USP ou e-mail existentes, formatos, `DUPLICIDADE` quando outro escritor repete o nº USP); vincular (sem mexer na central, troca de e-mail registrada, recusa de e-mail em outra linha, linha que mudou, nº USP repetido); rejeitar com motivo e e-mail ao aluno (só o e-mail do pedido, sem nº USP nem RG; falha no envio não desfaz a decisão); segunda decisão e versão nova recusadas; trava ocupada; aba ausente; nada pessoal no registro de execução |
+
+Roteiro no Google, cada passo com autorização, depois do formulário 2.x de homologação gravando na cópia de `PEDIDOS_COLACAO` e da v1.4 homologada. Preparação: chave `PEDIDOS_COLACAO` com o ID de homologação (a mesma do formulário); a conta que executa o projeto com edição nessa planilha; rodar `prepararDecisoesCadastro` pelo editor; linhas de [dados fictícios da v1.5](dados-ficticios/README.md#v15--fila-de-cadastro-roteiro-f1f8).
+
+| # | Passo | Esperado |
+|---|---|---|
+| F1 | Conta de teste sem cadastro envia um pedido pelo formulário; ADMINISTRADOR abre o Gerenciador de Pessoas | "Solicitações de cadastro: 1"; o pedido com o motivo e o link do documento |
+| F2 | Conta LEITOR abre | nenhuma fila, nenhum contador |
+| F3 | Criar cadastro com o nº USP de um aluno já cadastrado | recusado; nada gravado |
+| F4 | Criar cadastro com dados novos | linha nova na planilha de alunos; `APROVADO`/`CRIADO` em `DECISOES_CADASTRO`; o pedido sai da fila; o Gerenciador de Diplomas encaminha no ciclo seguinte (roteiro E1 dele) |
+| F5 | Pedido de quem tem cadastro com outro e-mail: vincular marcando "trocar o e-mail" | só a coluna eMail muda; decisão com e-mail anterior e novo; no formulário, a mesma conta passa a ser reconhecida |
+| F6 | Rejeitar um pedido sem motivo e depois com motivo | sem motivo é barrado; com motivo, `REJEITADO`; o formulário mostra a situação |
+| F7 | Duas abas do navegador decidem o mesmo pedido | a segunda recebe "mudou ou já foi decidido"; uma decisão só |
+| F8 | ADMINISTRADOR que não é editor da planilha de alunos | vê a fila com o aviso; sem botões de decisão |
+
+### Registro (10/11/2026)
+
+Projeto `GRADIP · Gerenciador de Pessoas · HOMOLOGACAO` criado pelo responsável, com `ID_INDEX_SPREADSHEET_ID` e `AMBIENTE=homologacao`. Com a ordem dele, `clasp push` de `a52bd8a` só nesse projeto (backup do conteúdo anterior, 10 arquivos, fora do repositório); conferência por clone: 13/13 arquivos iguais ao commit. Sem implantação. A aba `DECISOES_CADASTRO` da cópia de homologação já existia (criada à mão no roteiro E6 do Gerenciador de Diplomas, com os mesmos títulos).
+
+| Passo | Resultado (11/11/2026) |
+|---|---|
+| F1 | ok: pedido fictício com nº USP já cadastrado na cópia apareceu na fila com motivo, links dos documentos e a linha do mesmo nº USP como candidata. |
+| F5 | ok: `DECISOES_CADASTRO` com `APROVADO`/`VINCULADO`, e-mail anterior vazio e novo preenchido; o Gerenciador de Diplomas, no ciclo seguinte, bloqueou o pedido por `DUPLICIDADE_DIPLOMAS` (E8 dele). Na cópia da planilha central, a linha do nº USP passou a ter o e-mail do pedido na coluna eMail, e as outras colunas ficaram como estavam. |
+| F3 | ok (11/11): criar cadastro com nº USP já cadastrado foi recusado ("Este nº USP já tem cadastro. Use Vincular ao cadastro existente."); o pedido continuou na fila. Achado: a mensagem vinha com "Error: " na frente; corrigido na página (`textoDoErro_`, mesmo padrão do Gerenciador de Diplomas 4.1), ainda não enviado ao projeto de homologação. |
+| F4 | ok (11/11): pedido sem cadastro (nº USP fictício novo); "Criar cadastro e aprovar" criou a linha na cópia da planilha central (nº USP, nome, ingresso AAAA/S, e-mail do pedido) e gravou `APROVADO`/`CRIADO`; o pedido saiu da fila. Encaminhamento ok (11/11, com outro pedido aprovado por vínculo): o Gerenciador de Diplomas trouxe o pedido para a aba Diplomas ao abrir, com o nome da planilha central (E12 dele). |
+| F6 | ok na página (11/11): rejeitar sem motivo barrado ("Escreva o motivo da rejeição."); com motivo, `REJEITADO` e o pedido saiu da fila. No formulário, a conta voltou a poder enviar pedido novo (esperado); a situação "não aprovado" fica em "Meus pedidos", a conferir. |
+| push 2 | (11/11) com a ordem dele, `clasp push` de `8a5d0c7` (e-mail de rejeição e mensagens sem "Error:") só no projeto de homologação, com backup antes; conferência por clone: 13/13 iguais ao commit. Sem implantação. Escopo novo de envio de e-mail a autorizar pelo editor. |
+| F6b | ok no e-mail (11/11): pedido fictício novo rejeitado pelo link de teste (/dev) com motivo; a conta do pedido recebeu "[HOMOLOGAÇÃO] Pedido de colação de grau …: cadastro não aprovado" com protocolo, colação e motivo, sem nº USP, nome ou RG, remetente noreply, na caixa de entrada. Uma primeira tentativa na implantação versionada "Versão 2" não mandou e-mail, como esperado: essa implantação guarda o código anterior ao push 2. Na tela: "Pedido … rejeitado. O aluno foi avisado por e-mail." No formulário aberto de novo pela mesma conta: aviso "O seu pedido … não foi aprovado pelo Serviço de Graduação", com o motivo e o link "O que fazer?", e o formulário liberado para pedido novo. |
+| F7 | ok (11/11): a segunda aba recebeu "Este pedido mudou ou já foi decidido por outra sessão"; uma decisão só. |
+
+Achados de F1 (sem correção ainda, para decisão): o motivo diz "já pertence a outro e-mail" mesmo quando a linha da planilha central não tem e-mail; o cabeçalho da página ainda diz "Comunidade IPUSP"; as chaves `SERVIDORES` e `PLANILHA_DOCENTES` estão sem valor na coluna Homologação (aviso esperado).
+
 ## v1.4 — autorização no servidor
 
 **Estado:** em PR (09/11/2026), verificada localmente, **não enviada ao Google**. Classe de risco **crítica** (autorização e dados pessoais): exige parecer de revisão independente e autorização do responsável escrita no PR antes do merge e, separadamente, antes de cada `clasp push` e de cada implantação.
