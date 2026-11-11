@@ -201,6 +201,15 @@ t('PENDENTE com APROVADO no Gerenciador de Pessoas: encaminha com o Nº USP deci
   assert.strictEqual(celula(amb, 1, 'Nº USP'), '9000001');
 });
 
+t('PENDENTE aprovado: o nome da aba Diplomas é o da planilha central, não o digitado (decisão de 11/11/2026)', () => {
+  const amb = montar({
+    pedidos: [protocolo(1, { p: { 'Cadastro': 'PENDENTE' }, d: { nome: 'nome digitado sem acento' } })],
+    decisoes: [linhaDe('DECISOES_CADASTRO', { 'Protocolo ID': PID(1), 'Versão': 1, 'Decisão': 'APROVADO', 'Nº USP': '9000001' })]
+  });
+  assert.strictEqual(rodar(amb).encaminhados, 1);
+  assert.strictEqual(celula(amb, 1, 'Nome completo'), 'Aluna Fictícia 1');
+});
+
 t('REJEITADO ou DUPLICIDADE no Gerenciador de Pessoas: não segue', () => {
   for (const decisao of ['REJEITADO', 'DUPLICIDADE']) {
     const amb = montar({
@@ -305,7 +314,9 @@ t('correção com "Status — Dados Pessoais" vazio: só as colunas do aluno mud
   rodar(amb);
   dipl(amb).valores[1][col('Anotação da equipe')] = '=FORMULA_DA_EQUIPE()';
   dipl(amb).gravacoes.length = 0;
-  comCorrecao(amb, 1, { nome: 'Aluna Fictícia Um Corrigida', psiConcluiu: false, licConcluiu: true, telefone: '11911111111', habilitacaoPendente: [] },
+  // A equipe corrigiu o nome no cadastro central; o que vale é o da central.
+  central(amb).valores[1][1] = 'Aluna Fictícia Um Corrigida';
+  comCorrecao(amb, 1, { nome: 'Nome Digitado Pelo Aluno', psiConcluiu: false, licConcluiu: true, telefone: '11911111111', habilitacaoPendente: [] },
     [['RG', 'ARQUIVO_FICTICIO_1_RG_V2', true], ['CERTIDAO', ARQ(1, 'CERT'), false]]);
   const r = rodar(amb);
   assert.strictEqual(r.encaminhados, 1);

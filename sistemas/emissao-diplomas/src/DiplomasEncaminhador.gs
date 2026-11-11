@@ -437,7 +437,10 @@ function encaminharUmColacao_(fontes, c) {
   const simNao = v => (v === true ? "SIM" : "NÃO");
   const ano = String(dados.ano || "").trim();
   const v = {
-    nome: dados.nome || nomeCentral,
+    // Decisão do responsável (11/11/2026): o nome vem da planilha central,
+    // conferida pela equipe (para cadastro APROVADO no Gerenciador de Pessoas,
+    // o digitado pelo aluno fica só no pedido).
+    nome: nomeCentral || dados.nome,
     email: textoCelulaColacao_(c.protocolo, "E-mail da sessão"),
     rg: dados.rg || "",
     habilitacaoTexto: calcularHabilitacaoTextoAtual_(dados.bachConcluiu === true, dados.licConcluiu === true, dados.psiConcluiu === true),

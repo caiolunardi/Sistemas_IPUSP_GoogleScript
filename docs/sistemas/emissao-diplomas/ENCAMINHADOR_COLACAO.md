@@ -46,7 +46,8 @@ Depois:
 2. documentos movidos para a pasta do aluno com `moveTo` (o ID do arquivo não muda; um documento que já está lá não é movido de novo);
 3. sem linha do `Registro ID`: a linha inteira é acrescentada de uma vez, com "Status — Dados Pessoais" vazio;
 4. com linha (correção do aluno, D3): só se "Status — Dados Pessoais" estiver vazio, e só nas colunas que o aluno pode corrigir (nunca `Registro ID`, Nº USP, colação, status, etapas, pasta ou colunas da equipe); a `Versão` sobe. Com o status preenchido, nada muda e o resultado é `CORRECAO RETIDA`;
-5. conferência depois de gravar: uma linha só com aquele `Registro ID`, com o Nº USP e a colação esperados.
+5. o **nome** gravado (linha nova ou correção) é sempre o da linha da planilha central, conferida pela equipe; o que o aluno digitou fica só no pedido (decisão do responsável de 11/11/2026, a partir da revisão independente). Só se a central estiver sem nome vale o do pedido;
+6. conferência depois de gravar: uma linha só com aquele `Registro ID`, com o Nº USP e a colação esperados.
 
 ## 4. Aba `ENCAMINHAMENTOS` (contrato)
 
