@@ -249,7 +249,7 @@ function iniciarOuRetomarColacao_(email, chave, campos, documentos, instante, re
   const protocolo = proximoProtocoloColacao_(tabelas, periodo.codigoColacao);
   const protocoloId = Utilities.getUuid();
   const registroId = Utilities.getUuid();
-  const pasta = pastaDoProtocoloColacao_(protocolo);
+  const pasta = pastaDoProtocoloColacao_(protocolo, protocoloId);
   acrescentarLinhaColacao_(tabelas.PROTOCOLOS, {
     "Protocolo": protocolo,
     "Protocolo ID": protocoloId,

@@ -97,15 +97,28 @@ function nomeArquivoColacao_(doc, nome, colacao, protocolo, versao) {
   return `${TIPOS_DOCUMENTO_COLACAO[doc.tipo].rotulo} - ${nomeSeguro} - ${colacao} - ${protocolo} - v${versao}.${doc.ext}`;
 }
 
+/**
+ * Nome da subpasta: protocolo + os 8 primeiros caracteres do Protocolo ID
+ * (decisão do responsável de 11/11/2026). Se a numeração recomeçar (linhas
+ * apagadas de PROTOCOLOS), o nome não se repete e os documentos de pedidos
+ * diferentes nunca dividem a mesma pasta.
+ */
+function nomePastaProtocoloColacao_(protocolo, protocoloId) {
+  const sufixo = String(protocoloId || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 8);
+  if (!sufixo) throw new Error("Protocolo sem identificador interno.");
+  return protocolo + " · " + sufixo;
+}
+
 /** Subpasta do protocolo (reaproveita se já existir uma só com o nome). */
-function pastaDoProtocoloColacao_(protocolo) {
+function pastaDoProtocoloColacao_(protocolo, protocoloId) {
   const raiz = DriveApp.getFolderById(obterIdColacao_(COLACAO.CHAVES.PASTA_PROVISORIOS, "folder"));
-  const existentes = raiz.getFoldersByName(protocolo);
+  const nome = nomePastaProtocoloColacao_(protocolo, protocoloId);
+  const existentes = raiz.getFoldersByName(nome);
   const achadas = [];
   while (existentes.hasNext()) achadas.push(existentes.next());
   if (achadas.length === 1) return achadas[0];
   if (achadas.length > 1) throw new Error("Mais de uma pasta com o mesmo protocolo na entrada.");
-  return raiz.createFolder(protocolo);
+  return raiz.createFolder(nome);
 }
 
 function chaveDocumentoColacao_(chaveEnvio, tipo, ordem) {
