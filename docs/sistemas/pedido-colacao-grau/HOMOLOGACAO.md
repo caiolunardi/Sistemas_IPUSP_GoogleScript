@@ -101,6 +101,16 @@ Projeto `GRADIP · Formulário de Pedido de Colação de Grau · HOMOLOGACAO`, r
 
 Pedido do responsável na rodada: destacar o campo do problema na validação (`3d4898a`). Observação sem correção: `obterDadosIniciais` levou cerca de 10 s. Pendente: push dos ajustes e nova conferência de H10 e da validação.
 
+### Rodada 2 (11/11/2026, código `6c71759`, junto com o Gerenciador de Pessoas 1.5)
+
+Com a ordem do responsável, `clasp push` de `6c71759` (2.0 com o aviso de rejeição, já com o tema da 2.1) só no projeto de homologação, com backup antes; conferência por clone: 16/16 arquivos iguais ao commit. Sem implantação.
+
+| ID | Resultado |
+| --- | --- |
+| R1 | ok: pedido fictício rejeitado com motivo no Gerenciador de Pessoas (/dev); a mesma conta, ao abrir o formulário de novo, viu "O seu pedido … não foi aprovado pelo Serviço de Graduação", o motivo como texto e o link "O que fazer?", e o formulário liberado para pedido novo na mesma colação; recibo do pedido com `[HOMOLOGAÇÃO]` e e-mail de rejeição recebidos na conta do pedido |
+
+Pendente: push de `0fcd779` (pasta do protocolo com nome único, achado da revisão independente) e conferência de que um pedido novo cria a pasta `PCG-… · <8 caracteres>`.
+
 **Retorno:** a 2.0 não substitui nada em uso; desfazer a homologação é arquivar a implantação de teste. Nenhum dado de produção é tocado: o projeto de homologação lê só a coluna Homologação.
 
 ## Versão 2.1.0 (PR 7 do plano) — tema GRADIP e Central de Ajuda
