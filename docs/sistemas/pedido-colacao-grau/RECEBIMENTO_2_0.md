@@ -51,7 +51,7 @@ O motivo fica só na coluna "Motivo do cadastro" de `PROTOCOLOS`, para a fila do
 | Cadastro | CONFIRMADO ou PENDENTE na entrada | este formulário; depois APROVADO/REJEITADO/DUPLICIDADE em `DECISOES_CADASTRO` (Gerenciador de Pessoas, PR 5) |
 | Encaminhamento | AGUARDANDO, ENCAMINHADO, BLOQUEADO, CORREÇÃO RETIDA em `ENCAMINHAMENTOS` | Gerenciador de Diplomas (PR 4) |
 
-"Meus pedidos" mostra recebimento, cadastro e andamento. O formulário nunca diz "deferido". Enquanto `DECISOES_CADASTRO` e `ENCAMINHAMENTOS` não existirem, contam como vazias.
+"Meus pedidos" mostra recebimento, cadastro e andamento. O formulário nunca diz "deferido". Quando a última decisão do protocolo em `DECISOES_CADASTRO` é `REJEITADO`, "Meus pedidos" mostra também o motivo escrito pela equipe e o andamento "Encerrado: você pode enviar um novo pedido"; sem pedido ativo na colação, o formulário abre com um aviso no topo com o protocolo rejeitado e o motivo (decisão do responsável de 11/11/2026; o Gerenciador de Pessoas manda o mesmo motivo por e-mail). Enquanto `DECISOES_CADASTRO` e `ENCAMINHAMENTOS` não existirem, contam como vazias.
 
 ## 5. Funções
 

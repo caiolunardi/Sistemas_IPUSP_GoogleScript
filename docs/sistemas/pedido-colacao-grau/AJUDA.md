@@ -39,7 +39,7 @@ Este arquivo é o **texto-fonte** da ajuda: ao mudar um texto aqui, mude também
 - **Só no período aberto** O formulário recebe pedidos apenas no período definido pelo Serviço de Graduação para cada colação. As datas são divulgadas pelo Serviço de Graduação.
 - **Apareceu "Formulário fechado no momento"** O período não está aberto agora. Se você já fez um pedido, o botão **Meus pedidos** continua disponível para consultar a situação e reenviar o comprovante.
 - **O prazo acabou enquanto eu preenchia** O formulário confere o prazo no envio. Se o prazo terminou com a página aberta, o pedido não é registrado e aparece um aviso. Para qualquer pedido fora do prazo, fale com o Serviço de Graduação.
-- **Um pedido por colação** Cada conta tem um pedido por colação. Se você já enviou, a página mostra o seu protocolo e, quando ainda for possível, o botão **Corrigir o pedido**.
+- **Um pedido por colação** Cada conta tem um pedido por colação. Se você já enviou, a página mostra o seu protocolo e, quando ainda for possível, o botão **Corrigir o pedido**. Se o pedido não foi aprovado, você pode enviar um novo.
 
 ### Como preencher (`ajuda-preencher`)
 
@@ -64,7 +64,8 @@ Este arquivo é o **texto-fonte** da ajuda: ao mudar um texto aqui, mude também
 ### Seu cadastro (`ajuda-cadastro`)
 
 - **Apareceu "Não conseguimos confirmar o seu cadastro automaticamente"** O formulário não encontrou o seu cadastro de aluno ligado a esta conta. Preencha nome, Nº USP e ano de ingresso. O pedido é recebido normalmente, com protocolo, e a equipe confere o cadastro depois.
-- **Cadastro em conferência** Quer dizer que a equipe ainda vai conferir os dados que você informou. Isso não impede o recebimento do pedido. Se o cadastro não for aprovado, a situação em **Meus pedidos** pede que você fale com o Serviço de Graduação.
+- **Cadastro em conferência** Quer dizer que a equipe ainda vai conferir os dados que você informou. Isso não impede o recebimento do pedido. Se o cadastro não for aprovado, você recebe um e-mail com o motivo.
+- **O pedido não foi aprovado** A equipe explica o motivo por e-mail, no aviso do topo do formulário e em **Meus pedidos**. Corrija o que foi apontado e envie um **novo pedido** pelo formulário, enquanto o prazo estiver aberto; o pedido antigo fica encerrado. Em caso de dúvida, fale com o Serviço de Graduação.
 - **Causa comum** Estar conectado com um e-mail USP diferente do que consta no cadastro. Se tiver mais de uma conta USP, use a principal.
 
 ### Depois de enviar (`ajuda-depois`)

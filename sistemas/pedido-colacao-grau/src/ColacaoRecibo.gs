@@ -70,6 +70,7 @@ function listarMeusPedidos() {
     const identidade = identificarCadastroColacao_(email, "");
     const decisoes = ultimoPorProtocoloColacao_(tabelas.DECISOES_CADASTRO, "Decisão");
     const encaminhamentos = ultimoPorProtocoloColacao_(tabelas.ENCAMINHAMENTOS, "Resultado");
+    const motivos = motivosRejeicaoColacao_(tabelas.DECISOES_CADASTRO);
     return pedidosDaPessoaColacao_(tabelas, email, identidade).map(p => {
       const id = textoColacao_(p, "Protocolo ID");
       const versoes = versoesDoProtocoloColacao_(tabelas, id);
@@ -84,7 +85,8 @@ function listarMeusPedidos() {
         recebimento: recebido ? "Recebido" : "Envio incompleto: abra o formulário e envie de novo",
         correcaoIncompleta: !!(recebido && ultima && textoColacao_(ultima, "Situação") !== "RECEBIDO"),
         cadastro: textoCadastroColacao_(textoColacao_(p, "Cadastro"), decisoes[id]),
-        andamento: textoEncaminhamentoColacao_(encaminhamentos[id]),
+        andamento: decisoes[id] === "REJEITADO" ? "Encerrado: você pode enviar um novo pedido" : textoEncaminhamentoColacao_(encaminhamentos[id]),
+        motivoRejeicao: decisoes[id] === "REJEITADO" ? (motivos[id] || "") : "",
         podeReenviarRecibo: recebido
       };
     }).sort((a, b) => (a.protocolo < b.protocolo ? 1 : -1));

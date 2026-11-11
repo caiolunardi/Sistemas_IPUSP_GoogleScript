@@ -50,8 +50,8 @@
 
 | Suíte | O que cobre | Resultado local |
 | --- | --- | --- |
-| `sistemas/pedido-colacao-grau/testes/testar_backend.js` | servidor com o Apps Script simulado: T-AUT-01 a 05, T-DUP-01/02/03/06, T-CON-01, T-DOC-03/06, T-PRZ-01/02/03/05/06, T-REC-01/02/03, D3, recibo (D9), homologação, escritor único, diagnóstico e preparação | 79 ok |
-| `sistemas/pedido-colacao-grau/testes/testar_navegador.js` | página em Chromium: telas por situação, validação (campo do problema destacado, focado e com a mensagem ao lado), chave de envio (mesma no reenvio, nova na correção, a do servidor na retomada), duplo clique, "Meus pedidos" sem HTML injetado, 360 a 1280 px | 66 ok |
+| `sistemas/pedido-colacao-grau/testes/testar_backend.js` | servidor com o Apps Script simulado: T-AUT-01 a 05, T-DUP-01/02/03/06, T-CON-01, T-DOC-03/06, T-PRZ-01/02/03/05/06, T-REC-01/02/03, D3, recibo (D9), homologação, escritor único, diagnóstico e preparação, motivo e aviso de rejeição | 80 ok |
+| `sistemas/pedido-colacao-grau/testes/testar_navegador.js` | página em Chromium: telas por situação, validação (campo do problema destacado, focado e com a mensagem ao lado), chave de envio (mesma no reenvio, nova na correção, a do servidor na retomada), duplo clique, "Meus pedidos" sem HTML injetado, aviso de rejeição com o motivo como texto, 360 a 1280 px | 70 ok |
 
 Fora do alcance local (só no Google): T-AUT-06 e H1 (e-mail da sessão com "Executar como: eu"), cotas de e-mail, tempo real de gravação de arquivos de 10 MB, `appendRow` com o apóstrofo inicial, `noReply`, comportamento do `ScriptLock` com vários alunos ao mesmo tempo. Os casos T-CON-02 a 06, T-DUP-04/05, T-DOC-01/02/04/05/07/08 e T-PRZ-04 dependem dos PRs 1, 4, 5 e 6.
 
@@ -110,7 +110,7 @@ Pedido do responsável na rodada: destacar o campo do problema na validação (`
 | Suíte | Resultado local |
 | --- | --- |
 | `testar_backend.js` | 79 ok (sem mudança) |
-| `testar_navegador.js` | 198 ok: os 66 da 2.0 (com o teste do grupo Sim/Não ajustado para o rádio, que agora recebe o foco) e mais tema nos três modos, persistência, mudança do sistema com a página aberta, contraste medido de 20 pares por tema (texto ≥ 4,5:1, borda ≥ 3:1), marcas por tema sem filtro, Central de Ajuda (abrir, foco preso, ESC com retorno de foco e scroll, busca sem acento, FAQ, gatilhos), seta no grupo Sim/Não e 360/390/480/768/1280 px nos dois temas (sem rolagem lateral, alvos ≥ 44 px) |
+| `testar_navegador.js` | 202 ok: os 70 da 2.0 (incluindo o aviso de rejeição com o motivo, 11/11/2026) (com o teste do grupo Sim/Não ajustado para o rádio, que agora recebe o foco) e mais tema nos três modos, persistência, mudança do sistema com a página aberta, contraste medido de 20 pares por tema (texto ≥ 4,5:1, borda ≥ 3:1), marcas por tema sem filtro, Central de Ajuda (abrir, foco preso, ESC com retorno de foco e scroll, busca sem acento, FAQ, gatilhos), seta no grupo Sim/Não e 360/390/480/768/1280 px nos dois temas (sem rolagem lateral, alvos ≥ 44 px) |
 
 ### Roteiro G (no projeto de homologação, depois do push com ordem do responsável)
 

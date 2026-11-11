@@ -36,6 +36,8 @@ const RECEBIDO = { protocolo: 'PCG-20262-00001', recebidoEm: '20/11/2026 às 12:
 const CENARIOS = {
   confirmada: { dados: BASE, envio: [RECEBIDO] },
   provisoria: { dados: Object.assign({}, BASE, { identidade: { situacao: 'PROVISORIO' } }), envio: [Object.assign({}, RECEBIDO, { cadastro: 'PENDENTE', reciboEnviado: false })] },
+  rejeitado: { dados: Object.assign({}, BASE, { identidade: { situacao: 'PROVISORIO' }, temPedidos: true, ultimoRejeitado: { protocolo: 'PCG-20262-00004', motivo: '<img src=x onerror="window.__xss=1">Documento ilegível' } }),
+    lista: [{ protocolo: 'PCG-20262-00004', colacao: '2026/2', recebidoEm: '10/11/2026 às 10:00:00', versao: 1, recebimento: 'Recebido', cadastro: 'Cadastro não aprovado: fale com o Serviço de Graduação', andamento: 'Encerrado: você pode enviar um novo pedido', motivoRejeicao: 'Documento ilegível', podeReenviarRecibo: true }] },
   falhaDepoisOk: { dados: BASE, envio: ['Error: O envio não terminou. Envie de novo pelo mesmo botão.', RECEBIDO] },
   existente: {
     dados: Object.assign({}, BASE, { temPedidos: true, pedidoAtual: { protocolo: 'PCG-20262-00001', recebidoEm: '20/11/2026 às 12:00:00', recebido: true, podeCorrigir: true, chaveIncompleta: '', documentosMantidos: ['RG', 'CERTIDAO'],
@@ -184,6 +186,19 @@ async function preencher(p) {
   await p.waitForSelector('#telaConfirmacao:not([hidden])');
   chk('provisória: situação em conferência', /em conferência/.test(await p.textContent('#confSituacao')));
   chk('provisória: recibo que falhou leva a "Meus pedidos"', /Meus pedidos/.test(await p.textContent('#confRecibo')));
+  await p.close();
+
+  // Último pedido rejeitado: aviso no topo, motivo como texto, formulário livre.
+  p = await abrir(ctx, 'rejeitado');
+  chk('rejeitado: aviso no formulário com protocolo e motivo', await visivel(p, '#telaFormulario') && await visivel(p, '#avisoRejeitado') &&
+    (await p.textContent('#rejeitadoProtocolo')) === 'PCG-20262-00004' && /Documento ilegível/.test(await p.textContent('#rejeitadoMotivo')));
+  chk('rejeitado: motivo é texto, não HTML', await p.evaluate(() => !window.__xss && !document.querySelector('#avisoRejeitado img')));
+  await p.click('#botaoMeusPedidosForm');
+  await p.waitForSelector('#telaMeusPedidos:not([hidden])');
+  chk('rejeitado: "Meus pedidos" mostra o motivo e o encerramento', /Motivo: Documento ilegível/.test(await p.textContent('#listaMeusPedidos')) && /Encerrado/.test(await p.textContent('#listaMeusPedidos')));
+  await p.close();
+  p = await abrir(ctx, 'provisoria');
+  chk('sem rejeição: aviso escondido', !(await visivel(p, '#avisoRejeitado')));
   await p.close();
 
   // Pedido existente: corrigir usa chave nova e mantém documentos.
