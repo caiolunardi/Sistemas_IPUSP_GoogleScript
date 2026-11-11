@@ -1540,7 +1540,7 @@
         .withFailureHandler(erro => {
           botaoPdf.textContent = textoOriginal;
           atualizarExportacao_();
-          infoBusca.textContent = "Não consegui gerar o PDF: " + ((erro && erro.message) ? erro.message : String(erro));
+          infoBusca.textContent = "Não consegui gerar o PDF: " + textoDoErro_(erro);
         })
         .gerarPdfListaAlunos({ titulo: tituloExportacao_(), nomeArquivo: nomeBaseArquivo_(), linhas: linhas });
   });
@@ -1582,7 +1582,7 @@
     fichaDialogo.focus();
     google.script.run
         .withSuccessHandler(ficha => { if (FICHA && FICHA.aluno === aluno) preencherFicha_(ficha); })
-        .withFailureHandler(erro => { if (FICHA && FICHA.aluno === aluno) definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro"); })
+        .withFailureHandler(erro => { if (FICHA && FICHA.aluno === aluno) definirStatusFicha_(textoDoErro_(erro), "erro"); })
         .obterFicha(referenciaFicha_(aluno));
   }
 
@@ -1694,7 +1694,7 @@
         .withFailureHandler(erro => {
           fichaSalvando = false;
           atualizarAlteracoesFicha_();
-          definirStatusFicha_((erro && erro.message) ? erro.message : String(erro), "erro");
+          definirStatusFicha_(textoDoErro_(erro), "erro");
         })
         .salvarFicha(Object.assign(referenciaFicha_(aluno), {
           linha: FICHA.linha,
@@ -1775,6 +1775,11 @@
   const filaStatus = document.getElementById("filaStatus");
   let FILA = { itens: [], podeDecidir: false };
   let filaOcupada = false;
+
+  // O Apps Script entrega a mensagem do servidor com "Error: " na frente; a equipe vê só o texto.
+  function textoDoErro_(erro) {
+    return String((erro && erro.message) || erro || "").replace(/^\s*(?:\w*Error|Exception):\s*/, "");
+  }
 
   function definirStatusFila_(texto, tipo) {
     filaStatus.textContent = texto || "";
@@ -1957,7 +1962,7 @@
           .withFailureHandler(erro => {
             filaOcupada = false;
             botoes.forEach(b => { b.disabled = false; });
-            status.textContent = (erro && erro.message) ? erro.message : String(erro);
+            status.textContent = textoDoErro_(erro);
             status.className = "filaStatus erro";
           })
           .decidirCadastro(Object.assign({ protocoloId: item.protocoloId, versao: item.versao }, pedido));
@@ -2009,7 +2014,7 @@
           FILA = { itens: [], podeDecidir: false };
           atualizarContadorFila_();
           filaContador.textContent = "?";
-          definirStatusFila_("Não consegui ler as solicitações de cadastro: " + ((erro && erro.message) ? erro.message : String(erro)), "erro");
+          definirStatusFila_("Não consegui ler as solicitações de cadastro: " + textoDoErro_(erro), "erro");
         })
         .obterFilaCadastro();
   }
@@ -2029,7 +2034,7 @@
         })
         .withFailureHandler(erro => {
           infoBusca.textContent = "";
-          const mensagem = (erro && erro.message) ? erro.message : String(erro);
+          const mensagem = textoDoErro_(erro);
           renderizarVazio_("Não consegui carregar a lista de pessoas: " + mensagem, true);
         })
         .listarComunidadeParaBusca();

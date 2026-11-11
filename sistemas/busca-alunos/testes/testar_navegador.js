@@ -42,7 +42,7 @@ var API={listarComunidadeParaBusca:function(){if(MODO==='erro')throw new Error('
  gerarPdfListaAlunos:function(p){return {nome:p.nomeArquivo+'.pdf',base64:btoa('%PDF-1.4 '+p.linhas.length)}},
  obterFilaCadastro:function(){if(MODO==='leitor')return {visivel:false};if(MODO==='erro')throw new Error('A planilha de pedidos de colação não tem a aba DECISOES_CADASTRO.');
   return {visivel:true,podeDecidir:true,itens:MODO==='parcial'?[]:FILA}},
- decidirCadastro:function(p){if(p.acao==='CRIAR'&&p.novo.numeroUsp==='9000002')throw new Error('Este nº USP já tem cadastro. Use Vincular ao cadastro existente.');
+ decidirCadastro:function(p){if(p.acao==='CRIAR'&&p.novo.numeroUsp==='9000002')throw new Error('Error: Este nº USP já tem cadastro. Use Vincular ao cadastro existente.');
   FILA=FILA.filter(function(i){return i.protocoloId!==p.protocoloId});return {decisao:p.acao==='REJEITAR'?'REJEITADO':'APROVADO',itens:FILA}}};
 var FILA=[{protocoloId:'PID-1',protocolo:'PCG-20262-00001',versao:1,recebidoEm:'2026-11-10T10:00:00-03:00',colacao:'20262',email:'pedido1@exemplo.invalid',nome:'<img src=x onerror="window.__xss=1">Pessoa Fictícia Um',numeroUsp:'9000001',ingresso:'2021',divergencia:'',motivo:'Nenhuma linha da planilha central tem o e-mail do pedido.',duplicidadeAnterior:false,
   documentos:[{tipo:'RG',url:'https://drive.google.com/file/d/ARQUIVOFICTICIO1/view'}],candidatos:[]},
@@ -296,7 +296,7 @@ let ok=0,fail=0;const chk=(n,c,extra='')=>{if(c){ok++;console.log('ok',n,extra)}
   await campos[0].fill('9000002');await campos[2].fill('2021/1');
   await (await item1.$('.filaBloco .botaoPrimario')).click();
   await p.waitForFunction(()=>document.querySelector('.filaItem .filaStatus.erro'));
-  chk(`[${scheme}] fila: erro do servidor aparece no pedido e libera os botões`,(await (await item1.$('.filaStatus.erro')).textContent()).includes('já tem cadastro')&&!(await (await item1.$('.filaBloco .botaoPrimario')).isDisabled()));
+  chk(`[${scheme}] fila: erro do servidor aparece no pedido, sem o prefixo Error, e libera os botões`,/^Este nº USP já tem cadastro/.test(await (await item1.$('.filaStatus.erro')).textContent())&&!(await (await item1.$('.filaBloco .botaoPrimario')).isDisabled()));
   // rejeitar exige motivo
   await (await item1.$$('.filaAcoes .botaoSecundario'))[1].click();
   await (await item1.$$('.filaBloco .botaoPrimario'))[1].click();

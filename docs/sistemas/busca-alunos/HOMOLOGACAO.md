@@ -31,6 +31,7 @@ Projeto `GRADIP · Gerenciador de Pessoas · HOMOLOGACAO` criado pelo responsáv
 |---|---|
 | F1 | ok: pedido fictício com nº USP já cadastrado na cópia apareceu na fila com motivo, links dos documentos e a linha do mesmo nº USP como candidata. |
 | F5 | ok: `DECISOES_CADASTRO` com `APROVADO`/`VINCULADO`, e-mail anterior vazio e novo preenchido; o Gerenciador de Diplomas, no ciclo seguinte, bloqueou o pedido por `DUPLICIDADE_DIPLOMAS` (E8 dele). Na cópia da planilha central, a linha do nº USP passou a ter o e-mail do pedido na coluna eMail, e as outras colunas ficaram como estavam. |
+| F3 | ok (11/11): criar cadastro com nº USP já cadastrado foi recusado ("Este nº USP já tem cadastro. Use Vincular ao cadastro existente."); o pedido continuou na fila. Achado: a mensagem vinha com "Error: " na frente; corrigido na página (`textoDoErro_`, mesmo padrão do Gerenciador de Diplomas 4.1), ainda não enviado ao projeto de homologação. |
 
 Achados de F1 (sem correção ainda, para decisão): o motivo diz "já pertence a outro e-mail" mesmo quando a linha da planilha central não tem e-mail; o cabeçalho da página ainda diz "Comunidade IPUSP"; as chaves `SERVIDORES` e `PLANILHA_DOCENTES` estão sem valor na coluna Homologação (aviso esperado).
 
